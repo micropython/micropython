@@ -143,6 +143,24 @@ static inline void mpu_config_end(uint32_t irq_state) {
     enable_irq(irq_state);
 }
 
+#elif defined(STM32C5)
+
+static inline void mpu_init(void) {
+    // Discard MPU regions inherited from the factory bootloader.
+    ARM_MPU_Disable();
+    for (uint32_t region = 0; region < ((MPU->TYPE & MPU_TYPE_DREGION_Msk) >> MPU_TYPE_DREGION_Pos); ++region) {
+        ARM_MPU_ClrRegion(region);
+    }
+
+    // Signature/OTP reads must bypass the instruction cache, including data
+    // reads used to generate the USB serial number from the unique ID.
+    ARM_MPU_SetMemAttr(0, 0x44); // Inner and outer normal, non-cacheable.
+    ARM_MPU_SetRegion(0,
+        ARM_MPU_RBAR(0x08ffe000, ARM_MPU_SH_NON, 1, 1, 1),
+        ARM_MPU_RLAR(0x08ffffff, 0));
+    ARM_MPU_Enable(MPU_CTRL_PRIVDEFENA_Msk);
+}
+
 #elif defined(STM32H5) || defined(STM32N6)
 
 #define MPU_REGION_SIG      (MPU_REGION_NUMBER0)

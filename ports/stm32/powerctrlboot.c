@@ -58,7 +58,7 @@ void powerctrl_config_systick(void) {
     SysTick_Config(systick_source_freq / 1000);
     NVIC_SetPriority(SysTick_IRQn, IRQ_PRI_SYSTICK);
 
-    #if !BUILDING_MBOOT && (defined(STM32H5) || defined(STM32H7) || defined(STM32L4) || defined(STM32WB))
+    #if !BUILDING_MBOOT && (defined(STM32C5) || defined(STM32H5) || defined(STM32H7) || defined(STM32L4) || defined(STM32WB))
     // Set SysTick IRQ priority variable in case the HAL needs to use it
     uwTickPrio = IRQ_PRI_SYSTICK;
     #endif
@@ -191,6 +191,55 @@ void SystemClock_Config(void) {
         | __HAL_RCC_CRS_RELOADVALUE_CALCULATE(48000000, 1000) << CRS_CFGR_RELOAD_Pos;
     #endif
     #endif
+}
+
+#elif defined(STM32C5)
+
+void SystemClock_Config(void) {
+    // STM32C5 uses PSI (Phase-Shift Integrator) instead of PLL.
+    // Default boot is HSIDIV3 at 48 MHz.
+
+    // Ensure SystemCoreClock is set correctly for the default clock.
+    SystemCoreClock = HSI_VALUE / 3; // HSIDIV3 = 48 MHz
+
+    #if MICROPY_HW_CLK_USE_HSE
+    // Enable HSE.
+    LL_RCC_HSE_Enable();
+    while (!LL_RCC_HSE_IsReady()) {
+    }
+
+    // Configure PSI: HSE -> PSI -> target frequency.
+    LL_RCC_SetPSIClkSource(LL_RCC_PSISOURCE_HSE);
+    LL_RCC_SetPSIRef(MICROPY_HW_CLK_PSI_REF);
+    LL_RCC_SetPSIFreqOutput(MICROPY_HW_CLK_PSI_OUT);
+
+    // Enable PSIS (PSI system clock output).
+    LL_RCC_PSIS_Enable();
+    while (!LL_RCC_PSIS_IsReady()) {
+    }
+    #endif
+
+    // Configure bus dividers (all 1:1 for maximum speed).
+    LL_RCC_SetAHBPrescaler(LL_RCC_HCLK_PRESCALER_1);
+    LL_RCC_SetAPB1Prescaler(LL_RCC_APB1_PRESCALER_1);
+    LL_RCC_SetAPB2Prescaler(LL_RCC_APB2_PRESCALER_1);
+    LL_RCC_SetAPB3Prescaler(LL_RCC_APB3_PRESCALER_1);
+
+    // Set flash latency before switching clock source.
+    LL_FLASH_SetLatency(FLASH, MICROPY_HW_FLASH_LATENCY);
+    while (LL_FLASH_GetLatency(FLASH) != MICROPY_HW_FLASH_LATENCY) {
+    }
+
+    #if MICROPY_HW_CLK_USE_HSE
+    // Switch system clock to PSIS.
+    LL_RCC_SetSysClkSource(LL_RCC_SYS_CLKSOURCE_PSIS);
+    while (LL_RCC_GetSysClkSource() != LL_RCC_SYS_CLKSOURCE_STATUS_PSIS) {
+    }
+    #endif
+
+    // Update SystemCoreClock and configure SysTick.
+    SystemCoreClockUpdate();
+    powerctrl_config_systick();
 }
 
 #elif defined(STM32H5)

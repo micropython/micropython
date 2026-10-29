@@ -334,6 +334,12 @@ static void risaf_init(void) {
 #endif
 
 void stm32_main(uint32_t reset_mode) {
+    #if defined(STM32C5)
+    // Ensure SystemCoreClock is correct early (before HAL_InitTick uses it).
+    // The .data init value may not be programmed correctly by all flash tools.
+    SystemCoreClockUpdate();
+    #endif
+
     // Low-level MCU initialisation.
     stm32_system_init();
 
@@ -469,7 +475,8 @@ void stm32_main(uint32_t reset_mode) {
     MICROPY_BOARD_EARLY_INIT();
 
     // basic sub-system init
-    #if defined(STM32H5)
+    #if defined(STM32C5) || defined(STM32H5)
+    // The signature area only supports word reads; expose a byte-addressable copy.
     volatile uint32_t *src = (volatile uint32_t *)UID_BASE;
     uint32_t *dest = (uint32_t *)&mp_hal_unique_id_address[0];
     dest[0] = src[0];

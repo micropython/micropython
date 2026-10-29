@@ -28,6 +28,9 @@
 // The defaults here should be overridden in mpconfigboard.h.
 
 #include STM32_HAL_H
+#if defined(STM32C5)
+#include "boards/stm32c5xx_hal_compat.h"
+#endif
 
 /*****************************************************************************/
 // Feature settings with defaults
@@ -459,6 +462,17 @@ void mp_usbd_ll_init(void);
 
 #define CFG_TUSB_MCU OPT_MCU_STM32G4
 
+// Configuration for STM32C5 series
+#elif defined(STM32C5)
+
+#define MP_HAL_UNIQUE_ID_ADDRESS (mp_hal_unique_id_address)
+#define PYB_EXTI_NUM_VECTORS (16)
+#define MICROPY_HW_MAX_I2C (2)
+#define MICROPY_HW_MAX_TIMER (17)
+#define MICROPY_HW_MAX_UART (8)
+#define MICROPY_HW_MAX_LPUART (1)
+#define CFG_TUSB_MCU OPT_MCU_STM32C5
+
 // Configuration for STM32H5 series
 #elif defined(STM32H5)
 
@@ -618,7 +632,10 @@ void mp_usbd_ll_init(void);
 #error Unsupported MCU series
 #endif
 
-#if MICROPY_HW_CLK_USE_HSI
+#if defined(STM32C5)
+// STM32C5 uses PSI instead of PLL; clock source defines handled in powerctrlboot.c.
+#define MICROPY_HW_CLK_VALUE (HSE_VALUE)
+#elif MICROPY_HW_CLK_USE_HSI
 // Use HSI as clock source
 #define MICROPY_HW_CLK_VALUE (HSI_VALUE)
 #define MICROPY_HW_RCC_OSCILLATOR_TYPE (RCC_OSCILLATORTYPE_HSI)

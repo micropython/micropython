@@ -46,14 +46,14 @@
 #endif
 
 // These handles are also used in Interrupt / Wakeup handlers.
-#if MICROPY_HW_USB_FS
+#if MICROPY_HW_USB_FS && !defined(STM32C5)
 PCD_HandleTypeDef pcd_fs_handle;
 #endif
 #if MICROPY_HW_USB_HS
 PCD_HandleTypeDef pcd_hs_handle;
 #endif
 
-#if defined(STM32G0) || defined(STM32H5)
+#if defined(STM32C5) || defined(STM32G0) || defined(STM32H5)
 #define USB_OTG_FS USB_DRD_FS
 #elif !MICROPY_HW_USB_IS_MULTI_OTG
 // The MCU has a single USB device-only instance
@@ -94,7 +94,7 @@ static void mp_usbd_ll_init_fs(void) {
     {
         // Configure USB GPIO's.
 
-        #if defined(STM32G0) || defined(STM32G4)
+        #if defined(STM32C5) || defined(STM32G0) || defined(STM32G4)
 
         // These MCUs don't have an alternate function for USB but rather require
         // the pins to be disconnected from all peripherals, ie put in analog mode.
@@ -148,18 +148,31 @@ static void mp_usbd_ll_init_fs(void) {
         #endif
 
         // Keep USB clock running during sleep or else __WFI() will disable the USB
+        #if defined(STM32C5)
+        // The 144 MHz PSI output divided by three supplies USB's 48 MHz clock.
+        MP_STATIC_ASSERT(MICROPY_HW_CLK_PSI_OUT == HAL_RCC_PSI_OUT_144MHZ);
+        LL_RCC_PSIDIV3_Enable();
+        while (!LL_RCC_PSIDIV3_IsReady()) {
+        }
+        LL_RCC_SetCK48ClockSource(LL_RCC_CK48_CLKSOURCE_PSIDIV3);
+        LL_APB2_GRP1_EnableClockLowPower(LL_APB2_GRP1_PERIPH_USB);
+        LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_USB);
+        #else
         #if defined(STM32G0) || defined(STM32H5)
         __HAL_RCC_USB_CLK_SLEEP_ENABLE();
         #elif defined(STM32H7)
         __HAL_RCC_USB2_OTG_FS_CLK_SLEEP_ENABLE();
         __HAL_RCC_USB2_OTG_FS_ULPI_CLK_SLEEP_DISABLE();
         #endif
+        #endif
 
         // Enable USB FS Clocks
+        #if !defined(STM32C5)
         #if !MICROPY_HW_USB_IS_MULTI_OTG
         __HAL_RCC_USB_CLK_ENABLE();
         #else
         __USB_OTG_FS_CLK_ENABLE();
+        #endif
         #endif
 
         // Enable VDDUSB
@@ -179,7 +192,7 @@ static void mp_usbd_ll_init_fs(void) {
         #if defined(STM32G0)
         NVIC_SetPriority(USB_UCPD1_2_IRQn, IRQ_PRI_OTG_FS);
         HAL_NVIC_EnableIRQ(USB_UCPD1_2_IRQn);
-        #elif defined(STM32H5)
+        #elif defined(STM32C5) || defined(STM32H5)
         NVIC_SetPriority(USB_DRD_FS_IRQn, IRQ_PRI_OTG_FS);
         HAL_NVIC_EnableIRQ(USB_DRD_FS_IRQn);
         #elif defined(STM32L0)

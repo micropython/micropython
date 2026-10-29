@@ -2,8 +2,8 @@ MicroPython port to STM32 MCUs
 ==============================
 
 This directory contains the port of MicroPython to ST's line of STM32
-microcontrollers.  Supported MCU series are: STM32F0, STM32F4, STM32F7, STM32G0,
-STM32G4, STM32H5, STM32H7, STM32L0, STM32L1, STM32L4, STM32WL and STM32WB.
+microcontrollers.  Supported MCU series are: STM32C5, STM32F0, STM32F4, STM32F7,
+STM32G0, STM32G4, STM32H5, STM32H7, STM32L0, STM32L1, STM32L4, STM32WL and STM32WB.
 Parts of the code here utilise the STM32Cube HAL library.
 
 The officially supported boards are the line of pyboards: PYBv1.0 and PYBv1.1
@@ -61,6 +61,16 @@ can be built via:
     $ make -C mboot BOARD=STM32F769DISC
 
 For more information about mboot see mboot/README.md.
+
+The `SEEED_XIAO_STM32C5` board uses its factory TinyUF2 bootloader instead of
+mboot. Its application starts at `0x08008000`, preserving the first 32 KiB.
+Convert the built image to UF2 with:
+
+    $ python ../../tools/uf2conv.py -f 0x00c5c5c5 -c -o build-SEEED_XIAO_STM32C5/firmware.uf2 build-SEEED_XIAO_STM32C5/firmware.hex
+
+Double-press Reset to mount `XIAOC5BOOT`, then copy `firmware.uf2` to that
+drive. Do not flash this board's application at `0x08000000`.
+
 
 ### Link Time Optimization
 
@@ -174,3 +184,8 @@ which is via `mpremote` (install it using `pip install mpremote`):
 Other options are `picocom` and `screen`, for example:
 
     $ picocom /dev/ttyACM0
+
+On `NUCLEO_C5A3ZG`, the ST-LINK virtual COM port provides the UART REPL
+(USART2 on PA2/PA3, 115200 baud). The User USB connector provides a separate
+USB CDC REPL. On `SEEED_XIAO_STM32C5`, use the USB CDC port after flashing;
+`XIAOC5BOOT` is the bootloader drive, not the running MicroPython console.

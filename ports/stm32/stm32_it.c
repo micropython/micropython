@@ -88,7 +88,7 @@
 #include "usb.h"
 #endif
 
-#if defined(MICROPY_HW_USB_FS)
+#if defined(MICROPY_HW_USB_FS) && !defined(STM32C5)
 extern PCD_HandleTypeDef pcd_fs_handle;
 #endif
 #if defined(MICROPY_HW_USB_HS)
@@ -315,7 +315,7 @@ void USB_UCPD1_2_IRQHandler(void) {
 }
 #endif
 
-#elif defined(STM32H5)
+#elif defined(STM32C5) || defined(STM32H5)
 
 #if MICROPY_HW_USB_FS
 void USB_DRD_FS_IRQHandler(void) {
@@ -561,7 +561,7 @@ void TAMP_STAMP_IRQHandler(void) {
 #endif
 
 #if !defined(STM32U5)
-#if defined(STM32H5)
+#if defined(STM32C5) || defined(STM32H5)
 void RTC_IRQHandler(void)
 #elif defined(STM32N6)
 #define RTC_WKUP_IRQn RTC_S_IRQn
@@ -573,6 +573,8 @@ void RTC_WKUP_IRQHandler(void)
     IRQ_ENTER(RTC_WKUP_IRQn);
     #if defined(STM32G0) || defined(STM32G4) || defined(STM32WL)
     RTC->MISR &= ~RTC_MISR_WUTMF; // clear wakeup interrupt flag
+    #elif defined(STM32C5)
+    LL_RTC_ClearFlag_WUT();
     #elif defined(STM32H5) || defined(STM32N6)
     LL_RTC_ClearFlag_WUT(RTC);
     #elif defined(STM32H7A3xx) || defined(STM32H7A3xxQ) || defined(STM32H7B3xx) || defined(STM32H7B3xxQ)
@@ -740,7 +742,7 @@ void TIM4_IRQHandler(void) {
 void TIM5_IRQHandler(void) {
     IRQ_ENTER(TIM5_IRQn);
     timer_irq_handler(5);
-    #if MICROPY_HW_SERVO_TIM == 5
+    #if MICROPY_HW_ENABLE_SERVO && MICROPY_HW_SERVO_TIM == 5
     HAL_TIM_IRQHandler(&servo_tim_handle);
     #endif
     IRQ_EXIT(TIM5_IRQn);

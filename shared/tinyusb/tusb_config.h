@@ -33,7 +33,15 @@
 
 #ifndef MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
 #define MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE 0
+
 #endif
+#if defined(STM32C5)
+#ifndef CFG_TUD_TASK_EVENTS_PER_RUN
+#define CFG_TUD_TASK_EVENTS_PER_RUN (0)
+#endif
+#endif
+
+// USB tasks are scheduled on event arrival; drain queued events in one pass.
 
 #ifndef MICROPY_HW_USB_MANUFACTURER_STRING
 #define MICROPY_HW_USB_MANUFACTURER_STRING "MicroPython"
@@ -77,6 +85,8 @@
 
 // CDC Configuration
 #if CFG_TUD_CDC
+#define CFG_TUD_CDC_RX_PERSISTENT (0)
+#define CFG_TUD_CDC_TX_OVERWRITABLE_IF_NOT_CONNECTED (1)
 #ifndef CFG_TUD_CDC_RX_BUFSIZE
 #define CFG_TUD_CDC_RX_BUFSIZE  ((CFG_TUD_MAX_SPEED == OPT_MODE_HIGH_SPEED) ? 512 : 256)
 #endif

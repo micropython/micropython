@@ -21,19 +21,41 @@ ringbuf_t stdin_ringbuf = { stdin_ringbuf_array, sizeof(stdin_ringbuf_array), 0,
 #endif
 
 // this table converts from HAL_StatusTypeDef to POSIX errno
+#if defined(STM32C5)
+// C5 hal_status_t values are not sequential (HAL_OK=0xEAEAEAEA etc.)
+// so we use a function instead of a lookup table.
+const byte mp_hal_status_to_errno_table[1] = {0}; // dummy for extern reference
+int mp_hal_status_to_neg_errno(hal_status_t status) {
+    switch (status) {
+        case HAL_OK:
+            return 0;
+        case HAL_BUSY:
+            return -MP_EBUSY;
+        case HAL_TIMEOUT:
+            return -MP_ETIMEDOUT;
+        default:
+            return -MP_EIO;
+    }
+}
+#else
 const byte mp_hal_status_to_errno_table[4] = {
     [HAL_OK] = 0,
     [HAL_ERROR] = MP_EIO,
     [HAL_BUSY] = MP_EBUSY,
     [HAL_TIMEOUT] = MP_ETIMEDOUT,
 };
+#endif
 
-#if defined(STM32H5)
+#if defined(STM32C5) || defined(STM32H5)
 uint8_t mp_hal_unique_id_address[12];
 #endif
 
 MP_NORETURN void mp_hal_raise(HAL_StatusTypeDef status) {
+    #if defined(STM32C5)
+    mp_raise_OSError(-mp_hal_status_to_neg_errno(status));
+    #else
     mp_raise_OSError(mp_hal_status_to_errno_table[status]);
+    #endif
 }
 
 MP_WEAK uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags) {
@@ -143,7 +165,7 @@ void mp_hal_gpio_clock_enable(GPIO_TypeDef *gpio) {
     #elif defined(STM32G0)
     #define AHBxENR IOPENR
     #define AHBxENR_GPIOAEN_Pos RCC_IOPENR_GPIOAEN_Pos
-    #elif defined(STM32G4) || defined(STM32H5) || defined(STM32L4) || defined(STM32WB) || defined(STM32WL)
+    #elif defined(STM32C5) || defined(STM32G4) || defined(STM32H5) || defined(STM32L4) || defined(STM32WB) || defined(STM32WL)
     #define AHBxENR AHB2ENR
     #define AHBxENR_GPIOAEN_Pos RCC_AHB2ENR_GPIOAEN_Pos
     #elif defined(STM32U5)

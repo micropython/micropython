@@ -55,7 +55,7 @@
 #define RCC_CSR_PORRSTF RCC_CSR_PWRRSTF
 #endif
 
-#if defined(STM32H5) || defined(STM32N6)
+#if defined(STM32C5) || defined(STM32H5) || defined(STM32N6)
 #define RCC_SR          RSR
 #define RCC_SR_IWDGRSTF RCC_RSR_IWDGRSTF
 #define RCC_SR_WWDGRSTF RCC_RSR_WWDGRSTF
@@ -95,19 +95,37 @@
 #else
 #define MICROPY_PY_MACHINE_RNG_ENTRY
 #endif
+#if MICROPY_HW_ENABLE_RTC
+#define MICROPY_PY_MACHINE_RTC_ENTRY { MP_ROM_QSTR(MP_QSTR_RTC), MP_ROM_PTR(&pyb_rtc_type) },
+#else
+#define MICROPY_PY_MACHINE_RTC_ENTRY
+#endif
+
+#if MICROPY_PY_MACHINE_TIMER
+#define MICROPY_PY_MACHINE_TIMER_ENTRY { MP_ROM_QSTR(MP_QSTR_Timer), MP_ROM_PTR(&machine_timer_type) },
+#else
+#define MICROPY_PY_MACHINE_TIMER_ENTRY
+#endif
+
+#if MICROPY_PY_MACHINE_BARE_METAL_FUNCS
+#define MICROPY_PY_MACHINE_SLEEP_ENTRY { MP_ROM_QSTR(MP_QSTR_sleep), MP_ROM_PTR(&machine_lightsleep_obj) },
+#else
+#define MICROPY_PY_MACHINE_SLEEP_ENTRY
+#endif
+
 
 #define MICROPY_PY_MACHINE_EXTRA_GLOBALS \
     { MP_ROM_QSTR(MP_QSTR_info),                MP_ROM_PTR(&machine_info_obj) }, \
     MICROPY_PY_MACHINE_RNG_ENTRY \
-    { MP_ROM_QSTR(MP_QSTR_sleep),               MP_ROM_PTR(&machine_lightsleep_obj) }, \
+    MICROPY_PY_MACHINE_SLEEP_ENTRY \
     \
     { MP_ROM_QSTR(MP_QSTR_disable_irq),         MP_ROM_PTR(&machine_disable_irq_obj) }, \
     { MP_ROM_QSTR(MP_QSTR_enable_irq),          MP_ROM_PTR(&machine_enable_irq_obj) }, \
     \
     { MP_ROM_QSTR(MP_QSTR_Pin),                 MP_ROM_PTR(&pin_type) }, \
     \
-    { MP_ROM_QSTR(MP_QSTR_RTC),                 MP_ROM_PTR(&pyb_rtc_type) }, \
-    { MP_ROM_QSTR(MP_QSTR_Timer),               MP_ROM_PTR(&machine_timer_type) }, \
+    MICROPY_PY_MACHINE_RTC_ENTRY \
+    MICROPY_PY_MACHINE_TIMER_ENTRY \
     \
     { MP_ROM_QSTR(MP_QSTR_PWRON_RESET),         MP_ROM_INT(PYB_RESET_POWER_ON) }, \
     { MP_ROM_QSTR(MP_QSTR_HARD_RESET),          MP_ROM_INT(PYB_RESET_HARD) }, \
@@ -285,17 +303,20 @@ static mp_obj_t machine_info(size_t n_args, const mp_obj_t *args) {
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_info_obj, 0, 1, machine_info);
 
+#if MICROPY_PY_MACHINE_BARE_METAL_FUNCS
 // Returns a string of 12 bytes (96 bits), which is the unique ID for the MCU.
 static mp_obj_t mp_machine_unique_id(void) {
     byte *id = (byte *)MP_HAL_UNIQUE_ID_ADDRESS;
     return mp_obj_new_bytes(id, 12);
 }
+#endif
 
 // Resets the pyboard in a manner similar to pushing the external RESET button.
 MP_NORETURN static void mp_machine_reset(void) {
     powerctrl_mcu_reset();
 }
 
+#if MICROPY_PY_MACHINE_BOOTLOADER
 // Activate the bootloader without BOOT* pins.
 MP_NORETURN void mp_machine_bootloader(size_t n_args, const mp_obj_t *args) {
     #if MICROPY_HW_STM_USB_STACK
@@ -325,7 +346,9 @@ MP_NORETURN void mp_machine_bootloader(size_t n_args, const mp_obj_t *args) {
         ;
     }
 }
+#endif
 
+#if MICROPY_PY_MACHINE_BARE_METAL_FUNCS
 // get or set the MCU frequencies
 static mp_obj_t mp_machine_get_freq(void) {
     #if defined(STM32N6)
@@ -388,6 +411,7 @@ static void mp_machine_set_freq(size_t n_args, const mp_obj_t *args) {
     }
     #endif
 }
+#endif
 
 // idle()
 // This executies a wfi machine instruction which reduces power consumption
@@ -396,6 +420,7 @@ static void mp_machine_idle(void) {
     __WFI();
 }
 
+#if MICROPY_PY_MACHINE_BARE_METAL_FUNCS
 static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
     if (n_args != 0) {
         mp_obj_t args2[2] = {MP_OBJ_NULL, args[0]};
@@ -411,6 +436,7 @@ static void mp_machine_deepsleep(size_t n_args, const mp_obj_t *args) {
     }
     powerctrl_enter_standby_mode();
 }
+#endif
 
 static mp_int_t mp_machine_reset_cause(void) {
     return reset_cause;

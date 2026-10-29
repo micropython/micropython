@@ -32,6 +32,42 @@
 #include "extint.h"
 #include "irq.h"
 
+#if defined(STM32C5)
+// STM32C5 EXTI registers use a different layout (IMR1/RTSR1/etc).
+// Stub out extint for now - will need a C5-specific implementation.
+void Handle_EXTI_Irq(uint32_t line) {
+    (void)line;
+}
+uint extint_register(mp_obj_t pin_obj, uint32_t mode, uint32_t pull, mp_obj_t callback_obj, bool override_callback_obj) {
+    (void)pin_obj;
+    (void)mode;
+    (void)pull;
+    (void)callback_obj;
+    (void)override_callback_obj;
+    return 0;
+}
+void extint_register_pin(const machine_pin_obj_t *pin, uint32_t mode, bool hard_irq, mp_obj_t callback_obj) {
+    (void)pin;
+    (void)mode;
+    (void)hard_irq;
+    (void)callback_obj;
+}
+void extint_set(const machine_pin_obj_t *pin, uint32_t mode) {
+    (void)pin;
+    (void)mode;
+}
+void extint_enable(uint line) {
+    (void)line;
+}
+void extint_disable(uint line) {
+    (void)line;
+}
+void extint_swint(uint line) {
+    (void)line;
+}
+
+#else // !STM32C5
+
 #if MICROPY_PY_NETWORK_CYW43 && defined(pyb_pin_WL_HOST_WAKE)
 #include "lib/cyw43-driver/src/cyw43.h"
 #include "lib/cyw43-driver/src/cyw43_stats.h"
@@ -314,7 +350,7 @@ void EXTI15_10_IRQHandler(void) {
     IRQ_EXIT(EXTI15_10_IRQn);
 }
 
-#elif defined(STM32H5) || defined(STM32N6) || defined(STM32U5)
+#elif defined(STM32C5) || defined(STM32H5) || defined(STM32N6) || defined(STM32U5)
 
 DEFINE_EXTI_IRQ_HANDLER(0)
 DEFINE_EXTI_IRQ_HANDLER(1)
@@ -876,3 +912,5 @@ void Handle_EXTI_Irq(uint32_t line) {
 }
 
 MP_REGISTER_ROOT_POINTER(mp_obj_t pyb_extint_callback[PYB_EXTI_NUM_VECTORS]);
+
+#endif // !STM32C5
