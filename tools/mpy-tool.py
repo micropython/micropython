@@ -808,11 +808,11 @@ class CompiledModule:
             print("#define %s MP_ROM_PTR(&%s)" % (macro_name, obj_name))
             print("#elif MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_C")
             n = struct.unpack("<I", struct.pack("<f", obj))[0]
-            n = ((n & ~0x3) | 2) + 0x80800000
+            n = (((n & ~0x3) | 2) + 0x80800000) & 0xFFFFFFFF
             print("#define %s ((mp_rom_obj_t)(0x%08x))" % (macro_name, n))
             print("#elif MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_D")
             n = struct.unpack("<Q", struct.pack("<d", obj))[0]
-            n += 0x8004000000000000
+            n = (n + 0x8004000000000000) & 0xFFFFFFFFFFFFFFFF
             print("#define %s ((mp_rom_obj_t)(0x%016x))" % (macro_name, n))
             print("#endif")
             const_obj_content += 3 * 4
