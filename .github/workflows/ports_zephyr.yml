@@ -31,7 +31,7 @@ jobs:
         haskell: true
         large-packages: false
         docker-images: false
-        tool-cache: true
+        preinstalled-runtimes: true
         swap-storage: false
     - uses: actions/checkout@v7
     - id: versions
