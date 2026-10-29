@@ -11,6 +11,10 @@
 
 extern const mp_obj_type_t gifio_ondiskgif_type;
 
+// Return file, opened for reading in binary mode when it is a file name.
+// Raises TypeError unless the result is a file opened in binary mode.
+mp_obj_t gifio_open_file(mp_obj_t file);
+
 void common_hal_gifio_ondiskgif_construct(gifio_ondiskgif_t *self, mp_obj_t file, bool use_palette);
 
 uint32_t common_hal_gifio_ondiskgif_get_pixel(gifio_ondiskgif_t *bitmap,
