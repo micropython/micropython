@@ -1,12 +1,9 @@
-# The jspi variant is the pyscript variant plus JavaScript Promise
-# Integration for stack suspension (jsffi.run_sync).  Nothing needs
-# removing from pyscript, which uses no Asyncify.  Requires an
-# Emscripten toolchain and JS engine with JSPI support.
+# The browser variant: full features plus JavaScript Promise Integration
+# for stack suspension (jsffi.run_sync).  Requires an Emscripten
+# toolchain and a JS engine with JSPI support.
 
-# Mirror of variants/pyscript/mpconfigvariant.mk, pointing at this
-# variant's manifest (which includes pyscript's).
 JSFLAGS += -s ALLOW_MEMORY_GROWTH
-FROZEN_MANIFEST ?= variants/jspi/manifest.py
+FROZEN_MANIFEST ?= variants/browser/manifest.py
 
 # The emscripten longjmp mode's JS invoke_* trampolines are
 # incompatible with JSPI suspension, so use native wasm exceptions for

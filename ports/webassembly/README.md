@@ -25,6 +25,23 @@ To generate the minified file `micropython.min.mjs`, run:
 
     $ make min
 
+Variants
+--------
+
+The port has three variants, selected with `VARIANT=`:
+
+- `standard` (the default): a small build with the JS hook enabled.
+- `pyscript`: full features, split heap, weakref and a set of frozen
+  micropython-lib packages.
+- `browser`: as `pyscript`, plus JavaScript Promise Integration (JSPI),
+  which lets Python block on a JS promise with `jsffi.run_sync()` while
+  the browser's event loop keeps running. Build it with:
+
+      $ make VARIANT=browser
+
+  The `browser` variant needs a JS engine with JSPI. Recent browsers
+  have it; Node 24 needs the `--experimental-wasm-jspi` flag.
+
 Running with Node.js
 --------------------
 
@@ -133,6 +150,11 @@ Testing
 Run the test suite using:
 
     $ make test
+
+The `browser` variant needs a node with JSPI enabled; pass the command
+to use through `NODE`:
+
+    $ make VARIANT=browser NODE="node --experimental-wasm-jspi" test
 
 API
 ---

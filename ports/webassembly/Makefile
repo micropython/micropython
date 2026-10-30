@@ -92,7 +92,7 @@ JSFLAGS += -s EXPORTED_RUNTIME_METHODS="\
 	cwrap,\
 	FS$(EXPORTED_RUNTIME_METHODS_EXTRA)"
 JSFLAGS += --js-library library.js
-# Longjmp support mode; the jspi variant overrides this to "wasm"
+# Longjmp support mode; the browser variant overrides this to "wasm"
 # because the JS invoke_* trampolines used by the emscripten mode are
 # incompatible with JSPI stack suspension.
 SUPPORT_LONGJMP ?= emscripten
