@@ -22,6 +22,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v7
+    # The browser variant needs a node with JSPI, which is on by default
+    # from Node 25.  Pin the major so Node upgrades are deliberate.  This
+    # step must come before webassembly_setup, because emsdk only adds
+    # its own node to PATH when none is already there.
+    - uses: actions/setup-node@v7
+      with:
+        node-version: 25
     - name: Install packages
       run: tools/ci.sh webassembly_setup
     - name: Build

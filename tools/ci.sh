@@ -1159,10 +1159,7 @@ function ci_webassembly_build {
 
 function ci_webassembly_run_tests {
     make -C ports/webassembly VARIANT=pyscript test_min
-    # Run the browser variant tests with emsdk's node, which is recent
-    # enough for JSPI but needs the flag to enable it.
-    source emsdk/emsdk_env.sh
-    make -C ports/webassembly VARIANT=browser NODE="$EMSDK_NODE --experimental-wasm-jspi" test
+    make -C ports/webassembly VARIANT=browser test
 }
 
 ########################################################################################
