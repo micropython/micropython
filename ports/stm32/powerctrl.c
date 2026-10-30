@@ -30,6 +30,9 @@
 #include "powerctrl.h"
 #include "rtc.h"
 #include "extmod/modbluetooth.h"
+#if defined(STM32N6)
+#include "xspi.h"
+#endif
 #ifndef NO_QSTR
 #include "genhdr/pllfreqtable.h"
 #endif
@@ -852,6 +855,12 @@ void powerctrl_enter_stop_mode(void) {
     #if defined(STM32N6)
     // Save which PLLs are on, to re-enable them after wake up from low power mode.
     uint32_t rcc_cr_pll_on = RCC->CR & (RCC_CR_PLL1ON | RCC_CR_PLL2ON | RCC_CR_PLL3ON | RCC_CR_PLL4ON);
+
+    #if MICROPY_HW_RUNS_FROM_EXT_FLASH
+    // This code runs from the external flash, which is clocked from HCLK, so run the
+    // flash at its slower setup clock while the system clock changes.
+    xspi_set_slow_clock(true);
+    #endif
     #endif
 
     #if defined(STM32WB)
@@ -944,6 +953,10 @@ void powerctrl_enter_stop_mode(void) {
     LL_RCC_SetSysClkSource(LL_RCC_SYS_CLKSOURCE_IC2_IC6_IC11);
     while (LL_RCC_GetSysClkSource() != LL_RCC_SYS_CLKSOURCE_STATUS_IC2_IC6_IC11) {
     }
+
+    #if MICROPY_HW_RUNS_FROM_EXT_FLASH
+    xspi_set_slow_clock(false);
+    #endif
 
     #if MICROPY_HW_USB_HS
     if (LL_AHB5_GRP1_IsEnabledClock(LL_AHB5_GRP1_PERIPH_OTGPHY1)) {
@@ -1074,8 +1087,6 @@ void powerctrl_enter_stop_mode(void) {
 // Upon wake from standby, STM32N6 can resume execution from retained SRAM1.
 // Place a small bootloader there which initialises XSPI in memory-mapped mode
 // and jumps to the main application entry point.
-
-#include "xspi.h"
 
 extern uint32_t _estack;
 
