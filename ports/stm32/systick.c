@@ -105,9 +105,10 @@ void mp_hal_delay_ms(mp_uint_t Delay) {
     } else {
         // IRQs disabled, so need to use a busy loop for the delay.
         // To prevent possible overflow of the counter we use a double loop.
-        const uint32_t count_1ms = HAL_RCC_GetSysClockFreq() / 4000;
+        // The counter is volatile so the compiler can't remove the empty loop.
+        const uint32_t count_1ms = SystemCoreClock / 4000;
         for (int i = 0; i < Delay; i++) {
-            for (uint32_t count = 0; ++count <= count_1ms;) {
+            for (volatile uint32_t count = 0; ++count <= count_1ms;) {
             }
         }
     }
@@ -121,10 +122,11 @@ void mp_hal_delay_us(mp_uint_t usec) {
         while (mp_hal_ticks_us() - start < usec) {
         }
     } else {
-        // IRQs disabled, so need to use a busy loop for the delay
-        // sys freq is always a multiple of 2MHz, so division here won't lose precision
-        const uint32_t ucount = HAL_RCC_GetSysClockFreq() / 2000000 * usec / 2;
-        for (uint32_t count = 0; ++count <= ucount;) {
+        // IRQs disabled, so need to use a busy loop for the delay, with a volatile counter
+        // so the compiler can't remove the empty loop.  The CPU clock is always a multiple
+        // of 2MHz, so division here won't lose precision.
+        const uint32_t ucount = SystemCoreClock / 2000000 * usec / 2;
+        for (volatile uint32_t count = 0; ++count <= ucount;) {
         }
     }
 }
