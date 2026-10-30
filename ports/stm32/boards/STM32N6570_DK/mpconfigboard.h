@@ -43,14 +43,22 @@
 // UART buses
 #define MICROPY_HW_UART1_TX                     (pyb_pin_UART1_TX)
 #define MICROPY_HW_UART1_RX                     (pyb_pin_UART1_RX)
+#define MICROPY_HW_UART2_TX                     (pyb_pin_UART2_TX) // Arduino D1
+#define MICROPY_HW_UART2_RX                     (pyb_pin_UART2_RX) // Arduino D0
 #define MICROPY_HW_UART_REPL                    (PYB_UART_1)
 #define MICROPY_HW_UART_REPL_BAUD               (115200)
 
 // I2C buses
-#define MICROPY_HW_I2C1_SCL                     (pyb_pin_I2C1_SCL)
-#define MICROPY_HW_I2C1_SDA                     (pyb_pin_I2C1_SDA)
+#define MICROPY_HW_I2C1_SCL                     (pyb_pin_I2C1_SCL) // Arduino D15
+#define MICROPY_HW_I2C1_SDA                     (pyb_pin_I2C1_SDA) // Arduino D14
 #define MICROPY_HW_I2C2_SCL                     (pyb_pin_I2C2_SCL)
 #define MICROPY_HW_I2C2_SDA                     (pyb_pin_I2C2_SDA)
+
+// SPI buses
+#define MICROPY_HW_SPI5_NSS                     (pyb_pin_SPI5_CS)   // Arduino D10
+#define MICROPY_HW_SPI5_SCK                     (pyb_pin_SPI5_SCK)  // Arduino D13
+#define MICROPY_HW_SPI5_MISO                    (pyb_pin_SPI5_MISO) // Arduino D12
+#define MICROPY_HW_SPI5_MOSI                    (pyb_pin_SPI5_MOSI) // Arduino D11
 
 // Pressing the USER1 button makes the input go high.
 #define MICROPY_HW_USRSW_PIN                    (pyb_pin_BUTTON)
