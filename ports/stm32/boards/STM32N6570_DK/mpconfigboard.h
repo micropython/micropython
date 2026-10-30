@@ -13,6 +13,7 @@
 #define MICROPY_HW_ENABLE_RTC                   (1)
 #define MICROPY_HW_ENABLE_DAC                   (0)
 #define MICROPY_HW_ENABLE_USB                   (1)
+#define MICROPY_HW_ENABLE_SDCARD                (1)
 #define MICROPY_PY_PYB_LEGACY                   (0)
 
 #define MICROPY_BOARD_EARLY_INIT                board_early_init
@@ -62,6 +63,22 @@
 #define MICROPY_HW_LED2                         (pyb_pin_LED_GREEN)
 #define MICROPY_HW_LED_ON(pin)                  ((pin) == pyb_pin_LED_GREEN ? mp_hal_pin_high(pin) : mp_hal_pin_low(pin))
 #define MICROPY_HW_LED_OFF(pin)                 ((pin) == pyb_pin_LED_GREEN ? mp_hal_pin_low(pin) : mp_hal_pin_high(pin))
+
+// SD card on SDMMC2, with its pins in the VDDIO5 domain, which SD_SEL switches to 1.8V.
+#define MICROPY_HW_SDCARD_SDMMC                 (2)
+#define MICROPY_HW_SDCARD_VSELECT_PIN           (pyb_pin_SD_SEL)
+#define MICROPY_HW_SDCARD_RESET_PIN             (pyb_pin_PWR_SD_EN)
+#define MICROPY_HW_SDCARD_UHS_SWITCH_PATTERN    (SDMMC_SDR104_SWITCH_PATTERN)
+#define MICROPY_HW_SDCARD_UHS_CLK_DIV           (0)
+#define MICROPY_HW_SDCARD_CK                    (pyb_pin_SD_SDIO_CK)
+#define MICROPY_HW_SDCARD_CMD                   (pyb_pin_SD_SDIO_CMD)
+#define MICROPY_HW_SDCARD_D0                    (pyb_pin_SD_SDIO_D0)
+#define MICROPY_HW_SDCARD_D1                    (pyb_pin_SD_SDIO_D1)
+#define MICROPY_HW_SDCARD_D2                    (pyb_pin_SD_SDIO_D2)
+#define MICROPY_HW_SDCARD_D3                    (pyb_pin_SD_SDIO_D3)
+#define MICROPY_HW_SDCARD_DETECT_PIN            (pyb_pin_SD_DETECT)
+#define MICROPY_HW_SDCARD_DETECT_PULL           (GPIO_NOPULL)
+#define MICROPY_HW_SDCARD_DETECT_PRESENT        (GPIO_PIN_RESET)
 
 // USB config
 #define MICROPY_HW_USB_HS                       (1)
