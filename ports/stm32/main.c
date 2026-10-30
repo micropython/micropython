@@ -85,6 +85,7 @@
 #include "storage.h"
 #include "sdcard.h"
 #include "sdram.h"
+#include "xspi_psram.h"
 #include "rng.h"
 #include "accel.h"
 #include "servo.h"
@@ -490,6 +491,9 @@ void stm32_main(uint32_t reset_mode) {
     sdram_valid = sdram_test(false);
     #endif
     #endif
+    #if MICROPY_HW_XSPI_PSRAM
+    size_t psram_size = xspi_psram_init();
+    #endif
     #if MICROPY_PY_THREAD
     pyb_thread_init(&pyb_thread_main);
     #endif
@@ -593,8 +597,16 @@ soft_reset:
     extern const gc_blocks_table_t _gc_blocks_table_end;
 
     for (gc_blocks_table_t const *block = &_gc_blocks_table_start; block < &_gc_blocks_table_end; block++) {
-        if (block->size) {
-            gc_add(block->addr, block->addr + block->size);
+        uint8_t *start = block->addr;
+        uint8_t *end = block->addr + block->size;
+        #if MICROPY_HW_XSPI_PSRAM
+        if (start >= (uint8_t *)XSPI_PSRAM_BASE && start < (uint8_t *)XSPI_PSRAM_END) {
+            // Only use the PSRAM that was found (none if psram_size is 0).
+            end = MIN(end, (uint8_t *)XSPI_PSRAM_BASE + psram_size);
+        }
+        #endif
+        if (end > start) {
+            gc_add(start, end);
         }
     }
     #endif

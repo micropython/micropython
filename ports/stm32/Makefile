@@ -308,6 +308,7 @@ SRC_C += \
 	sdio.c \
 	subghz.c \
 	xspi.c \
+	xspi_psram.c \
 	$(wildcard $(BOARD_DIR)/*.c)
 
 SRC_O += \

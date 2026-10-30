@@ -15,6 +15,9 @@ DKEL = $(STM32_CUBE_PROGRAMMER)/bin/ExternalLoader/MX25UM51245G_STM32N6570-NUCLE
 LD_FILES = boards/OPENMV_N6/board.ld boards/common_n6_flash.ld
 TEXT0_ADDR = 0x70080000
 
+# Add the PSRAM to the heap.
+LD_FILES += boards/OPENMV_N6/psram_heap.ld
+
 # MicroPython settings
 MICROPY_FLOAT_IMPL = float
 MICROPY_PY_BLUETOOTH ?= 1
