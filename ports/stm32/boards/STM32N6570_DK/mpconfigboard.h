@@ -3,6 +3,7 @@
 
 #define MICROPY_GC_STACK_ENTRY_TYPE             uint32_t
 #define MICROPY_ALLOC_GC_STACK_SIZE             (128)
+#define MICROPY_GC_SPLIT_HEAP                   (1)
 #define MICROPY_FATFS_EXFAT                     (1)
 
 #define MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE (0)
