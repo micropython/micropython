@@ -448,10 +448,13 @@ void SystemClock_Config(void) {
     // Disable all ICx clocks.
     RCC->DIVENCR = 0x000fffff;
 
-    // This doesn't work, VOSRDY never becomes active.
-    #if 0
+    #if defined(MICROPY_HW_VDDCORE_OVERDRIVE_PIN)
+    // Select the external SMPS's overdrive VDDCORE, then voltage scaling range 0, for 800MHz.
+    // VOSRDY may never come without overdrive, so the wait is bounded.
+    mp_hal_pin_output(MICROPY_HW_VDDCORE_OVERDRIVE_PIN);
+    mp_hal_pin_high(MICROPY_HW_VDDCORE_OVERDRIVE_PIN);
     LL_PWR_SetRegulVoltageScaling(LL_PWR_REGU_VOLTAGE_SCALE0);
-    while (!LL_PWR_IsActiveFlag_VOSRDY()) {
+    for (uint32_t i = 0; i < 1000000 && !LL_PWR_IsActiveFlag_VOSRDY(); ++i) {
     }
     #endif
 
