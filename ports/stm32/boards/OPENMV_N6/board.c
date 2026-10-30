@@ -38,6 +38,10 @@
 #define OMV_BOOT_MAGIC_ADDR     (0x3401FFFCU)
 #define OMV_BOOT_MAGIC_VALUE    (0xB00710ADU)
 
+// Use fixed I/O compensation codes: automatic compensation can distort output edges, and add
+// jitter at the temperatures where its codes change (ES0620 erratum 2.2.20).
+#define IO_COMPENSATION_FIXED (SYSCFG_VDDCCCR_CS | 8 << SYSCFG_VDDCCCR_RAPSRC_Pos | 7 << SYSCFG_VDDCCCR_RANSRC_Pos)
+
 void mboot_board_early_init(void) {
     // TODO: move some of the below code to a common location for all N6 boards?
 
@@ -45,6 +49,7 @@ void mboot_board_early_init(void) {
     LL_AHB4_GRP1_EnableClock(LL_AHB4_GRP1_PERIPH_PWR);
     LL_APB4_GRP2_EnableClock(LL_APB4_GRP2_PERIPH_BSEC);
     LL_APB4_GRP2_EnableClock(LL_APB4_GRP2_PERIPH_SYSCFG);
+    SYSCFG->VDDCCCR = IO_COMPENSATION_FIXED;
 
     // Program high speed IO optimization fuses if they aren't already set.
     uint32_t fuse;
@@ -69,19 +74,19 @@ void mboot_board_early_init(void) {
     if (fuse & BSEC_HWS_HSLV_VDDIO2) {
         LL_PWR_SetVddIO2VoltageRange(LL_PWR_VDDIO_VOLTAGE_RANGE_1V8);
     }
-    SYSCFG->VDDIO2CCCR |= SYSCFG_VDDIO2CCCR_EN; // enable IO compensation
+    SYSCFG->VDDIO2CCCR = IO_COMPENSATION_FIXED;
 
     // Configure VDDIO3.  Only enable 1.8V mode if the fuse is set.
     LL_PWR_EnableVddIO3();
     if (fuse & BSEC_HWS_HSLV_VDDIO3) {
         LL_PWR_SetVddIO3VoltageRange(LL_PWR_VDDIO_VOLTAGE_RANGE_1V8);
     }
-    SYSCFG->VDDIO3CCCR |= SYSCFG_VDDIO3CCCR_EN; // enable IO compensation
+    SYSCFG->VDDIO3CCCR = IO_COMPENSATION_FIXED;
 
     // Configure VDDIO4.
     LL_PWR_EnableVddIO4();
     LL_PWR_SetVddIO4VoltageRange(LL_PWR_VDDIO_VOLTAGE_RANGE_3V3);
-    SYSCFG->VDDIO4CCCR |= SYSCFG_VDDIO4CCCR_EN; // enable IO compensation
+    SYSCFG->VDDIO4CCCR = IO_COMPENSATION_FIXED;
 
     // Enable VDD for ADC and USB.
     LL_PWR_EnableVddADC();
@@ -112,19 +117,20 @@ void board_leave_standby(void) {
     LL_AHB4_GRP1_EnableClock(LL_AHB4_GRP1_PERIPH_PWR);
     LL_APB4_GRP2_EnableClock(LL_APB4_GRP2_PERIPH_BSEC);
     LL_APB4_GRP2_EnableClock(LL_APB4_GRP2_PERIPH_SYSCFG);
+    SYSCFG->VDDCCCR = IO_COMPENSATION_FIXED;
 
     // Configure VDDIO2 (1.8V mode selection is retained).
     LL_PWR_EnableVddIO2();
-    SYSCFG->VDDIO2CCCR |= SYSCFG_VDDIO2CCCR_EN; // enable IO compensation
+    SYSCFG->VDDIO2CCCR = IO_COMPENSATION_FIXED;
 
     // Configure VDDIO3 (1.8V mode selection is retained).
     LL_PWR_EnableVddIO3();
-    SYSCFG->VDDIO3CCCR |= SYSCFG_VDDIO3CCCR_EN; // enable IO compensation
+    SYSCFG->VDDIO3CCCR = IO_COMPENSATION_FIXED;
 
     // Configure VDDIO4.
     LL_PWR_EnableVddIO4();
     LL_PWR_SetVddIO4VoltageRange(LL_PWR_VDDIO_VOLTAGE_RANGE_3V3);
-    SYSCFG->VDDIO4CCCR |= SYSCFG_VDDIO4CCCR_EN; // enable IO compensation
+    SYSCFG->VDDIO4CCCR = IO_COMPENSATION_FIXED;
 
     // Enable VDD for ADC and USB.
     LL_PWR_EnableVddADC();
