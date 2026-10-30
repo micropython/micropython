@@ -27,3 +27,6 @@ LD_FILES += boards/STM32N6570_DK/npu_ram_heap.ld
 
 # MicroPython settings
 MICROPY_FLOAT_IMPL = double
+MICROPY_PY_LWIP = 1
+MICROPY_PY_SSL = 1
+MICROPY_SSL_MBEDTLS = 1
