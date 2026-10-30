@@ -7,16 +7,15 @@
 /* Specify the memory areas */
 MEMORY
 {
-    FLEXRAM_S (xrw)         : ORIGIN = 0x34000000, LENGTH = 80K
-    SRAM2_S_RAM (xrw)       : ORIGIN = 0x34100000, LENGTH = 1024K
-    SRAM2_S_FSBL (xrw)      : ORIGIN = 0x34180400, LENGTH = 511K /* mboot firmware, not needed after mboot exits */
+    ITCM_S (xrw)            : ORIGIN = 0x10000000, LENGTH = 64K
+    SRAM_S_RAM (xrw)        : ORIGIN = 0x34000000, LENGTH = 2048K /* FLEXRAM, AXISRAM1 and AXISRAM2 */
     EXT_FLASH (rx)          : ORIGIN = 0x70080000, LENGTH = 3584K
     EXT_FLASH_FS (rx)       : ORIGIN = 0x70400000, LENGTH = 4M
     EXT_FLASH_ROMFS (rx)    : ORIGIN = 0x70800000, LENGTH = 24M
 }
 
-REGION_ALIAS("IRAM", FLEXRAM_S);
-REGION_ALIAS("RAM", SRAM2_S_RAM);
+REGION_ALIAS("IRAM", ITCM_S);
+REGION_ALIAS("RAM", SRAM_S_RAM);
 REGION_ALIAS("FLASH_APP", EXT_FLASH);
 
 /* produce a link error if there is not this amount of RAM for these sections */
