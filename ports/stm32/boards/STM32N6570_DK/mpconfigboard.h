@@ -68,6 +68,24 @@
 #define MICROPY_HW_USB_HS_IN_FS                 (1)
 #define MICROPY_HW_USB_MAIN_DEV                 (USB_PHY_HS_ID)
 
+// Ethernet via RGMII, to a RTL8211F PHY.
+#define NETWORK_LAN_PHY                         (ETH_PHY_RTL8211)
+#define MICROPY_HW_ETH_MDC                      (pin_D1)
+#define MICROPY_HW_ETH_MDIO                     (pin_D12)
+#define MICROPY_HW_ETH_RGMII_CLK125             (pin_F2)
+#define MICROPY_HW_ETH_RGMII_GTX_CLK            (pin_F0)
+#define MICROPY_HW_ETH_RGMII_TXD0               (pin_F12)
+#define MICROPY_HW_ETH_RGMII_TXD1               (pin_F13)
+#define MICROPY_HW_ETH_RGMII_TXD2               (pin_G3)
+#define MICROPY_HW_ETH_RGMII_TXD3               (pin_G4)
+#define MICROPY_HW_ETH_RGMII_TX_CTL             (pin_F11)
+#define MICROPY_HW_ETH_RGMII_RX_CLK             (pin_F7)
+#define MICROPY_HW_ETH_RGMII_RXD0               (pin_F14)
+#define MICROPY_HW_ETH_RGMII_RXD1               (pin_F15)
+#define MICROPY_HW_ETH_RGMII_RXD2               (pin_F8)
+#define MICROPY_HW_ETH_RGMII_RXD3               (pin_F9)
+#define MICROPY_HW_ETH_RGMII_RX_CTL             (pin_F10)
+
 /******************************************************************************/
 // Bootloader configuration
 
