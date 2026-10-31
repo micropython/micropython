@@ -472,22 +472,13 @@ if (MICROPY_PY_NETWORK_WIZNET5K)
         MICROPY_PY_NETWORK_WIZNET5K=1
         WIZCHIP_PREFIXED_EXPORTS=1
         _WIZCHIP_=${MICROPY_PY_NETWORK_WIZNET5K}
-        WIZCHIP_YIELD=mpy_wiznet_yield
     )
-
-    if (MICROPY_PY_LWIP)
-        target_compile_definitions(${MICROPY_TARGET} PRIVATE
-            # When using MACRAW mode (with lwIP), maximum buffer space must be used for the raw socket
-            WIZCHIP_USE_MAX_BUFFER=1
-        )
-    endif()
 
     target_include_directories(${MICROPY_TARGET} PRIVATE
         ${MICROPY_DIR}/lib/wiznet5k/
-        ${MICROPY_DIR}/lib/wiznet5k/Ethernet/
     )
 
-    list(APPEND MICROPY_SOURCE_LIB
+    set(MICROPY_SOURCE_WIZNET5K
         ${MICROPY_DIR}/lib/wiznet5k/Ethernet/W5100/w5100.c
         ${MICROPY_DIR}/lib/wiznet5k/Ethernet/W5100S/w5100s.c
         ${MICROPY_DIR}/lib/wiznet5k/Ethernet/W5200/w5200.c
@@ -498,6 +489,18 @@ if (MICROPY_PY_NETWORK_WIZNET5K)
         ${MICROPY_DIR}/lib/wiznet5k/Internet/DNS/dns.c
         ${MICROPY_DIR}/lib/wiznet5k/Internet/DHCP/dhcp.c
     )
+    list(APPEND MICROPY_SOURCE_LIB ${MICROPY_SOURCE_WIZNET5K})
+
+    # The library's headers include socket.h and wizchip_conf.h by bare name,
+    # so its Ethernet directory goes on the include path, but only for the
+    # library and the driver, so that nothing else can pick up its socket.h.
+    set_source_files_properties(
+        ${MICROPY_SOURCE_WIZNET5K}
+        ${MICROPY_EXTMOD_DIR}/network_wiznet5k.c
+        PROPERTIES
+        INCLUDE_DIRECTORIES ${MICROPY_DIR}/lib/wiznet5k/Ethernet/
+    )
+    list(APPEND MICROPY_CPP_INC_EXTRA ${MICROPY_DIR}/lib/wiznet5k/Ethernet/)
 endif()
 
 list(APPEND MICROPY_SOURCE_EXTMOD
