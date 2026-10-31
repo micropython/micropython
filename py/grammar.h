@@ -169,7 +169,7 @@ DEF_RULE_NC(name_list, list, tok(NAME), tok(DEL_COMMA))
 DEF_RULE(assert_stmt, c(assert_stmt), and(3), tok(KW_ASSERT), rule(test), opt_rule(assert_stmt_extra))
 DEF_RULE_NC(assert_stmt_extra, and_ident(2), tok(DEL_COMMA), rule(test))
 
-// compound_stmt: if_stmt | while_stmt | for_stmt | try_stmt | with_stmt | funcdef | classdef | decorated | async_stmt
+// compound_stmt: if_stmt | while_stmt | for_stmt | try_stmt | with_stmt | funcdef | classdef | decorated | async_stmt | match_stmt
 // if_stmt: 'if' test ':' suite ('elif' test ':' suite)* ['else' ':' suite]
 // while_stmt: 'while' test ':' suite ['else' ':' suite]
 // for_stmt: 'for' exprlist 'in' testlist ':' suite ['else' ':' suite]
@@ -180,13 +180,34 @@ DEF_RULE_NC(assert_stmt_extra, and_ident(2), tok(DEL_COMMA), rule(test))
 // with_item: test ['as' expr]
 // suite: simple_stmt | NEWLINE INDENT stmt+ DEDENT
 // async_stmt: 'async' (funcdef | with_stmt | for_stmt)
+// match_stmt: 'match' subject_expr ':' NEWLINE INDENT case_block+ DEDENT
+// case_block: 'case' patterns [guard] ':' suite
 
-#if MICROPY_PY_ASYNC_AWAIT
+#if MICROPY_PY_ASYNC_AWAIT && MICROPY_PY_MATCH
+DEF_RULE_NC(compound_stmt, or(10), rule(if_stmt), rule(while_stmt), rule(for_stmt), rule(try_stmt), rule(with_stmt), rule(funcdef), rule(classdef), rule(decorated), rule(async_stmt), rule(match_stmt))
+DEF_RULE(async_stmt, c(async_stmt), and(2), tok(KW_ASYNC), rule(async_stmt_2))
+DEF_RULE_NC(async_stmt_2, or(3), rule(funcdef), rule(with_stmt), rule(for_stmt))
+#elif MICROPY_PY_ASYNC_AWAIT
 DEF_RULE_NC(compound_stmt, or(9), rule(if_stmt), rule(while_stmt), rule(for_stmt), rule(try_stmt), rule(with_stmt), rule(funcdef), rule(classdef), rule(decorated), rule(async_stmt))
 DEF_RULE(async_stmt, c(async_stmt), and(2), tok(KW_ASYNC), rule(async_stmt_2))
 DEF_RULE_NC(async_stmt_2, or(3), rule(funcdef), rule(with_stmt), rule(for_stmt))
+#elif MICROPY_PY_MATCH
+DEF_RULE_NC(compound_stmt, or(9), rule(if_stmt), rule(while_stmt), rule(for_stmt), rule(try_stmt), rule(with_stmt), rule(funcdef), rule(classdef), rule(decorated), rule(match_stmt))
 #else
 DEF_RULE_NC(compound_stmt, or(8), rule(if_stmt), rule(while_stmt), rule(for_stmt), rule(try_stmt), rule(with_stmt), rule(funcdef), rule(classdef), rule(decorated))
+#endif
+#if MICROPY_PY_MATCH
+DEF_RULE(match_stmt, c(match_stmt), and(4), tok(KW_MATCH), rule(namedexpr_test), tok(DEL_COLON), rule(match_cases))
+DEF_RULE_NC(match_cases, and_ident(4), tok(NEWLINE), tok(INDENT), rule(match_case_block_list), tok(DEDENT))
+DEF_RULE_NC(match_case_block_list, one_or_more, rule(match_case_block))
+DEF_RULE_NC(match_case_block, and(5), tok(KW_CASE), rule(match_or_pattern), opt_rule(match_guard), tok(DEL_COLON), rule(suite))
+DEF_RULE_NC(match_guard, and_ident(2), tok(KW_IF), rule(namedexpr_test))
+DEF_RULE_NC(match_or_pattern, list, rule(match_closed_pattern), tok(OP_PIPE))
+DEF_RULE_NC(match_closed_pattern, or(4), rule(match_literal), tok(NAME), rule(match_seq_tuple), rule(match_seq_list))
+DEF_RULE_NC(match_literal, or(7), tok(KW_NONE), tok(KW_TRUE), tok(KW_FALSE), tok(INTEGER), tok(FLOAT_OR_IMAG), tok(STRING), tok(BYTES))
+DEF_RULE_NC(match_seq_tuple, and(3), tok(DEL_PAREN_OPEN), opt_rule(match_seq_items), tok(DEL_PAREN_CLOSE))
+DEF_RULE_NC(match_seq_list, and(3), tok(DEL_BRACKET_OPEN), opt_rule(match_seq_items), tok(DEL_BRACKET_CLOSE))
+DEF_RULE_NC(match_seq_items, list_with_end, rule(match_closed_pattern), tok(DEL_COMMA))
 #endif
 DEF_RULE(if_stmt, c(if_stmt), and(6), tok(KW_IF), rule(namedexpr_test), tok(DEL_COLON), rule(suite), opt_rule(if_stmt_elif_list), opt_rule(else_stmt))
 DEF_RULE_NC(if_stmt_elif_list, one_or_more, rule(if_stmt_elif))
