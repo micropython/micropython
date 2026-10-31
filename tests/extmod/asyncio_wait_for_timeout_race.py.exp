@@ -1,0 +1,3 @@
+return -> result
+raise -> ValueError
+timeout -> TimeoutError
