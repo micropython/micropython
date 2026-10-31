@@ -133,14 +133,29 @@ static void videocore_videobuffer_update_area(videocore_videobuffer_obj_t *self)
     self->current_area.next = NULL;
 }
 
+// Bytes in one row of a source frame.
+static size_t videocore_videobuffer_source_row_bytes(videocore_videobuffer_obj_t *self) {
+    return (size_t)self->source_width * self->source_bits_per_pixel / 8;
+}
+
+// Bytes a frame covers in a framebuffer with this row stride, from its first
+// pixel. A contiguous DMA (the camera) writes frame_bytes in a row; a source
+// that honors the stride (a GIF) ends its last row (height - 1) strides in.
+// The frame must fit either way.
+static mp_int_t videocore_videobuffer_frame_span(videocore_videobuffer_obj_t *self, mp_int_t row_stride) {
+    const mp_int_t strided = (self->source_height - 1) * row_stride +
+        videocore_videobuffer_source_row_bytes(self);
+    return MAX((mp_int_t)self->source_frame_bytes, strided);
+}
+
 // Compute the destination for the current position, including a containing
 // group's translation. Raises unless the whole frame fits in the target,
-// since sources write contiguous frames. move_dest() is the non-raising
-// variant used from displayio.
+// whether the source writes it contiguously or at the target's stride.
+// move_dest() is the non-raising variant used from displayio.
 static void videocore_videobuffer_compute_destination(
     videocore_videobuffer_obj_t *self, videocore_destination_t *dest) {
     const size_t bytes_per_pixel = self->source_bits_per_pixel / 8;
-    const size_t row_bytes = (size_t)self->source_width * bytes_per_pixel;
+    const size_t row_bytes = videocore_videobuffer_source_row_bytes(self);
 
     if (self->framebuffer_protocol == NULL) {
         // Raw buffer mode: frames are written compactly from the start.
@@ -173,7 +188,7 @@ static void videocore_videobuffer_compute_destination(
     const mp_int_t shift_y = self->y + t->y;
     if (self->x < 0 || self->y < 0 || shift_x < 0 || shift_y < 0 ||
         first_pixel_offset + shift_y * row_stride + shift_x * bytes_per_pixel +
-        (mp_int_t)self->source_frame_bytes >
+        videocore_videobuffer_frame_span(self, row_stride) >
         bufinfo.len) {
         mp_raise_ValueError(MP_ERROR_TEXT("video doesn't fit in framebuffer"));
     }
@@ -200,8 +215,7 @@ static void videocore_videobuffer_move_dest(
         return;
     }
     const size_t bytes_per_pixel = self->source_bits_per_pixel / 8;
-    const size_t row_bytes = (size_t)self->source_width * bytes_per_pixel;
-    const size_t frame_bytes = (size_t)self->source_height * row_bytes;
+    const size_t row_bytes = videocore_videobuffer_source_row_bytes(self);
     const mp_int_t fb_width = FB_GETTER(get_width, 0);
     const mp_int_t row_stride = FB_GETTER(get_row_stride, fb_width * self->source_bits_per_pixel / 8);
     const mp_int_t first_pixel_offset = FB_GETTER(get_first_pixel_offset, 0);
@@ -214,7 +228,8 @@ static void videocore_videobuffer_move_dest(
     }
     // Cap the start and the end. Cap the rows first: enough rows must fit
     // above the frame for it to fit at all.
-    const mp_int_t max_end = (mp_int_t)bufinfo.len - first_pixel_offset - (mp_int_t)frame_bytes;
+    const mp_int_t max_end = (mp_int_t)bufinfo.len - first_pixel_offset -
+        videocore_videobuffer_frame_span(self, row_stride);
     if (shift_y > max_end / row_stride) {
         shift_y = max_end / row_stride;
     }
@@ -430,8 +445,8 @@ void common_hal_videocore_videobuffer_play(videocore_videobuffer_obj_t *self, mp
 
 void common_hal_videocore_videobuffer_set_position(videocore_videobuffer_obj_t *self, mp_int_t x, mp_int_t y) {
     if (self->framebuffer_protocol != NULL && x != 0) {
-        // The source DMAs whole, contiguous frames with no stride, so every
-        // frame row must land on a framebuffer row: the video's x must be 0.
+        // A contiguous source (the camera) ignores the stride, so every frame
+        // row must land on a framebuffer row: the video's x must be 0.
         mp_raise_ValueError(MP_ERROR_TEXT("video in a framebuffer must be at x == 0"));
     }
     // Repaint where the video used to be. Union (rather than overwrite) so a
