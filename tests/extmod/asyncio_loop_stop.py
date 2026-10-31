@@ -1,4 +1,5 @@
 # Test Loop.stop() to stop the event loop
+# requires: async
 
 try:
     import asyncio

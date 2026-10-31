@@ -1,4 +1,5 @@
 # test integer floor division and modulo
+# requires: int-big
 
 # this tests bignum modulo
 a = 987654321987987987987987987987

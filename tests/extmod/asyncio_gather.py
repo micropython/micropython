@@ -1,4 +1,5 @@
 # test asyncio.gather() function
+# requires: async
 
 try:
     import asyncio

@@ -1,4 +1,5 @@
 # make sure syntax error works correctly for bad const definition
+# requires: const
 
 from micropython import const
 

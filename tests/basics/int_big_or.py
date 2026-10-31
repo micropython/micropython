@@ -1,3 +1,5 @@
+# requires: int-big
+
 print(0 | (1 << 80))
 
 a = 0xfffffffffffffffffffffffffffff

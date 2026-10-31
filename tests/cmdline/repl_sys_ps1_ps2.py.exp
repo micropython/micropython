@@ -1,6 +1,8 @@
 MicroPython \.\+ version
 Type "help()" for more information.
 >>> # test changing ps1/ps2
+>>> # requires: coverage
+>>> \$
 >>> import sys
 >>> sys.ps1 = "PS1"
 PS1sys.ps2 = "PS2"

@@ -1,4 +1,5 @@
 # test complex interacting with special methods
+# requires: complex
 
 
 class A:

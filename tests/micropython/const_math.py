@@ -1,4 +1,6 @@
 # Test expressions based on math module constants
+# requires: const
+
 try:
     import math
 except ImportError:

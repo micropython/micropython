@@ -1,4 +1,5 @@
 # Test template string (t-string) operations with heap allocation failure
+# requires: tstring
 
 import micropython
 from string.templatelib import Template, Interpolation

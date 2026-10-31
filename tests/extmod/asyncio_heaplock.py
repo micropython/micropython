@@ -3,6 +3,8 @@
 # - asyncio.sleep_ms
 # - StreamWriter.write, stream is blocked and data to write is a bytes object
 # - StreamWriter.write, when stream is not blocked
+#
+# requires: async
 
 try:
     import asyncio, micropython

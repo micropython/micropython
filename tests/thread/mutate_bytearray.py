@@ -1,6 +1,8 @@
 # test concurrent mutating access to a shared bytearray object
 #
 # MIT license; Copyright (c) 2016 Damien P. George on behalf of Pycom Ltd
+#
+# requires: bytearray
 
 import time
 import _thread

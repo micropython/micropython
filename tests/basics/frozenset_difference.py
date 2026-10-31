@@ -1,8 +1,4 @@
-try:
-    frozenset
-except NameError:
-    print("SKIP")
-    raise SystemExit
+# requires: frozenset
 
 l = [1, 2, 3, 4]
 s = frozenset(l)

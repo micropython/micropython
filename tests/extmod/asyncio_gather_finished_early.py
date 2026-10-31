@@ -1,4 +1,5 @@
 # Test asyncio.gather() when a task is already finished before the gather starts.
+# requires: async
 
 try:
     import asyncio

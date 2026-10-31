@@ -1,4 +1,5 @@
 # Test cancelling a task that is waiting on a task that just finishes.
+# requires: async
 
 try:
     import asyncio

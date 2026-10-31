@@ -1,3 +1,5 @@
+# requires: int-big
+
 import sys
 
 print((2**64).to_bytes(9, "little"))

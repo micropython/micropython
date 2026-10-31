@@ -1,3 +1,5 @@
+# requires: set
+
 s = {1, 2, 3, 4}
 print(s.isdisjoint({1}))
 print(s.isdisjoint([2]))

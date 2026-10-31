@@ -1,4 +1,5 @@
 # Test asyncio TCP stream closing then writing
+# requires: async
 
 try:
     import asyncio

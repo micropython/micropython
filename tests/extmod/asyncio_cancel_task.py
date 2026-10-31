@@ -1,4 +1,5 @@
 # Test cancelling a task
+# requires: async
 
 try:
     import asyncio

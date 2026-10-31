@@ -1,4 +1,5 @@
 # Test that tasks return their value correctly to the caller
+# requires: async
 
 try:
     import asyncio

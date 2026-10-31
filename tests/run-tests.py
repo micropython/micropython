@@ -694,18 +694,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
     test_results = ThreadSafeCounter([])
 
     skip_tests = set()
-    skip_int_big = False
-    skip_int_64 = False
-    skip_bytearray = False
-    skip_set_type = False
-    skip_async = False
-    skip_const = False
-    skip_fstring = False
-    skip_tstring = False
-    skip_endian = False
     skip_inlineasm = False
-    has_complex = True
-    has_coverage = False
     target_capabilities = {}
 
     if True:
@@ -722,51 +711,50 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
 
         # Check if arbitrary-precision integers are supported, and skip such tests if it's not
         output = run_feature_check(pyb, args, "int_big.py")
-        if output != b"1000000000000000000000000000000000000000000000\n":
-            skip_int_big = True
+        target_capabilities["int-big"] = (
+            output == b"1000000000000000000000000000000000000000000000\n"
+        )
 
         # Check if 'long long' precision integers are supported, even if arbitrary precision is not
         output = run_feature_check(pyb, args, "int_64.py")
-        if output != b"4611686018427387904\n":
-            skip_int_64 = True
+        target_capabilities["int-64"] = output == b"4611686018427387904\n"
 
-        # Check if bytearray is supported, and skip such tests if it's not
+        # Check if bytearray is supported.
         output = run_feature_check(pyb, args, "bytearray.py")
-        if output != b"bytearray\n":
-            skip_bytearray = True
+        target_capabilities["bytearray"] = output == b"bytearray\n"
 
-        # Check if set type (and set literals) is supported, and skip such tests if it's not
-        output = run_feature_check(pyb, args, "set_check.py")
-        if output != b"{1}\n":
-            skip_set_type = True
+        # Check if set type (and set literals) and frozenset are supported.
+        output = run_feature_check(pyb, args, "set_check.py").split()
+        target_capabilities["set"] = output[0] == b"True"
+        target_capabilities["frozenset"] = output[1] == b"True"
 
         # Check if slice is supported, and skip such tests if it's not
         output = run_feature_check(pyb, args, "slice.py")
         target_capabilities["slice"] = output == b"slice\n"
 
-        # Check if async/await keywords are supported, and skip such tests if it's not
+        # Check if async/await keywords are supported.
         output = run_feature_check(pyb, args, "async_check.py")
-        if output != b"async\n":
-            skip_async = True
+        target_capabilities["async"] = output == b"async\n"
 
-        # Check if const keyword (MicroPython extension) is supported, and skip such tests if it's not
+        # Check if const keyword (MicroPython extension) is supported.
         output = run_feature_check(pyb, args, "const.py")
-        if output != b"1\n":
-            skip_const = True
+        target_capabilities["const"] = output == b"1\n"
 
         # Check if __rOP__ special methods are supported, and skip such tests if it's not
         output = run_feature_check(pyb, args, "reverse_ops.py")
         target_capabilities["reverse-op"] = output == b"reverse\n"
 
-        # Check if fstring feature is enabled, and skip such tests if it doesn't
+        # Check if fstrings are enabled.
         output = run_feature_check(pyb, args, "fstring.py")
-        if output != b"a=1\n":
-            skip_fstring = True
+        target_capabilities["fstring"] = output == b"a=1\n"
 
-        # Check if tstring feature is enabled, and skip such tests if it doesn't
+        # Check if tstrings are enabled.
         output = run_feature_check(pyb, args, "tstring.py")
-        if output != b"tstring\n":
-            skip_tstring = True
+        target_capabilities["tstring"] = output == b"tstring\n"
+
+        # Check if complex numbers are supported.
+        output = run_feature_check(pyb, args, "complex.py")
+        target_capabilities["complex"] = output == b"complex\n"
 
         if args.inlineasm_arch == "thumb":
             for feature in ("thumb2", "vfp"):
@@ -789,13 +777,16 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         if "True" not in str(t, "ascii"):
             skip_tests.add("cmdline/repl_words_move.py")
 
+        # Check if it has coverage support.
+        output = run_feature_check(pyb, args, "coverage.py")
+        target_capabilities["coverage"] = output == b"coverage\n"
+
+        # Check if the target endianness matches the host endianness.
         upy_byteorder = run_feature_check(pyb, args, "byteorder.py")
-        has_complex = run_feature_check(pyb, args, "complex.py") == b"complex\n"
-        has_coverage = run_feature_check(pyb, args, "coverage.py") == b"coverage\n"
         cpy_byteorder = subprocess.check_output(
             CPYTHON3_CMD + [base_path("feature_check/byteorder.py")]
         )
-        skip_endian = upy_byteorder != cpy_byteorder
+        target_capabilities["host-endianness"] = upy_byteorder == cpy_byteorder
 
         skip_inlineasm = not args.inlineasm_arch
 
@@ -828,22 +819,6 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         if args.via_mpy:
             skip_tests.add("basics/string_escape.py")  # stores a utf-8 character in the mpy file
         skip_tests.add("extmod/json_loads.py")  # tests loading a utf-8 character
-
-    if not has_complex:
-        skip_tests.add("float/complex1.py")
-        skip_tests.add("float/complex1_intbig.py")
-        skip_tests.add("float/complex1_micropython.py")
-        skip_tests.add("float/complex_reverse_op.py")
-        skip_tests.add("float/complex_special_methods.py")
-        skip_tests.add("float/int_big_float.py")
-        skip_tests.add("float/true_value.py")
-        skip_tests.add("float/types.py")
-        skip_tests.add("float/complex_dunder.py")
-
-    if not has_coverage:
-        skip_tests.add("cmdline/cmd_parsetree.py")
-        skip_tests.add("cmdline/repl_sys_ps1_ps2.py")
-        skip_tests.add("extmod/ssl_poll.py")
 
     # Skip thread mutation tests on targets that have unsafe threading behaviour.
     if args.thread == "unsafe":
@@ -897,31 +872,9 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
 
         test_basename = test_file.replace("..", "_").replace("./", "").replace("/", "_")
         test_name = os.path.splitext(os.path.basename(test_file))[0]
-        is_endian = test_name.endswith("_endian")
-        is_int_big = (
-            test_name.startswith("int_big")
-            or test_name.endswith("_intbig")
-            or test_name.startswith("ffi_int")  # these tests contain large integer literals
-        )
-        is_int_64 = test_name.startswith("int_64") or test_name.endswith("_int64")
-        is_bytearray = test_name.startswith("bytearray") or test_name.endswith("_bytearray")
-        is_set_type = test_name.startswith(("set_", "frozenset")) or test_name.endswith("_set")
-        is_async = test_name.startswith(("async_", "asyncio_")) or test_name.endswith("_async")
-        is_const = test_name.startswith("const")
-        is_fstring = test_name.startswith("string_fstring") or test_name.endswith("_fstring")
-        is_tstring = test_name.startswith("string_tstring") or test_name.endswith("_tstring")
         is_inlineasm = test_name.startswith("asm")
 
         skip_it = os.path.realpath(test_file) in skip_tests
-        skip_it |= skip_endian and is_endian
-        skip_it |= skip_int_big and is_int_big
-        skip_it |= skip_int_64 and is_int_64
-        skip_it |= skip_bytearray and is_bytearray
-        skip_it |= skip_set_type and is_set_type
-        skip_it |= skip_async and is_async
-        skip_it |= skip_const and is_const
-        skip_it |= skip_fstring and is_fstring
-        skip_it |= skip_tstring and is_tstring
         skip_it |= skip_inlineasm and is_inlineasm
 
         skip_reasons = []

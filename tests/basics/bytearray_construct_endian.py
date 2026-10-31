@@ -1,4 +1,6 @@
 # test construction of bytearray from different objects
+# requires: bytearray host-endianness
+
 try:
     from array import array
 except ImportError:

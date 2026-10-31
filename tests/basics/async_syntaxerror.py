@@ -1,4 +1,5 @@
 # test syntax errors using async
+# requires: async
 
 try:
     exec

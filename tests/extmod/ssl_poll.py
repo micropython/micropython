@@ -1,3 +1,5 @@
+# requires: coverage
+
 try:
     import select
     import ssl

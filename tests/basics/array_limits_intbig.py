@@ -1,6 +1,8 @@
 # Test behaviour when array module is provided out of bounds values
 #
 # This test is intended to also pass on CPython.
+#
+# requires: int-big
 
 try:
     from array import array

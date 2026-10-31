@@ -1,6 +1,7 @@
 # Ensure that an asyncio task can wait on an Event when the
 # _task_queue is empty, in the context of an async iterator
 # https://github.com/micropython/micropython/issues/16318
+# requires: async
 
 try:
     import asyncio

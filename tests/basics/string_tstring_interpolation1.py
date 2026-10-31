@@ -1,3 +1,5 @@
+# requires: tstring
+
 print("\n=== Bracket/paren depth tracking ===")
 d = {'a': 1, 'b:c': 2}
 items = [10, 20, 30]

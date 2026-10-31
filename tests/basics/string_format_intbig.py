@@ -1,4 +1,5 @@
 # basic functionality test for {} format string using large integers
+# requires: int-big
 
 
 def test(fmt, *args):

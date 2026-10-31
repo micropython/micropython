@@ -1,3 +1,5 @@
+# requires: set
+
 s = {1}
 s.update()
 print(s)

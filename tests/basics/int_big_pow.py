@@ -1,4 +1,5 @@
 # test bignum power
+# requires: int-big
 
 i = 1 << 65
 

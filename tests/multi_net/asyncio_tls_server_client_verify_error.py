@@ -1,4 +1,5 @@
 # Test asyncio TCP server and client with TLS, and an incorrect server_hostname.
+# requires: async
 
 try:
     import os

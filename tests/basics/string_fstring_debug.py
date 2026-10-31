@@ -1,4 +1,5 @@
 # test f-string debug feature {x=}
+# requires: fstring
 
 
 def f():

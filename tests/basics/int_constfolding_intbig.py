@@ -1,4 +1,5 @@
 # tests int constant folding in compiler
+# requires: int-big
 
 # negation
 print(-0x3fffffff) # 32-bit edge case

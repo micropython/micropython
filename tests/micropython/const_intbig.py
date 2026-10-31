@@ -1,4 +1,5 @@
 # test constant optimisation, with consts that are bignums
+# requires: const int-big
 
 from micropython import const
 

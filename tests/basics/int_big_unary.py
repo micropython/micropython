@@ -1,4 +1,5 @@
 # test bignum unary operations
+# requires: int-big
 
 i = 1 << 65
 

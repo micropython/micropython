@@ -1,4 +1,5 @@
 # This tests long ints for 32-bit machine
+# requires: int-big
 
 a = 0x1ffffffff
 b = 0x100000000

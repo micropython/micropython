@@ -1,4 +1,5 @@
 # Test network loopback behaviour
+# requires: async
 
 import sys
 

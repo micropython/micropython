@@ -1,4 +1,5 @@
 # Check that micropython.RingIO works correctly with asyncio.Stream.
+# requires: async
 
 try:
     import asyncio, micropython

@@ -1,4 +1,5 @@
 # Test get_event_loop()
+# requires: async
 
 try:
     import asyncio

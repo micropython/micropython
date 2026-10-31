@@ -1,8 +1,9 @@
-import sys
-
 # Depending on the port, the numbers in this test may be implemented as "small"
 # native 64 bit ints, arbitrary precision large ints, or large integers using 64-bit
 # long longs.
+# requires: int-64
+
+import sys
 
 try:
     x = int.from_bytes(b"\x6f\xab\xcd\x12\x34\x56\x78\xfb", "big")

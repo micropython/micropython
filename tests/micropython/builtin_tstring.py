@@ -1,4 +1,5 @@
 # This tests the built-in __template__ (which is MicroPython specific).
+# requires: tstring
 
 # Test a varying number of arguments.
 print(__template__(()))
