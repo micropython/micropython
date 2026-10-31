@@ -4,7 +4,7 @@ on: [push, pull_request]
 
 jobs:
   ruff:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     steps:
     - uses: actions/checkout@v7
     # ruff version should be kept in sync with .pre-commit-config.yaml & also micropython-lib

@@ -8,11 +8,10 @@ concurrency:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     steps:
     - uses: actions/checkout@v7
       with:
         fetch-depth: 100
-    - uses: actions/setup-python@v7
     - name: Check commit message formatting
       run: tools/ci.sh commit_formatting_run

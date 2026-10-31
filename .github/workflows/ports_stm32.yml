@@ -27,7 +27,7 @@ jobs:
           - stm32_build_cmod
           - stm32_nucleo_build
           - stm32_misc_build
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v7
     - name: Install packages
