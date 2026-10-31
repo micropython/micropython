@@ -225,13 +225,15 @@ low all of the time.
 
 Note: New PWM parameters take effect in the next PWM cycle.
 
+Another example::
+
     pwm = PWM(2, duty=512)
     print(pwm)
     >>> PWM(Pin(2), freq=5000, duty=1023)  # the duty is not relevant
     pwm.init(freq=2, duty=64)
     print(pwm)
     >>> PWM(Pin(2), freq=2, duty=16)  # the duty is not relevant
-    time.sleep(1 / 2)                # wait one PWM period
+    time.sleep(1 / 2)                 # wait one PWM period
     print(pwm)
     >>> PWM(Pin(2), freq=2, duty=64)  # the duty is actual
 
