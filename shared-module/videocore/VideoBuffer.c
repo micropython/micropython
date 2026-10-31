@@ -55,11 +55,33 @@ static void videocore_videobuffer_add_vacated_frame(videocore_videobuffer_obj_t 
     displayio_area_union(&self->vacated_area, &area, &self->vacated_area);
 }
 
-// Called from interrupt context when the source lands a frame, so keep it
-// tiny.
-static void videocore_videobuffer_on_frame(void *ctx, const void *frame) {
+// Called from interrupt context or a background task when the source lands a
+// frame, so keep it tiny.
+static void videocore_videobuffer_on_frame(void *ctx, const void *frame, const videocore_area_t *changed) {
     videocore_videobuffer_obj_t *self = ctx;
     if (frame == self->stream_base) {
+        const displayio_area_t whole_frame = {
+            .x2 = self->source_width,
+            .y2 = self->source_height,
+        };
+        if (changed == NULL) {
+            self->frame_changed_area = whole_frame;
+            self->frame_replaceable = true;
+        } else {
+            // Keep a bad source rect from dirtying other layers.
+            const displayio_area_t reported = {
+                .x1 = changed->x1,
+                .y1 = changed->y1,
+                .x2 = changed->x2,
+                .y2 = changed->y2,
+            };
+            displayio_area_t clipped;
+            if (!displayio_area_compute_overlap(&reported, &whole_frame, &clipped)) {
+                return;
+            }
+            displayio_area_union(&self->frame_changed_area, &clipped, &self->frame_changed_area);
+            self->frame_replaceable = false;
+        }
         self->frame_ready = true;
         return;
     }
@@ -67,6 +89,15 @@ static void videocore_videobuffer_on_frame(void *ctx, const void *frame) {
     // or paused). Repaint there, since that area may already have been
     // repainted.
     videocore_videobuffer_add_vacated_frame(self, frame);
+}
+
+// Drop any landed frame the refresh hasn't taken yet.
+static void videocore_videobuffer_forget_frame(videocore_videobuffer_obj_t *self) {
+    displayio_area_t empty = {};
+    common_hal_mcu_disable_interrupts();
+    self->frame_ready = false;
+    self->frame_changed_area = empty;
+    common_hal_mcu_enable_interrupts();
 }
 
 // Cache the framebuffer geometry for on_frame (see fb_pixels).
@@ -246,6 +277,9 @@ void common_hal_videocore_videobuffer_construct(videocore_videobuffer_obj_t *sel
     self->current_area = empty;
     self->ephemeral_dirty_area = empty;
     self->vacated_area = empty;
+    self->frame_changed_area = empty;
+    self->frame_replaceable = false;
+    self->frame_dirty_area = empty;
     displayio_buffer_transform_t empty_transform = {};
     self->absolute_transform = empty_transform;
     // Nothing is shown until a Group attached to a display updates our
@@ -318,7 +352,7 @@ static void videocore_videobuffer_pause_stream(videocore_videobuffer_obj_t *self
         videosource_pause(self->source);
         nlr_pop();
     }
-    self->frame_ready = false;
+    videocore_videobuffer_forget_frame(self);
 }
 
 // Re-show a framebuffer target by pointing its paused source at the current
@@ -343,7 +377,7 @@ static void videocore_videobuffer_resume_stream(videocore_videobuffer_obj_t *sel
     self->stream_base = dest.base;
     self->paused = false;
     // Wait for the first frame at the new destination.
-    self->frame_ready = false;
+    videocore_videobuffer_forget_frame(self);
 }
 
 // Start, resume or pause a framebuffer target's source to match whether it is
@@ -387,7 +421,7 @@ void common_hal_videocore_videobuffer_play(videocore_videobuffer_obj_t *self, mp
     if (start_paused) {
         // No destination is set until the VideoBuffer is shown, so the source
         // has nowhere to put a frame while paused.
-        self->frame_ready = false;
+        videocore_videobuffer_forget_frame(self);
         self->stream_base = NULL;
     } else {
         videocore_videobuffer_start_stream(self);
@@ -438,7 +472,7 @@ void common_hal_videocore_videobuffer_set_position(videocore_videobuffer_obj_t *
 
 static void videocore_videobuffer_clear(videocore_videobuffer_obj_t *self) {
     self->playing = false;
-    self->frame_ready = false;
+    videocore_videobuffer_forget_frame(self);
     self->stream_base = NULL;
     self->source = mp_const_none;
 }
@@ -658,21 +692,30 @@ static void videocore_videobuffer_draw_update_transform(mp_obj_t self_in, displa
 
 static void videocore_videobuffer_draw_finish_refresh(mp_obj_t self_in) {
     videocore_videobuffer_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    // The frame (or move) rendered; stop flagging it.
-    self->frame_ready = false;
     displayio_area_t empty = {};
     self->ephemeral_dirty_area = empty;
+    // A frame that landed during the refresh waits for the next one, unless its
+    // successor repaints everything anyway.
+    if (self->frame_replaceable) {
+        videocore_videobuffer_forget_frame(self);
+    }
 }
 
 static displayio_area_t *videocore_videobuffer_draw_get_refresh_areas(mp_obj_t self_in, displayio_area_t *tail) {
     videocore_videobuffer_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    // Frames that landed where the video used to be, possibly over the repaint
-    // of that area: repaint there again.
+    // Take what landed so far in one step: a frame landing from here on waits
+    // for the next refresh.
+    displayio_area_t empty = {};
     common_hal_mcu_disable_interrupts();
     displayio_area_t vacated = self->vacated_area;
-    displayio_area_t empty = {};
+    const bool frame_ready = self->frame_ready;
+    self->frame_dirty_area = self->frame_changed_area;
     self->vacated_area = empty;
+    self->frame_ready = false;
+    self->frame_changed_area = empty;
     common_hal_mcu_enable_interrupts();
+    // Frames that landed where the video used to be, possibly over the repaint
+    // of that area: repaint there again.
     displayio_area_union(&self->ephemeral_dirty_area, &vacated, &self->ephemeral_dirty_area);
     // Always repaint the area the video vacated, even once it is hidden or
     // stopped, so its last frame doesn't stay on the target.
@@ -684,10 +727,11 @@ static displayio_area_t *videocore_videobuffer_draw_get_refresh_areas(mp_obj_t s
     if (!self->playing || self->paused || self->hidden || self->stale_size) {
         return tail;
     }
-    if (self->frame_ready) {
-        // New frame: bulk copy it in.
-        self->current_area.next = tail;
-        tail = &self->current_area;
+    if (frame_ready) {
+        // New frame: bulk copy in the part that changed.
+        displayio_area_shift(&self->frame_dirty_area, self->current_area.x1, self->current_area.y1);
+        self->frame_dirty_area.next = tail;
+        tail = &self->frame_dirty_area;
     }
     return tail;
 }

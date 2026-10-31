@@ -26,11 +26,20 @@ typedef struct {
     size_t height;
 } videocore_destination_t;
 
-// Called (in interrupt context) when a frame has landed. frame is the
-// destination base it landed at: usually the latest accepted destination, but
-// a frame already being written when the destination changed (or when the
-// source was paused) still lands at the previous one.
-typedef void (*videocore_on_frame_fun)(void *ctx, const void *frame);
+// A rect in source frame coordinates. x2 and y2 are exclusive.
+typedef struct {
+    int16_t x1, y1, x2, y2;
+} videocore_area_t;
+
+// Called from interrupt context or a background task when a frame has landed.
+// frame is the destination base it landed at: usually the latest accepted
+// destination, but a frame already being written when the destination changed
+// (or when the source was paused) still lands at the previous one. changed is
+// the part that differs from the previous frame at that destination. NULL means
+// the whole frame changed and the next frame repaints all of it, so this one may
+// be dropped. A source whose next frame may be partial reports the whole frame
+// as a rect instead. The first frame at a new destination must cover it all.
+typedef void (*videocore_on_frame_fun)(void *ctx, const void *frame, const videocore_area_t *changed);
 
 // Protocol implemented by video streamers such as mipicsi.Camera. A source
 // streams continuously while playing (unless paused); the target sets (and can
@@ -64,9 +73,8 @@ typedef struct _videosource_p_t {
     void (*resume)(mp_obj_t self);
 
     // Direct frames into dest, starting with the next frame. Never raises:
-    // returns whether the source accepted dest. on_frame(ctx, frame) is
-    // called from interrupt context each time a frame lands, with the base
-    // it landed at.
+    // returns whether the source accepted dest. on_frame(ctx, frame, changed)
+    // is called each time a frame lands, with the base it landed at.
     bool (*set_destination)(mp_obj_t self, const videocore_destination_t *dest,
         videocore_on_frame_fun on_frame, void *ctx);
 
