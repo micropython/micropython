@@ -1,0 +1,10 @@
+prune *
+global-exclude __pycache__
+global-exclude build*
+global-exclude venv
+graft py
+graft ports/python
+graft ports/unix
+graft ports/windows
+graft shared
+include pyproject.toml
