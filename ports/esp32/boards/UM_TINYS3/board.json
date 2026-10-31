@@ -26,5 +26,9 @@
     "product": "TinyS3",
     "thumbnail": "",
     "url": "https://tinys3.io",
+    "variants": {
+        "TINYS3": "TinyS3",
+        "TINYS3D": "TinyS3[D]"
+    },
     "vendor": "Unexpected Maker"
 }
