@@ -94,6 +94,12 @@ for mapping in maps.keys():
     fbuf.text("hello", 0, 0, 0)  # clear
     print(buf)
 
+    # scaled text
+    fbuf.text("*", 0, 0, 1, 16)
+    print(buf)
+    fbuf.text("*", 0, 0, 0, 16)  # clear
+    print(buf)
+
     # char out of font range set to chr(127)
     fbuf.text(str(chr(31)), 0, 0)
     print(buf)
