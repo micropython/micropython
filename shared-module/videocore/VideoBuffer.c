@@ -382,6 +382,7 @@ void common_hal_videocore_videobuffer_play(videocore_videobuffer_obj_t *self, mp
     // in between. Plain buffer targets always stream.
     const bool start_paused = self->framebuffer_protocol != NULL && self->paused;
     videocore_videobuffer_start_source(self, start_paused);
+    videocore_videobuffer_update_area(self);
     self->playing = true;
     if (start_paused) {
         // No destination is set until the VideoBuffer is shown, so the source
