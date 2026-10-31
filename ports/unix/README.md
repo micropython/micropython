@@ -129,7 +129,7 @@ To build standalone:
     $ make deplibs                   # build just the external libraries
     $ make                           # build MicroPython itself
 
-`make deplibs` causes all supported external libraries (currently only `libffi`)
+`make deplibs` causes all supported external libraries (currently `libffi` and `mbedtls`)
 to be built inside the build directory, so it needs to run again only after
 `make clean`.
 

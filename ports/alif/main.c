@@ -57,6 +57,10 @@
 #if MICROPY_PY_NETWORK_CYW43
 #include "lib/cyw43-driver/src/cyw43.h"
 #endif
+#if MICROPY_PY_SSL && MICROPY_SSL_MBEDTLS
+#include <psa/crypto.h>
+#include "psa/crypto_extra.h"
+#endif
 
 extern uint8_t __StackTop, __StackLimit;
 extern uint8_t __GcHeapStart, __GcHeapEnd;
@@ -189,6 +193,10 @@ int main(void) {
         soft_timer_deinit();
         machine_pwm_deinit_all();
         machine_pin_irq_deinit();
+        #if MICROPY_PY_SSL && MICROPY_SSL_MBEDTLS
+        mbedtls_psa_crypto_free();
+        #endif
+
         machine_set_soft_reset();
         gc_sweep_all();
         mp_deinit();
