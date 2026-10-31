@@ -1,0 +1,20 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "Dual-core",
+        "Ethernet",
+        "External Flash",
+        "USB"
+    ],
+    "images": [
+        "W55RP20-EVB-Pico.jpg"
+    ],
+    "mcu": "rp2040",
+    "product": "Wiznet W55RP20-EVB-Pico",
+    "thumbnail": "",
+    "url": "https://docs.wiznet.io/Product/ioNIC/W55RP20/w55rp20-evb-pico",
+    "vendor": "Wiznet"
+}
