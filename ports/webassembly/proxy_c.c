@@ -474,8 +474,6 @@ bool proxy_c_to_js_iternext(uint32_t c_ref, uint32_t *out) {
 /******************************************************************************/
 // Bridge Python generator to JavaScript thenable.
 
-static const mp_obj_fun_builtin_var_t resume_obj;
-
 EM_JS(void, js_then_resolve, (uint32_t * ret_value, uint32_t * resolve), {
     const ret_value_js = proxy_convert_mp_to_js_obj_jsside(ret_value);
     const resolve_js = proxy_convert_mp_to_js_obj_jsside(resolve);
@@ -496,8 +494,12 @@ EM_JS(void, js_then_reject, (uint32_t * ret_value, uint32_t * reject), {
 });
 
 // *FORMAT-OFF*
-EM_JS(void, js_then_continue, (int jsref, uint32_t * py_resume, uint32_t * resolve, uint32_t * reject, uint32_t * out), {
-    const py_resume_js = proxy_convert_mp_to_js_obj_jsside(py_resume);
+// Continue the generator in "thenable" once the JS promise "jsref" is
+// fulfilled or rejected: send it the value, or throw the reason into it.
+// Both go through PyProxyThenable._resume, so the generator always runs
+// under proxy_c_to_js_resume.
+EM_JS(void, js_then_continue, (int jsref, uint32_t * thenable, uint32_t * resolve, uint32_t * reject, uint32_t * out), {
+    const thenable_js = proxy_convert_mp_to_js_obj_jsside(thenable);
     const resolve_js = proxy_convert_mp_to_js_obj_jsside(resolve);
     const reject_js = proxy_convert_mp_to_js_obj_jsside(reject);
     const ret = proxy_js_ref[jsref].then(
@@ -505,12 +507,12 @@ EM_JS(void, js_then_continue, (int jsref, uint32_t * py_resume, uint32_t * resol
             // The Promise is fulfilled on the JavaScript side.  Take the result and
             // send it to the encapsulating generator on the Python side, so it
             // becomes the result of the "yield from" that deferred to this Promise.
-            py_resume_js(result, null, resolve_js, reject_js);
+            return thenable_js._resume(result, null, resolve_js, reject_js);
         },
         (reason) => {
             // The Promise is rejected on the JavaScript side.  Take the reason and
             // throw it into the encapsulating generator on the Python side.
-            py_resume_js(null, reason, resolve_js, reject_js);
+            return thenable_js._resume(null, reason, resolve_js, reject_js);
         },
     );
     proxy_convert_js_to_mp_obj_jsside(ret, out);
@@ -575,16 +577,15 @@ static mp_obj_t proxy_resume_execute(mp_obj_t self_in, mp_obj_t send_value, mp_o
             ret_value = proxy_convert_js_to_mp_obj_cside(out_promise);
         }
 
-        mp_obj_t py_resume = mp_obj_new_bound_meth(MP_OBJ_FROM_PTR(&resume_obj), self_in);
         int ref = mp_obj_jsproxy_get_ref(ret_value);
-        uint32_t out_py_resume[PVN];
+        uint32_t out_thenable[PVN];
         uint32_t out_resolve[PVN];
         uint32_t out_reject[PVN];
-        proxy_convert_mp_to_js_obj_cside(py_resume, out_py_resume);
+        proxy_convert_mp_to_js_obj_cside(self_in, out_thenable);
         proxy_convert_mp_to_js_obj_cside(resolve, out_resolve);
         proxy_convert_mp_to_js_obj_cside(reject, out_reject);
         uint32_t out[PVN];
-        js_then_continue(ref, out_py_resume, out_resolve, out_reject, out);
+        js_then_continue(ref, out_thenable, out_resolve, out_reject, out);
         return proxy_convert_js_to_mp_obj_cside(out);
     } else { // ret_kind == MP_VM_RETURN_EXCEPTION;
         // Pass the exception through as an object to reject the promise (don't raise/throw it).
@@ -597,19 +598,25 @@ static mp_obj_t proxy_resume_execute(mp_obj_t self_in, mp_obj_t send_value, mp_o
     }
 }
 
-static mp_obj_t resume_fun(size_t n_args, const mp_obj_t *args) {
-    return proxy_resume_execute(args[0], args[1], args[2], args[3], args[4]);
-}
-static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(resume_obj, 5, 5, resume_fun);
-
+// Run the generator "c_ref" until it next yields or finishes.  "args"
+// holds five values: [0] receives the result, [1] and [2] are the resolve
+// and reject functions of the promise waiting on the generator, [3] is
+// the value to send in and [4] is the reason to throw in (both None for
+// a plain resume).  On a jspi build this function is listed in
+// JSPI_EXPORTS, so Python code run here may call jsffi.run_sync().
 void proxy_c_to_js_resume(uint32_t c_ref, uint32_t *args) {
     external_call_depth_inc();
+    #if MICROPY_JSPI
+    size_t prev_depth = mp_js_allow_suspend_begin();
+    #endif
     nlr_buf_t nlr;
     if (nlr_push(&nlr) == 0) {
         mp_obj_t obj = proxy_c_get_obj(c_ref);
-        mp_obj_t resolve = proxy_convert_js_to_mp_obj_cside(args + 1 * 3);
-        mp_obj_t reject = proxy_convert_js_to_mp_obj_cside(args + 2 * 3);
-        mp_obj_t ret = proxy_resume_execute(obj, mp_const_none, mp_const_none, resolve, reject);
+        mp_obj_t resolve = proxy_convert_js_to_mp_obj_cside(args + 1 * PVN);
+        mp_obj_t reject = proxy_convert_js_to_mp_obj_cside(args + 2 * PVN);
+        mp_obj_t send_value = proxy_convert_js_to_mp_obj_cside(args + 3 * PVN);
+        mp_obj_t throw_value = proxy_convert_js_to_mp_obj_cside(args + 4 * PVN);
+        mp_obj_t ret = proxy_resume_execute(obj, send_value, throw_value, resolve, reject);
         nlr_pop();
         proxy_convert_mp_to_js_obj_cside(ret, args);
         external_call_depth_dec(ret);
@@ -618,4 +625,7 @@ void proxy_c_to_js_resume(uint32_t c_ref, uint32_t *args) {
         proxy_convert_mp_to_js_exc_cside(nlr.ret_val, args);
         external_call_depth_dec(nlr.ret_val);
     }
+    #if MICROPY_JSPI
+    mp_js_allow_suspend_end(prev_depth);
+    #endif
 }

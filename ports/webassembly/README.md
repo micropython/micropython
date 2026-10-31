@@ -10,6 +10,21 @@ Building the webassembly port bears the same requirements as the standard
 MicroPython ports with the addition of Emscripten, and optionally terser for
 the minified file.
 
+Running the output and the test suite needs [Node.js](https://nodejs.org/).
+Node 25 or later is required for the `browser` variant, since that is
+when JavaScript Promise Integration (JSPI) became available without a
+flag; the other variants work with Node 20 or later. The simplest way to
+get a specific version is a version manager such as
+[nvm](https://github.com/nvm-sh/nvm):
+
+    $ nvm install 25
+    $ nvm use 25
+    $ node --version
+
+Note that emsdk bundles its own Node, which `emsdk_env.sh` adds to your
+`PATH` only if no `node` is already there. Install or select Node before
+sourcing `emsdk_env.sh` to make sure the one you chose is used.
+
 The output includes `micropython.mjs` (a JavaScript wrapper for the
 MicroPython runtime) and `micropython.wasm` (actual MicroPython compiled to
 WASM).
@@ -24,6 +39,23 @@ In order to build `micropython.mjs`, run:
 To generate the minified file `micropython.min.mjs`, run:
 
     $ make min
+
+Variants
+--------
+
+The port has three variants, selected with `VARIANT=`:
+
+- `standard` (the default): a small build with the JS hook enabled.
+- `pyscript`: full features, split heap, weakref and a set of frozen
+  micropython-lib packages.
+- `browser`: as `pyscript`, plus JavaScript Promise Integration (JSPI),
+  which lets Python block on a JS promise with `jsffi.run_sync()` while
+  the browser's event loop keeps running. Build it with:
+
+      $ make VARIANT=browser
+
+  The `browser` variant needs a JS engine with JSPI: recent browsers,
+  and Node 25 or later (see Dependencies).
 
 Running with Node.js
 --------------------
@@ -133,6 +165,8 @@ Testing
 Run the test suite using:
 
     $ make test
+
+The `browser` variant's tests need Node 25 or later (see Dependencies).
 
 API
 ---

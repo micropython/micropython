@@ -84,6 +84,7 @@ JSFLAGS += -s EXPORTED_FUNCTIONS="\
 	_mp_js_init,\
 	_mp_js_repl_init,\
 	_mp_js_repl_process_char,\
+	_mp_js_repl_process_char_async,\
 	_mp_hal_get_interrupt_char,\
 	_mp_sched_keyboard_interrupt$(EXPORTED_FUNCTIONS_EXTRA)"
 JSFLAGS += -s EXPORTED_RUNTIME_METHODS="\
@@ -91,7 +92,11 @@ JSFLAGS += -s EXPORTED_RUNTIME_METHODS="\
 	cwrap,\
 	FS$(EXPORTED_RUNTIME_METHODS_EXTRA)"
 JSFLAGS += --js-library library.js
-JSFLAGS += -s SUPPORT_LONGJMP=emscripten
+# Longjmp support mode; the browser variant overrides this to "wasm"
+# because the JS invoke_* trampolines used by the emscripten mode are
+# incompatible with JSPI stack suspension.
+SUPPORT_LONGJMP ?= emscripten
+JSFLAGS += -s SUPPORT_LONGJMP=$(SUPPORT_LONGJMP)
 JSFLAGS += -s MODULARIZE -s EXPORT_NAME=_createMicroPythonModule
 
 ################################################################################

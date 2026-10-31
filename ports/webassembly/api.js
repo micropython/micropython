@@ -87,6 +87,23 @@ export async function loadMicroPython(options) {
     }
     Module = await _createMicroPythonModule(Module);
     globalThis.Module = Module;
+    // On a jspi build, jsffi.run_sync() suspends until its promise is
+    // fulfilled or rejected.  But a KeyboardInterrupt must also end that
+    // wait.  The solution is to wrap the interrupt function.  While
+    // run_sync() is suspended, js_run_sync_wait (in modjsffi.c) also
+    // waits on Module.jspiInterrupt.  ccall finds this function by name
+    // on Module, so every caller gets the wrapped one.
+    const schedKeyboardInterrupt = Module._mp_sched_keyboard_interrupt;
+    Module._mp_sched_keyboard_interrupt = () => {
+        if (Module.jspiInterrupt) {
+            // run_sync() is suspended.  Wake it and let it raise the
+            // KeyboardInterrupt itself, so no other code can receive
+            // the interrupt first.
+            Module.jspiInterrupt.resolve();
+        } else {
+            schedKeyboardInterrupt();
+        }
+    };
     proxy_js_init();
     const pyimport = (name) => {
         const value = Module._malloc(3 * 4);
@@ -147,12 +164,16 @@ export async function loadMicroPython(options) {
             Module._free(buf);
             return proxy_convert_mp_to_js_obj_jsside_with_free(value);
         },
-        runPythonAsync(code) {
+        async runPythonAsync(code) {
             const len = Module.lengthBytesUTF8(code);
             const buf = Module._malloc(len + 1);
             Module.stringToUTF8(code, buf, len + 1);
             const value = Module._malloc(3 * 4);
-            Module.ccall(
+            // On a jspi build this ccall returns a promise, because the
+            // code may suspend in jsffi.run_sync(); "value" is only valid
+            // once that promise is fulfilled.  On other builds the await
+            // passes the return value straight through.
+            await Module.ccall(
                 "mp_js_do_exec_async",
                 "number",
                 ["pointer", "number", "pointer"],
@@ -176,15 +197,37 @@ export async function loadMicroPython(options) {
                 [chr],
             );
         },
-        // Needed if the GC/asyncify is enabled.
+        // Needed if the GC/asyncify is enabled.  On a jspi build the REPL
+        // may suspend in jsffi.run_sync(), so characters are processed one
+        // at a time: each ccall starts only after the previous one has
+        // finished, which queues anything typed while a line is suspended.
+        // The one exception is the interrupt character (Ctrl-C), which
+        // interrupts the suspended line at once instead of waiting.
         async replProcessCharWithAsyncify(chr) {
-            return Module.ccall(
-                "mp_js_repl_process_char",
-                "number",
-                ["number"],
-                [chr],
-                { async: true },
+            if (Module.jspiInterrupt) {
+                const interruptChar = Module.ccall(
+                    "mp_hal_get_interrupt_char",
+                    "number",
+                    [],
+                    [],
+                );
+                if (chr === interruptChar) {
+                    Module._mp_sched_keyboard_interrupt();
+                    return 0;
+                }
+            }
+            const previous = Module.replPending ?? Promise.resolve();
+            const current = previous.then(() =>
+                Module.ccall(
+                    "mp_js_repl_process_char_async",
+                    "number",
+                    ["number"],
+                    [chr],
+                    { async: true },
+                ),
             );
+            Module.replPending = current.catch(() => {});
+            return current;
         },
     };
 }

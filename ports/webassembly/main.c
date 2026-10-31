@@ -73,6 +73,64 @@ void external_call_depth_dec(mp_obj_t root_obj) {
     #endif
 }
 
+#if MICROPY_JSPI
+
+// JSPI suspension gate.  A promising entry (mp_js_do_exec_async on a
+// jspi build) records the external call depth it runs at; run_sync()
+// may only suspend when execution is at exactly that depth, so that
+// nothing suspends from a nested synchronous entry (which has no
+// promising frame to unwind to).  suspension_active records the global
+// fact that a continuation is currently parked, so that a second,
+// overlapping promising entry cannot create a second suspension; two
+// parked continuations would interleave frames on the shared linear
+// stack and corrupt it when resumed out of order.  Note the jspi
+// variant enables MICROPY_GC_SPLIT_HEAP_AUTO, which both maintains
+// external_call_depth and defers garbage collection to depth zero, so
+// no collection can run while a suspension is parked.
+static size_t suspendable_entry_depth = 0;
+static bool suspension_active = false;
+
+bool mp_js_can_suspend(void) {
+    // Only the outermost call from JS may suspend.  If the call that
+    // allowed suspension is nested inside another call into C (it was
+    // started from JS code that Python itself called), then that outer
+    // call is still running on the same linear stack and shares this
+    // thread's exception handler chain and pystack.  Once the inner call
+    // suspends, the outer call returns and unwinds them past the
+    // suspended frames, which then resume into a corrupted state.
+    return suspendable_entry_depth == 1
+           && suspendable_entry_depth == external_call_depth
+           && !suspension_active;
+}
+
+bool mp_js_suspension_active(void) {
+    return suspension_active;
+}
+
+void mp_js_suspension_begin(void) {
+    suspension_active = true;
+}
+
+void mp_js_suspension_end(void) {
+    suspension_active = false;
+}
+
+// Let jsffi.run_sync() suspend from the Python code about to run.
+// Only call this from a function listed in JSPI_EXPORTS, after
+// external_call_depth_inc().  Pass the returned value to
+// mp_js_allow_suspend_end() when that function returns.
+size_t mp_js_allow_suspend_begin(void) {
+    size_t prev_depth = suspendable_entry_depth;
+    suspendable_entry_depth = external_call_depth;
+    return prev_depth;
+}
+
+void mp_js_allow_suspend_end(size_t prev_depth) {
+    suspendable_entry_depth = prev_depth;
+}
+
+#endif // MICROPY_JSPI
+
 void mp_js_init(int pystack_size, int heap_size) {
     mp_cstack_init_with_sp_here(CSTACK_SIZE);
 
@@ -168,7 +226,18 @@ void mp_js_do_exec(const char *src, size_t len, uint32_t *out) {
 
 void mp_js_do_exec_async(const char *src, size_t len, uint32_t *out) {
     mp_compile_allow_top_level_await = true;
+    #if MICROPY_JSPI
+    // This entry is wrapped in WebAssembly.promising by the build (see
+    // JSPI_EXPORTS in the jspi variant), so suspension is legal while
+    // execution remains at this entry's depth.  mp_js_do_exec() never
+    // raises out of this frame, so plain save/restore suffices.
+    size_t prev_depth = suspendable_entry_depth;
+    suspendable_entry_depth = external_call_depth + 1;
+    #endif
     mp_js_do_exec(src, len, out);
+    #if MICROPY_JSPI
+    suspendable_entry_depth = prev_depth;
+    #endif
     mp_compile_allow_top_level_await = false;
 }
 
@@ -179,6 +248,22 @@ void mp_js_repl_init(void) {
 int mp_js_repl_process_char(int c) {
     external_call_depth_inc();
     int ret = pyexec_event_repl_process_char(c);
+    external_call_depth_dec(MP_OBJ_NULL);
+    return ret;
+}
+
+// As mp_js_repl_process_char, but on a jspi build this function is
+// listed in JSPI_EXPORTS, so code typed at the REPL may call
+// jsffi.run_sync().  Its ccall then returns a promise.
+int mp_js_repl_process_char_async(int c) {
+    external_call_depth_inc();
+    #if MICROPY_JSPI
+    size_t prev_depth = mp_js_allow_suspend_begin();
+    #endif
+    int ret = pyexec_event_repl_process_char(c);
+    #if MICROPY_JSPI
+    mp_js_allow_suspend_end(prev_depth);
+    #endif
     external_call_depth_dec(MP_OBJ_NULL);
     return ret;
 }
