@@ -81,7 +81,7 @@ static mp_obj_t videocore_videobuffer_make_new(const mp_obj_type_t *type, size_t
 //|         whole frame.
 //|
 //|         :param ~circuitpython_typing.VideoSource source: The video source to
-//|             play, such as `mipicsi.Camera`
+//|             play, such as `mipicsi.Camera` or `videogif.GifDecoder`
 //|         """
 //|
 static mp_obj_t videocore_videobuffer_play(mp_obj_t self_in, mp_obj_t source) {

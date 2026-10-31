@@ -101,6 +101,10 @@
 #include "shared-module/usb_host_audio/USBIn.h"
 #endif
 
+#if CIRCUITPY_VIDEOGIF
+#include "shared-module/videogif/GifDecoder.h"
+#endif
+
 #if CIRCUITPY_MEMORYMONITOR
 #include "shared-module/memorymonitor/__init__.h"
 #endif
@@ -394,6 +398,11 @@ static void cleanup_after_vm(mp_obj_t exception) {
     // Restore the panel's pixel format while the display bus is still alive.
     #if CIRCUITPY_PICOGAME_RGB444
     picogame_reset();
+    #endif
+
+    // Stop GIF playback before the displays and their framebuffers go away.
+    #if CIRCUITPY_VIDEOGIF
+    videogif_reset();
     #endif
 
     // Turn off the display and flush the filesystem before the heap disappears.
