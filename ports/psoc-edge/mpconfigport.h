@@ -27,6 +27,7 @@
 // Options controlling how MicroPython is built, overriding defaults in py/mpconfig.h
 #include <alloca.h>
 #include "mpconfigboard.h"
+#include "genhdr/pins_af.h"
 
 // Use core features for Thonny compatibility (larger firmware)
 #define MICROPY_CONFIG_ROM_LEVEL                (MICROPY_CONFIG_ROM_LEVEL_EXTRA_FEATURES)
@@ -69,7 +70,6 @@
 #define MICROPY_PY_MACHINE_INCLUDEFILE          "ports/psoc-edge/modmachine.c"
 #define MICROPY_PY_MACHINE_BARE_METAL_FUNCS     (1)
 #define MICROPY_PY_MACHINE_DISABLE_IRQ_ENABLE_IRQ (1)
-#define MICROPY_PY_MACHINE_PULSE                (1)
 
 #define MICROPY_PY_MACHINE_PIN_MAKE_NEW         mp_pin_make_new
 
@@ -79,6 +79,17 @@
 #define MICROPY_PY_MACHINE_UART_READCHAR_WRITECHAR (1)
 #define MICROPY_PY_MACHINE_UART_IRQ             (1)
 #define MICROPY_STREAMS_NON_BLOCK               (1)
+
+#define MICROPY_PY_MACHINE_I2C                  (1)
+#define MICROPY_PY_MACHINE_SOFTI2C              (1)
+
+#define MICROPY_PY_MACHINE_I2C_TARGET           (1)
+#define MICROPY_PY_MACHINE_I2C_TARGET_MAX       (MICROPY_PY_MACHINE_I2C_NUM_ENTRIES)
+#define MICROPY_PY_MACHINE_I2C_TARGET_HARD_IRQ  (1)
+#define MICROPY_PY_MACHINE_I2C_TARGET_INCLUDEFILE "ports/psoc-edge/machine_i2c_target.c"
+#define MICROPY_PY_MACHINE_I2C_TARGET_FINALISER (1)
+
+#define MICROPY_PY_MACHINE_PULSE                (1)
 
 // type definitions for the specific machine
 #define MP_SSIZE_MAX (0x7fffffff)

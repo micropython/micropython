@@ -227,6 +227,53 @@ See :ref:`machine.RTC <machine.RTC>`: ::
     RTC alarm timing on this port has second-level resolution. Millisecond alarm values are accepted, but are rounded
     up to whole seconds internally.
 
+Hardware I2C bus
+----------------
+
+See :ref:`machine.I2C <machine.I2C>` and :ref:`machine.I2CTarget <machine.I2CTarget>` for the complete I2C API reference.
+
+Hardware I2C is available on the PSOC™ Edge E84 using the SCB (Serial Communication Block)
+peripheral. The port supports both controller (master) and target (slave) modes.
+
+.. note::
+    External pull-up resistors (typically 4.7kΩ) are required on both SCL and SDA lines.
+    Only one I2C instance (controller or target) can be active at a time, as both modes
+    share the same SCB peripheral and pins.
+
+
+Controller mode (Master)
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+Use the ``I2C`` class for controller (master) operations::
+
+    from machine import I2C
+
+    i2c = I2C(scl='P17_0', sda='P17_1', freq=100000)
+
+.. note::
+    The nominal Standard-mode (100 KHz) supports the range 48-100 KHz.
+    The nominal Fast-mode (400 KHz) supports the range 244-400 KHz.
+
+
+Target mode (Slave)
+^^^^^^^^^^^^^^^^^^^
+
+Use the ``I2CTarget`` class for target (slave) operations::
+
+    from machine import I2CTarget
+
+    mem = bytearray([0xAA, 0xBB, 0xCC, 0xDD])
+    i2c_target = I2CTarget(scl="P17_0", sda="P17_1", addr=0x43, mem=mem)
+
+
+The I2CTarget implementation on PSOC™ Edge has the following port-specific details:
+
+**Memory Addressing:**
+    - ``addrsize``: 7-bit and 10-bit addresses are accepted.
+    - ``mem_addrsize``: ``0`` and ``8`` are supported. The default is ``8``.
+    - EEPROM-like internal address phases wider than 8 bits (16/24/32-bit ``mem_addrsize``) are not implemented.
+
+
 UART
 ----
 
