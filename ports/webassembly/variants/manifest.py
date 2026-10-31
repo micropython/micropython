@@ -8,6 +8,7 @@ package(
         "event.py",
         "funcs.py",
         "lock.py",
+        "taskgroup.py",
     ),
     base_path="$(MPY_DIR)/extmod",
     opt=3,
