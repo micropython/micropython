@@ -329,7 +329,10 @@ static mp_obj_t mp_obj_instance_make_new(const mp_obj_type_t *self, size_t n_arg
         // https://docs.python.org/3.4/reference/datamodel.html#object.__new__
         // "If __new__() does not return an instance of cls, then the new
         // instance's __init__() method will not be invoked."
-        if (mp_obj_get_type(new_ret) != self) {
+        // But give metaclasses a pass since the type of all classes in
+        // Micropython are `type` instead of the metaclass.
+        const mp_obj_type_t *ret_type = mp_obj_get_type(new_ret);
+        if (ret_type != self && ret_type != &mp_type_type) {
             return new_ret;
         }
 
