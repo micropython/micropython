@@ -406,7 +406,9 @@ void mp_hal_pin_interrupt(mp_hal_pin_obj_t pin, mp_obj_t handler, mp_uint_t trig
     if (index >= ARRAY_SIZE(MP_STATE_PORT(machine_pin_irq_objects))) {
         return;
     }
+
     uint32_t irq_num = self->pin < 16 ? GPIO_combined_low_irqs[gpio_nr] : GPIO_combined_high_irqs[gpio_nr];
+    assert(irq_num >= 0); // possible values include NotAvail_IRQn=-128, but in practice that never occurs
 
     if (handler == mp_const_none || trigger == MP_HAL_PIN_TRIGGER_NONE) {
         GPIO_PortDisableInterrupts(self->gpio, 1U << self->pin);
@@ -441,7 +443,7 @@ void mp_hal_pin_interrupt(mp_hal_pin_obj_t pin, mp_obj_t handler, mp_uint_t trig
     GPIO_PortClearInterruptFlags(self->gpio, 1U << self->pin);
     // Bottom of the pile, as eth.c does for the Ethernet IRQs: this only ever
     // schedules work, and must not cut in front of USB or DMA.
-    NVIC_SetPriority(irq_num, IRQ_PRI_PENDSV);
+    NVIC_SetPriority(IRQn_NONNEG(irq_num), IRQ_PRI_PENDSV);
     EnableIRQ(irq_num);
 }
 
