@@ -90,6 +90,13 @@
 
 #define SYS_ACK_TIMEOUT_MS (250)
 #define BLE_ACK_TIMEOUT_MS (250)
+#define IPCC_CH_MM_TIMEOUT_MS (10)
+#define HSEM_TIMEOUT_MS (500)
+
+// Set when IPCC or HSEM wait times out. Checked by:
+// - rfcore entry points: return early to prevent uninitialized IPCC access
+// - mpnimbleport.c: schedules mp_bluetooth_deinit() and stops re-scheduling polls
+volatile bool rfcore_ipcc_timeout = false;
 
 // AN5185
 #define MAGIC_FUS_ACTIVE 0xA94656B9
@@ -422,7 +429,15 @@ static size_t tl_process_msg(volatile tl_list_node_t *head, unsigned int ch, par
             // Wait for C2 to indicate that it has finished using the free buffer,
             // so that we can link the newly-freed memory in to this buffer.
             // If waiting is needed then it is typically between 5 and 20 microseconds.
+            uint32_t t0 = mp_hal_ticks_ms();
             while (LL_C1_IPCC_IsActiveFlag_CHx(IPCC, IPCC_CH_MM)) {
+                if (mp_hal_ticks_ms() - t0 > IPCC_CH_MM_TIMEOUT_MS) {
+                    rfcore_ipcc_timeout = true;
+                    break;
+                }
+            }
+            if (rfcore_ipcc_timeout) {
+                break;
             }
 
             // Place memory back in free pool.
@@ -536,7 +551,14 @@ void rfcore_init(void) {
 
     // In case we're waking from deepsleep, enforce core synchronisation
     __HAL_RCC_HSEM_CLK_ENABLE();
-    while (LL_HSEM_1StepLock(HSEM, CFG_HW_PWR_STANDBY_SEMID)) {
+    {
+        uint32_t t0 = mp_hal_ticks_ms();
+        while (LL_HSEM_1StepLock(HSEM, CFG_HW_PWR_STANDBY_SEMID)) {
+            if (mp_hal_ticks_ms() - t0 > HSEM_TIMEOUT_MS) {
+                rfcore_ipcc_timeout = true;
+                return;
+            }
+        }
     }
 
     // Set the wakeup source to LSE or fall back to use HSE
@@ -602,6 +624,9 @@ static const struct {
 };
 
 void rfcore_ble_init(void) {
+    if (rfcore_ipcc_timeout) {
+        return;
+    }
     DEBUG_printf("rfcore_ble_init\n");
 
     // Configure and reset the BLE controller.
@@ -637,6 +662,9 @@ bool rfcore_ble_reset(void) {
 }
 
 void rfcore_ble_hci_cmd(size_t len, const uint8_t *src) {
+    if (rfcore_ipcc_timeout) {
+        return;
+    }
     DEBUG_printf("rfcore_ble_hci_cmd\n");
 
     #if HCI_TRACE
@@ -683,6 +711,9 @@ void rfcore_ble_hci_cmd(size_t len, const uint8_t *src) {
 }
 
 size_t rfcore_ble_check_msg(rfcore_ble_msg_callback_t cb, void *env) {
+    if (rfcore_ipcc_timeout) {
+        return 0;
+    }
     parse_hci_info_t parse = { cb, env, false };
     size_t len = tl_check_msg(&ipcc_mem_ble_evt_queue, IPCC_CH_BLE, &parse);
 
@@ -704,6 +735,9 @@ size_t rfcore_ble_check_msg(rfcore_ble_msg_callback_t cb, void *env) {
 
 // "level" is 0x00-0x1f, ranging from -40 dBm to +6 dBm (not linear).
 void rfcore_ble_set_txpower(uint8_t level) {
+    if (rfcore_ipcc_timeout) {
+        return;
+    }
     uint8_t buf[2] = { 0x00, level };
     tl_ble_hci_cmd_resp(HCI_OPCODE(OGF_VENDOR, OCF_SET_TX_POWER), buf, 2);
 }
