@@ -406,6 +406,10 @@ void common_hal_videocore_videobuffer_set_position(videocore_videobuffer_obj_t *
     self->x = x;
     self->y = y;
     videocore_videobuffer_update_area(self);
+    if (self->framebuffer_protocol == NULL) {
+        // Draw the last frame at its new position.
+        videocore_videobuffer_dirty_current_area(self);
+    }
     if (!self->playing || self->paused || self->framebuffer_protocol == NULL) {
         // Raw buffer targets are rendered by displayio; their capture
         // destination doesn't move with the position. A paused framebuffer
@@ -634,6 +638,10 @@ static void videocore_videobuffer_draw_update_transform(mp_obj_t self_in, displa
         !displayio_area_equal(&previous_area, &self->current_area)) {
         displayio_area_union(
             &self->ephemeral_dirty_area, &previous_area, &self->ephemeral_dirty_area);
+        if (self->framebuffer_protocol == NULL) {
+            // Draw the last frame at its new position.
+            videocore_videobuffer_dirty_current_area(self);
+        }
     }
 
     // Framebuffer targets stream straight into the buffer: move the
