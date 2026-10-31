@@ -103,7 +103,11 @@ static mp_obj_t videocore_videobuffer_stop(mp_obj_t self_in) {
 static MP_DEFINE_CONST_FUN_OBJ_1(videocore_videobuffer_stop_obj, videocore_videobuffer_stop);
 
 //|     playing: bool
-//|     """True when a video source is being played, False otherwise. (read-only)"""
+//|     """True when a video source is being played, False otherwise. It also
+//|     becomes False when the source has no more frames, such as a GIF that
+//|     has finished its last loop. The last frame then stays shown until
+//|     ``stop()`` or the next ``play()``. A framebuffer target also drops it
+//|     when moved or hidden. (read-only)"""
 //|
 static mp_obj_t videocore_videobuffer_get_playing(mp_obj_t self_in) {
     videocore_videobuffer_obj_t *self = MP_OBJ_TO_PTR(self_in);

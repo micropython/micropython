@@ -91,6 +91,14 @@ static void videocore_videobuffer_on_frame(void *ctx, const void *frame, const v
     videocore_videobuffer_add_vacated_frame(self, frame);
 }
 
+// Called from interrupt context or a background task when the source reached
+// the end of its stream. Only flag it: end_stream stops the source later, the
+// way audio outputs stop a finished sample.
+static void videocore_videobuffer_on_eos(void *ctx) {
+    videocore_videobuffer_obj_t *self = ctx;
+    self->source_ended = true;
+}
+
 // Drop any landed frame the refresh hasn't taken yet.
 static void videocore_videobuffer_forget_frame(videocore_videobuffer_obj_t *self) {
     displayio_area_t empty = {};
@@ -163,6 +171,7 @@ static void videocore_videobuffer_compute_destination(
         dest->stride = row_bytes;
         dest->row_bytes = row_bytes;
         dest->height = self->source_height;
+        dest->on_eos = videocore_videobuffer_on_eos;
         if (self->bufinfo.len < self->source_frame_bytes) {
             mp_raise_ValueError(MP_ERROR_TEXT("Buffer too small"));
         }
@@ -199,6 +208,7 @@ static void videocore_videobuffer_compute_destination(
     dest->stride = row_stride;
     dest->row_bytes = row_bytes;
     dest->height = self->source_height;
+    dest->on_eos = videocore_videobuffer_on_eos;
 }
 
 // Move the framebuffer destination for a new absolute position, capping the
@@ -250,6 +260,7 @@ static void videocore_videobuffer_move_dest(
         .stride = row_stride,
         .row_bytes = row_bytes,
         .height = self->source_height,
+        .on_eos = videocore_videobuffer_on_eos,
     };
     // A rejected destination leaves the stream where it was.
     if (videosource_set_destination(self->source, &dest, videocore_videobuffer_on_frame, self)) {
@@ -288,6 +299,7 @@ void common_hal_videocore_videobuffer_construct(videocore_videobuffer_obj_t *sel
     self->in_group = false;
     self->hidden = false;
     self->stale_size = false;
+    self->source_ended = false;
     displayio_area_t empty = {};
     self->current_area = empty;
     self->ephemeral_dirty_area = empty;
@@ -302,14 +314,11 @@ void common_hal_videocore_videobuffer_construct(videocore_videobuffer_obj_t *sel
     self->paused = true;
 }
 
-// Start the source's hardware and record its frame format, which is fixed
-// until stop. The source has no destination yet, so it doesn't write frames.
-// When paused is true it starts paused. May raise.
-static void videocore_videobuffer_start_source(videocore_videobuffer_obj_t *self, bool paused) {
+// Record the started source's frame format, which is fixed until stop. May
+// raise.
+static void videocore_videobuffer_read_source_format(videocore_videobuffer_obj_t *self) {
     mp_obj_t source = self->source;
     const videosource_p_t *protocol = videosource_check(source);
-
-    videosource_play(source, paused);
 
     mp_int_t bits_per_pixel = protocol->get_bits_per_pixel(source);
     if (bits_per_pixel % 8 != 0) {
@@ -395,6 +404,21 @@ static void videocore_videobuffer_resume_stream(videocore_videobuffer_obj_t *sel
     videocore_videobuffer_forget_frame(self);
 }
 
+// Stop a source that reached the end of its stream. stream_base stays, so the
+// last frame stays shown until stop() or the next play(). Never raises.
+static void videocore_videobuffer_end_stream(videocore_videobuffer_obj_t *self) {
+    if (!self->playing || !self->source_ended) {
+        return;
+    }
+    nlr_buf_t nlr;
+    if (nlr_push(&nlr) == 0) {
+        videosource_stop(self->source);
+        nlr_pop();
+    }
+    self->playing = false;
+    self->source = mp_const_none;
+}
+
 // Start, resume or pause a framebuffer target's source to match whether it is
 // shown (on a display and not hidden). While hidden the source stays active
 // but paused, so showing it again is quick.
@@ -402,11 +426,17 @@ static void videocore_videobuffer_update_stream(videocore_videobuffer_obj_t *sel
     if (self->framebuffer_protocol == NULL) {
         return; // Plain buffer targets always stream.
     }
+    // An ended source must not resume.
+    videocore_videobuffer_end_stream(self);
     const bool shown = self->absolute_transform.scale != 0 && !self->hidden;
     if (!self->playing) {
         // Remember whether the target is shown so play() can start the source
         // in the right state.
         self->paused = !shown;
+        if (!shown) {
+            // A repaint overwrites an ended stream's last frame.
+            self->stream_base = NULL;
+        }
         return;
     }
     if (shown && !self->stale_size) {
@@ -419,27 +449,37 @@ static void videocore_videobuffer_update_stream(videocore_videobuffer_obj_t *sel
 }
 
 void common_hal_videocore_videobuffer_play(videocore_videobuffer_obj_t *self, mp_obj_t source) {
+    videocore_videobuffer_end_stream(self);
     if (self->playing) {
         mp_raise_RuntimeError(MP_ERROR_TEXT("already playing"));
     }
     videosource_check(source);
-    self->source = source;
     self->stale_size = false;
+    self->source_ended = false;
+    videocore_videobuffer_forget_frame(self);
+    // An ended stream's last frame stays until repainted, and the format is about to change.
+    self->stream_base = NULL;
 
     // A framebuffer target only streams while shown. When it isn't, start the
     // source paused rather than pausing it afterwards, so no frame slips out
     // in between. Plain buffer targets always stream.
     const bool start_paused = self->framebuffer_protocol != NULL && self->paused;
-    videocore_videobuffer_start_source(self, start_paused);
-    videocore_videobuffer_update_area(self);
-    self->playing = true;
-    if (start_paused) {
-        // No destination is set until the VideoBuffer is shown, so the source
-        // has nowhere to put a frame while paused.
-        videocore_videobuffer_forget_frame(self);
-        self->stream_base = NULL;
+    // If this raises the source may be playing elsewhere, so leave it alone.
+    videosource_play(source, start_paused);
+    self->source = source;
+    nlr_buf_t nlr;
+    if (nlr_push(&nlr) == 0) {
+        videocore_videobuffer_read_source_format(self);
+        videocore_videobuffer_update_area(self);
+        self->playing = true;
+        // A paused source gets its destination when the VideoBuffer is shown.
+        if (!start_paused) {
+            videocore_videobuffer_start_stream(self);
+        }
+        nlr_pop();
     } else {
-        videocore_videobuffer_start_stream(self);
+        videocore_videobuffer_stop_quiet(self);
+        nlr_raise(nlr.ret_val);
     }
 }
 
@@ -449,6 +489,7 @@ void common_hal_videocore_videobuffer_set_position(videocore_videobuffer_obj_t *
         // row must land on a framebuffer row: the video's x must be 0.
         mp_raise_ValueError(MP_ERROR_TEXT("video in a framebuffer must be at x == 0"));
     }
+    videocore_videobuffer_end_stream(self);
     // Repaint where the video used to be. Union (rather than overwrite) so a
     // move before the previous one was refreshed isn't lost.
     videocore_videobuffer_dirty_current_area(self);
@@ -458,6 +499,10 @@ void common_hal_videocore_videobuffer_set_position(videocore_videobuffer_obj_t *
     if (self->framebuffer_protocol == NULL) {
         // Draw the last frame at its new position.
         videocore_videobuffer_dirty_current_area(self);
+    }
+    if (!self->playing && self->framebuffer_protocol != NULL) {
+        // A repaint overwrites an ended stream's last frame.
+        self->stream_base = NULL;
     }
     if (!self->playing || self->paused || self->framebuffer_protocol == NULL) {
         // Raw buffer targets are rendered by displayio; their capture
@@ -523,10 +568,12 @@ void videocore_videobuffer_stop_quiet(videocore_videobuffer_obj_t *self) {
 }
 
 bool common_hal_videocore_videobuffer_get_playing(videocore_videobuffer_obj_t *self) {
+    videocore_videobuffer_end_stream(self);
     return self->playing;
 }
 
 mp_obj_t common_hal_videocore_videobuffer_get_source(videocore_videobuffer_obj_t *self) {
+    videocore_videobuffer_end_stream(self);
     return self->source;
 }
 
@@ -541,7 +588,7 @@ static mp_obj_t videocore_videobuffer_draw_protocol_self(mp_obj_t protocol_conta
 static bool videocore_videobuffer_draw_fill_area(mp_obj_t self_in, const _displayio_colorspace_t *colorspace, const displayio_area_t *area, uint32_t *mask, uint32_t *buffer) {
     videocore_videobuffer_obj_t *self = MP_OBJ_TO_PTR(self_in);
     // buffer isn't necessarily the framebuffer. It may be a scratch buffer.
-    if (!self->playing || self->stream_base == NULL || self->hidden) {
+    if (self->stream_base == NULL || self->hidden) {
         return false;
     }
 
@@ -690,6 +737,9 @@ static void videocore_videobuffer_draw_update_transform(mp_obj_t self_in, displa
         if (self->framebuffer_protocol == NULL) {
             // Draw the last frame at its new position.
             videocore_videobuffer_dirty_current_area(self);
+        } else if (!self->playing) {
+            // A repaint overwrites an ended stream's last frame.
+            self->stream_base = NULL;
         }
     }
 
@@ -714,6 +764,7 @@ static void videocore_videobuffer_draw_finish_refresh(mp_obj_t self_in) {
     if (self->frame_replaceable) {
         videocore_videobuffer_forget_frame(self);
     }
+    videocore_videobuffer_end_stream(self);
 }
 
 static displayio_area_t *videocore_videobuffer_draw_get_refresh_areas(mp_obj_t self_in, displayio_area_t *tail) {
@@ -739,7 +790,7 @@ static displayio_area_t *videocore_videobuffer_draw_get_refresh_areas(mp_obj_t s
         self->ephemeral_dirty_area.next = tail;
         tail = &self->ephemeral_dirty_area;
     }
-    if (!self->playing || self->paused || self->hidden || self->stale_size) {
+    if (self->stream_base == NULL || self->paused || self->hidden || self->stale_size) {
         return tail;
     }
     if (frame_ready) {
@@ -760,6 +811,7 @@ static void videocore_videobuffer_draw_set_hidden(mp_obj_t self_in, bool hidden)
     if (self->hidden == hidden) {
         return;
     }
+    videocore_videobuffer_end_stream(self);
     self->hidden = hidden;
     // Repaint what the video showed or vacated.
     self->ephemeral_dirty_area = self->current_area;

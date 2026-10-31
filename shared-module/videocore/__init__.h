@@ -13,6 +13,10 @@
 #include "py/obj.h"
 #include "py/proto.h"
 
+// Called from interrupt context or a background task, with the ctx given to
+// set_destination, when the source will write no more frames.
+typedef void (*videocore_on_eos_fun)(void *ctx);
+
 // Destination for a video stream. The caller checks that the whole frame
 // fits before handing it to a source.
 typedef struct {
@@ -24,6 +28,8 @@ typedef struct {
     size_t row_bytes;
     // Source frame height, in rows.
     size_t height;
+    // Never NULL. Sources that never end, such as a camera, don't call it.
+    videocore_on_eos_fun on_eos;
 } videocore_destination_t;
 
 // A rect in source frame coordinates. x2 and y2 are exclusive.

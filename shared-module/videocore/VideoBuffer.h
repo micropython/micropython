@@ -71,6 +71,9 @@ typedef struct {
     // the video won't show until stop and play again.
     bool stale_size;
     bool playing;
+    // Set from interrupt context or a background task when the source reached
+    // the end of its stream; the VideoBuffer then stops it lazily.
+    volatile bool source_ended;
     // True while a framebuffer target isn't shown, so its source is paused.
     // Tracked while stopped too, so play() can start the source paused.
     // Plain buffer targets are never paused.
