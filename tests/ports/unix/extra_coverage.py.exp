@@ -266,6 +266,13 @@ b'\x00\xff'
 frzmpy4 1
 frzmpy4 2
 NULL
+# frz_posonly
+(1, 2)
+TypeError
+TypeError
+(1, 2)
+TypeError
+TypeError
 interned
 a long string that is not interned
 a string that has unicode αβγ chars
