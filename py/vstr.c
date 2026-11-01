@@ -44,7 +44,8 @@ void vstr_init(vstr_t *vstr, size_t alloc) {
     }
     vstr->alloc = alloc;
     vstr->len = 0;
-    vstr->buf = m_new(char, vstr->alloc);
+    // CIRCUITPY-CHANGE: Don't scan string data for pointers.
+    vstr->buf = m_malloc_without_collect(sizeof(char) * vstr->alloc);
     vstr->fixed_buf = false;
 }
 
