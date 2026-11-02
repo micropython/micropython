@@ -5,8 +5,11 @@
 // SPDX-License-Identifier: MIT
 
 #include <stdbool.h>
+#include <string.h>
+
 #include "genhdr/mpversion.h"
 #include "py/mpconfig.h"
+#include "py/misc.h"
 #include "shared-bindings/supervisor/__init__.h"
 #include "shared-bindings/supervisor/StatusBar.h"
 #include "supervisor/background_callback.h"
@@ -15,6 +18,7 @@
 
 #if CIRCUITPY_TERMINALIO
 #include "shared-module/terminalio/Terminal.h"
+#include "supervisor/shared/display.h"
 #endif
 
 #if CIRCUITPY_WEB_WORKFLOW
@@ -41,6 +45,56 @@ void supervisor_status_bar_clear(void) {
     }
 }
 
+// Length of the release tag in a git describe version, without "-<n>-g<hash>" or "-dirty".
+static size_t release_tag_length(const char *version) {
+    for (size_t i = 0; version[i] != '\0'; i++) {
+        if (version[i] != '-') {
+            continue;
+        }
+        size_t j = i + 1;
+        while (unichar_isdigit(version[j])) {
+            j++;
+        }
+        if ((j > i + 1 && version[j] == '-' && version[j + 1] == 'g') ||
+            strcmp(version + i, "-dirty") == 0) {
+            return i;
+        }
+    }
+    return strlen(version);
+}
+
+// Write the title without its terminator. Compact step 1 drops the spaces around the separators
+// and step 2 also shortens the version to its release tag.
+static void write_title(uint8_t compact) {
+    const char *separator = compact > 0 ? "|" : " | ";
+
+    // Neighboring "..." "..." are concatenated by the compiler. Without this separation, the hex code
+    // doesn't get terminated after two following characters and the value is invalid.
+    // This is the OSC command to set the title and the icon text. It can be up to 255 characters
+    // but some may be cut off.
+    serial_write("\x1b" "]0;");
+    serial_write("🐍");
+
+    #if CIRCUITPY_USB_KEYBOARD_WORKFLOW
+    usb_keyboard_status();
+    #endif
+
+    #if CIRCUITPY_WEB_WORKFLOW
+    supervisor_web_workflow_status();
+    serial_write(separator);
+    #endif
+
+    #if CIRCUITPY_BLE_FILE_SERVICE || CIRCUITPY_BLE_SERIAL_SERVICE
+    supervisor_bluetooth_status();
+    serial_write(separator);
+    #endif
+
+    supervisor_execution_status();
+    serial_write(separator);
+    const char *version = MICROPY_GIT_TAG;
+    serial_write_substring(version, compact > 1 ? release_tag_length(version) : strlen(version));
+}
+
 void supervisor_status_bar_update(void) {
     if (_suspended) {
         supervisor_status_bar_request_update(true);
@@ -57,55 +111,32 @@ void supervisor_status_bar_update(void) {
         !shared_module_supervisor_status_bar_get_console(&shared_module_supervisor_status_bar_obj) ||
         !serial_connected();
 
-    // Disable status bar display writes if supervisor.status_bar.display is False.
-    bool disable_display_writes =
-        !shared_module_supervisor_status_bar_get_display(&shared_module_supervisor_status_bar_obj);
-
-    // Suppress writes to console and/or display if status bar is not enabled for either or both.
-    bool prev_console_disable = false;
-    bool prev_display_disable = false;
-
-    if (disable_console_writes) {
-        prev_console_disable = serial_console_write_disable(true);
-    }
-    if (disable_display_writes) {
-        prev_display_disable = serial_display_write_disable(true);
+    // The console gets the full title.
+    if (!disable_console_writes) {
+        bool prev_display = serial_display_write_disable(true);
+        write_title(0);
+        serial_write("\x1b" "\\");
+        serial_display_write_disable(prev_display);
     }
 
-    // Neighboring "..." "..." are concatenated by the compiler. Without this separation, the hex code
-    // doesn't get terminated after two following characters and the value is invalid.
-    // This is the OSC command to set the title and the icon text. It can be up to 255 characters
-    // but some may be cut off.
-    serial_write("\x1b" "]0;");
-    serial_write("🐍");
-
-    #if CIRCUITPY_USB_KEYBOARD_WORKFLOW
-    usb_keyboard_status();
+    #if CIRCUITPY_TERMINALIO
+    // Skip the display if supervisor.status_bar.display is False. Otherwise it gets the first
+    // compact step that fits, and the last step may still be cut.
+    if (shared_module_supervisor_status_bar_get_display(&shared_module_supervisor_status_bar_obj)) {
+        bool prev_console = serial_console_write_disable(true);
+        for (uint8_t compact = 0; ; compact++) {
+            write_title(compact);
+            // The terminal moves status_y past the bar once the title reaches its last tile.
+            bool fits = supervisor_terminal.status_bar == NULL ||
+                supervisor_terminal.status_y < supervisor_terminal.status_bar->height_in_tiles;
+            serial_write("\x1b" "\\");
+            if (fits || compact == 2) {
+                break;
+            }
+        }
+        serial_console_write_disable(prev_console);
+    }
     #endif
-
-    #if CIRCUITPY_WEB_WORKFLOW
-    supervisor_web_workflow_status();
-    serial_write(" | ");
-    #endif
-
-    #if CIRCUITPY_BLE_FILE_SERVICE || CIRCUITPY_BLE_SERIAL_SERVICE
-    supervisor_bluetooth_status();
-    serial_write(" | ");
-    #endif
-
-    supervisor_execution_status();
-    serial_write(" | ");
-    serial_write(MICROPY_GIT_TAG);
-    // Send string terminator
-    serial_write("\x1b" "\\");
-
-    // Restore writes to console and/or display.
-    if (disable_console_writes) {
-        serial_console_write_disable(prev_console_disable);
-    }
-    if (disable_display_writes) {
-        serial_display_write_disable(prev_display_disable);
-    }
 
 }
 
