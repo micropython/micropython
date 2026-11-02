@@ -9,7 +9,6 @@
 
 #include "genhdr/mpversion.h"
 #include "py/mpconfig.h"
-#include "py/misc.h"
 #include "shared-bindings/supervisor/__init__.h"
 #include "shared-bindings/supervisor/StatusBar.h"
 #include "supervisor/background_callback.h"
@@ -45,29 +44,8 @@ void supervisor_status_bar_clear(void) {
     }
 }
 
-// Length of the release tag in a git describe version, without "-<n>-g<hash>" or "-dirty".
-static size_t release_tag_length(const char *version) {
-    for (size_t i = 0; version[i] != '\0'; i++) {
-        if (version[i] != '-') {
-            continue;
-        }
-        size_t j = i + 1;
-        while (unichar_isdigit(version[j])) {
-            j++;
-        }
-        if ((j > i + 1 && version[j] == '-' && version[j + 1] == 'g') ||
-            strcmp(version + i, "-dirty") == 0) {
-            return i;
-        }
-    }
-    return strlen(version);
-}
-
-// Write the title without its terminator. Compact step 1 drops the spaces around the separators
-// and step 2 also shortens the version to its release tag.
-static void write_title(uint8_t compact) {
-    const char *separator = compact > 0 ? "|" : " | ";
-
+// Write the title without its terminator. The version is left out when with_version is false.
+static void write_title(const char *separator, bool with_version) {
     // Neighboring "..." "..." are concatenated by the compiler. Without this separation, the hex code
     // doesn't get terminated after two following characters and the value is invalid.
     // This is the OSC command to set the title and the icon text. It can be up to 255 characters
@@ -91,8 +69,9 @@ static void write_title(uint8_t compact) {
 
     supervisor_execution_status();
     serial_write(separator);
-    const char *version = MICROPY_GIT_TAG;
-    serial_write_substring(version, compact > 1 ? release_tag_length(version) : strlen(version));
+    if (with_version) {
+        serial_write(MICROPY_GIT_TAG);
+    }
 }
 
 void supervisor_status_bar_update(void) {
@@ -114,26 +93,40 @@ void supervisor_status_bar_update(void) {
     // The console gets the full title.
     if (!disable_console_writes) {
         bool prev_display = serial_display_write_disable(true);
-        write_title(0);
+        write_title(" | ", true);
         serial_write("\x1b" "\\");
         serial_display_write_disable(prev_display);
     }
 
     #if CIRCUITPY_TERMINALIO
-    // Skip the display if supervisor.status_bar.display is False. Otherwise it gets the first
-    // compact step that fits, and the last step may still be cut.
+    // Skip the display if supervisor.status_bar.display is False.
     if (shared_module_supervisor_status_bar_get_display(&shared_module_supervisor_status_bar_obj)) {
         bool prev_console = serial_console_write_disable(true);
-        for (uint8_t compact = 0; ; compact++) {
-            write_title(compact);
-            // The terminal moves status_y past the bar once the title reaches its last tile.
-            bool fits = supervisor_terminal.status_bar == NULL ||
-                supervisor_terminal.status_y < supervisor_terminal.status_bar->height_in_tiles;
+        displayio_tilegrid_t *bar = supervisor_terminal.status_bar;
+        write_title(" | ", true);
+        // The terminal moves status_y past the bar once the title reaches its last tile.
+        if (bar != NULL && supervisor_terminal.status_y >= bar->height_in_tiles) {
+            // Too wide: rewrite with single spaces, and cut the version so ".." ends at the edge.
             serial_write("\x1b" "\\");
-            if (fits || compact == 2) {
-                break;
+            write_title(" ", false);
+            size_t room = 0;
+            if (supervisor_terminal.status_y < bar->height_in_tiles) {
+                room = bar->width_in_tiles - supervisor_terminal.status_x;
+            }
+            if (room >= strlen(MICROPY_GIT_TAG)) {
+                serial_write(MICROPY_GIT_TAG);
+            } else {
+                if (room < 2) {
+                    // No room for any of the version. Put ".." on the last two tiles.
+                    supervisor_terminal.status_x = bar->width_in_tiles - 2;
+                    supervisor_terminal.status_y = 0;
+                    room = 2;
+                }
+                serial_write_substring(MICROPY_GIT_TAG, room - 2);
+                serial_write("..");
             }
         }
+        serial_write("\x1b" "\\");
         serial_console_write_disable(prev_console);
     }
     #endif
