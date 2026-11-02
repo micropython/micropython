@@ -14,6 +14,7 @@
 #include "pico/stdlib.h"
 #include "hardware/gpio.h"
 #include "hardware/structs/iobank0.h"
+#include "hardware/structs/watchdog.h"
 
 #if PICO_RP2350
 #include "hardware/powman.h"
@@ -102,8 +103,14 @@ mp_obj_t alarm_pin_pinalarm_record_wake_alarm(void) {
     alarm_pin_pinalarm_obj_t *const alarm = &alarm_wake_alarm.pin_alarm;
 
     alarm->base.type = &alarm_pin_pinalarm_type;
-    // TODO: how to obtain the correct pin from memory?
     alarm->pin = NULL;
+    #if PICO_RP2040
+    // The reset that ended deep sleep cleared alarm_triggered_pins, so use the saved copy.
+    uint32_t wake_pin = watchdog_hw->scratch[RP_WKUP_PIN_SCRATCH_REG];
+    if (wake_pin != 0) {
+        alarm->pin = mcu_get_pin_by_number(wake_pin - 1);
+    }
+    #endif
     #if PICO_RP2350
     // After a powman wake, the wakeup slot that fired still holds its pin number.
     if (!woke_up && alarm_woke_from_powman()) {
@@ -122,6 +129,9 @@ mp_obj_t alarm_pin_pinalarm_record_wake_alarm(void) {
 void alarm_pin_pinalarm_reset(void) {
     alarm_triggered_pins = 0;
     woke_up = false;
+    #if PICO_RP2040
+    watchdog_hw->scratch[RP_WKUP_PIN_SCRATCH_REG] = 0;
+    #endif
 
     // Clear all GPIO interrupts
     for (uint8_t i = 0; i < 4; i++) {
@@ -198,6 +208,16 @@ void alarm_pin_pinalarm_set_alarms(bool deep_sleep, size_t n_alarms, const mp_ob
         }
     }
 }
+
+#if PICO_RP2040
+void alarm_pin_pinalarm_save_wake_pin(void) {
+    uint32_t wake_pin = 0;
+    if (alarm_triggered_pins != 0) {
+        wake_pin = __builtin_ctzll(alarm_triggered_pins) + 1;
+    }
+    watchdog_hw->scratch[RP_WKUP_PIN_SCRATCH_REG] = wake_pin;
+}
+#endif
 
 #if PICO_RP2350
 // Arm the powman GPIO wakeups recorded by alarm_pin_pinalarm_set_alarms().
