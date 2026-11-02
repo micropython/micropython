@@ -99,11 +99,21 @@ mp_obj_t alarm_pin_pinalarm_find_triggered_alarm(size_t n_alarms, const mp_obj_t
     return mp_const_none;
 }
 
+// Returns the lowest-numbered pin in alarm_triggered_pins, or -1 if there is none.
+static int lowest_triggered_pin_number(void) {
+    return alarm_triggered_pins == 0 ? -1 : __builtin_ctzll(alarm_triggered_pins);
+}
+
 mp_obj_t alarm_pin_pinalarm_record_wake_alarm(void) {
     alarm_pin_pinalarm_obj_t *const alarm = &alarm_wake_alarm.pin_alarm;
 
     alarm->base.type = &alarm_pin_pinalarm_type;
     alarm->pin = NULL;
+    if (woke_up) {
+        // A fake deep sleep doesn't reset, so gpio_callback()'s record is still here.
+        alarm->pin = mcu_get_pin_by_number(lowest_triggered_pin_number());
+        return alarm;
+    }
     #if PICO_RP2040
     // The reset that ended deep sleep cleared alarm_triggered_pins, so use the saved copy.
     uint32_t wake_pin = watchdog_hw->scratch[RP_WKUP_PIN_SCRATCH_REG];
@@ -113,7 +123,7 @@ mp_obj_t alarm_pin_pinalarm_record_wake_alarm(void) {
     #endif
     #if PICO_RP2350
     // After a powman wake, the wakeup slot that fired still holds its pin number.
-    if (!woke_up && alarm_woke_from_powman()) {
+    if (alarm_woke_from_powman()) {
         uint32_t pwrup = powman_hw->last_swcore_pwrup & RP_POWMAN_PWRUP_GPIO_BITS;
         for (size_t i = 0; i < POWMAN_WAKEUP_SLOTS; i++) {
             if (pwrup & (1u << (i + RP_POWMAN_PWRUP_GPIO_LSB))) {
@@ -211,11 +221,8 @@ void alarm_pin_pinalarm_set_alarms(bool deep_sleep, size_t n_alarms, const mp_ob
 
 #if PICO_RP2040
 void alarm_pin_pinalarm_save_wake_pin(void) {
-    uint32_t wake_pin = 0;
-    if (alarm_triggered_pins != 0) {
-        wake_pin = __builtin_ctzll(alarm_triggered_pins) + 1;
-    }
-    watchdog_hw->scratch[RP_WKUP_PIN_SCRATCH_REG] = wake_pin;
+    // No pin gives -1 + 1 = 0.
+    watchdog_hw->scratch[RP_WKUP_PIN_SCRATCH_REG] = lowest_triggered_pin_number() + 1;
 }
 #endif
 
