@@ -1,5 +1,10 @@
 freeze("$(PORT_DIR)/modules")
-require("bundle-networking")
+# Networking packages, excluding the on-device mip package manager.
+require("ntptime")
+require("ssl")
+require("requests")
+require("webrepl")
+require("urequests")
 require("dht")
 require("ds18x20")
 require("neopixel")
