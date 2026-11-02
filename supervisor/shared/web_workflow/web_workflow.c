@@ -355,41 +355,6 @@ void supervisor_web_workflow_status(void) {
 }
 #endif
 
-#if CIRCUITPY_WEB_WORKFLOW && CIRCUITPY_SETTINGS_TOML && (CIRCUITPY_WIFI || CIRCUITPY_HOSTNETWORK || CIRCUITPY_MII || CIRCUITPY_AIRLIFT)
-static bool _open_listening(void) {
-    #if CIRCUITPY_SOCKETPOOL_IPV6
-    bool opened = socketpool_socket(&pool, SOCKETPOOL_AF_INET6, SOCKETPOOL_SOCK_STREAM, 0, &listening);
-    #else
-    bool opened = socketpool_socket(&pool, SOCKETPOOL_AF_INET, SOCKETPOOL_SOCK_STREAM, 0, &listening);
-    #endif
-    // Ports with an offloaded network stack can refuse to create a
-    // socket until the interface has an address (this board returns
-    // ENOTCONN before DHCP completes). Binding and listening on the
-    // unset descriptor then fails with EBADF, and reporting success
-    // leaves the supervisor polling a socket that was never opened.
-    //
-    // Returning false avoids that but is not a retry: the background
-    // callback never re-enters this function, so the next attempt is
-    // the next supervisor_workflow_reset(), i.e. a VM restart. A board
-    // that only gets an address after boot will not bring the workflow
-    // up on its own until then. (AirLift boards do retry; see
-    // _airlift_retry_listening().)
-    if (!opened) {
-        return false;
-    }
-    common_hal_socketpool_socket_settimeout(&listening, 0);
-    if (common_hal_socketpool_socket_bind(&listening, "", 0, web_api_port) != 0) {
-        common_hal_socketpool_socket_close(&listening);
-        return false;
-    }
-    if (!common_hal_socketpool_socket_listen(&listening, 1)) {
-        common_hal_socketpool_socket_close(&listening);
-        return false;
-    }
-    return true;
-}
-#endif
-
 #if CIRCUITPY_AIRLIFT
 // User code may reset the ESP32 or change its network, which closes the
 // listening socket, and nothing calls back when the network comes back. So the
@@ -424,6 +389,66 @@ static bool _get_api_password(void) {
     _api_password[0] = ':';
     _base64_in_place(_api_password, strlen(_api_password), sizeof(_api_password) - 1);
     return true;
+}
+#endif
+
+#if CIRCUITPY_WEB_WORKFLOW && CIRCUITPY_SETTINGS_TOML && (CIRCUITPY_WIFI || CIRCUITPY_HOSTNETWORK || CIRCUITPY_MII || CIRCUITPY_AIRLIFT)
+static bool _open_listening(void) {
+    #if CIRCUITPY_SOCKETPOOL_IPV6
+    bool opened = socketpool_socket(&pool, SOCKETPOOL_AF_INET6, SOCKETPOOL_SOCK_STREAM, 0, &listening);
+    #else
+    bool opened = socketpool_socket(&pool, SOCKETPOOL_AF_INET, SOCKETPOOL_SOCK_STREAM, 0, &listening);
+    #endif
+    // Ports with an offloaded network stack can refuse to create a
+    // socket until the interface has an address (this board returns
+    // ENOTCONN before DHCP completes). Binding and listening on the
+    // unset descriptor then fails with EBADF, and reporting success
+    // leaves the supervisor polling a socket that was never opened.
+    //
+    // Returning false avoids that but is not a retry: the background
+    // callback never re-enters this function, so the next attempt is
+    // the next supervisor_workflow_reset(), i.e. a VM restart. A board
+    // that only gets an address after boot will not bring the workflow
+    // up on its own until then. (AirLift boards do retry; see
+    // _airlift_retry_listening().)
+    if (!opened) {
+        return false;
+    }
+    common_hal_socketpool_socket_settimeout(&listening, 0);
+    if (common_hal_socketpool_socket_bind(&listening, "", 0, web_api_port) != 0) {
+        common_hal_socketpool_socket_close(&listening);
+        return false;
+    }
+    if (!common_hal_socketpool_socket_listen(&listening, 1)) {
+        common_hal_socketpool_socket_close(&listening);
+        return false;
+    }
+    #if CIRCUITPY_DISPLAYIO
+    display_stream_listen(&pool);
+    #endif
+    return true;
+}
+#endif
+
+#if CIRCUITPY_AIRLIFT
+// User code may reset the ESP32 or change its network, which closes the
+// listening socket, and nothing calls back when the network comes back. So the
+// background pass reopens it: right away after a reset, otherwise at most every
+// 5 seconds. It is never closed to reopen it; nina-fw can't stop a listener.
+static void _airlift_retry_listening(void) {
+    static uint64_t last_try_ms;
+    static uint32_t last_try_generation;
+    if (!common_hal_socketpool_socket_get_closed(&listening) ||
+        airlift_network_status() != AIRLIFT_WL_CONNECTED) {
+        return;
+    }
+    uint64_t now = supervisor_ticks_ms64();
+    if (last_try_generation == airlift_transport_generation() && now - last_try_ms < 5000) {
+        return;
+    }
+    last_try_ms = now;
+    last_try_generation = airlift_transport_generation();
+    _open_listening();
 }
 #endif
 
@@ -549,6 +574,11 @@ bool supervisor_start_web_workflow(void) {
         websocket_init();
         #if CIRCUITPY_DISPLAYIO
         display_stream_init();
+        mp_int_t vnc_port = 0;
+        (void)settings_get_int("CIRCUITPY_WEB_VNC_PORT", &vnc_port);
+        bool vnc_keys = false;
+        (void)settings_get_bool("CIRCUITPY_WEB_VNC_KEYS", &vnc_keys);
+        display_stream_set_vnc(vnc_port, vnc_keys);
         #endif
     }
 
@@ -1342,7 +1372,7 @@ static void _reply_websocket_upgrade(socketpool_socket_obj_t *socket, _request *
         "\r\n", NULL);
     #if CIRCUITPY_DISPLAYIO
     if (strcmp(request->path, "/cp/display/") == 0) {
-        display_stream_handoff(socket);
+        display_stream_handoff(socket, true);
         return;
     }
     #endif

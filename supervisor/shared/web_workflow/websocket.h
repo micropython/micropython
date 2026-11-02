@@ -31,7 +31,7 @@ void websocket_send_close(websocket_t *ws, uint16_t code);
 // Moves an upgraded socket into ws, closing the one it had. A connected client
 // is sent WEBSOCKET_CLOSE_REPLACED first.
 void websocket_take_socket(websocket_t *ws, socketpool_socket_obj_t *socket);
-// Reads the next byte of a text message. PINGs are answered and a CLOSE closes
+// Reads the next byte of a text or binary message. PINGs are answered and a CLOSE closes
 // the socket. Returns false when no byte is available yet.
 bool websocket_read_payload_byte(websocket_t *ws, uint8_t *c);
 

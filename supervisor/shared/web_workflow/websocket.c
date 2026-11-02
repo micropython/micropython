@@ -116,10 +116,12 @@ static void _read_next_frame_header(websocket_t *ws) {
         ws->mask[mask_offset] = h;
         ws->frame_index++;
     }
-    // Reply to PINGs and CLOSE.
+    // Reply to PINGs and CLOSE. Replying can find the client gone, which closes
+    // the socket and drops the payload still to be read.
     while ((ws->opcode == 0x8 ||
             ws->opcode == 0x9) &&
-           ws->frame_index >= ws->frame_len) {
+           ws->frame_index >= ws->frame_len &&
+           !common_hal_socketpool_socket_get_closed(&ws->socket)) {
 
         if (ws->frame_index == ws->frame_len) {
             uint8_t opcode = 0x8; // CLOSE
@@ -150,7 +152,8 @@ static void _read_next_frame_header(websocket_t *ws) {
 
 bool websocket_read_payload_byte(websocket_t *ws, uint8_t *c) {
     _read_next_frame_header(ws);
-    if (ws->opcode == 0x1 &&
+    // Text, binary or a continuation of either.
+    if (ws->opcode <= 0x2 &&
         ws->frame_index >= ws->frame_len &&
         ws->payload_remaining > 0) {
         if (_read_byte(ws, c)) {
