@@ -228,10 +228,17 @@ size_t common_hal_terminalio_terminal_write(terminalio_terminal_obj_t *self, con
                 self->status_bar != NULL &&
                 self->status_y < self->status_bar->height_in_tiles) {
                 // Clear the tile grid before we start putting new info.
-                if (self->status_x == 0 && self->status_y == 0) {
+                bool at_start = self->status_x == 0 && self->status_y == 0;
+                if (at_start) {
                     terminalio_terminal_set_all_tiles(self, true, ' ', true);
                 }
                 terminalio_terminal_set_tile(self, true, c, true);
+                // The cursor wraps to the first tile when the bar is full. Move it past the last
+                // row so the height check above skips the rest of the title. A missing first glyph
+                // leaves the cursor at the first tile without wrapping, so at_start rules that out.
+                if (!at_start && self->status_x == 0 && self->status_y == 0) {
+                    self->status_y = self->status_bar->height_in_tiles;
+                }
             }
             continue;
         }
