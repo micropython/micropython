@@ -28,6 +28,13 @@ try:
 except TypeError:
     print("TypeError")
 
+# non-existent attributes should raise AttributeError
+S = uctypes.struct(uctypes.addressof(data), {})
+try:
+    S.x
+except AttributeError:
+    print("AttributeError")
+
 # can't access attribute with invalid descriptor
 S = uctypes.struct(uctypes.addressof(data), {"x": []})
 try:
