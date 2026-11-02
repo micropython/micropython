@@ -315,7 +315,7 @@ int powerctrl_rcc_clock_config_pll(RCC_ClkInitTypeDef *rcc_init, uint32_t sysclk
 
 #endif
 
-#if !defined(STM32F0) && !defined(STM32G0) && !defined(STM32L0) && !defined(STM32L1) && !defined(STM32L4)
+#if !defined(STM32F0) && !defined(STM32G0) && !defined(STM32L0) && !defined(STM32L1)
 
 static uint32_t calc_ahb_div(uint32_t wanted_div) {
     #if defined(STM32H7)
@@ -788,9 +788,109 @@ static void powerctrl_low_power_exit_wb55() {
 
 #endif // defined(STM32WB)
 
-#endif // defined(STM32WB) || defined(STM32WL)
+#elif defined(STM32L4)
 
-#endif // !defined(STM32F0) && !defined(STM32G0) && !defined(STM32L0) && !defined(STM32L1) && !defined(STM32L4)
+int powerctrl_set_sysclk(uint32_t sysclk, uint32_t ahb, uint32_t apb1, uint32_t apb2) {
+    // Return straight away if the clocks are already at the desired frequency.
+    if (sysclk == HAL_RCC_GetSysClockFreq()
+        && ahb == HAL_RCC_GetHCLKFreq()
+        && apb1 == HAL_RCC_GetPCLK1Freq()
+        && apb2 == HAL_RCC_GetPCLK2Freq()) {
+        return 0;
+    }
+
+    // The PLL source and PLLM divider are shared with PLLSAI1, which clocks USB
+    // and RNG, so leave them alone and only change PLLN and PLLR.
+    uint32_t pllcfgr = RCC->PLLCFGR;
+    uint32_t pll_src = pllcfgr & RCC_PLLCFGR_PLLSRC;
+    uint32_t pll_in;
+    if (pll_src == RCC_PLLSOURCE_MSI) {
+        uint32_t msirange;
+        if (RCC->CR & RCC_CR_MSIRGSEL) {
+            msirange = (RCC->CR & RCC_CR_MSIRANGE) >> RCC_CR_MSIRANGE_Pos;
+        } else {
+            msirange = (RCC->CSR & RCC_CSR_MSISRANGE) >> RCC_CSR_MSISRANGE_Pos;
+        }
+        pll_in = MSIRangeTable[msirange];
+    } else if (pll_src == RCC_PLLSOURCE_HSI) {
+        pll_in = HSI_VALUE;
+    } else if (pll_src == RCC_PLLSOURCE_HSE) {
+        pll_in = HSE_VALUE;
+    } else {
+        return -MP_EIO;
+    }
+    pll_in /= ((pllcfgr & RCC_PLLCFGR_PLLM) >> RCC_PLLCFGR_PLLM_Pos) + 1;
+
+    // Find the largest SYSCLK not above the requested value (and at most 80MHz),
+    // keeping the VCO output within 64MHz to 344MHz.
+    if (sysclk > 80000000) {
+        sysclk = 80000000;
+    }
+    uint32_t best_sysclk = 0, best_n = 0, best_r = 0;
+    for (uint32_t r = 2; r <= 8; r += 2) {
+        uint32_t n = (uint64_t)sysclk * r / pll_in;
+        if (n > 86) {
+            n = 86;
+        }
+        uint32_t vco = pll_in * n;
+        if (n < 8 || vco < 64000000 || vco > 344000000) {
+            continue;
+        }
+        if (vco / r > best_sysclk) {
+            best_sysclk = vco / r;
+            best_n = n;
+            best_r = r;
+        }
+    }
+    if (best_sysclk == 0) {
+        return -MP_EINVAL;
+    }
+    sysclk = best_sysclk;
+
+    // Determine the bus clock dividers.
+    RCC_ClkInitTypeDef RCC_ClkInitStruct;
+    RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;
+    RCC_ClkInitStruct.AHBCLKDivider = calc_ahb_div(sysclk / ahb);
+    ahb = sysclk >> AHBPrescTable[RCC_ClkInitStruct.AHBCLKDivider >> RCC_CFGR_HPRE_Pos];
+    RCC_ClkInitStruct.APB1CLKDivider = calc_apb1_div(ahb / apb1);
+    RCC_ClkInitStruct.APB2CLKDivider = calc_apb2_div(ahb / apb2);
+
+    // Run SYSCLK from the PLL source while the PLL is reconfigured.  Use the
+    // maximum flash latency so it is enough for both the old and new clocks.
+    __HAL_FLASH_SET_LATENCY(FLASH_LATENCY_4);
+    while (__HAL_FLASH_GET_LATENCY() != FLASH_LATENCY_4) {
+    }
+    uint32_t sw = (pll_src >> RCC_PLLCFGR_PLLSRC_Pos) - 1; // MSI=0, HSI=1, HSE=2
+    MODIFY_REG(RCC->CFGR, RCC_CFGR_SW, sw << RCC_CFGR_SW_Pos);
+    while (((RCC->CFGR & RCC_CFGR_SWS) >> RCC_CFGR_SWS_Pos) != sw) {
+    }
+
+    // Turn off the PLL, set the new PLLN and PLLR, then turn it on again.
+    __HAL_RCC_PLL_DISABLE();
+    while (__HAL_RCC_GET_FLAG(RCC_FLAG_PLLRDY)) {
+    }
+    MODIFY_REG(RCC->PLLCFGR, RCC_PLLCFGR_PLLN | RCC_PLLCFGR_PLLR,
+        best_n << RCC_PLLCFGR_PLLN_Pos | (best_r / 2 - 1) << RCC_PLLCFGR_PLLR_Pos);
+    __HAL_RCC_PLL_ENABLE();
+    while (!__HAL_RCC_GET_FLAG(RCC_FLAG_PLLRDY)) {
+    }
+
+    // Switch SYSCLK back to the PLL with the new dividers.  The flash latency
+    // is for voltage range 1: one wait state per 16MHz of HCLK.
+    RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
+    uint32_t flash_latency = (ahb - 1) / 16000000;
+    if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, flash_latency) != HAL_OK) {
+        return -MP_EIO;
+    }
+
+    powerctrl_config_systick();
+
+    return 0;
+}
+
+#endif // defined(STM32WB) || defined(STM32WL) || defined(STM32L4)
+
+#endif // !defined(STM32F0) && !defined(STM32G0) && !defined(STM32L0) && !defined(STM32L1)
 
 #endif
 
