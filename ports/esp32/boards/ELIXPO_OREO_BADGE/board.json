@@ -1,0 +1,28 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "deploy_options": {
+        "flash_offset": "0"
+    },
+    "docs": "",
+    "features": [
+        "BLE",
+        "Battery Charging",
+        "Display",
+        "Dual-core",
+        "External Flash",
+        "External RAM",
+        "IMU",
+        "USB-C",
+        "WiFi"
+    ],
+    "images": [
+        "elixpo_oreo_badge.jpg"
+    ],
+    "mcu": "esp32s3",
+    "product": "Oreo Badge",
+    "thumbnail": "",
+    "url": "https://oreo.elixpo.com/badge/",
+    "vendor": "Elixpo"
+}
