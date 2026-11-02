@@ -5,8 +5,12 @@
 // SPDX-License-Identifier: MIT
 
 // The one port-specific step: turn an eFuse key block into a PSA key id.
-// Everything after that -- hmac_sha256(), verify_hmac_sha256() -- lives in
-// shared-module/hardwarekey/HardwareKey.c.
+// Everything after that -- hmac.new()'s use of the key id, sign() -- lives in
+// shared-module/hardwarekey/HardwareKey.c. Digital Signature key handling
+// lives in
+// ports/espressif/common-hal/cryptography/hazmat/primitives/asymmetric/rsa/DigitalSignatureKey.c.
+
+#include "py/runtime.h"
 
 #include "common-hal/hardwarekey/__init__.h"
 #include "common-hal/hardwarekey/board.h"
@@ -21,9 +25,10 @@ _Static_assert(HARDWAREKEY_EFUSE_SLOT_COUNT == EFUSE_BLK_KEY_MAX - EFUSE_BLK_KEY
     "eFuse key block count changed; update common-hal/hardwarekey/board.h");
 
 // Pulls in MBEDTLS_CONFIG_FILE (esp_config.h), which is what defines
-// ESP_HMAC_OPAQUE_DRIVER_ENABLED on HMAC-capable chips. Including only
-// <psa/crypto.h> goes through the tf-psa-crypto config path and does NOT
-// define it, so the opaque-driver header below would compile to nothing.
+// ESP_HMAC_OPAQUE_DRIVER_ENABLED / ESP_RSA_DS_DRIVER_ENABLED on chips that
+// have those peripherals. Including only <psa/crypto.h> goes through the
+// tf-psa-crypto config path and does NOT define either, so the opaque-driver
+// headers below would compile to nothing.
 #include "mbedtls/build_info.h"
 #include "psa/crypto.h"
 // Public header of the ESP-IDF mbedtls component's PSA opaque-key driver for
@@ -66,7 +71,23 @@ bool hardwarekey_efuse_slot_load(mp_int_t slot, hardwarekey_hardwarekey_obj_t *k
     key->exportable = false;
 
     esp_efuse_block_t block = (esp_efuse_block_t)(EFUSE_BLK_KEY0 + slot);
-    if (esp_efuse_get_key_purpose(block) != ESP_EFUSE_KEY_PURPOSE_HMAC_UP) {
+    esp_efuse_purpose_t block_purpose = esp_efuse_get_key_purpose(block);
+
+    if (block_purpose == ESP_EFUSE_KEY_PURPOSE_HMAC_DOWN_DIGITAL_SIGNATURE) {
+        // No PSA import yet: unlike HMAC_UP, this purpose alone doesn't name a
+        // full key -- the caller still has to supply ds_params via
+        // cryptography.hazmat.primitives.asymmetric.rsa.load_digital_signature_key().
+        // Just record that the slot is provisioned for it.
+        #if defined(ESP_RSA_DS_DRIVER_ENABLED)
+        key->purpose = HARDWAREKEY_PURPOSE_DS;
+        key->exportable = !esp_efuse_get_key_dis_read(block);
+        return true;
+        #else
+        return false;
+        #endif
+    }
+
+    if (block_purpose != ESP_EFUSE_KEY_PURPOSE_HMAC_UP) {
         return false;
     }
 

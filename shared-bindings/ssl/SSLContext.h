@@ -28,4 +28,5 @@ void common_hal_ssl_sslcontext_set_default_verify_paths(ssl_sslcontext_obj_t *se
 
 bool common_hal_ssl_sslcontext_get_check_hostname(ssl_sslcontext_obj_t *self);
 void common_hal_ssl_sslcontext_set_check_hostname(ssl_sslcontext_obj_t *self, bool value);
-void common_hal_ssl_sslcontext_load_cert_chain(ssl_sslcontext_obj_t *self, mp_buffer_info_t *cert_buf, mp_buffer_info_t *key_buf);
+// hw_key_id nonzero means the private key is an opaque PSA key and key_buf is ignored.
+void common_hal_ssl_sslcontext_load_cert_chain(ssl_sslcontext_obj_t *self, mp_buffer_info_t *cert_buf, mp_buffer_info_t *key_buf, psa_key_id_t hw_key_id);

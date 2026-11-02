@@ -125,6 +125,7 @@ static size_t tilegrid_tiles_size = 0;
 
 #if CIRCUITPY_LVFONTIO && CIRCUITPY_TERMINALIO
 static lvfontio_ondiskfont_t *lvfont = NULL;
+static bool skip_lv_font = false;
 #endif
 
 void supervisor_start_terminal(uint16_t width_px, uint16_t height_px) {
@@ -148,19 +149,25 @@ void supervisor_start_terminal(uint16_t width_px, uint16_t height_px) {
     // Check if we have a custom terminal font in the filesystem
     bool use_lv_font = false;
     const char *font_path = NULL;
+    const uint16_t display_width_px = width_px;
+    const uint16_t display_height_px = height_px;
 
-    if (check_for_custom_font(&font_path)) {
+    if (!skip_lv_font && check_for_custom_font(&font_path)) {
         // Initialize a temporary font just to get dimensions
         lvfontio_ondiskfont_t temp_font;
         if (init_lvfont(&temp_font, font_path, 1)) {
-            // Get the font dimensions
-            common_hal_lvfontio_ondiskfont_get_dimensions(&temp_font, &glyph_width, &glyph_height);
+            // The terminal fills itself with spaces. With one slot, caching fails if the space is
+            // missing or wider than a cell.
+            if (common_hal_lvfontio_ondiskfont_cache_glyph(&temp_font, ' ', NULL) >= 0) {
+                // Get the font dimensions
+                common_hal_lvfontio_ondiskfont_get_dimensions(&temp_font, &glyph_width, &glyph_height);
+                use_lv_font = true;
+                reset_tiles = true;
+                // TODO: We may want to detect when the files modified time hasn't changed.
+            }
 
             // Clean up the temp font - we'll create a proper one later
             common_hal_lvfontio_ondiskfont_deinit(&temp_font);
-            use_lv_font = true;
-            reset_tiles = true;
-            // TODO: We may want to detect when the files modified time hasn't changed.
         }
     }
     #endif
@@ -266,8 +273,14 @@ void supervisor_start_terminal(uint16_t width_px, uint16_t height_px) {
                 // If font initialization failed, free the memory and fall back to built-in font
                 port_free(lvfont);
                 lvfont = NULL;
-                use_lv_font = false;
             }
+        }
+        if (lvfont == NULL) {
+            // The layout above used the custom font's dimensions, so redo it for the built-in font.
+            skip_lv_font = true;
+            supervisor_start_terminal(display_width_px, display_height_px);
+            skip_lv_font = false;
+            return;
         }
     }
     #endif

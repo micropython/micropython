@@ -1,0 +1,14 @@
+# Applied only when CIRCUITPY_HARDWAREKEY=1 (see ports/espressif/Makefile).
+#
+# A DS-purpose hardwarekey.HardwareKey signs through the ESP32-S2/S3 (and
+# C3/C6/H2/P4) Digital Signature peripheral by way of ESP-IDF's PSA opaque
+# RSA-DS driver. That driver is only compiled in when this option is set; it
+# defaults to "n" upstream. On chips without SOC_DIG_SIGN_SUPPORTED the option
+# has an unmet dependency and is ignored.
+CONFIG_MBEDTLS_HARDWARE_RSA_DS_PERIPHERAL=y
+
+# The PSA RSA-DS driver needs RSA + PKCS#1 v1.5 signing wanted in the PSA build.
+# Both are ESP-IDF defaults (TLS needs them), set here so a slimmed-down board
+# config can't silently drop the DS peripheral.
+CONFIG_MBEDTLS_RSA_C=y
+CONFIG_MBEDTLS_PKCS1_V15=y

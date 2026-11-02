@@ -18,14 +18,9 @@
 #include "supervisor/shared/serial.h"
 #include "supervisor/filesystem.h"
 
-// Helper functions for memory allocation
-static inline void *allocate_memory(lvfontio_ondiskfont_t *self, size_t size) {
-    void *ptr;
-    if (self->use_gc_allocator) {
-        ptr = m_malloc_maybe(size);
-    } else {
-        ptr = port_malloc(size, false);
-    }
+// Helper functions for memory allocation. On failure, deinit the font, then raise when using
+// the GC heap or return NULL when using the port heap.
+static void *check_allocation(lvfontio_ondiskfont_t *self, size_t size, void *ptr) {
     if (ptr != NULL) {
         return ptr;
     }
@@ -34,6 +29,18 @@ static inline void *allocate_memory(lvfontio_ondiskfont_t *self, size_t size) {
         m_malloc_fail(size);
     }
     return NULL;
+}
+
+// For memory that may hold pointers to other heap allocations.
+static inline void *allocate_memory(lvfontio_ondiskfont_t *self, size_t size) {
+    void *ptr = self->use_gc_allocator ? m_malloc_maybe(size) : port_malloc(size, false);
+    return check_allocation(self, size, ptr);
+}
+
+// For memory that never holds pointers, so the garbage collector does not scan it.
+static inline void *allocate_pointer_free_memory(lvfontio_ondiskfont_t *self, size_t size) {
+    void *ptr = self->use_gc_allocator ? m_malloc_maybe_without_collect(size) : port_malloc(size, false);
+    return check_allocation(self, size, ptr);
 }
 
 static inline void free_memory(lvfontio_ondiskfont_t *self, void *ptr) {
@@ -141,7 +148,7 @@ static bool load_font_header(lvfontio_ondiskfont_t *self, supervisor_vfs_file_t 
 
             // Allocate memory for cmap ranges
             self->cmap_range_count = subtable_count;
-            self->cmap_ranges = allocate_memory(self, sizeof(lvfontio_cmap_range_t) * subtable_count);
+            self->cmap_ranges = allocate_pointer_free_memory(self, sizeof(lvfontio_cmap_range_t) * subtable_count);
             if (self->cmap_ranges == NULL) {
                 return false;
             }
@@ -201,6 +208,8 @@ static bool load_font_header(lvfontio_ondiskfont_t *self, supervisor_vfs_file_t 
             self->glyf_table_offset = current_position;
             size_t advances[2] = {0, 0};
             size_t advance_count[2] = {0, 0};
+            uint32_t max_advance = 0;
+            bool proportional = false;
 
             if (self->header.default_advance_width != 0) {
                 advances[0] = self->header.default_advance_width;
@@ -219,11 +228,14 @@ static bool load_font_header(lvfontio_ondiskfont_t *self, supervisor_vfs_file_t 
                 uint8_t remaining_bits = 0;
 
                 // Use the helper function to read glyph dimensions
-                read_glyph_dimensions(file, self, &glyph_advance, &bbox_x, &bbox_y, &bbox_w, &bbox_h, &byte_val, &remaining_bits);
+                if (!read_glyph_dimensions(file, self, &glyph_advance, &bbox_x, &bbox_y, &bbox_w, &bbox_h, &byte_val, &remaining_bits)) {
+                    break;
+                }
 
                 // Throw away the bitmap bits.
                 read_bits(file, self->header.bits_per_pixel * bbox_w * bbox_h, &byte_val, &remaining_bits, NULL);
 
+                max_advance = MAX(max_advance, glyph_advance);
                 if (glyph_advance == 0) {
                     // Ignore zero-advance glyphs when inferring the terminal cell width.
                     // Some fonts include placeholders/control glyphs with zero advance,
@@ -239,12 +251,20 @@ static bool load_font_header(lvfontio_ondiskfont_t *self, supervisor_vfs_file_t 
                     advances[1] = glyph_advance;
                     advance_count[1] = 1;
                 } else {
-                    break;
+                    // A third width: not half and full width cells. Keep walking for the widest.
+                    proportional = true;
                 }
                 cid++;
             }
 
-            if (self->header.default_advance_width == 0) {
+            if (self->header.default_advance_width == 0 && proportional) {
+                // Every glyph gets one cell as wide as the widest glyph.
+                if (max_advance > UINT8_MAX) {
+                    return false;
+                }
+                self->header.default_advance_width = max_advance;
+                *max_slots = self->max_cid;
+            } else if (self->header.default_advance_width == 0) {
                 if (advance_count[1] == 0) {
                     self->header.default_advance_width = advances[0];
                     *max_slots = advance_count[0];
@@ -258,7 +278,8 @@ static bool load_font_header(lvfontio_ondiskfont_t *self, supervisor_vfs_file_t 
                     }
                 }
             } else {
-                *max_slots = advance_count[0] + advance_count[1];
+                // Glyphs may have no advance of their own when the header sets it.
+                *max_slots = self->max_cid;
             }
 
             if (self->header.default_advance_width == 0) {
@@ -462,10 +483,11 @@ void common_hal_lvfontio_ondiskfont_construct(lvfontio_ondiskfont_t *self,
     // Cap the number of slots to the number of slots needed by the font. That way
     // small font files don't need a bunch of extra cache space.
     max_glyphs = MIN(max_glyphs, max_slots);
+    self->max_glyphs = max_glyphs;
 
-    // Allocate codepoints array. allocate_memory will raise an exception if
+    // Allocate codepoints array. allocate_pointer_free_memory will raise an exception if
     // allocation fails and the VM is active.
-    self->codepoints = allocate_memory(self, sizeof(uint32_t) * max_glyphs);
+    self->codepoints = allocate_pointer_free_memory(self, sizeof(uint32_t) * max_glyphs);
     if (self->codepoints == NULL) {
         return;
     }
@@ -476,7 +498,7 @@ void common_hal_lvfontio_ondiskfont_construct(lvfontio_ondiskfont_t *self,
     }
 
     // Allocate reference counts
-    self->reference_counts = allocate_memory(self, sizeof(uint16_t) * max_glyphs);
+    self->reference_counts = allocate_pointer_free_memory(self, sizeof(uint16_t) * max_glyphs);
     if (self->reference_counts == NULL) {
         return;
     }
@@ -501,7 +523,7 @@ void common_hal_lvfontio_ondiskfont_construct(lvfontio_ondiskfont_t *self,
 
     // Allocate buffer for bitmap data
     uint32_t buffer_size = stride * self->header.font_size * sizeof(uint32_t);
-    uint32_t *bitmap_buffer = allocate_memory(self, buffer_size);
+    uint32_t *bitmap_buffer = allocate_pointer_free_memory(self, buffer_size);
     if (bitmap_buffer == NULL) {
         return;
     }
@@ -584,7 +606,7 @@ int16_t common_hal_lvfontio_ondiskfont_cache_glyph(lvfontio_ondiskfont_t *self, 
         // Check if this is a full-width character by looking for a second slot
         // with the same codepoint right after this one, wrapping at the end.
         uint16_t next_slot = (existing_slot + 1) % self->max_glyphs;
-        bool cached_is_full_width = self->codepoints[next_slot] == codepoint;
+        bool cached_is_full_width = next_slot != existing_slot && self->codepoints[next_slot] == codepoint;
 
         if (cached_is_full_width) {
             self->reference_counts[next_slot]++;

@@ -207,6 +207,9 @@ endif
 ifeq ($(CIRCUITPY_CODEOP),1)
 SRC_PATTERNS += codeop/%
 endif
+ifeq ($(CIRCUITPY_CRYPTOGRAPHY),1)
+SRC_PATTERNS += cryptography/%
+endif
 ifeq ($(CIRCUITPY_COUNTIO),1)
 SRC_PATTERNS += countio/%
 endif
@@ -632,6 +635,7 @@ SRC_COMMON_HAL_ALL = \
 	rtc/__init__.c \
 	sdioio/SDCard.c \
 	sdioio/__init__.c \
+	cryptography/hazmat/primitives/asymmetric/rsa/DigitalSignatureKey.c \
 	hardwarekey/HardwareKey.c \
 	hardwarekey/__init__.c \
 	socketpool/__init__.c \
@@ -878,6 +882,14 @@ SRC_SHARED_MODULE_ALL = \
 	rotaryio/IncrementalEncoder.c \
 	sdcardio/SDCard.c \
 	sdcardio/__init__.c \
+	cryptography/__init__.c \
+	cryptography/hazmat/__init__.c \
+	cryptography/hazmat/primitives/__init__.c \
+	cryptography/hazmat/primitives/asymmetric/__init__.c \
+	cryptography/hazmat/primitives/asymmetric/padding/__init__.c \
+	cryptography/hazmat/primitives/asymmetric/rsa/__init__.c \
+	cryptography/hazmat/primitives/asymmetric/rsa/DigitalSignatureKey.c \
+	cryptography/hazmat/primitives/hashes/__init__.c \
 	hardwarekey/HardwareKey.c \
 	sharpdisplay/SharpMemoryFramebuffer.c \
 	sharpdisplay/__init__.c \

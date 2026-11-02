@@ -35,14 +35,14 @@ void common_hal_audiofreeverb_freeverb_construct(audiofreeverb_freeverb_obj_t *s
     // Samples are set sequentially. For stereo audio they are passed L/R/L/R/...
     self->buffer_len = buffer_size; // in bytes
 
-    self->buffer[0] = m_malloc_maybe(self->buffer_len);
+    self->buffer[0] = m_malloc_maybe_without_collect(self->buffer_len);
     if (self->buffer[0] == NULL) {
         common_hal_audiofreeverb_freeverb_deinit(self);
         m_malloc_fail(self->buffer_len);
     }
     memset(self->buffer[0], 0, self->buffer_len);
 
-    self->buffer[1] = m_malloc_maybe(self->buffer_len);
+    self->buffer[1] = m_malloc_maybe_without_collect(self->buffer_len);
     if (self->buffer[1] == NULL) {
         common_hal_audiofreeverb_freeverb_deinit(self);
         m_malloc_fail(self->buffer_len);
@@ -91,7 +91,7 @@ void common_hal_audiofreeverb_freeverb_construct(audiofreeverb_freeverb_obj_t *s
     self->combbuffersizes[6] = self->combbuffersizes[14] = 1557;
     self->combbuffersizes[7] = self->combbuffersizes[15] = 1617;
     for (uint32_t i = 0; i < 8 * channel_count; i++) {
-        self->combbuffers[i] = m_malloc_maybe(self->combbuffersizes[i] * sizeof(uint16_t));
+        self->combbuffers[i] = m_malloc_maybe_without_collect(self->combbuffersizes[i] * sizeof(uint16_t));
         if (self->combbuffers[i] == NULL) {
             common_hal_audiofreeverb_freeverb_deinit(self);
             m_malloc_fail(self->combbuffersizes[i]);
@@ -109,7 +109,7 @@ void common_hal_audiofreeverb_freeverb_construct(audiofreeverb_freeverb_obj_t *s
     self->allpassbuffersizes[2] = self->allpassbuffersizes[6] = 341;
     self->allpassbuffersizes[3] = self->allpassbuffersizes[7] = 225;
     for (uint32_t i = 0; i < 4 * channel_count; i++) {
-        self->allpassbuffers[i] = m_malloc_maybe(self->allpassbuffersizes[i] * sizeof(uint16_t));
+        self->allpassbuffers[i] = m_malloc_maybe_without_collect(self->allpassbuffersizes[i] * sizeof(uint16_t));
         if (self->allpassbuffers[i] == NULL) {
             common_hal_audiofreeverb_freeverb_deinit(self);
             m_malloc_fail(self->allpassbuffersizes[i]);

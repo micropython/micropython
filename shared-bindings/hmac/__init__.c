@@ -45,10 +45,11 @@ static hmac_hmac_obj_t *hmac_new_internal(mp_obj_t key_in, psa_algorithm_t hash_
 
     #if CIRCUITPY_HARDWAREKEY
     if (mp_obj_is_type(key_in, &hardwarekey_hardwarekey_type)) {
-        psa_key_id_t key_id = common_hal_hardwarekey_hardwarekey_get_key_id(MP_OBJ_TO_PTR(key_in));
-        if (key_id == 0) {
-            mp_raise_ValueError(MP_ERROR_TEXT("hardware key slot is unused"));
+        hardwarekey_hardwarekey_obj_t *key = MP_OBJ_TO_PTR(key_in);
+        if (common_hal_hardwarekey_hardwarekey_get_purpose(key) != HARDWAREKEY_PURPOSE_HMAC) {
+            mp_raise_ValueError_varg(MP_ERROR_TEXT("key does not have the expected %q purpose"), MP_QSTR_HMAC_UP);
         }
+        psa_key_id_t key_id = common_hal_hardwarekey_hardwarekey_get_key_id(key);
         common_hal_hmac_new(self, NULL, 0, key_id, hash_alg);
         return self;
     }
