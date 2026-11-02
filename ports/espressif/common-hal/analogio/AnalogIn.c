@@ -152,6 +152,14 @@ uint16_t common_hal_analogio_analogin_get_value(analogio_analogin_obj_t *self) {
     }
     #endif
     adc_oneshot_del_unit(adc_handle);
+
+    // Some chips (e.g. ESP32-P4) have a full-scale range above 3.3V at 12 dB attenuation,
+    // so the calibrated voltage can exceed 3300 mV. Clamp to avoid uint16_t wraparound.
+    if (voltage < 0) {
+        voltage = 0;
+    } else if (voltage > 3300) {
+        voltage = 3300;
+    }
     return voltage * ((1 << 16) - 1) / 3300;
 }
 
