@@ -42,6 +42,14 @@
 #error "machine.Timer requires MICROPY_ENABLE_FINALISER."
 #endif
 
+// SOC_TIMER_GROUP_TOTAL_TIMERS was removed from soc_caps.h in IDF v6. Fall
+// back to the number of timer groups times the GPTimers per group, from the
+// timer LL driver.
+#ifndef SOC_TIMER_GROUP_TOTAL_TIMERS
+#include "hal/timer_periph.h"
+#define SOC_TIMER_GROUP_TOTAL_TIMERS (TIMG_LL_GET(INST_NUM) * TIMG_LL_GET(GPTIMERS_PER_INST))
+#endif
+
 #define TIMER_CLK_SRC GPTIMER_CLK_SRC_DEFAULT
 #define TIMER_DIVIDER  8
 
