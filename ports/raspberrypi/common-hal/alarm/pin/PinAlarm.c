@@ -32,14 +32,14 @@ static size_t powman_wakeup_count;
 #endif
 
 static bool woke_up;
-static uint64_t alarm_triggered_pins; // 36 actual pins
-static uint64_t alarm_reserved_pins; // 36 actual pins
+static uint64_t alarm_triggered_pins; // One bit per GPIO. RP2350B has 48.
+static uint64_t alarm_reserved_pins; // One bit per GPIO. RP2350B has 48.
 static bool _not_yet_deep_sleeping = false;
 
 #define GPIO_IRQ_ALL_EVENTS 0x15u
 
 static void gpio_callback(uint gpio, uint32_t events) {
-    alarm_triggered_pins |= (1 << gpio);
+    alarm_triggered_pins |= (1ULL << gpio);
     woke_up = true;
 
     // gpio_acknowledge_irq(gpio, events) is called automatically, before this callback is called.
@@ -92,7 +92,7 @@ mp_obj_t alarm_pin_pinalarm_find_triggered_alarm(size_t n_alarms, const mp_obj_t
             continue;
         }
         alarm_pin_pinalarm_obj_t *alarm = MP_OBJ_TO_PTR(alarms[i]);
-        if (alarm_triggered_pins & (1 << alarm->pin->number)) {
+        if (alarm_triggered_pins & (1ULL << alarm->pin->number)) {
             return alarms[i];
         }
     }
@@ -150,7 +150,7 @@ void alarm_pin_pinalarm_reset(void) {
 
     // Reset pins and pin IRQs
     for (size_t i = 0; i < NUM_BANK0_GPIOS; i++) {
-        if (alarm_reserved_pins & (1 << i)) {
+        if (alarm_reserved_pins & (1ULL << i)) {
             gpio_set_irq_enabled(i, GPIO_IRQ_ALL_EVENTS, false);
             reset_pin_number(i);
         }
@@ -196,7 +196,7 @@ void alarm_pin_pinalarm_set_alarms(bool deep_sleep, size_t n_alarms, const mp_ob
             gpio_set_dir(alarm->pin->number, GPIO_IN);
             // Don't reset at end of VM (instead, pinalarm_reset will reset before next VM)
             common_hal_never_reset_pin(alarm->pin);
-            alarm_reserved_pins |= (1 << alarm->pin->number);
+            alarm_reserved_pins |= (1ULL << alarm->pin->number);
 
             uint32_t event;
             if (alarm->value == true && alarm->edge == true) {
