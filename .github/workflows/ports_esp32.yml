@@ -30,6 +30,11 @@ jobs:
         idf_ver:
           - *oldest
           - *newest
+          # Additional ESP-IDF major version under test. Lockfiles are only
+          # enforced on the newest 5.x (see the MICROPY_MAINTAINER_BUILD step
+          # below); the v6.1 jobs resolve the idf_version-gated components
+          # from main/idf_component.yml without a committed lockfile.
+          - "v6.1"
         ci_func:  # names are functions in ci.sh
           - esp32_build_cmod_spiram_d2wd
           - esp32_build_s2_s3_c3

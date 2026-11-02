@@ -30,7 +30,13 @@
 #include "machine_i2c.h"
 #include "driver/i2c_slave.h"
 #include "esp_intr_alloc.h"
+#include "esp_idf_version.h"
+// i2c_periph_signal moved from soc/ to hal/ (esp_hal_i2c component) in IDF v6.
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(6, 0, 0)
+#include "hal/i2c_periph.h"
+#else
 #include "soc/i2c_periph.h"
+#endif
 
 // These headers are needed to call i2c_ll_txfifo_rst().
 #include "hal/i2c_ll.h"
@@ -55,7 +61,11 @@ static machine_i2c_target_obj_t machine_i2c_target_obj[SOC_HP_I2C_NUM];
 
 // Depth of the IDF send/receive buffers when no backing memory is given.  The
 // IDF cannot create zero-sized buffers, so use the size of the hardware FIFO.
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(6, 0, 0)
+#define I2C_TARGET_NO_MEM_BUF_DEPTH (I2C_LL_GET(FIFO_LEN))
+#else
 #define I2C_TARGET_NO_MEM_BUF_DEPTH (SOC_I2C_FIFO_LEN)
+#endif
 
 /******************************************************************************/
 // ESP-IDF hardware bindings
