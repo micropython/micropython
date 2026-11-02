@@ -1,0 +1,1 @@
+The SparkFun IoT RedBoard ESP32-P4 comes in 2 variants. One has an Ethernet port with PoE ([link](https://www.sparkfun.com/sparkfun-iot-redboard-esp32-p4-poe.html)), the other has an ESP32-C5 as a radio coprocessor ([link](https://www.sparkfun.com/sparkfun-iot-redboard-esp32-p4-esp32-c5-wifi-ble.html)). For simplicity, the same firmware works on both variants.
