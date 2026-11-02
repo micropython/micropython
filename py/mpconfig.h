@@ -1330,6 +1330,13 @@ typedef time_t mp_timestamp_t;
 #define MICROPY_PY_ASYNC_AWAIT (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_CORE_FEATURES)
 #endif
 
+// Experimental structural pattern matching (match/case), a subset of PEP 634.
+// When enabled, "match" and "case" are soft keywords at statement start only
+// (so attribute access like re.match still works). Default off.
+#ifndef MICROPY_PY_MATCH
+#define MICROPY_PY_MATCH (0)
+#endif
+
 // Support for literal string interpolation, f-strings (see PEP 498, Python 3.6+)
 #ifndef MICROPY_PY_FSTRINGS
 #define MICROPY_PY_FSTRINGS (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)

@@ -234,5 +234,9 @@ Changes to built-in modules:
 
 .. rubric:: Notes
 
-.. [#spm] The structural pattern matching feature is discussed in `issue #7847 <https://github.com/micropython/micropython/issues/7847>`_.
+.. [#spm] Experimental subset available when ``MICROPY_PY_MATCH`` is enabled (off by default).
+   ``match``/``case`` are soft keywords at statement start only (so ``re.match`` still works).
+   Patterns: literals, capture, ``_``, or-patterns, guards, fixed-length sequences.
+   Soft-keyword edge cases, mapping/class/as/star patterns are not fully implemented.
+   Discussed in `issue #7847 <https://github.com/micropython/micropython/issues/7847>`_.
 
