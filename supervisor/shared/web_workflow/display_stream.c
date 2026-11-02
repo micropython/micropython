@@ -516,8 +516,8 @@ static uint32_t _rgb(const uint8_t *row, uint16_t x) {
 
 static uint32_t _client_pixel(uint32_t rgb) {
     return ((rgb >> (24 - channel_bits[0])) & pf.max[0]) << pf.shift[0] |
-           ((rgb >> (16 - channel_bits[1])) & pf.max[1]) << pf.shift[1] |
-           ((rgb >> (8 - channel_bits[2])) & pf.max[2]) << pf.shift[2];
+                   ((rgb >> (16 - channel_bits[1])) & pf.max[1]) << pf.shift[1] |
+                   ((rgb >> (8 - channel_bits[2])) & pf.max[2]) << pf.shift[2];
 }
 
 // Fills block with the w x h pixels at x, y in the viewer's format.
