@@ -1414,9 +1414,16 @@ static void super_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
             return;
         }
 
-        // Apply descriptor protocol for property/descriptors found in base class
         #if MICROPY_PY_BUILTINS_PROPERTY || MICROPY_PY_DESCRIPTORS
-        mp_obj_instance_apply_descriptors(dest[0], self->obj, dest);
+        // Apply descriptor protocol for property/descriptors found in base class,
+        // but only if the type of the object bound to this super() has special
+        // accessors (this flag is inherited from base classes so covers the
+        // entire hierarchy that super() searches).  When super() is bound to a
+        // type, eg in a classmethod, the flag is never set and the member is
+        // returned as-is.
+        if (mp_obj_get_type(self->obj)->flags & MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS) {
+            mp_obj_instance_apply_descriptors(dest[0], self->obj, dest);
+        }
         #endif
         return;
     }
