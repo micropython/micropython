@@ -222,8 +222,8 @@ MP_PROPERTY_GETSET(supervisor_runtime_rgb_status_brightness_obj,
 //|
 //|     If no display is configured, this property is `None`.
 //|
-//|     In a future release of CircuitPython, any display that is not the primary display
-//|     will be automatically released at the end of running a code file.
+//|     Any display that is not the primary display is automatically released at the end of
+//|     running a code file.
 //|
 //|     On boards without displayio, this property is present but the value is always `None`."""
 //|

@@ -23,7 +23,6 @@ CIRCUITPY_SPITARGET = 0
 CIRCUITPY_STAGE = 1
 
 CIRCUITPY_PICOGAME = 1
-CIRCUITPY_PICOGAME_FAST_DISPLAY = 1
 CIRCUITPY_PICOGAME_RGB444 = 1
 
 # Not enough room for picogame and these; all are only reachable through the Feather header.

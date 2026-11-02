@@ -43,6 +43,8 @@ SRC_BITMAP := \
 	shared-bindings/audiofilters/Filter.c \
 	shared-bindings/audiofilters/Phaser.c \
 	shared-bindings/audiofilters/__init__.c \
+	shared-bindings/audiotap/Tap.c \
+	shared-bindings/audiotap/__init__.c \
 	shared-bindings/audiofreeverb/Freeverb.c \
 	shared-bindings/audiofreeverb/__init__.c \
 	shared-bindings/audiomixer/__init__.c \
@@ -93,6 +95,8 @@ SRC_BITMAP := \
 	shared-module/audiofilters/Filter.c \
 	shared-module/audiofilters/Phaser.c \
 	shared-module/audiofilters/__init__.c \
+	shared-module/audiotap/Tap.c \
+	shared-module/audiotap/__init__.c \
 	shared-module/audiofreeverb/Freeverb.c \
 	shared-module/audiofreeverb/__init__.c \
 	shared-module/audiomixer/__init__.c \
@@ -159,6 +163,7 @@ CFLAGS += \
 	-DCIRCUITPY_AUDIODELAYS=1 \
 	-DCIRCUITPY_AUDIOFILTERS=1 \
 	-DCIRCUITPY_AUDIOMIXER=1 \
+	-DCIRCUITPY_AUDIOTAP=1 \
 	-DCIRCUITPY_AUDIOMP3=1 \
 	-DCIRCUITPY_AUDIOCORE_DEBUG=1 \
 	-DCIRCUITPY_BITMAPTOOLS=1 \

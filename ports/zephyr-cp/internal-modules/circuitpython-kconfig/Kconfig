@@ -79,6 +79,16 @@ config CIRCUITPY_FLASH_SCRATCH_PAGE
 	default n if SOC_FAMILY_RPI_PICO
 	default y
 
+# ===== Zephyr malloc arena reserve =====
+# The VM heap grows into Zephyr's malloc arena, but Zephyr also allocates from
+# the arena for BLE and TLS, on its own threads, which can't use the GC heap.
+# port_heap_get_largest_free_size() leaves this many bytes of the arena for
+# them. Without a reserve, a full VM heap makes BLE pairing fail.
+config CIRCUITPY_ZEPHYR_MALLOC_RESERVE
+	int "Bytes of Zephyr's malloc arena the VM heap leaves free"
+	depends on COMMON_LIBC_MALLOC
+	default 4096
+
 # ===== External NOR flash =====
 # supervisor/flash.c sets aside the last erase page of the filesystem as a
 # scratch page, and caches a whole erase page in RAM while writing. The NOR

@@ -14,13 +14,13 @@
 #include "shared-bindings/picogame/Sprite.h"
 #include "shared-bindings/busdisplay/BusDisplay.h"
 #include "shared-module/picogame/__init__.h"
-#include "common-hal/picogame/Display.h"
+#include "shared-module/picogame/Display.h"
 
 //| class Display:
-//|     """An accelerated display backend that wraps an existing
-//|     :py:class:`~busdisplay.BusDisplay` and sends pixels with asynchronous,
-//|     double-buffered DMA. It reuses the wrapped display's bus, window commands
-//|     and dimensions.
+//|     """A display backend that wraps an existing :py:class:`~busdisplay.BusDisplay` and
+//|     renders straight to its bus in double-buffered strips. On a bus that sends
+//|     asynchronously the next strip is composed while the previous one is on the
+//|     wire. It reuses the wrapped display's bus, window commands and dimensions.
 //|
 //|     Constructing it raises :py:class:`NotImplementedError` when
 //|     :py:data:`FAST_DISPLAY_SUPPORTED` is `False`."""
@@ -66,7 +66,7 @@ static mp_obj_t picogame_display_make_new(const mp_obj_type_t *type, size_t n_ar
 //|         background: int = 0,
 //|     ) -> None:
 //|         """Render ``sprites`` into the screen region from ``(x0, y0)`` up to, but
-//|         not including, ``(x1, y1)``, and send it with asynchronous DMA. ``buffer_a`` and ``buffer_b`` are two
+//|         not including, ``(x1, y1)``, and send it strip by strip. ``buffer_a`` and ``buffer_b`` are two
 //|         equal strip buffers of at least ``(x1 - x0) * 2`` bytes each, used for
 //|         double buffering.
 //|

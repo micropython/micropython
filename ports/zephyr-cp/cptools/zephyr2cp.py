@@ -1125,6 +1125,8 @@ def zephyr_dts_to_cp_board(board_id, portdir, builddir, zephyrbuilddir, mpconfig
             elif driver in BUSIO_CLASSES:
                 # busio driver (i2c, spi, uart)
                 board_info["busio"] = True
+                if driver == "spi":
+                    board_info["async_spi"] = True
                 logger.info(f"Supported busio driver: {driver}")
                 if driver not in active_zephyr_devices:
                     active_zephyr_devices[driver] = []

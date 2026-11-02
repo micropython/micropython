@@ -34,3 +34,7 @@ void common_hal_max3421e_max3421e_irq_enabled(max3421e_max3421e_obj_t *self, boo
 
 // Queue up the actual interrupt handler for when the SPI bus is free.
 void max3421e_interrupt_handler(max3421e_max3421e_obj_t *self);
+
+// True when something else holds the SPI bus the MAX3421E shares, so the host
+// task must wait: its transfers would be dropped.
+bool max3421e_spi_busy(void);

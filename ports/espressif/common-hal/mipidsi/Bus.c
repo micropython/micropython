@@ -9,6 +9,39 @@
 #include "py/runtime.h"
 #include <esp_ldo_regulator.h>
 
+// Shared MIPI PHY LDO rail. DSI buses and CSI receivers both need it; it is
+// acquired once and released only when the last user goes away.
+static esp_ldo_channel_handle_t mipidsi_phy_ldo = NULL;
+static uint8_t mipidsi_phy_ldo_users = 0;
+
+esp_ldo_channel_handle_t mipidsi_phy_ldo_acquire(void) {
+    if (mipidsi_phy_ldo_users == 0) {
+        esp_ldo_channel_handle_t ldo = NULL;
+        esp_ldo_channel_config_t ldo_config = {
+            .chan_id = 3,
+            .voltage_mv = 2500,
+            // Fixed-voltage (non-adjustable) acquire so both users share the
+            // rail. An adjustable acquire would block the other user.
+            .flags.adjustable = false,
+        };
+        ESP_ERROR_CHECK(esp_ldo_acquire_channel(&ldo_config, &ldo));
+        mipidsi_phy_ldo = ldo;
+    }
+    mipidsi_phy_ldo_users++;
+    return mipidsi_phy_ldo;
+}
+
+void mipidsi_phy_ldo_release(void) {
+    if (mipidsi_phy_ldo_users == 0) {
+        return;
+    }
+    mipidsi_phy_ldo_users--;
+    if (mipidsi_phy_ldo_users == 0 && mipidsi_phy_ldo != NULL) {
+        esp_ldo_release_channel(mipidsi_phy_ldo);
+        mipidsi_phy_ldo = NULL;
+    }
+}
+
 void common_hal_mipidsi_bus_construct(mipidsi_bus_obj_t *self, mp_uint_t frequency, uint8_t num_lanes) {
     self->frequency = frequency;
     self->num_data_lanes = num_lanes;
@@ -18,12 +51,7 @@ void common_hal_mipidsi_bus_construct(mipidsi_bus_obj_t *self, mp_uint_t frequen
         mp_raise_ValueError_varg(MP_ERROR_TEXT("%q in use"), MP_QSTR_mipidsi);
     }
 
-    esp_ldo_channel_handle_t ldo_mipi_phy = NULL;
-    esp_ldo_channel_config_t ldo_mipi_phy_config = {
-        .chan_id = 3,
-        .voltage_mv = 2500,
-    };
-    ESP_ERROR_CHECK(esp_ldo_acquire_channel(&ldo_mipi_phy_config, &ldo_mipi_phy));
+    self->phy_ldo = mipidsi_phy_ldo_acquire();
 
     // Create the DSI bus
     esp_lcd_dsi_bus_config_t bus_config = {
@@ -49,6 +77,11 @@ void common_hal_mipidsi_bus_deinit(mipidsi_bus_obj_t *self) {
         esp_lcd_del_dsi_bus(self->bus_handle);
         self->bus_handle = NULL;
     }
+
+    // Release our hold on the shared MIPI PHY LDO; it stays powered as long
+    // as a CSI receiver (or other user) still holds it.
+    mipidsi_phy_ldo_release();
+    self->phy_ldo = NULL;
 
     self->frequency = 0;
     self->num_data_lanes = 0;

@@ -197,7 +197,13 @@ size_t common_hal_terminalio_terminal_write(terminalio_terminal_obj_t *self, con
         return color_value;
     }
 
-    displayio_palette_t *terminal_palette = self->scroll_area->pixel_shader;
+    // Color attributes are stored in entries 0 and 1 of a Palette. Other shaders have no such
+    // entries, so the attributes are ignored for them.
+    displayio_palette_t *terminal_palette = NULL;
+    if (mp_obj_is_type(self->scroll_area->pixel_shader, &displayio_palette_type) &&
+        common_hal_displayio_palette_get_len(self->scroll_area->pixel_shader) >= 2) {
+        terminal_palette = self->scroll_area->pixel_shader;
+    }
     #endif
 
     const byte *i = data;
@@ -222,10 +228,17 @@ size_t common_hal_terminalio_terminal_write(terminalio_terminal_obj_t *self, con
                 self->status_bar != NULL &&
                 self->status_y < self->status_bar->height_in_tiles) {
                 // Clear the tile grid before we start putting new info.
-                if (self->status_x == 0 && self->status_y == 0) {
+                bool at_start = self->status_x == 0 && self->status_y == 0;
+                if (at_start) {
                     terminalio_terminal_set_all_tiles(self, true, ' ', true);
                 }
                 terminalio_terminal_set_tile(self, true, c, true);
+                // The cursor wraps to the first tile when the bar is full. Move it past the last
+                // row so the height check above skips the rest of the title. A missing first glyph
+                // leaves the cursor at the first tile without wrapping, so at_start rules that out.
+                if (!at_start && self->status_x == 0 && self->status_y == 0) {
+                    self->status_y = self->status_bar->height_in_tiles;
+                }
             }
             continue;
         }
@@ -346,7 +359,7 @@ size_t common_hal_terminalio_terminal_write(terminalio_terminal_obj_t *self, con
                             self->cursor_y = vt_args[0];
                             start_y = self->cursor_y;
                         #if CIRCUITPY_TERMINALIO_VT100
-                        } else if (c == 'm') {
+                        } else if (c == 'm' && terminal_palette != NULL) {
                             for (uint8_t i_args = 0; i_args < n_args; i_args++) {
                                 if ((vt_args[i_args] >= 40 && vt_args[i_args] <= 47) || (vt_args[i_args] >= 30 && vt_args[i_args] <= 37)) {
                                     common_hal_displayio_palette_set_color(terminal_palette, 1 - (vt_args[i_args] / 40), _select_color(vt_args[i_args] % 10));

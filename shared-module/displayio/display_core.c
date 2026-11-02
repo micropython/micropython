@@ -112,6 +112,10 @@ bool displayio_display_core_set_root_group(displayio_display_core_t *self, displ
         return false;
     }
     if (self->current_group != NULL) {
+        // Deactivate the outgoing tree recursively. This clears its transforms
+        // and tells layers (such as a VideoBuffer) that they are no longer
+        // shown.
+        displayio_group_update_transform(self->current_group, NULL);
         self->current_group->in_group = false;
     }
 
@@ -161,6 +165,9 @@ void displayio_display_core_finish_refresh(displayio_display_core_t *self) {
 
 void release_display_core(displayio_display_core_t *self) {
     if (self->current_group != NULL) {
+        // Deactivate the tree so layers stop acting on it (e.g. a VideoBuffer
+        // pauses its source).
+        displayio_group_update_transform(self->current_group, NULL);
         self->current_group->in_group = false;
     }
 }

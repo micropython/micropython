@@ -25,8 +25,9 @@
 //|     """Manage updating an epaper display over a display bus
 //|
 //|     This initializes an epaper display and connects it into CircuitPython. Unlike other
-//|     objects in CircuitPython, EPaperDisplay objects live until `displayio.release_displays()`
-//|     is called. This is done so that CircuitPython can use the display itself.
+//|     objects in CircuitPython, a EPaperDisplay stays active after your code finishes if it is
+//|     `supervisor.runtime.display <supervisor.Runtime.display>`, so that CircuitPython can use it. Otherwise, it is released
+//|     when your code finishes.
 //|
 //|     Most people should not use this class directly. Use a specific display driver instead that will
 //|     contain the startup and shutdown sequences at minimum.

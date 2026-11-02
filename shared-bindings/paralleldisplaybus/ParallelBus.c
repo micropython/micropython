@@ -39,10 +39,11 @@
 //|         """Create a ParallelBus object associated with the given pins. The bus is inferred from data0
 //|         by implying the next 7 additional pins on a given GPIO port.
 //|
-//|         The parallel bus and pins are then in use by the display until `displayio.release_displays()`
-//|         is called even after a reload. (It does this so CircuitPython can use the display after your
-//|         code is done.) So, the first time you initialize a display bus in code.py you should call
-//|         :py:func:`displayio.release_displays` first, otherwise it will error after the first code.py run.
+//|         The parallel bus and pins are then in use by the display until your code finishes or
+//|         `displayio.release_displays()` is called. If the display is
+//|         `supervisor.runtime.display <supervisor.Runtime.display>`, they stay in use after your code finishes, so CircuitPython can
+//|         use the display. In that case, check `supervisor.runtime.display <supervisor.Runtime.display>` before creating the display
+//|         again, or call :py:func:`displayio.release_displays` first.
 //|
 //|         :param microcontroller.Pin data_pins: A list of data pins.  Specify exactly one of ``data_pins`` or ``data0``.
 //|         :param microcontroller.Pin data0: The first data pin. The rest are implied

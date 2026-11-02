@@ -128,6 +128,29 @@ void displayio_background(void) {
 
 }
 
+// Displays and buses are allocated separately, so a display's bus may be at a different index.
+static mp_obj_t get_primary_display_bus(void) {
+    if (primary_display_number == -1) {
+        return NULL;
+    }
+    primary_display_t *primary = &displays[primary_display_number];
+    if (false) {
+    #if CIRCUITPY_BUSDISPLAY
+    } else if (primary->display_base.type == &busdisplay_busdisplay_type) {
+        return primary->display.bus.bus;
+    #endif
+    #if CIRCUITPY_EPAPERDISPLAY
+    } else if (primary->display_base.type == &epaperdisplay_epaperdisplay_type) {
+        return primary->epaper_display.bus.bus;
+    #endif
+    #if CIRCUITPY_FRAMEBUFFERIO
+    } else if (primary->display_base.type == &framebufferio_framebufferdisplay_type) {
+        return primary->framebuffer_display.framebuffer;
+    #endif
+    }
+    return NULL;
+}
+
 static void common_hal_displayio_release_displays_impl(bool keep_primary) {
     // Release displays before busses so that they can send any final commands to turn the display
     // off properly.
@@ -160,8 +183,9 @@ static void common_hal_displayio_release_displays_impl(bool keep_primary) {
         }
         displays[i].display_base.type = &mp_type_NoneType;
     }
+    mp_obj_t primary_bus = get_primary_display_bus();
     for (uint8_t i = 0; i < CIRCUITPY_DISPLAY_LIMIT; i++) {
-        if (i == primary_display_number) {
+        if (MP_OBJ_FROM_PTR(&display_buses[i]) == primary_bus) {
             continue;
         }
         mp_const_obj_t bus_type = display_buses[i].bus_base.type;
@@ -211,7 +235,7 @@ static void common_hal_displayio_release_displays_impl(bool keep_primary) {
         display_buses[i].bus_base.type = &mp_type_NoneType;
     }
 
-    if (!keep_primary) {
+    if (primary_display_number == -1) {
         supervisor_stop_terminal();
     }
 }
@@ -221,9 +245,8 @@ void common_hal_displayio_release_displays(void) {
 }
 
 void reset_displays(void) {
-    // TODO: In CircuitPython 11, uncomment the call.
     // Release secondary displays.
-    // common_hal_displayio_release_displays_impl(/*keep_primary*/ true);
+    common_hal_displayio_release_displays_impl(/*keep_primary*/ true);
 
     // The SPI buses used by FourWires may be allocated on the heap so we need to move them inline.
     for (uint8_t i = 0; i < CIRCUITPY_DISPLAY_LIMIT; i++) {

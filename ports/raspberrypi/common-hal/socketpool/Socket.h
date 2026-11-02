@@ -13,6 +13,11 @@
 
 #include "common-hal/socketpool/SocketPool.h"
 
+#if CIRCUITPY_AIRLIFT
+// The sockets live on the ESP32 co-processor (nina-fw).
+#include "shared-module/_airlift/socketpool.h"
+#else
+
 typedef struct _lwip_socket_obj_t {
     mp_obj_base_t base;
 
@@ -59,3 +64,5 @@ typedef struct _lwip_socket_obj_t {
 #define socketpool_socket_poll_resume(x)
 
 void socket_user_reset(void);
+
+#endif

@@ -536,9 +536,13 @@ static bool max_size_walker(void *ptr, size_t size, int used, void *user) {
     return true;
 }
 
+// The larger of the TLSF and Zephyr malloc free space, because port_malloc()
+// falls back to Zephyr's malloc when TLSF can't satisfy a request.
 size_t port_heap_get_largest_free_size(void) {
-    size_t max_size = 0;
+    bool known = false;
+    size_t largest = 0;
     if (valid_pool_count > 0) {
+        size_t max_size = 0;
         for (size_t i = 0; i < CIRCUITPY_RAM_DEVICE_COUNT; i++) {
             if (pools[i] == NULL) {
                 continue;
@@ -546,9 +550,37 @@ size_t port_heap_get_largest_free_size(void) {
             tlsf_walk_pool(pools[i], max_size_walker, &max_size);
         }
         // IDF does this. Not sure why.
-        return tlsf_fit_size(heap, max_size);
+        largest = tlsf_fit_size(heap, max_size);
+        known = true;
     }
-    return 64 * 1024;
+    #if defined(CONFIG_COMMON_LIBC_MALLOC) && defined(CONFIG_SYS_HEAP_RUNTIME_STATS)
+    // Compute how much of Zephyr's malloc arena the VM heap may take: the
+    // arena's total free bytes, minus:
+    // - Alignment padding. sys_heap can add up to __alignof__(z_max_align_t)
+    //   bytes to a malloc() request, so a request for all the free bytes
+    //   would fail.
+    // - CONFIG_CIRCUITPY_ZEPHYR_MALLOC_RESERVE, left for Zephyr's own
+    //   allocations, such as for TLS connections and BLE pairing.
+    //
+    // This can be misleading when the arena is fragmented. sys_heap only
+    // reports total free bytes, not the largest free block, so the result can
+    // be larger than any single block malloc() can return. gc_try_add_heap()
+    // then retries with smaller sizes.
+    //
+    // zephyr_malloc_active is set by port_heap_init() when Zephyr's malloc()
+    // works at all.
+    if (zephyr_malloc_active) {
+        extern int malloc_runtime_stats_get(struct sys_memory_stats *stats);
+        struct sys_memory_stats stats;
+        if (malloc_runtime_stats_get(&stats) == 0) {
+            size_t held_back = __alignof__(z_max_align_t) + CONFIG_CIRCUITPY_ZEPHYR_MALLOC_RESERVE;
+            size_t arena_free = stats.free_bytes > held_back ? stats.free_bytes - held_back : 0;
+            largest = MAX(largest, arena_free);
+            known = true;
+        }
+    }
+    #endif
+    return known ? largest : 64 * 1024;
 }
 
 void assert_post_action(const char *file, unsigned int line) {

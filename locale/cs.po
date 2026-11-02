@@ -982,7 +982,6 @@ msgstr "Všechny časovače jsou používány"
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
 #: ports/cxd56/common-hal/pulseio/PulseIn.c
-#: ports/espressif/common-hal/mii/RMII.c
 #: ports/raspberrypi/common-hal/picodvi/Framebuffer_RP2350.c
 #: ports/zephyr-cp/common-hal/busio/I2C.c
 #: ports/zephyr-cp/common-hal/busio/SPI.c
@@ -1190,6 +1189,7 @@ msgid "Another send is already active"
 msgstr "Další odesílání je již aktivní"
 
 #: ports/atmel-samd/common-hal/sdioio/SDCard.c
+#: ports/espressif/common-hal/mii/Ethernet.c
 #: ports/espressif/common-hal/qspibus/QSPIBus.c shared-bindings/emmcio/EMMC.c
 #: shared-bindings/socketpool/SocketPool.c
 msgid "%q failure: %d"
@@ -1227,6 +1227,7 @@ msgstr "Velikost není podporována"
 #: shared-bindings/busdisplay/BusDisplay.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
 #: shared-bindings/struct/__init__.c shared-module/struct/__init__.c
+#: shared-module/videocore/VideoBuffer.c
 msgid "Buffer too small"
 msgstr "Buffer příliš malý"
 
@@ -1528,7 +1529,8 @@ msgid "%q must be 8, 16, 24, or 32"
 msgstr ""
 
 #: ports/espressif/common-hal/audiobusio/__init__.c
-#: ports/espressif/common-hal/audioi2sin/I2SIn.c shared-bindings/emmcio/EMMC.c
+#: ports/espressif/common-hal/audioi2sin/I2SIn.c
+#: ports/espressif/common-hal/mii/Ethernet.c shared-bindings/emmcio/EMMC.c
 msgid "Peripheral in use"
 msgstr "Periférie je používána"
 
@@ -1574,6 +1576,8 @@ msgid "Can't construct AudioOut because continuous channel already open"
 msgstr ""
 
 #: ports/espressif/common-hal/audioio/AudioOut.c
+#: ports/espressif/common-hal/mipicsi/Camera.c
+#: shared-module/videocore/VideoBuffer.c
 msgid "already playing"
 msgstr ""
 
@@ -1681,10 +1685,12 @@ msgstr "Požadovaný zdroj nebyl nalezen"
 
 #: ports/espressif/common-hal/espidf/__init__.c
 #: ports/espressif/common-hal/qspibus/QSPIBus.c
+#: shared-module/_airlift/__init__.c
 msgid "Operation timed out"
 msgstr "Časový limit operace vypršel"
 
 #: ports/espressif/common-hal/espidf/__init__.c
+#: shared-module/_airlift/__init__.c
 msgid "Received response was invalid"
 msgstr "Přijatá odpověď nebyla validní"
 
@@ -1721,8 +1727,8 @@ msgstr "Program je příliš dlouhý"
 #: ports/raspberrypi/common-hal/usb_host/Port.c
 #: shared-bindings/digitalio/DigitalInOut.c shared-bindings/emmcio/EMMC.c
 #: shared-bindings/i2cioexpander/IOPin.c shared-bindings/microcontroller/Pin.c
-#: shared-module/max3421e/Max3421E.c shared-module/usb/core/Device.c
-#: shared-module/usb_host_audio/USBIn.c
+#: shared-module/_airlift/__init__.c shared-module/max3421e/Max3421E.c
+#: shared-module/usb/core/Device.c shared-module/usb_host_audio/USBIn.c
 msgid "%q in use"
 msgstr "%q se právě používá"
 
@@ -1761,6 +1767,14 @@ msgstr "Nepodařilo se začít mDNS dotaz"
 #: ports/raspberrypi/common-hal/memorymap/AddressRange.c
 msgid "Address range not allowed"
 msgstr "Adresní rozsah není povolen"
+
+#: ports/espressif/common-hal/mipicsi/Camera.c
+msgid "output_format must be RGB565 or RGB888"
+msgstr ""
+
+#: ports/espressif/common-hal/mipicsi/Camera.c
+msgid "ISP conversion not supported on this chip"
+msgstr ""
 
 #: ports/espressif/common-hal/nvm/ByteArray.c
 msgid "NVS Error"
@@ -2526,7 +2540,7 @@ msgid "%q must be >= %d"
 msgstr "%q musí být >= %d"
 
 #: py/argcheck.c shared-bindings/gifio/GifWriter.c
-#: shared-module/gifio/OnDiskGif.c
+#: shared-module/_airlift/__init__.c shared-module/gifio/OnDiskGif.c
 msgid "%q must be <= %d"
 msgstr "%q musí být <= %d"
 
@@ -2538,7 +2552,7 @@ msgstr "%q délka musí být %d-%d"
 msgid "%q length must be >= %d"
 msgstr "Délka %q musí být >= %d"
 
-#: py/argcheck.c
+#: py/argcheck.c shared-module/_airlift/__init__.c
 msgid "%q length must be <= %d"
 msgstr "Délka %q musí být <= %d"
 
@@ -4792,6 +4806,50 @@ msgstr "může mít pouze jednoho rodiče"
 #: shared-module/vectorio/Polygon.c
 msgid "Polygon needs at least 3 points"
 msgstr "Polygon potřebuje nejméně 3 body"
+
+#: shared-module/videocore/VideoBuffer.c
+msgid "framebuffer went away"
+msgstr ""
+
+#: shared-module/videocore/VideoBuffer.c
+msgid "video doesn't fit in framebuffer"
+msgstr ""
+
+#: shared-module/videocore/VideoBuffer.c
+msgid "framebuffer missing required functions"
+msgstr ""
+
+#: shared-module/videocore/VideoBuffer.c
+msgid "expected FrameBuffer or %q"
+msgstr ""
+
+#: shared-module/videocore/VideoBuffer.c
+msgid "video format must be byte aligned"
+msgstr ""
+
+#: shared-module/videocore/VideoBuffer.c
+msgid "video format doesn't match framebuffer"
+msgstr ""
+
+#: shared-module/videocore/VideoBuffer.c
+msgid "video source rejected the destination"
+msgstr ""
+
+#: shared-module/videocore/VideoBuffer.c
+msgid "video in a framebuffer must be at x == 0"
+msgstr ""
+
+#: shared-module/videocore/VideoBuffer.c
+msgid "video size changed since play; stop and play again"
+msgstr ""
+
+#: shared-module/videocore/VideoBuffer.c
+msgid "VideoBuffer does not support transforms"
+msgstr ""
+
+#: shared-module/videocore/VideoBuffer.c
+msgid "VideoBuffer is playing into a different framebuffer"
+msgstr ""
 
 #: supervisor/shared/bluetooth/bluetooth.c
 msgid "Reconnecting"

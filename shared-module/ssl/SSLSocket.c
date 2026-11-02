@@ -228,8 +228,6 @@ static void ssl_socket_close(ssl_sslsocket_obj_t *self) {
     if (nlr_push(&nlr) == 0) {
         mp_call_method_n_kw(0, 0, self->close_args);
         nlr_pop();
-    } else {
-        nlr_pop();
     }
 }
 
@@ -296,6 +294,8 @@ ssl_sslsocket_obj_t *common_hal_ssl_sslcontext_wrap_socket(ssl_sslcontext_obj_t 
     o->ssl_context = self;
     o->sock_obj = socket;
     o->poll_mask = 0;
+    // A missing method raises below. Keep the finaliser away until the object is complete.
+    o->closed = true;
 
     mp_load_method(socket, MP_QSTR_accept, o->accept_args);
     mp_load_method(socket, MP_QSTR_bind, o->bind_args);
@@ -306,6 +306,7 @@ ssl_sslsocket_obj_t *common_hal_ssl_sslcontext_wrap_socket(ssl_sslcontext_obj_t 
     mp_load_method(socket, MP_QSTR_send, o->send_args);
     mp_load_method(socket, MP_QSTR_settimeout, o->settimeout_args);
     mp_load_method(socket, MP_QSTR_setsockopt, o->setsockopt_args);
+    o->closed = false;
 
     mbedtls_ssl_init(&o->ssl);
     mbedtls_ssl_config_init(&o->conf);
@@ -325,7 +326,9 @@ ssl_sslsocket_obj_t *common_hal_ssl_sslcontext_wrap_socket(ssl_sslcontext_obj_t 
         goto cleanup;
     }
 
-    if (self->crt_bundle_attach != NULL) {
+    if (self->crt_bundle_attach != NULL && !server_side) {
+        // The root bundle checks servers. A server checks clients only
+        // against a CA loaded with load_verify_locations().
         mbedtls_ssl_conf_authmode(&o->conf, MBEDTLS_SSL_VERIFY_REQUIRED);
         self->crt_bundle_attach(&o->conf);
     } else if (self->cacert_buf && self->cacert_bytes) {

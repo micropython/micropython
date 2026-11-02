@@ -681,6 +681,10 @@ async def build_circuitpython():  # noqa: C901
             # have no common-hal override, so always compile them.
             if module.name == "usb_hid":
                 hal_source.append(top / "shared-module/usb_hid/report_descriptors.c")
+            # busio.SPI is built on common-hal/async_spi, with or without the async_spi module.
+            if module.name == "busio":
+                hal_source.append(top / "shared-module/busio/SPI.c")
+                hal_source.append(top / "ports/zephyr-cp/common-hal/async_spi/SPI.c")
             hal_source.extend(top.glob(f"shared-bindings/{module.name}/**/*.c"))
             if module.name in LIBRARY_SOURCE:
                 for library_source in LIBRARY_SOURCE[module.name]:
@@ -750,6 +754,8 @@ async def build_circuitpython():  # noqa: C901
         f"-DCIRCUITPY_WIFI_PING={1 if mpconfigboard.get('CIRCUITPY_WIFI_PING', True) else 0}"
     )
 
+    # The busio and async_spi modules both name common-hal/async_spi/SPI.c.
+    hal_source = list(dict.fromkeys(hal_source))
     source_files = supervisor_source + hal_source + ["extmod/vfs.c"]
     if filesystem_littlefs:
         source_files.extend(

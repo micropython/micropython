@@ -6,7 +6,9 @@
 
 #pragma once
 
+#if !CIRCUITPY_AIRLIFT
 #include "lwip/ip_addr.h"
 
 mp_obj_t socketpool_ip_addr_to_str(const ip_addr_t *addr);
 void socketpool_resolve_host_raise(const char *host, ip_addr_t *addr);
+#endif

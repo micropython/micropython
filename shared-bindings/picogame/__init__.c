@@ -14,7 +14,7 @@
 #include "shared-bindings/picogame/Sprite.h"
 #include "shared-bindings/picogame/Display.h"
 #if CIRCUITPY_PICOGAME_FAST_DISPLAY
-#include "common-hal/picogame/Display.h"        // its struct (pg_get_display unwraps the wrapper)
+#include "shared-module/picogame/Display.h"        // its struct (pg_get_display unwraps the wrapper)
 #endif
 #include "shared-bindings/picogame/Scene.h"
 #include "shared-bindings/picogame/Tilemap.h"
@@ -142,7 +142,7 @@ static busdisplay_busdisplay_obj_t *pg_get_display(mp_obj_t obj) {
 //| """Whether `Display` supports ``rgb444=True`` on this board."""
 //|
 //| FAST_DISPLAY_SUPPORTED: bool
-//| """Whether the accelerated `Display` backend is available on this board."""
+//| """Whether the `Display` backend is built into this firmware."""
 //|
 //| FRAMEBUFFER_SUPPORTED: bool
 //| """Whether `Framebuffer` is available on this board."""
@@ -1070,11 +1070,11 @@ static const mp_rom_map_elem_t picogame_module_globals_table[] = {
     #endif
     // Build-time default render-strip height (rows). picogame_game.setup() uses it when strip_h is
     // None; games can override per call; a board can override the default in mpconfigboard.h.
-    // MEASURED (RP2040): with async DMA double-buffering, SMALL strips overlap render+transfer best ->
-    // 8 is both fastest and least RAM (the two w*strip_h*2 buffers shrink). WITHOUT the DMA backend
-    // there's no overlap, so a blocking send per strip makes LARGER strips win -> 24.
+    // MEASURED (RP2040): with an asynchronous bus send, SMALL strips overlap render+transfer best ->
+    // 8 is both fastest and least RAM (the two w*strip_h*2 buffers shrink). Without one there is no
+    // overlap, so a blocking send per strip makes LARGER strips win -> 24.
     #ifndef PICOGAME_STRIP_H
-    #if CIRCUITPY_PICOGAME_FAST_DISPLAY
+    #if CIRCUITPY_BUSIO_SPI_ASYNC
     #define PICOGAME_STRIP_H 8
     #else
     #define PICOGAME_STRIP_H 24

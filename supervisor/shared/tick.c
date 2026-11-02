@@ -31,6 +31,10 @@
 #include "shared-module/audiofilewriter/AudioFileWriter.h"
 #endif
 
+#if CIRCUITPY_AIRLIFT && CIRCUITPY_SOCKETPOOL
+#include "shared-module/_airlift/socketpool.h"
+#endif
+
 #if CIRCUITPY_WEB_WORKFLOW
 #include "supervisor/shared/web_workflow/display_stream.h"
 #endif
@@ -92,6 +96,10 @@ void supervisor_tick(void) {
 
     #if CIRCUITPY_KEYPAD
     keypad_tick();
+    #endif
+
+    #if CIRCUITPY_AIRLIFT && CIRCUITPY_SOCKETPOOL
+    airlift_socketpool_tick();
     #endif
 
     #if CIRCUITPY_WEB_WORKFLOW

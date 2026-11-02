@@ -49,6 +49,7 @@ void common_hal_mipidsi_display_construct(mipidsi_display_obj_t *self,
     self->framebuffer = NULL;
     self->dbi_io_handle = NULL;
     self->dpi_panel_handle = NULL;
+    self->backlight_inout.base.type = &mp_type_NoneType;
 
     // Create the DBI interface for sending commands
     esp_lcd_dbi_io_config_t dbi_config = {
@@ -141,8 +142,12 @@ void common_hal_mipidsi_display_construct(mipidsi_display_obj_t *self,
         CHECK_ESP_RESULT(ret);
     }
 
+    // Send display-ON (0x29) after the DPI/video stream is running, matching
+    // the reference BSP flow order.
+    esp_lcd_panel_io_tx_param(self->dbi_io_handle, 0x29, NULL, 0);
+    common_hal_time_delay_ms(20);
+
     // Setup backlight PWM if pin is provided
-    self->backlight_inout.base.type = &mp_type_NoneType;
     if (backlight_pin != NULL && common_hal_mcu_pin_is_free(backlight_pin)) {
         #if (CIRCUITPY_PWMIO)
         pwmout_result_t result = common_hal_pwmio_pwmout_construct(&self->backlight_pwm, backlight_pin, 0, 50000, false);

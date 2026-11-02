@@ -1,0 +1,4 @@
+low-pass at 30 Hz: ok
+low-pass at 50 Hz: ok
+low-pass at 100 Hz: ok
+high-pass at 30 Hz, 1 kHz tone: ok

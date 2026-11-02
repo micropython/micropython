@@ -37,18 +37,6 @@ void keypad_tick(void) {
     }
 }
 
-void keypad_reset(void) {
-    keypad_scanner_obj_t *scanner = MP_STATE_VM(keypad_scanners_linked_list);
-    keypad_scanner_obj_t *next = MP_STATE_VM(keypad_scanners_linked_list);
-    while (scanner) {
-        next = scanner->next;
-        if (!scanner->never_reset) {
-            keypad_deregister_scanner(scanner);
-        }
-        scanner = next;
-    }
-}
-
 // Register a Keys, KeyMatrix, etc. that will be scanned in the background
 void keypad_register_scanner(keypad_scanner_obj_t *scanner) {
     supervisor_acquire_lock(&keypad_scanners_linked_list_lock);
@@ -103,8 +91,6 @@ void keypad_construct_common(keypad_scanner_obj_t *self, mp_float_t interval, si
 
     self->debounce_threshold = debounce_threshold;
 
-    self->never_reset = false;
-
     // Add self to the list of active keypad scanners.
     keypad_register_scanner(self);
     keypad_scan_now(self, port_get_raw_ticks(NULL));
@@ -138,12 +124,6 @@ bool keypad_debounce(keypad_scanner_obj_t *self, mp_uint_t key_number, bool curr
     }
     return false;
 }
-
-#if CIRCUITPY_BULK_RESET
-void keypad_never_reset(keypad_scanner_obj_t *self) {
-    self->never_reset = true;
-}
-#endif
 
 void common_hal_keypad_generic_reset(void *self_in) {
     keypad_scanner_obj_t *self = self_in;

@@ -186,7 +186,21 @@ static bool _refresh_area(framebufferio_framebufferdisplay_obj_t *self, const di
         memset(mask, 0, mask_length * sizeof(mask[0]));
         memset(buffer, 0, buffer_size * sizeof(buffer[0]));
 
-        displayio_display_core_fill_area(&self->core, &subrectangle, mask, buffer);
+        bool covered = displayio_display_core_fill_area(&self->core, &subrectangle, mask, buffer);
+
+        // A framebuffer-target VideoBuffer that is the only layer here reports
+        // full coverage without claiming pixels: its frame is already in the
+        // framebuffer, so don't overwrite it with the empty scratch.
+        bool write_back = true;
+        if (covered) {
+            write_back = false;
+            for (uint32_t m = 0; m < mask_length; m++) {
+                if (mask[m] != 0) {
+                    write_back = true;
+                    break;
+                }
+            }
+        }
 
         uint8_t *buf = (uint8_t *)self->bufinfo.buf, *endbuf = buf + self->bufinfo.len;
         (void)endbuf; // Hint to compiler that endbuf is "used" even if NDEBUG
@@ -200,7 +214,9 @@ static bool _refresh_area(framebufferio_framebufferdisplay_obj_t *self, const di
         for (uint16_t i = subrectangle.y1; i < subrectangle.y2; i++) {
             assert(dest >= buf && dest < endbuf && dest + rowsize <= endbuf);
             MARK_ROW_DIRTY(i);
-            memcpy(dest, src, rowsize);
+            if (write_back) {
+                memcpy(dest, src, rowsize);
+            }
             dest += rowstride;
             src += rowsize;
         }

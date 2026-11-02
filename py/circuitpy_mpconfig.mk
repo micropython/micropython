@@ -99,6 +99,11 @@ CFLAGS += -DMICROPY_PY_SELECT_SELECT=$(MICROPY_PY_SELECT_SELECT)
 CIRCUITPY_AESIO ?= $(CIRCUITPY_FULL_BUILD)
 CFLAGS += -DCIRCUITPY_AESIO=$(CIRCUITPY_AESIO)
 
+# An ESP32 co-processor running nina-fw, shared by the core and ESP32SPI (`_airlift`).
+# Not part of CIRCUITPY_NETWORK, which would also turn on ssl, ipaddress and so on.
+CIRCUITPY_AIRLIFT ?= 0
+CFLAGS += -DCIRCUITPY_AIRLIFT=$(CIRCUITPY_AIRLIFT)
+
 # TODO: CIRCUITPY_ALARM will gradually be added to as many ports as possible
 # so make this 1 or CIRCUITPY_FULL_BUILD eventually
 CIRCUITPY_ALARM ?= 0
@@ -124,6 +129,10 @@ CFLAGS += -DCIRCUITPY_ANALOGIO=$(CIRCUITPY_ANALOGIO)
 
 CIRCUITPY_ARRAY ?= 1
 CFLAGS += -DCIRCUITPY_ARRAY=$(CIRCUITPY_ARRAY)
+
+# A port with async SPI: the async_spi module, and busio.SPI built on the same implementation.
+CIRCUITPY_ASYNC_SPI ?= 0
+CFLAGS += -DCIRCUITPY_ASYNC_SPI=$(CIRCUITPY_ASYNC_SPI)
 
 CIRCUITPY_ATEXIT ?= $(CIRCUITPY_FULL_BUILD)
 CFLAGS += -DCIRCUITPY_ATEXIT=$(CIRCUITPY_ATEXIT)
@@ -173,6 +182,8 @@ CIRCUITPY_AUDIOFILTERS ?= $(CIRCUITPY_AUDIOEFFECTS)
 CFLAGS += -DCIRCUITPY_AUDIOFILTERS=$(CIRCUITPY_AUDIOFILTERS)
 CIRCUITPY_AUDIOFREEVERB ?= $(CIRCUITPY_AUDIOEFFECTS)
 CFLAGS += -DCIRCUITPY_AUDIOFREEVERB=$(CIRCUITPY_AUDIOFREEVERB)
+CIRCUITPY_AUDIOTAP ?= $(CIRCUITPY_AUDIOEFFECTS)
+CFLAGS += -DCIRCUITPY_AUDIOTAP=$(CIRCUITPY_AUDIOTAP)
 
 CIRCUITPY_AUDIOFILEWRITER ?= 0
 CFLAGS += -DCIRCUITPY_AUDIOFILEWRITER=$(CIRCUITPY_AUDIOFILEWRITER)
@@ -240,7 +251,7 @@ CFLAGS += -DCIRCUITPY_BUSIO_SPI=$(CIRCUITPY_BUSIO_SPI)
 
 # The port implements common_hal_busio_spi_write_start() and common_hal_busio_spi_end(), so a
 # display on a FourWire bus can send one strip while the next is being composited.
-CIRCUITPY_BUSIO_SPI_ASYNC ?= 0
+CIRCUITPY_BUSIO_SPI_ASYNC ?= $(CIRCUITPY_ASYNC_SPI)
 CFLAGS += -DCIRCUITPY_BUSIO_SPI_ASYNC=$(CIRCUITPY_BUSIO_SPI_ASYNC)
 
 CIRCUITPY_BUSIO_UART ?= $(CIRCUITPY_BUSIO)
@@ -426,6 +437,10 @@ CFLAGS += -DCIRCUITPY_IS31FL3741=$(CIRCUITPY_IS31FL3741)
 CIRCUITPY_JPEGIO ?= $(CIRCUITPY_BITMAPTOOLS)
 CFLAGS += -DCIRCUITPY_JPEGIO=$(CIRCUITPY_JPEGIO)
 
+# Port provides a hardware JPEG decode path for jpegio.
+CIRCUITPY_JPEGIO_HW ?= 0
+CFLAGS += -DCIRCUITPY_JPEGIO_HW=$(CIRCUITPY_JPEGIO_HW)
+
 CIRCUITPY_JSON ?= $(CIRCUITPY_FULL_BUILD)
 CFLAGS += -DCIRCUITPY_JSON=$(CIRCUITPY_JSON)
 
@@ -468,6 +483,9 @@ CFLAGS += -DCIRCUITPY_MEMORYMONITOR=$(CIRCUITPY_MEMORYMONITOR)
 
 CIRCUITPY_MICROCONTROLLER ?= 1
 CFLAGS += -DCIRCUITPY_MICROCONTROLLER=$(CIRCUITPY_MICROCONTROLLER)
+
+CIRCUITPY_MIPICSI ?= 0
+CFLAGS += -DCIRCUITPY_MIPICSI=$(CIRCUITPY_MIPICSI)
 
 CIRCUITPY_MIPIDSI ?= 0
 CFLAGS += -DCIRCUITPY_MIPIDSI=$(CIRCUITPY_MIPIDSI)
@@ -634,9 +652,14 @@ CFLAGS += -DCIRCUITPY_STAGE=$(CIRCUITPY_STAGE)
 # PicoPad 2D game engine (off by default).
 CIRCUITPY_PICOGAME ?= 0
 CFLAGS += -DCIRCUITPY_PICOGAME=$(CIRCUITPY_PICOGAME)
-# Fast async-DMA Display backend: needs a port-specific common-hal (the raspberrypi and
-# espressif ports provide one). Boards without it use the portable bus.send renderer.
+# The strip-rendering Display backend. It is worth building where busio sends asynchronously
+# (the next strip is composed while the previous one is on the wire), so that is the default;
+# a board can turn it off to save flash, or on without async busio for RGB444 alone.
+ifeq ($(CIRCUITPY_PICOGAME),1)
+CIRCUITPY_PICOGAME_FAST_DISPLAY ?= $(CIRCUITPY_BUSIO_SPI_ASYNC)
+else
 CIRCUITPY_PICOGAME_FAST_DISPLAY ?= 0
+endif
 CFLAGS += -DCIRCUITPY_PICOGAME_FAST_DISPLAY=$(CIRCUITPY_PICOGAME_FAST_DISPLAY)
 # Does this board's panel controller support 12-bit RGB444 (COLMOD)? A capability flag the
 # board declares (ST7789/ST7735 = 1, ILI9341 = 0); exposed as picogame.RGB444_SUPPORTED so
@@ -827,6 +850,12 @@ CFLAGS += -DCIRCUITPY_ULAB=$(CIRCUITPY_ULAB)
 # ndarray binary operators. This saves about 4 kB of flash but makes
 # element-wise array arithmetic roughly 1.5x slower.
 CIRCUITPY_ULAB_OPTIMIZE_SIZE ?= 0
+
+# Video pipeline: playing video sources into framebuffers. Requires a port
+# with a video source such as mipicsi and a framebuffer output such as
+# mipidsi.
+CIRCUITPY_VIDEOCORE ?= 0
+CFLAGS += -DCIRCUITPY_VIDEOCORE=$(CIRCUITPY_VIDEOCORE)
 
 CIRCUITPY_WARNINGS ?= $(CIRCUITPY_FULL_BUILD)
 CFLAGS += -DCIRCUITPY_WARNINGS=$(CIRCUITPY_WARNINGS)

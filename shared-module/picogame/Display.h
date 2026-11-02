@@ -3,28 +3,22 @@
 // SPDX-FileCopyrightText: Copyright (c) 2026 Vladimir Smitka
 //
 // SPDX-License-Identifier: MIT
-//
-// Fast display backend (atmel-samd): wraps an existing busdisplay and streams pixels with a DMAC
-// channel of our own, double-buffered so the CPU blits the next strip while the current one is on
-// the wire. Reuses the busdisplay's SERCOM, window opcodes and dimensions -- controller and
-// resolution agnostic.
-//
-// Why this pays on a SAMD51: busio already sends through the DMAC, but it busy-waits for each
-// transfer to land, so the compose time is added to the wire time instead of hidden under it.
+
+// Fast display backend on a port with async busio SPI: wraps an existing busdisplay and sends
+// each strip with busio's write_start() so the CPU blits the next strip while the current one
+// goes out. Reuses the busdisplay's bus, window opcodes and dimensions.
 
 #pragma once
 
 #include "py/obj.h"
-
-#include "include/sam.h"
 #include "shared-bindings/busdisplay/BusDisplay.h"
 #include "shared-module/picogame/Sprite.h"
 
 typedef struct {
     mp_obj_base_t base;
     busdisplay_busdisplay_obj_t *display;
-    Sercom *sercom;            // the busdisplay's SERCOM; strips go out on the port's shared DMA
-    bool rgb444;
+    bool async_send;  // the display bus sends a strip asynchronously, so a blit overlaps a send
+    bool rgb444;      // pack strips to 12-bit RGB444 before sending (~25% less SPI traffic)
 } picogame_display_obj_t;
 
 void common_hal_picogame_display_construct(picogame_display_obj_t *self,

@@ -1,0 +1,22 @@
+idle False 0 0.0 0.0
+playing True 8000 1 16
+played 800 [-300, -297, -294] True
+available 800
+read 800 True 0
+read empty 0
+peak 0.0092 0.0
+rms 0.0053 0.0
+peak again 0.0092
+mismatch The sample's sample_rate does not match
+pieces [100, 100, 50] True
+full 80 True False
+kept oldest 80 True
+cleared 0
+bytearray 5 75
+slice 3 [7, 7, -285, -282, -279, 7, 7, 7]
+meter 0 0 1.0 0.7905694150420949
+stereo 2 4 [0, 1, 2, 3, 0]
+8 bit 8 0.5 0.3535533905932738
+ended False 200
+silence {0} 200
+deinit Object has been deinitialized and can no longer be used. Create a new object.

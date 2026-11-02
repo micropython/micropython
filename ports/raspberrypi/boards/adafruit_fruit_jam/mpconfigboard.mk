@@ -30,3 +30,12 @@ CIRCUITPY_USB_HOST_BULK = 1
 
 # USB microphones as audio sources. Needs the isochronous ring above.
 CIRCUITPY_USB_HOST_AUDIO = 1
+
+# The ESP32-C6 co-processor, shared by the core and ESP32SPI. The core uses it
+# for web workflow. The flags are set one by one, because CIRCUITPY_NETWORK
+# would also turn on ssl, ipaddress and so on.
+CIRCUITPY_AIRLIFT = 1
+CIRCUITPY_SOCKETPOOL = 1
+CIRCUITPY_WEB_WORKFLOW = 1
+CIRCUITPY_MDNS = 0
+CIRCUITPY_SSL = 0

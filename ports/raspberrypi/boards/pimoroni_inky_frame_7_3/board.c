@@ -11,19 +11,85 @@
 #include "shared-bindings/busio/SPI.h"
 #include "shared-bindings/fourwire/FourWire.h"
 #include "shared-bindings/microcontroller/Pin.h"
-#include "shared-bindings/time/__init__.h"
 #include "shared-module/displayio/__init__.h"
 #include "supervisor/shared/board.h"
+#include "inky-shared.h"
+
+digitalio_digitalinout_obj_t enable_pin_obj;
+static volatile uint32_t reset_button_state = 0;
+
+// This function runs BEFORE main() via constructor attribute!
+// This is the key to early and fast SR state readout.
+// Priority 101 = runs very early
+// Forward declaration to satisfy -Wmissing-prototypes
+static void pre_init(void) __attribute__((constructor(101)));
+
+#define SR_PIN_MASK ((0b1 << 8) | (0b1 << 9) | (0b1 << 10))
+#define SR_PIN_DIR ((0b1 << 8) | (0b1 << 9))
+#define SR_PIN_VALUE ((0b1 << 9))
+#define SR_CLK (8)
+#define SR_DATA (10)
+#define ENABLE_3V3_PIN (2)
+#define LED_CONN (7)
+
+// Early init:
+//   - latch power
+//   - save state of shift-register
+//
+// Buttons A-E physically turn on the device, so this is *not* wake
+// from deep-sleep. They are wired behind a shift register.
+// Save the state of the SR early so we know which button
+// was pressed to turn on the device.
+
+static void pre_init(void) {
+    // Immediately latch power on
+    enable_pin_obj.base.type = &digitalio_digitalinout_type;
+    common_hal_digitalio_digitalinout_construct(&enable_pin_obj, &pin_GPIO2);
+    common_hal_digitalio_digitalinout_switch_to_output(&enable_pin_obj,
+        true, DRIVE_MODE_PUSH_PULL);
+    // save state of shift-register
+    gpio_init_mask(SR_PIN_MASK);
+    gpio_set_dir_masked(SR_PIN_MASK, SR_PIN_DIR);
+    gpio_put_masked(SR_PIN_MASK, SR_PIN_VALUE);
+    uint8_t state = 0u;
+    for (uint8_t i = 0u; i < 8; i++) {
+        gpio_put(SR_CLK, true);
+        if (gpio_get(SR_DATA)) {
+            state |= (0b1 << i);
+        }
+        gpio_put(SR_CLK, false);
+    }
+    reset_button_state = state;
+
+    // Turn on LED_CONN so the user knows it is ok to release the button.
+    // The LED is only on for a short time, since it is automatically turned
+    // off during board-init.
+    gpio_init(LED_CONN);
+    gpio_put(LED_CONN, true);
+    gpio_set_dir(LED_CONN, GPIO_OUT);
+}
+
+static mp_obj_t _get_reset_state(void) {
+    return mp_obj_new_int(reset_button_state);
+}
+MP_DEFINE_CONST_FUN_OBJ_0(get_reset_state_obj, _get_reset_state);
+
+static mp_obj_t _on_reset_pressed(mp_obj_t in) {
+    uint8_t bit_number = mp_obj_get_int(in);
+    return mp_obj_new_bool(
+        (reset_button_state & (1 << bit_number)) != 0);
+}
+MP_DEFINE_CONST_FUN_OBJ_1(on_reset_pressed_obj, _on_reset_pressed);
+
+static mp_obj_t _power_off(void) {
+    gpio_put(ENABLE_3V3_PIN, false);
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_0(power_off_obj, _power_off);
 
 #define DELAY 0x80
 
 // This is a 7.3" ACeP EInk.
-
-digitalio_digitalinout_obj_t enable_pin_obj;
-
-digitalio_digitalinout_obj_t sr_clock;
-digitalio_digitalinout_obj_t sr_data;
-digitalio_digitalinout_obj_t sr_latch;
 
 enum reg {
     PSR = 0x00,
@@ -94,23 +160,6 @@ const uint8_t refresh_sequence[] = {
 };
 
 void board_init(void) {
-    // Drive the EN_3V3 pin high so the board stays awake on battery power
-    enable_pin_obj.base.type = &digitalio_digitalinout_type;
-    common_hal_digitalio_digitalinout_construct(&enable_pin_obj, &pin_GPIO2);
-    common_hal_digitalio_digitalinout_switch_to_output(&enable_pin_obj, true, DRIVE_MODE_PUSH_PULL);
-
-    // Never reset
-    common_hal_digitalio_digitalinout_never_reset(&enable_pin_obj);
-
-    common_hal_digitalio_digitalinout_construct(&sr_clock, &pin_GPIO8);
-    common_hal_digitalio_digitalinout_switch_to_output(&sr_clock, false, DRIVE_MODE_PUSH_PULL);
-
-    common_hal_digitalio_digitalinout_construct(&sr_data, &pin_GPIO10);
-    common_hal_digitalio_digitalinout_switch_to_input(&sr_data, PULL_NONE);
-
-    common_hal_digitalio_digitalinout_construct(&sr_latch, &pin_GPIO9);
-    common_hal_digitalio_digitalinout_switch_to_output(&sr_latch, true, DRIVE_MODE_PUSH_PULL);
-
     fourwire_fourwire_obj_t *bus = &allocate_display_bus()->fourwire_bus;
     busio_spi_obj_t *spi = common_hal_board_create_spi(0);
 
@@ -150,3 +199,10 @@ void board_init(void) {
 }
 
 // Use the MP_WEAK supervisor/shared/board.c versions of routines not defined here.
+
+bool board_reset_pin_number(uint8_t pin_number) {
+    if (pin_number == ENABLE_3V3_PIN) {
+        return true;
+    }
+    return false;
+}

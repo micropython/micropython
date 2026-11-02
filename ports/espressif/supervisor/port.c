@@ -17,6 +17,10 @@
 #include "py/runtime.h"
 #if MICROPY_PERSISTENT_CODE_LOAD_NATIVE
 #include "py/persistentcode.h"
+#include "soc/soc_caps.h"
+#if defined(SOC_CACHE_INTERNAL_MEM_VIA_L1CACHE) && SOC_CACHE_INTERNAL_MEM_VIA_L1CACHE
+#include "esp_cache.h"
+#endif
 #endif
 
 #include "esp_mac.h"
@@ -346,9 +350,11 @@ void *port_malloc(size_t size, bool dma_capable) {
     }
 
     void *ptr = NULL;
-    // Try SPIRAM first if available.
+    // Try SPIRAM first if available. Aligned to the GC block size so heap
+    // areas (and with 64-byte GC blocks, every GC allocation in them) are
+    // cache-line aligned, which video DMA destinations require.
     #ifdef CONFIG_SPIRAM
-    ptr = heap_caps_malloc(size, MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
+    ptr = heap_caps_aligned_alloc(MICROPY_BYTES_PER_GC_BLOCK, size, MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
     #endif
     if (ptr == NULL) {
         ptr = heap_caps_malloc(size, MALLOC_CAP_8BIT);
@@ -412,7 +418,14 @@ void port_gc_deinit(void) {
 void *esp_native_code_commit(void *buf, size_t len, void *reloc) {
     len = (len + 3) & ~3;
     size_t len_node = sizeof(native_code_node_t) + len;
+    #if defined(SOC_CACHE_INTERNAL_MEM_VIA_L1CACHE) && SOC_CACHE_INTERNAL_MEM_VIA_L1CACHE
+    // Internal RAM is reached through the L1 caches (ESP32-P4): the node is
+    // whole cache lines, so that it can be synced below.
+    len_node = (len_node + CONFIG_CACHE_L1_CACHE_LINE_SIZE - 1) & ~(CONFIG_CACHE_L1_CACHE_LINE_SIZE - 1);
+    native_code_node_t *node = heap_caps_aligned_alloc(CONFIG_CACHE_L1_CACHE_LINE_SIZE, len_node, MALLOC_CAP_EXEC);
+    #else
     native_code_node_t *node = heap_caps_malloc(len_node, MALLOC_CAP_EXEC);
+    #endif
     #if defined(CONFIG_IDF_TARGET_ESP32S2)
     // The S2 can hand out MALLOC_CAP_EXEC memory that the CPU cannot fetch from.
     if (node != NULL && !esp_ptr_executable(node)) {
@@ -435,6 +448,12 @@ void *esp_native_code_commit(void *buf, size_t len, void *reloc) {
     for (size_t i = 0; i < len / 4; i++) {
         dst[i] = src[i];
     }
+    #if defined(SOC_CACHE_INTERNAL_MEM_VIA_L1CACHE) && SOC_CACHE_INTERNAL_MEM_VIA_L1CACHE
+    // The code is still in the data cache, and the instruction cache may hold
+    // stale lines from the node's earlier use: write back, then invalidate.
+    esp_cache_msync(node, len_node, ESP_CACHE_MSYNC_FLAG_DIR_C2M | ESP_CACHE_MSYNC_FLAG_TYPE_DATA);
+    esp_cache_msync(node, len_node, ESP_CACHE_MSYNC_FLAG_DIR_M2C | ESP_CACHE_MSYNC_FLAG_TYPE_INST);
+    #endif
     return p;
 }
 #endif

@@ -8,6 +8,11 @@
 //
 // SPDX-License-Identifier: MIT
 
+#include "py/mpconfig.h"
+
+// With CIRCUITPY_AIRLIFT, shared-module/_airlift/socketpool.c is used instead.
+#if !CIRCUITPY_AIRLIFT
+
 #include "shared-bindings/socketpool/Socket.h"
 
 #include "py/gc.h"
@@ -1338,3 +1343,5 @@ void socketpool_socket_reset(socketpool_socket_obj_t *self) {
     self->pcb.tcp = NULL;
     self->state = _ERR_BADF;
 }
+
+#endif // !CIRCUITPY_AIRLIFT

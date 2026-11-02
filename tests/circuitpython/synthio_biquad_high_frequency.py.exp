@@ -1,0 +1,7 @@
+low-pass at 4000 Hz: -3.0 dB
+low-pass at 8000 Hz: -3.0 dB
+low-pass at 12000 Hz: -3.0 dB
+low-pass at 16000 Hz: -3.0 dB
+low-pass at 20000 Hz: -3.0 dB
+low-pass at 22000 Hz: -3.0 dB
+22 kHz high-pass, 12 kHz tone: -35 dB

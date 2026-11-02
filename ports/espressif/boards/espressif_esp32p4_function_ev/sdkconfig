@@ -1,3 +1,27 @@
+#
+# Espressif IoT Development Framework Configuration
+#
+# Bootloader
+#
+CONFIG_BOOTLOADER_LOG_LEVEL_WARN=y
+CONFIG_BOOTLOADER_LOG_LEVEL=2
+# end of Bootloader
+
+# This board ships with pre-v3 (eco2) silicon: link the 2nd stage bootloader
+# into the lower memory layout used by revisions 0.x and 1.x.
 CONFIG_ESP32P4_SELECTS_REV_LESS_V3=y
+# This board's silicon is rev v1.3; match the working BSP-demo build (REV_MIN
+# v1.0) so IDF compiles the same errata/clock handling as the reference stack.
 CONFIG_ESP32P4_REV_MIN_100=y
 CONFIG_ETH_USE_ESP32_EMAC=y
+
+# ESP-STDIO: send the ESP-IDF console to the USB-Serial-JTAG port so bootloader
+# logs are visible on the board's serial connector.
+#
+CONFIG_ESP_CONSOLE_USB_SERIAL_JTAG=y
+CONFIG_ESP_CONSOLE_USB_SERIAL_JTAG_ENABLED=y
+CONFIG_ESP_CONSOLE_UART_NUM=-1
+CONFIG_ESP_CONSOLE_ROM_SERIAL_PORT_NUM=6
+# end of ESP-STDIO
+
+# CONFIG_ESP_SYSTEM_MEMPROT is not set

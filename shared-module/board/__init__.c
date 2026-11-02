@@ -25,6 +25,10 @@
 #include "shared-module/sharpdisplay/SharpMemoryFramebuffer.h"
 #endif
 
+#if CIRCUITPY_AIRLIFT
+#include "shared-module/_airlift/transport.h"
+#endif
+
 #if CIRCUITPY_AURORA_EPAPER
 #include "shared-bindings/aurora_epaper/aurora_framebuffer.h"
 #include "shared-module/aurora_epaper/aurora_framebuffer.h"
@@ -194,6 +198,14 @@ void reset_board_buses(void) {
                 break;
             }
             #endif
+        }
+        #endif
+        #if CIRCUITPY_AIRLIFT
+        // The ESP32 co-processor keeps the bus between VM runs. Don't let a lock
+        // left by user code block it.
+        if (airlift_transport_using_spi(&spi_obj[instance])) {
+            common_hal_busio_spi_unlock(&spi_obj[instance]);
+            display_using_spi = true;
         }
         #endif
         if (spi_obj_created[instance]) {

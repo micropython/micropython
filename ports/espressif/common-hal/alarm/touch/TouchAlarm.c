@@ -209,6 +209,18 @@ bool alarm_touch_touchalarm_woke_this_cycle(void) {
 
 void alarm_touch_touchalarm_reset(void) {
     woke_up = false;
+
+    // Release claimed pin(s), mirroring alarm_pin_pinalarm_reset(). Without this, the pin
+    // stays marked "in use" after light_sleep_until_alarms() returns.
+    if (touch_channel_mask) {
+        for (size_t i = 0; i < mcu_pin_globals.map.used; i++) {
+            const mcu_pin_obj_t *pin_obj = MP_OBJ_TO_PTR(mcu_pin_globals.map.table[i].value);
+            if (pin_obj->touch_channel != NO_TOUCH_CHANNEL && (touch_channel_mask & (1 << pin_obj->touch_channel)) != 0) {
+                reset_pin_number(pin_obj->number);
+            }
+        }
+    }
+
     touch_channel_mask = 0;
     peripherals_touch_never_reset(false);
 }

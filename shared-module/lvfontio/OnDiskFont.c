@@ -18,14 +18,9 @@
 #include "supervisor/shared/serial.h"
 #include "supervisor/filesystem.h"
 
-// Helper functions for memory allocation
-static inline void *allocate_memory(lvfontio_ondiskfont_t *self, size_t size) {
-    void *ptr;
-    if (self->use_gc_allocator) {
-        ptr = m_malloc_maybe(size);
-    } else {
-        ptr = port_malloc(size, false);
-    }
+// Helper functions for memory allocation. On failure, deinit the font, then raise when using
+// the GC heap or return NULL when using the port heap.
+static void *check_allocation(lvfontio_ondiskfont_t *self, size_t size, void *ptr) {
     if (ptr != NULL) {
         return ptr;
     }
@@ -34,6 +29,18 @@ static inline void *allocate_memory(lvfontio_ondiskfont_t *self, size_t size) {
         m_malloc_fail(size);
     }
     return NULL;
+}
+
+// For memory that may hold pointers to other heap allocations.
+static inline void *allocate_memory(lvfontio_ondiskfont_t *self, size_t size) {
+    void *ptr = self->use_gc_allocator ? m_malloc_maybe(size) : port_malloc(size, false);
+    return check_allocation(self, size, ptr);
+}
+
+// For memory that never holds pointers, so the garbage collector does not scan it.
+static inline void *allocate_pointer_free_memory(lvfontio_ondiskfont_t *self, size_t size) {
+    void *ptr = self->use_gc_allocator ? m_malloc_maybe_without_collect(size) : port_malloc(size, false);
+    return check_allocation(self, size, ptr);
 }
 
 static inline void free_memory(lvfontio_ondiskfont_t *self, void *ptr) {
@@ -141,7 +148,7 @@ static bool load_font_header(lvfontio_ondiskfont_t *self, supervisor_vfs_file_t 
 
             // Allocate memory for cmap ranges
             self->cmap_range_count = subtable_count;
-            self->cmap_ranges = allocate_memory(self, sizeof(lvfontio_cmap_range_t) * subtable_count);
+            self->cmap_ranges = allocate_pointer_free_memory(self, sizeof(lvfontio_cmap_range_t) * subtable_count);
             if (self->cmap_ranges == NULL) {
                 return false;
             }
@@ -463,9 +470,9 @@ void common_hal_lvfontio_ondiskfont_construct(lvfontio_ondiskfont_t *self,
     // small font files don't need a bunch of extra cache space.
     max_glyphs = MIN(max_glyphs, max_slots);
 
-    // Allocate codepoints array. allocate_memory will raise an exception if
+    // Allocate codepoints array. allocate_pointer_free_memory will raise an exception if
     // allocation fails and the VM is active.
-    self->codepoints = allocate_memory(self, sizeof(uint32_t) * max_glyphs);
+    self->codepoints = allocate_pointer_free_memory(self, sizeof(uint32_t) * max_glyphs);
     if (self->codepoints == NULL) {
         return;
     }
@@ -476,7 +483,7 @@ void common_hal_lvfontio_ondiskfont_construct(lvfontio_ondiskfont_t *self,
     }
 
     // Allocate reference counts
-    self->reference_counts = allocate_memory(self, sizeof(uint16_t) * max_glyphs);
+    self->reference_counts = allocate_pointer_free_memory(self, sizeof(uint16_t) * max_glyphs);
     if (self->reference_counts == NULL) {
         return;
     }
@@ -501,7 +508,7 @@ void common_hal_lvfontio_ondiskfont_construct(lvfontio_ondiskfont_t *self,
 
     // Allocate buffer for bitmap data
     uint32_t buffer_size = stride * self->header.font_size * sizeof(uint32_t);
-    uint32_t *bitmap_buffer = allocate_memory(self, buffer_size);
+    uint32_t *bitmap_buffer = allocate_pointer_free_memory(self, buffer_size);
     if (bitmap_buffer == NULL) {
         return;
     }

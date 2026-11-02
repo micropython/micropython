@@ -37,7 +37,10 @@
 //|
 //|         :param int width: The number of values wide
 //|         :param int height: The number of values high
-//|         :param int value_count: The number of possible pixel values."""
+//|         :param int value_count: The minimum number of pixel values to store, from 1 to 65536. Storage is
+//|           rounded up to 1, 2, 4, 8 or 16 bits per value, so any value that fits in ``bits_per_value`` can be
+//|           stored, even one that is ``value_count`` or higher. When a `displayio.Palette` is the pixel shader,
+//|           a pixel past the end of the palette is transparent."""
 //|         ...
 //|
 static mp_obj_t displayio_bitmap_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {

@@ -34,10 +34,11 @@
 //|     ) -> None:
 //|         """Create a I2CDisplayBus object associated with the given I2C bus and reset pin.
 //|
-//|         The I2C bus and pins are then in use by the display until `displayio.release_displays()` is
-//|         called even after a reload. (It does this so CircuitPython can use the display after your code
-//|         is done.) So, the first time you initialize a display bus in code.py you should call
-//|         :py:func:`displayio.release_displays` first, otherwise it will error after the first code.py run.
+//|         The I2C bus and pins are then in use by the display until your code finishes or
+//|         `displayio.release_displays()` is called. If the display is
+//|         `supervisor.runtime.display <supervisor.Runtime.display>`, they stay in use after your code finishes, so CircuitPython can
+//|         use the display. In that case, check `supervisor.runtime.display <supervisor.Runtime.display>` before creating the display
+//|         again, or call :py:func:`displayio.release_displays` first.
 //|
 //|         :param busio.I2C i2c_bus: The I2C bus that make up the clock and data lines
 //|         :param int device_address: The I2C address of the device

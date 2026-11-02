@@ -16,6 +16,9 @@
 #include "shared-bindings/displayio/Group.h"
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/util.h"
+#if CIRCUITPY_VIDEOCORE
+#include "shared-module/videocore/__init__.h"
+#endif
 #include "shared-module/displayio/__init__.h"
 
 //| import displayio
@@ -34,8 +37,9 @@
 //|     """Manage updating a display over a display bus
 //|
 //|     This initializes a display and connects it into CircuitPython. Unlike other
-//|     objects in CircuitPython, display objects live until `displayio.release_displays()`
-//|     is called. This is done so that CircuitPython can use the display itself.
+//|     objects in CircuitPython, a display stays active after your code finishes if it is
+//|     `supervisor.runtime.display <supervisor.Runtime.display>`, so that CircuitPython can use it. Otherwise, it is released
+//|     when your code finishes.
 //|
 //|     Most people should not use this class directly. Use a specific display driver instead that will
 //|     contain the initialization sequence at minimum."""
@@ -408,6 +412,11 @@ static mp_obj_t busdisplay_busdisplay_obj_set_root_group(mp_obj_t self_in, mp_ob
     displayio_group_t *group = NULL;
     if (group_in != mp_const_none) {
         group = MP_OBJ_TO_PTR(native_group(group_in));
+        #if CIRCUITPY_VIDEOCORE
+        // Validate that draw protocol layers (e.g. a VideoBuffer) fit the
+        // display they will render on.
+        videocore_validate_root_group(group_in, self_in);
+        #endif
     }
 
     common_hal_busdisplay_busdisplay_set_root_group(self, group);

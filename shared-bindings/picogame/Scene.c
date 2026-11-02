@@ -26,7 +26,7 @@
 #include "shared-module/picogame/Particles.h"
 #include "shared-module/picogame/Canvas.h"
 #if CIRCUITPY_PICOGAME_FAST_DISPLAY
-#include "common-hal/picogame/Display.h"
+#include "shared-module/picogame/Display.h"
 #endif
 
 #define SCENE_INIT_CAP 8

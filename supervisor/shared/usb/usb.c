@@ -47,6 +47,10 @@
 
 #include "tusb.h"
 
+#if CIRCUITPY_MAX3421E
+#include "shared-module/max3421e/Max3421E.h"
+#endif
+
 #if CFG_TUSB_OS == OPT_OS_ZEPHYR
 #include <zephyr/kernel.h>
 int CFG_TUSB_DEBUG_PRINTF(const char *format, ...) {
@@ -161,7 +165,13 @@ void usb_background(void) {
     if (usb_enabled()) {
         #if CFG_TUSB_OS == OPT_OS_NONE || CFG_TUSB_OS == OPT_OS_PICO
         tud_task();
-        #if CIRCUITPY_USB_HOST || CIRCUITPY_MAX3421E
+        #if CIRCUITPY_MAX3421E
+        if (max3421e_spi_busy()) {
+            usb_background_schedule();  // try again once the bus is free
+        } else {
+            tuh_task();
+        }
+        #elif CIRCUITPY_USB_HOST
         tuh_task();
         #endif
         #elif CFG_TUSB_OS == OPT_OS_FREERTOS

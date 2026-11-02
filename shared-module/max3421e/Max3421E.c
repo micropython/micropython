@@ -122,6 +122,25 @@ void max3421e_interrupt_handler(max3421e_max3421e_obj_t *arg) {
     common_hal_max3421e_max3421e_irq_enabled(self, false);
 }
 
+// tuh_max3421_spi_cs_api() can't wait for a bus that other code holds (Python
+// code, a display refresh or an SD card read can all run background tasks while
+// holding it), so it skips the transfer. TinyUSB then acts on register values it
+// never read, and a dropped transfer start leaves busy_lock set with no
+// transfer-done interrupt to clear it, so the host stalls until reset.
+// usb_background() asks this first and runs tuh_task() later instead.
+bool max3421e_spi_busy(void) {
+    max3421e_max3421e_obj_t *self = _active;
+    if (self == NULL || common_hal_max3421e_max3421e_deinited(self) ||
+        common_hal_busio_spi_deinited(self->bus)) {
+        return false;
+    }
+    if (!common_hal_busio_spi_try_lock(self->bus)) {
+        return true;
+    }
+    common_hal_busio_spi_unlock(self->bus);
+    return false;
+}
+
 // API to control MAX3421 SPI CS
 void tuh_max3421_spi_cs_api(uint8_t rhport, bool active) {
     max3421e_max3421e_obj_t *self = _active;

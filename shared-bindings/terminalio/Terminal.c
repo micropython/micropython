@@ -79,6 +79,15 @@
 //|     | White  | 37         | 47         |
 //|     +--------+------------+------------+
 //|
+//|     .. note:: Colors apply to the whole terminal, not to individual characters. They change the
+//|         ``scroll_area`` palette, so all text changes color at once, including text already on
+//|         screen. The ``scroll_area`` ``pixel_shader`` must be a `displayio.Palette` with at least
+//|         2 colors to use these attributes.
+//|
+//|         For color per character, see the
+//|         `adafruit_color_terminal <https://github.com/adafruit/Adafruit_CircuitPython_Color_Terminal>`_
+//|         library, which uses `tilepalettemapper`.
+//|
 //|     Example Usage:
 //|
 //|     .. code-block:: python

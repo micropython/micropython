@@ -27,3 +27,9 @@
 // USB is always used internally so skip the pin objects for it.
 #define IGNORE_PIN_PA24     1
 #define IGNORE_PIN_PA25     1
+
+// The ESP32 running nina-fw, on board.SPI().
+#define CIRCUITPY_AIRLIFT_CS (&pin_PB14)
+#define CIRCUITPY_AIRLIFT_BUSY (&pin_PB16)
+#define CIRCUITPY_AIRLIFT_RESET (&pin_PB17)
+#define CIRCUITPY_AIRLIFT_GPIO0 (&pin_PB15)

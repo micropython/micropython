@@ -10,7 +10,7 @@
 #include "py/objlist.h"
 #include "shared-bindings/displayio/TileGrid.h"
 
-#if CIRCUITPY_VECTORIO
+#if CIRCUITPY_VECTORIO || CIRCUITPY_VIDEOCORE
 #include "shared-bindings/vectorio/VectorShape.h"
 #endif
 
@@ -52,11 +52,15 @@ void common_hal_displayio_group_set_hidden(displayio_group_t *self, bool hidden)
             displayio_group_set_hidden_by_parent(layer, hidden);
             continue;
         }
-        #if CIRCUITPY_VECTORIO
+        #if CIRCUITPY_VECTORIO || CIRCUITPY_VIDEOCORE
         const vectorio_draw_protocol_t *draw_protocol = mp_proto_get(MP_QSTR_protocol_draw, self->members->items[i]);
         if (draw_protocol != NULL) {
             layer = draw_protocol->draw_get_protocol_self(self->members->items[i]);
-            draw_protocol->draw_protocol_impl->draw_set_dirty(layer);
+            if (draw_protocol->draw_protocol_impl->draw_set_hidden != NULL) {
+                draw_protocol->draw_protocol_impl->draw_set_hidden(layer, hidden);
+            } else {
+                draw_protocol->draw_protocol_impl->draw_set_dirty(layer);
+            }
             continue;
         }
         #endif
@@ -87,11 +91,15 @@ void displayio_group_set_hidden_by_parent(displayio_group_t *self, bool hidden) 
             displayio_group_set_hidden_by_parent(layer, hidden);
             continue;
         }
-        #if CIRCUITPY_VECTORIO
+        #if CIRCUITPY_VECTORIO || CIRCUITPY_VIDEOCORE
         const vectorio_draw_protocol_t *draw_protocol = mp_proto_get(MP_QSTR_protocol_draw, self->members->items[i]);
         if (draw_protocol != NULL) {
             layer = draw_protocol->draw_get_protocol_self(self->members->items[i]);
-            draw_protocol->draw_protocol_impl->draw_set_dirty(layer);
+            if (draw_protocol->draw_protocol_impl->draw_set_hidden != NULL) {
+                draw_protocol->draw_protocol_impl->draw_set_hidden(layer, hidden);
+            } else {
+                draw_protocol->draw_protocol_impl->draw_set_dirty(layer);
+            }
             continue;
         }
         #endif
@@ -141,16 +149,20 @@ bool displayio_group_get_previous_area(displayio_group_t *self, displayio_area_t
 }
 
 static void _update_child_transforms(displayio_group_t *self) {
-    if (!self->in_group) {
-        return;
-    }
+    // Draw protocol layers get NULL while inactive. TileGrids and nested
+    // Groups always get the (zeroed when inactive) transform, since it also
+    // tracks their group membership.
+    #if CIRCUITPY_VECTORIO || CIRCUITPY_VIDEOCORE
+    displayio_buffer_transform_t *draw_transform =
+        self->active ? &self->absolute_transform : NULL;
+    #endif
     for (size_t i = 0; i < self->members->len; i++) {
         mp_obj_t layer;
-        #if CIRCUITPY_VECTORIO
+        #if CIRCUITPY_VECTORIO || CIRCUITPY_VIDEOCORE
         const vectorio_draw_protocol_t *draw_protocol = mp_proto_get(MP_QSTR_protocol_draw, self->members->items[i]);
         if (draw_protocol != NULL) {
             layer = draw_protocol->draw_get_protocol_self(self->members->items[i]);
-            draw_protocol->draw_protocol_impl->draw_update_transform(layer, &self->absolute_transform);
+            draw_protocol->draw_protocol_impl->draw_update_transform(layer, draw_transform);
             continue;
         }
         #endif
@@ -171,8 +183,8 @@ static void _update_child_transforms(displayio_group_t *self) {
 
 void displayio_group_update_transform(displayio_group_t *self,
     const displayio_buffer_transform_t *parent_transform) {
-    self->in_group = parent_transform != NULL;
-    if (self->in_group) {
+    self->active = parent_transform != NULL && parent_transform->scale != 0;
+    if (self->active) {
         int16_t x = self->x;
         int16_t y = self->y;
         if (parent_transform->transpose_xy) {
@@ -188,6 +200,10 @@ void displayio_group_update_transform(displayio_group_t *self,
         self->absolute_transform.mirror_y = parent_transform->mirror_y;
 
         self->absolute_transform.scale = parent_transform->scale * self->scale;
+    } else {
+        // Clear the transform so inactive layers can't act on a stale one.
+        displayio_buffer_transform_t no_transform = {};
+        self->absolute_transform = no_transform;
     }
     _update_child_transforms(self);
 }
@@ -248,14 +264,15 @@ void common_hal_displayio_group_set_y(displayio_group_t *self, mp_int_t y) {
 
 static void _add_layer(displayio_group_t *self, mp_obj_t layer) {
     check_readonly(self);
-    #if CIRCUITPY_VECTORIO
+    #if CIRCUITPY_VECTORIO || CIRCUITPY_VIDEOCORE
     const vectorio_draw_protocol_t *draw_protocol = mp_proto_get(MP_QSTR_protocol_draw, layer);
     if (draw_protocol != NULL) {
         mp_obj_t protocol_self = draw_protocol->draw_get_protocol_self(layer);
         if (draw_protocol->draw_protocol_impl->draw_set_in_group(protocol_self, true)) {
             mp_raise_ValueError(MP_ERROR_TEXT("Layer already in a group"));
         }
-        draw_protocol->draw_protocol_impl->draw_update_transform(protocol_self, &self->absolute_transform);
+        draw_protocol->draw_protocol_impl->draw_update_transform(
+            protocol_self, self->active ? &self->absolute_transform : NULL);
         return;
     }
     #endif
@@ -293,7 +310,7 @@ static void _remove_layer(displayio_group_t *self, size_t index) {
     mp_obj_t layer;
     displayio_area_t layer_area;
     bool rendered_last_frame = false;
-    #if CIRCUITPY_VECTORIO
+    #if CIRCUITPY_VECTORIO || CIRCUITPY_VIDEOCORE
     const vectorio_draw_protocol_t *draw_protocol = mp_proto_get(MP_QSTR_protocol_draw, self->members->items[index]);
     if (draw_protocol != NULL) {
         layer = draw_protocol->draw_get_protocol_self(self->members->items[index]);
@@ -368,6 +385,7 @@ void displayio_group_construct(displayio_group_t *self, mp_obj_list_t *members, 
     self->item_removed = false;
     self->scale = scale;
     self->in_group = false;
+    self->active = false;
     self->readonly = false;
 }
 
@@ -377,7 +395,7 @@ bool displayio_group_fill_area(displayio_group_t *self, const _displayio_colorsp
     if (self->hidden == false) {
         for (int32_t i = self->members->len - 1; i >= 0; i--) {
             mp_obj_t layer;
-            #if CIRCUITPY_VECTORIO
+            #if CIRCUITPY_VECTORIO || CIRCUITPY_VIDEOCORE
             const vectorio_draw_protocol_t *draw_protocol = mp_proto_get(MP_QSTR_protocol_draw, self->members->items[i]);
             if (draw_protocol != NULL) {
                 layer = draw_protocol->draw_get_protocol_self(self->members->items[i]);
@@ -412,7 +430,7 @@ void displayio_group_finish_refresh(displayio_group_t *self) {
     self->item_removed = false;
     for (int32_t i = self->members->len - 1; i >= 0; i--) {
         mp_obj_t layer;
-        #if CIRCUITPY_VECTORIO
+        #if CIRCUITPY_VECTORIO || CIRCUITPY_VIDEOCORE
         const vectorio_draw_protocol_t *draw_protocol = mp_proto_get(MP_QSTR_protocol_draw, self->members->items[i]);
         if (draw_protocol != NULL) {
             layer = draw_protocol->draw_get_protocol_self(self->members->items[i]);
@@ -443,7 +461,7 @@ static displayio_area_t *group_get_refresh_areas_impl(displayio_group_t *self, d
 
     for (int32_t i = self->members->len - 1; i >= 0; i--) {
         mp_obj_t layer;
-        #if CIRCUITPY_VECTORIO
+        #if CIRCUITPY_VECTORIO || CIRCUITPY_VIDEOCORE
         const vectorio_draw_protocol_t *draw_protocol = mp_proto_get(MP_QSTR_protocol_draw, self->members->items[i]);
         if (draw_protocol != NULL) {
             layer = draw_protocol->draw_get_protocol_self(self->members->items[i]);

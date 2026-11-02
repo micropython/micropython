@@ -85,10 +85,6 @@
 #include "shared-module/picogame/__init__.h"
 #endif
 
-#if CIRCUITPY_KEYPAD
-#include "shared-module/keypad/__init__.h"
-#endif
-
 #if CIRCUITPY_STORAGE_MAP_FILE
 #include "shared-bindings/storage/__init__.h"
 #endif
@@ -103,6 +99,10 @@
 
 #if CIRCUITPY_MEMORYMONITOR
 #include "shared-module/memorymonitor/__init__.h"
+#endif
+
+#if CIRCUITPY_AIRLIFT
+#include "shared-module/_airlift/transport.h"
 #endif
 
 #if CIRCUITPY_SOCKETPOOL
@@ -412,10 +412,6 @@ static void cleanup_after_vm(mp_obj_t exception) {
     common_hal_canio_reset();
     #endif
 
-    #if CIRCUITPY_KEYPAD
-    keypad_reset();
-    #endif
-
     #if CIRCUITPY_STORAGE_MAP_FILE
     storage_map_file_reset();
     #endif
@@ -431,6 +427,11 @@ static void cleanup_after_vm(mp_obj_t exception) {
     // Close user-initiated sockets.
     #if CIRCUITPY_SOCKETPOOL
     socketpool_user_reset();
+    #endif
+
+    // Close sockets that user code left open on the ESP32 co-processor.
+    #if CIRCUITPY_AIRLIFT
+    airlift_user_reset();
     #endif
 
     // Turn off user initiated WiFi connections.

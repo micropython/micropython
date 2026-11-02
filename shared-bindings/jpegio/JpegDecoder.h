@@ -15,7 +15,8 @@ extern const mp_obj_type_t jpegio_jpegdecoder_type;
 
 typedef struct jpegio_jpegdecoder_obj jpegio_jpegdecoder_obj_t;
 
-void common_hal_jpegio_jpegdecoder_construct(jpegio_jpegdecoder_obj_t *self);
+void common_hal_jpegio_jpegdecoder_construct(jpegio_jpegdecoder_obj_t *self, bool software_ok);
+void common_hal_jpegio_jpegdecoder_deinit(jpegio_jpegdecoder_obj_t *self);
 void common_hal_jpegio_jpegdecoder_close(jpegio_jpegdecoder_obj_t *self);
 mp_obj_t common_hal_jpegio_jpegdecoder_set_source_buffer(jpegio_jpegdecoder_obj_t *self, mp_obj_t jpeg_data);
 mp_obj_t common_hal_jpegio_jpegdecoder_set_source_file(jpegio_jpegdecoder_obj_t *self, mp_obj_t file_obj);

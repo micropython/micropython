@@ -44,14 +44,14 @@ void common_hal_audiodelays_flanger_construct(audiodelays_flanger_obj_t *self, u
     // Samples are set sequentially. For stereo audio they are passed L/R/L/R/...
     self->buffer_len = buffer_size; // in bytes
 
-    self->buffer[0] = m_malloc_maybe(self->buffer_len);
+    self->buffer[0] = m_malloc_maybe_without_collect(self->buffer_len);
     if (self->buffer[0] == NULL) {
         common_hal_audiodelays_flanger_deinit(self);
         m_malloc_fail(self->buffer_len);
     }
     memset(self->buffer[0], 0, self->buffer_len);
 
-    self->buffer[1] = m_malloc_maybe(self->buffer_len);
+    self->buffer[1] = m_malloc_maybe_without_collect(self->buffer_len);
     if (self->buffer[1] == NULL) {
         common_hal_audiodelays_flanger_deinit(self);
         m_malloc_fail(self->buffer_len);
@@ -107,7 +107,7 @@ void common_hal_audiodelays_flanger_construct(audiodelays_flanger_obj_t *self, u
     // the older of the two would alias onto the frame we are about to write.
     self->delay_buffer_frames = (uint32_t)(self->base.sample_rate / MICROPY_FLOAT_CONST(1000.0) * max_delay_ms) + 2;
     size_t delay_buffer_size = self->delay_buffer_frames * self->base.channel_count * sizeof(int16_t);
-    self->delay_buffer = m_malloc_maybe(delay_buffer_size);
+    self->delay_buffer = m_malloc_maybe_without_collect(delay_buffer_size);
     if (self->delay_buffer == NULL) {
         common_hal_audiodelays_flanger_deinit(self);
         m_malloc_fail(delay_buffer_size);

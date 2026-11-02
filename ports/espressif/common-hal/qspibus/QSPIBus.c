@@ -331,20 +331,31 @@ void common_hal_qspibus_qspibus_construct(
         mp_raise_OSError_msg_varg(MP_ERROR_TEXT("%q failure: %d"), MP_QSTR_QSPI, (int)err);
     }
 
+    // Mark the bus pins never-reset so they stay attached to the SPI peripheral
+    // across reset_all_pins() at VM end; the display (e.g. board.DISPLAY) outlives
+    // the VM. deinit() clears this again via reset_pin_number().
     claim_pin(clock);
+    common_hal_never_reset_pin(clock);
     claim_pin(data0);
+    common_hal_never_reset_pin(data0);
     claim_pin(data1);
+    common_hal_never_reset_pin(data1);
     claim_pin(data2);
+    common_hal_never_reset_pin(data2);
     claim_pin(data3);
+    common_hal_never_reset_pin(data3);
     claim_pin(cs);
+    common_hal_never_reset_pin(cs);
     if (dcx != NULL) {
         claim_pin(dcx);
+        common_hal_never_reset_pin(dcx);
         gpio_set_direction((gpio_num_t)self->dcx_pin, GPIO_MODE_OUTPUT);
         gpio_set_level((gpio_num_t)self->dcx_pin, 1);
     }
 
     if (reset != NULL) {
         claim_pin(reset);
+        common_hal_never_reset_pin(reset);
 
         gpio_set_direction((gpio_num_t)self->reset_pin, GPIO_MODE_OUTPUT);
         gpio_set_level((gpio_num_t)self->reset_pin, 0);

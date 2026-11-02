@@ -486,11 +486,24 @@ static bool gc_try_add_heap(size_t failed_alloc) {
     DEBUG_printf("MP_PLAT_ALLOC_HEAP " UINT_FMT " = %p\n",
         to_alloc, new_heap);
 
+    // CIRCUITPY-CHANGE: retry with smaller sizes, down to the size this
+    // allocation needs.
+    //
+    // Upstream gives up as soon as the first MP_PLAT_ALLOC_HEAP() fails, on the
+    // assumption that it only fails if another thread allocated meanwhile or
+    // gc_get_max_new_split() has a bug. But gc_get_max_new_split() can also
+    // overestimate the largest free block, for example when it reports the
+    // total free bytes of a fragmented system heap. A smaller area may then
+    // still fit, so halve the request until it does or it reaches 'needed'.
+    while (new_heap == NULL && to_alloc > needed) {
+        to_alloc = MAX(needed, to_alloc / 2);
+        new_heap = MP_PLAT_ALLOC_HEAP(to_alloc);
+        DEBUG_printf("MP_PLAT_ALLOC_HEAP retry " UINT_FMT " = %p\n",
+            to_alloc, new_heap);
+    }
+
+    // CIRCUITPY-CHANGE: comment moved to above.
     if (new_heap == NULL) {
-        // This should only fail:
-        // - In a threaded environment if another thread has
-        //   allocated while this function ran.
-        // - If there is a bug in gc_get_max_new_split().
         return false;
     }
 

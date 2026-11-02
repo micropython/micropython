@@ -17,14 +17,18 @@
 #include "shared-bindings/displayio/Group.h"
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/util.h"
+#if CIRCUITPY_VIDEOCORE
+#include "shared-module/videocore/__init__.h"
+#endif
 #include "shared-module/displayio/__init__.h"
 
 //| class FramebufferDisplay:
 //|     """Manage updating a display with framebuffer in RAM
 //|
 //|     This initializes a display and connects it into CircuitPython. Unlike other
-//|     objects in CircuitPython, Display objects live until `displayio.release_displays()`
-//|     is called. This is done so that CircuitPython can use the display itself."""
+//|     objects in CircuitPython, a FramebufferDisplay stays active after your code finishes if it is
+//|     `supervisor.runtime.display <supervisor.Runtime.display>`, so that CircuitPython can use it. Otherwise, it is released
+//|     when your code finishes."""
 //|
 //|     def __init__(
 //|         self,
@@ -325,6 +329,11 @@ static mp_obj_t framebufferio_framebufferdisplay_obj_set_root_group(mp_obj_t sel
     displayio_group_t *group = NULL;
     if (group_in != mp_const_none) {
         group = MP_OBJ_TO_PTR(native_group(group_in));
+        #if CIRCUITPY_VIDEOCORE
+        // Validate that draw protocol layers (e.g. a VideoBuffer) fit the
+        // display they will render on.
+        videocore_validate_root_group(group_in, self_in);
+        #endif
     }
 
     bool ok = common_hal_framebufferio_framebufferdisplay_set_root_group(self, group);

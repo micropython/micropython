@@ -23,6 +23,11 @@
 #define MBEDTLS_PLATFORM_NO_STD_FUNCTIONS
 #define MBEDTLS_DEPRECATED_REMOVED
 
+// Everything runs in one address space, so PSA functions don't need to copy their
+// buffers before using them. The copies are heap allocations on every call, and web
+// workflow hashes (the websocket handshake) while no VM, and so no VM heap, exists.
+#define MBEDTLS_PSA_ASSUME_EXCLUSIVE_BUFFERS
+
 #undef MBEDTLS_HAVE_TIME
 #undef MBEDTLS_HAVE_TIME_DATE
 

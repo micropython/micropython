@@ -14,7 +14,7 @@
 #include "shared-bindings/picogame/Sprite.h"
 #if CIRCUITPY_PICOGAME_FAST_DISPLAY
 #include "shared-bindings/picogame/Display.h"   // fast DMA backend; absent on portable ports
-#include "common-hal/picogame/Display.h"        // its struct (pg_get_display unwraps the wrapper)
+#include "shared-module/picogame/Display.h"        // its struct (pg_get_display unwraps the wrapper)
 #endif
 #include "shared-bindings/picogame/Scene.h"
 #include "shared-bindings/picogame/Tilemap.h"

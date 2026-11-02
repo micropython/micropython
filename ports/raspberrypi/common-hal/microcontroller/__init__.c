@@ -27,8 +27,9 @@
 
 // DMA interrupt (DMA_IRQ_n) allocation for this port:
 //
-//   DMA_IRQ_0  Shared. audiocore (audio_dma.c) and rp2pio (StateMachine.c) each
-//              register a shared handler with irq_add_shared_handler() and
+//   DMA_IRQ_0  Shared. audiocore (audio_dma.c), rp2pio (StateMachine.c) and,
+//              async_spi (common-hal/async_spi/SPI.c) each register a shared
+//              handler with irq_add_shared_handler() and
 //              service only their own DMA channels. Any new code that needs a
 //              DMA completion interrupt should do the same: add a shared handler
 //              on DMA_IRQ_0, check dma_hw->ints0, and acknowledge only its own

@@ -18,8 +18,9 @@
 //|     to make 8-color displays.
 //|
 //|     This initializes a display and connects it into CircuitPython. Unlike other
-//|     objects in CircuitPython, Display objects live until `displayio.release_displays()`
-//|     is called. This is done so that CircuitPython can use the display itself."""
+//|     objects in CircuitPython, a display stays active after your code finishes if it is
+//|     `supervisor.runtime.display <supervisor.Runtime.display>`, so that CircuitPython can use it. Otherwise, it is released
+//|     when your code finishes."""
 //|
 //|     def __init__(
 //|         self,

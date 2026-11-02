@@ -17,8 +17,9 @@
 #include "shared-bindings/socketpool/SocketPool.h"
 
 //| class SocketPool:
-//|     """A pool of socket resources available for the given network interface. Only one
-//|     SocketPool can be created for each network interface.
+//|     """A pool of socket resources available for the given network interface. More than one
+//|     SocketPool can be created for a network interface. The sockets of every SocketPool
+//|     count toward the same limit on open sockets for the given network interface.
 //|
 //|     SocketPool should be used in place of CPython's socket which provides
 //|     a pool of sockets provided by the underlying OS.
@@ -27,7 +28,12 @@
 //|     def __init__(self, network_interface: Union[wifi.Radio, mii.Ethernet, hostnetwork.HostNetwork]) -> None:
 //|         """Create a new SocketPool object for the provided network interface
 //|
-//|         :param network_interface: The (connected) network interface to associate with this
+//|         The network interface does not need to be connected when the SocketPool is created.
+//|         It must be connected, or :py:attr:`wifi.radio` must be running an access point, before
+//|         the SocketPool can communicate over the network. The same SocketPool can be used again
+//|         after the network interface disconnects and reconnects.
+//|
+//|         :param network_interface: The network interface to associate with this
 //|             SocketPool, such as :py:attr:`wifi.radio`, an `mii.Ethernet`, or :py:attr:`board.NETWORK`.
 //|         """
 //|         ...
