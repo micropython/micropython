@@ -85,10 +85,6 @@
 #include "shared-module/picogame/__init__.h"
 #endif
 
-#if CIRCUITPY_KEYPAD
-#include "shared-module/keypad/__init__.h"
-#endif
-
 #if CIRCUITPY_STORAGE_MAP_FILE
 #include "shared-bindings/storage/__init__.h"
 #endif
@@ -414,10 +410,6 @@ static void cleanup_after_vm(mp_obj_t exception) {
     // Bulk-reset ports reset CAN controllers here. Finalizer ports rely on
     // GC finalizers calling deinit on the CAN objects.
     common_hal_canio_reset();
-    #endif
-
-    #if CIRCUITPY_KEYPAD
-    keypad_reset();
     #endif
 
     #if CIRCUITPY_STORAGE_MAP_FILE
