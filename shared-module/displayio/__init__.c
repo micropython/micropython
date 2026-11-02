@@ -59,6 +59,8 @@
 
 // The default indicates no primary display
 static int primary_display_number = -1;
+// True when the primary display was set with supervisor.runtime.display.
+static bool primary_display_set_by_user = false;
 
 primary_display_bus_t display_buses[CIRCUITPY_DISPLAY_LIMIT];
 primary_display_t displays[CIRCUITPY_DISPLAY_LIMIT];
@@ -156,6 +158,7 @@ static void common_hal_displayio_release_displays_impl(bool keep_primary) {
     // off properly.
     if (!keep_primary) {
         primary_display_number = -1;
+        primary_display_set_by_user = false;
     }
     for (uint8_t i = 0; i < CIRCUITPY_DISPLAY_LIMIT; i++) {
         if (i == primary_display_number) {
@@ -515,17 +518,23 @@ mp_obj_t common_hal_displayio_get_primary_display(void) {
 void common_hal_displayio_set_primary_display(mp_obj_t new_primary_display) {
     if (new_primary_display == mp_const_none) {
         primary_display_number = -1;
+        primary_display_set_by_user = false;
         return;
     }
     for (uint8_t i = 0; i < CIRCUITPY_DISPLAY_LIMIT; i++) {
         mp_obj_t display = MP_OBJ_FROM_PTR(&displays[i]);
         if (new_primary_display == display && is_display_active(display)) {
             primary_display_number = i;
+            primary_display_set_by_user = true;
             return;
         }
     }
     // object was not a display after all...
     mp_raise_TypeError_varg(MP_ERROR_TEXT("%q must be of type %q or %q, not %q"), MP_QSTR_Display, MP_QSTR_AnyDisplay, MP_QSTR_None, mp_obj_get_type(new_primary_display)->name);
+}
+
+bool common_hal_displayio_primary_display_set_by_user(void) {
+    return primary_display_set_by_user;
 }
 
 void common_hal_displayio_auto_primary_display(void) {
