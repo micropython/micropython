@@ -12,6 +12,25 @@ from _asyncio import TaskQueue, Task
 # Exceptions
 
 
+class BaseExceptionGroup(BaseException):
+    def split(self, typ):
+        a, b = [], []
+        if isinstance(typ, (BaseException, tuple)):
+            for err in self.args[1]:
+                (a if isinstance(err, typ) else b).append(err)
+        else:
+            for err in self.args[1]:
+                (a if typ(err) else b).append(err)
+        return a, b
+
+
+class ExceptionGroup(Exception):  # TODO cannot also inherit from BaseExceptionGroup
+    pass
+
+
+ExceptionGroup.split = BaseExceptionGroup.split
+
+
 class CancelledError(BaseException):
     pass
 
