@@ -18,14 +18,14 @@ typedef struct _keypad_scanner_funcs_t {
 // This is an ad hoc "superclass" struct for scanners, though they do
 // not actually have a superclass relationship.
 #define KEYPAD_SCANNER_COMMON_FIELDS \
-        mp_obj_base_t base; \
-        struct _keypad_scanner_obj_t *next; \
-        keypad_scanner_funcs_t *funcs; \
-        uint64_t next_scan_ticks; \
-        int8_t *debounce_counter; \
-        struct _keypad_eventqueue_obj_t *events; \
-        mp_uint_t interval_ticks; \
-        uint8_t debounce_threshold
+    mp_obj_base_t base; \
+    struct _keypad_scanner_obj_t *next; \
+    keypad_scanner_funcs_t *funcs; \
+    uint64_t next_scan_ticks; \
+    int8_t *debounce_counter; \
+    struct _keypad_eventqueue_obj_t *events; \
+    mp_uint_t interval_ticks; \
+    uint8_t debounce_threshold
 
 typedef struct _keypad_scanner_obj_t {
     KEYPAD_SCANNER_COMMON_FIELDS;
