@@ -52,7 +52,10 @@ void common_hal_ssl_sslcontext_set_check_hostname(ssl_sslcontext_obj_t *self, bo
     self->check_name = value;
 }
 
-void common_hal_ssl_sslcontext_load_cert_chain(ssl_sslcontext_obj_t *self, mp_buffer_info_t *cert_buf, mp_buffer_info_t *key_buf) {
+void common_hal_ssl_sslcontext_load_cert_chain(ssl_sslcontext_obj_t *self, mp_buffer_info_t *cert_buf, mp_buffer_info_t *key_buf, psa_key_id_t hw_key_id) {
     self->cert_buf = *cert_buf;
-    self->key_buf = *key_buf;
+    self->hw_key_id = hw_key_id;
+    if (hw_key_id == 0) {
+        self->key_buf = *key_buf;
+    }
 }
