@@ -27,6 +27,12 @@ void alarm_pin_pinalarm_light_reset(void);
 void alarm_pin_pinalarm_set_alarms(bool deep_sleep, size_t n_alarms, const mp_obj_t *alarms);
 bool alarm_pin_pinalarm_woke_this_cycle(void);
 void alarm_pin_pinalarm_entering_deep_sleep(void);
+#if PICO_RP2040
+// Saves the lowest-numbered triggered pin in a watchdog scratch register, or
+// saves "no pin" if no pin alarm went off. Call this just before the reset that
+// ends a deep sleep. alarm_pin_pinalarm_record_wake_alarm() reads it after the reset.
+void alarm_pin_pinalarm_save_wake_pin(void);
+#endif
 #if PICO_RP2350
 // Arms the powman GPIO wakeups for the pin alarms given to
 // alarm_pin_pinalarm_set_alarms() with deep_sleep true.

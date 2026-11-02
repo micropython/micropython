@@ -14,6 +14,7 @@
 #include "pico/stdlib.h"
 #include "hardware/gpio.h"
 #include "hardware/structs/iobank0.h"
+#include "hardware/structs/watchdog.h"
 
 #if PICO_RP2350
 #include "hardware/powman.h"
@@ -98,15 +99,31 @@ mp_obj_t alarm_pin_pinalarm_find_triggered_alarm(size_t n_alarms, const mp_obj_t
     return mp_const_none;
 }
 
+// Returns the lowest-numbered pin in alarm_triggered_pins, or -1 if there is none.
+static int lowest_triggered_pin_number(void) {
+    return alarm_triggered_pins == 0 ? -1 : __builtin_ctzll(alarm_triggered_pins);
+}
+
 mp_obj_t alarm_pin_pinalarm_record_wake_alarm(void) {
     alarm_pin_pinalarm_obj_t *const alarm = &alarm_wake_alarm.pin_alarm;
 
     alarm->base.type = &alarm_pin_pinalarm_type;
-    // TODO: how to obtain the correct pin from memory?
     alarm->pin = NULL;
+    if (woke_up) {
+        // A fake deep sleep doesn't reset, so gpio_callback()'s record is still here.
+        alarm->pin = mcu_get_pin_by_number(lowest_triggered_pin_number());
+        return alarm;
+    }
+    #if PICO_RP2040
+    // The reset that ended deep sleep cleared alarm_triggered_pins, so use the saved copy.
+    uint32_t wake_pin = watchdog_hw->scratch[RP_WKUP_PIN_SCRATCH_REG];
+    if (wake_pin != 0) {
+        alarm->pin = mcu_get_pin_by_number(wake_pin - 1);
+    }
+    #endif
     #if PICO_RP2350
     // After a powman wake, the wakeup slot that fired still holds its pin number.
-    if (!woke_up && alarm_woke_from_powman()) {
+    if (alarm_woke_from_powman()) {
         uint32_t pwrup = powman_hw->last_swcore_pwrup & RP_POWMAN_PWRUP_GPIO_BITS;
         for (size_t i = 0; i < POWMAN_WAKEUP_SLOTS; i++) {
             if (pwrup & (1u << (i + RP_POWMAN_PWRUP_GPIO_LSB))) {
@@ -122,6 +139,9 @@ mp_obj_t alarm_pin_pinalarm_record_wake_alarm(void) {
 void alarm_pin_pinalarm_reset(void) {
     alarm_triggered_pins = 0;
     woke_up = false;
+    #if PICO_RP2040
+    watchdog_hw->scratch[RP_WKUP_PIN_SCRATCH_REG] = 0;
+    #endif
 
     // Clear all GPIO interrupts
     for (uint8_t i = 0; i < 4; i++) {
@@ -198,6 +218,13 @@ void alarm_pin_pinalarm_set_alarms(bool deep_sleep, size_t n_alarms, const mp_ob
         }
     }
 }
+
+#if PICO_RP2040
+void alarm_pin_pinalarm_save_wake_pin(void) {
+    // No pin gives -1 + 1 = 0.
+    watchdog_hw->scratch[RP_WKUP_PIN_SCRATCH_REG] = lowest_triggered_pin_number() + 1;
+}
+#endif
 
 #if PICO_RP2350
 // Arm the powman GPIO wakeups recorded by alarm_pin_pinalarm_set_alarms().
