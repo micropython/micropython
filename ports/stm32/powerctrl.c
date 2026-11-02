@@ -836,6 +836,11 @@ void powerctrl_enter_stop_mode(void) {
     uint32_t vscaling = POWERCTRL_GET_VOLTAGE_SCALING();
     #endif
 
+    #if defined(STM32L4)
+    // Save RCC CR to re-enable HSI after wake up from low power mode.
+    uint32_t rcc_cr = RCC->CR;
+    #endif
+
     #if defined(STM32H7)
     // Save RCC CR to re-enable OSCs and PLLs after wake up from low power mode.
     uint32_t rcc_cr = RCC->CR;
@@ -1057,6 +1062,13 @@ void powerctrl_enter_stop_mode(void) {
     #endif
 
     #if defined(STM32L4)
+    // Enable HSI if it was on before, eg because LPUART1 uses it
+    if (rcc_cr & RCC_CR_HSION) {
+        RCC->CR |= RCC_CR_HSION;
+        while (!(RCC->CR & RCC_CR_HSIRDY)) {
+        }
+    }
+
     // Enable PLLSAI1 for peripherals that use it
     RCC->CR |= RCC_CR_PLLSAI1ON;
     while (!(RCC->CR & RCC_CR_PLLSAI1RDY)) {
