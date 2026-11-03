@@ -59,6 +59,7 @@ void spi_hw_irq(spi_obj_t *self);
 void spi_hw_controller_init(spi_obj_t *self, uint32_t baudrate);
 cy_en_scb_spi_status_t spi_hw_controller_transfer(spi_obj_t *self, const uint8_t *tx_buf, uint8_t *rx_buf, size_t len);
 bool spi_hw_controller_is_transfer_active(spi_obj_t *self);
+uint32_t spi_hw_controller_get_num_transferred(spi_obj_t *self);
 void spi_hw_controller_abort_transfer(spi_obj_t *self);
 
 void spi_hw_deinit(spi_obj_t *self);

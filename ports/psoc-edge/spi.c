@@ -155,6 +155,10 @@ bool spi_hw_controller_is_transfer_active(spi_obj_t *self) {
     return (Cy_SCB_SPI_GetTransferStatus(self->scb_obj->scb, &self->ctx) & CY_SCB_SPI_TRANSFER_ACTIVE) != 0U;
 }
 
+uint32_t spi_hw_controller_get_num_transferred(spi_obj_t *self) {
+    return Cy_SCB_SPI_GetNumTransferred(self->scb_obj->scb, &self->ctx);
+}
+
 void spi_hw_controller_abort_transfer(spi_obj_t *self) {
     Cy_SCB_SPI_AbortTransfer(self->scb_obj->scb, &self->ctx);
 }

@@ -38,6 +38,7 @@
 #define DEFAULT_SPI_POLARITY    (0)
 #define DEFAULT_SPI_PHASE       (0)
 #define DEFAULT_SPI_BITS        (SPI_SUPPORTED_BITS)
+// Maximum time (in us) a transfer may go without progress before it is aborted.
 #define DEFAULT_SPI_TIMEOUT     (50000)
 
 typedef struct _machine_spi_obj_t {
@@ -214,10 +215,16 @@ static void machine_spi_transfer(mp_obj_base_t *self_in,
             MP_ERROR_TEXT("SPI transfer failed: 0x%lx"), (uint32_t)status);
     }
 
-    // Wait for transfer to complete
+    // Wait for transfer to complete. The timeout restarts whenever data is
+    // transferred, so it does not depend on the transfer length or baudrate.
+    uint32_t num_transferred = 0;
     uint32_t start = mp_hal_ticks_us();
     while (spi_hw_controller_is_transfer_active(&self->spi_obj)) {
-        if (mp_hal_ticks_us() - start > self->timeout) {
+        uint32_t n = spi_hw_controller_get_num_transferred(&self->spi_obj);
+        if (n != num_transferred) {
+            num_transferred = n;
+            start = mp_hal_ticks_us();
+        } else if (mp_hal_ticks_us() - start > self->timeout) {
             spi_hw_controller_abort_transfer(&self->spi_obj);
             mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("SPI transfer timeout"));
         }
