@@ -1,3 +1,6 @@
+# requires: asm-thumb-vfp
+
+
 @micropython.asm_thumb  # r0 = r0+r1-r2
 def add_sub(r0, r1, r2):
     vmov(s0, r0)

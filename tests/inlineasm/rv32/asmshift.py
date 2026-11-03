@@ -1,3 +1,6 @@
+# requires: asm-rv32
+
+
 @micropython.asm_rv32
 def lsl1(a0):
     slli(a0, a0, 1)

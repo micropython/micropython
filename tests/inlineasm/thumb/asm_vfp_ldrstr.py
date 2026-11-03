@@ -1,3 +1,5 @@
+# requires: asm-thumb-vfp
+
 import array
 
 

@@ -1,3 +1,6 @@
+# requires: asm-rv32-zba
+
+
 @micropython.asm_rv32
 def test_sh1add(a0, a1):
     sh1add(a0, a0, a1)

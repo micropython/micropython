@@ -1,4 +1,5 @@
 # test return type of inline asm
+# requires: asm-rv32
 
 
 @micropython.asm_rv32

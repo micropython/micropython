@@ -1,4 +1,5 @@
 # test bl and bx instructions
+# requires: asm-thumb
 
 
 @micropython.asm_thumb

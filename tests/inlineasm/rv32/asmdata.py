@@ -1,4 +1,5 @@
 # test the "data" directive
+# requires: asm-rv32
 
 
 @micropython.asm_rv32

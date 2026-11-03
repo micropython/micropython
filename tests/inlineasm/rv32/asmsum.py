@@ -1,3 +1,6 @@
+# requires: asm-rv32
+
+
 @micropython.asm_rv32
 def asm_sum_words(a0, a1):
     # a0 = len

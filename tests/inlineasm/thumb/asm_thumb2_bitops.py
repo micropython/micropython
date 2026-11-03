@@ -1,3 +1,6 @@
+# requires: asm-thumb-thumb2
+
+
 @micropython.asm_thumb
 def clz(r0):
     clz(r0, r0)

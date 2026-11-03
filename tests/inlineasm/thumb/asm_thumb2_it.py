@@ -1,4 +1,5 @@
 # test it instruction
+# requires: asm-thumb-thumb2
 
 
 @micropython.asm_thumb

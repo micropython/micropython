@@ -1,4 +1,5 @@
 # test bcc instructions, narrow and wide versions
+# requires: asm-thumb-thumb2
 
 
 RESULT = []

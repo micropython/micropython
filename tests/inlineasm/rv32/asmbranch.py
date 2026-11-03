@@ -1,4 +1,5 @@
 # test branch instructions
+# requires: asm-rv32
 
 
 @micropython.asm_rv32

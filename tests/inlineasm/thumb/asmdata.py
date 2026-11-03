@@ -1,4 +1,5 @@
 # test the "data" directive
+# requires: asm-thumb
 
 
 @micropython.asm_thumb

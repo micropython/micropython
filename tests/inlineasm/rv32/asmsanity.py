@@ -1,3 +1,5 @@
+# requires: asm-rv32
+
 TEMPLATE3 = """
 @micropython.asm_rv32
 def f():

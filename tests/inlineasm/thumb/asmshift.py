@@ -1,3 +1,6 @@
+# requires: asm-thumb
+
+
 @micropython.asm_thumb
 def lsl1(r0):
     lsl(r0, r0, 1)

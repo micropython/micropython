@@ -1,4 +1,7 @@
 # test vsqrt, vneg
+# requires: asm-thumb-vfp
+
+
 @micropython.asm_thumb  # r0 = -(int)(sqrt(r0)*r1)
 def sqrt_test(r0, r1):
     vmov(s1, r0)

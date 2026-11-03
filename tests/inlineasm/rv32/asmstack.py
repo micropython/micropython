@@ -1,4 +1,5 @@
 # test stack manipulation
+# requires: asm-rv32
 
 
 @micropython.asm_rv32
