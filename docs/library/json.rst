@@ -12,7 +12,7 @@ data format.
 Functions
 ---------
 
-.. function:: dump(obj, stream, separators=None)
+.. function:: dump(obj, stream, separators=None, default=None)
 
    Serialise *obj* to a JSON string, writing it to the given *stream*.
 
@@ -20,7 +20,11 @@ Functions
    tuple. The default is ``(', ', ': ')``. To get the most compact JSON
    representation, you should specify ``(',', ':')`` to eliminate whitespace.
 
-.. function:: dumps(obj, separators=None)
+   If specified, default should be an ``(obj) -> serializable_obj`` callable
+   for objects that can't otherwise be serialized. It should return a JSON encodable
+   version of the object or raise a ``TypeError``.
+
+.. function:: dumps(obj, separators=None, default=None)
 
    Return *obj* represented as a JSON string.
 
