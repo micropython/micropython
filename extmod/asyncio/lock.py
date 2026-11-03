@@ -24,7 +24,7 @@ class Lock:
         if self.waiting.peek():
             # Task(s) waiting on lock, schedule next Task
             self.state = self.waiting.pop()
-            core._task_queue.push(self.state)
+            core._task_queue.push_raw(self.state)
         else:
             # No Task waiting so unlock
             self.state = 0
@@ -33,7 +33,7 @@ class Lock:
     def acquire(self):
         if self.state != 0:
             # Lock unavailable, put the calling Task on the waiting queue
-            self.waiting.push(core.cur_task)
+            self.waiting.push_raw(core.cur_task)
             # Set calling task's data to the lock's queue so it can be removed if needed
             core.cur_task.data = self.waiting
             try:
