@@ -312,6 +312,10 @@ static mp_obj_t machine_spi_target_write(mp_obj_t self_in, mp_obj_t buf_in) {
         mp_event_handle_nowait();
     }
 
+    // Discard the data received during the write, so that it is not returned
+    // by a later readinto().
+    spi_hw_target_clear_rx_fifo(&self->spi_obj);
+
     return mp_obj_new_int(written);
 }
 static MP_DEFINE_CONST_FUN_OBJ_2(machine_spi_target_write_obj, machine_spi_target_write);
