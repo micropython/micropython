@@ -167,7 +167,7 @@ Methods
                 ``xfer_cb`` is not called for any transfers that have not
                 already completed.
 
-.. method:: USBDevice.active(self, [value] /)
+.. method:: USBDevice.active(self, [value], /)
 
     Returns the current active state of this runtime USB device as a
     boolean. The runtime USB device is "active" when it is available to
@@ -224,7 +224,7 @@ Methods
     and on the host. Returns ``True`` if remote wakeup was enabled and
     active and the host was woken up.
 
-.. method:: USBDevice.submit_xfer(self, ep, buffer /)
+.. method:: USBDevice.submit_xfer(self, ep, buffer, /)
 
             Submit a USB transfer on endpoint number ``ep``. ``buffer`` must be
             an object implementing the buffer interface, with read access for
@@ -244,7 +244,7 @@ Methods
             Raises ``OSError`` with reason ``MP_EINVAL`` If the USB device is not
             active.
 
-.. method:: USBDevice.stall(self, ep, [stall] /)
+.. method:: USBDevice.stall(self, ep, [stall], /)
 
             Calling this function gets or sets the STALL state of a device endpoint.
 
