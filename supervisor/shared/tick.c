@@ -35,6 +35,10 @@
 #include "shared-module/_airlift/socketpool.h"
 #endif
 
+#if CIRCUITPY_WEB_WORKFLOW
+#include "supervisor/shared/web_workflow/display_stream.h"
+#endif
+
 #include "shared-bindings/microcontroller/__init__.h"
 
 #if CIRCUITPY_WATCHDOG
@@ -96,6 +100,10 @@ void supervisor_tick(void) {
 
     #if CIRCUITPY_AIRLIFT && CIRCUITPY_SOCKETPOOL
     airlift_socketpool_tick();
+    #endif
+
+    #if CIRCUITPY_WEB_WORKFLOW
+    display_stream_tick();
     #endif
 
     background_callback_add(&tick_callback, supervisor_background_tick, NULL);

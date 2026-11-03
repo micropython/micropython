@@ -16,6 +16,10 @@
 #include "supervisor/shared/display.h"
 #include "supervisor/shared/tick.h"
 
+#if CIRCUITPY_WEB_WORKFLOW
+#include "supervisor/shared/web_workflow/display_stream.h"
+#endif
+
 #if CIRCUITPY_TINYUSB
 #include "supervisor/usb.h"
 #endif
@@ -216,6 +220,9 @@ static bool _refresh_area(framebufferio_framebufferdisplay_obj_t *self, const di
             dest += rowstride;
             src += rowsize;
         }
+        #if CIRCUITPY_WEB_WORKFLOW
+        display_stream_area_updated(&self->core, &subrectangle);
+        #endif
         // Run background tasks so they can run during an explicit refresh.
         // Auto-refresh won't run background tasks here because it is a background task itself.
         RUN_BACKGROUND_TASKS;

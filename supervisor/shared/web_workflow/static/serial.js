@@ -7,13 +7,19 @@ var log = document.getElementById("log");
 
 function set_enabled(enabled) {
   input.disabled = !enabled;
-  var buttons = document.querySelectorAll("button");
+  var buttons = document.querySelectorAll("#controls button");
   for (button of buttons) {
     button.disabled = !enabled;
   }
 }
 
 set_enabled(false);
+
+// Scrolls the log's box rather than the page, which may hold more than the log.
+function scroll_to_end() {
+  var box = log.parentElement;
+  box.scrollTop = box.scrollHeight;
+}
 
 function onSubmit() {
     ws.send("\r");
@@ -48,11 +54,15 @@ ws.onmessage = function(e) {
   } else {
     log.textContent += e.data;
   }
-  document.querySelector("span").scrollIntoView();
+  scroll_to_end();
 };
 
-ws.onclose = function() {
+ws.onclose = function(e) {
   set_enabled(false);
+  if (e.code == 4000) {
+    log.textContent += "\n[Another page took over the serial connection. Reload to use it here.]\n";
+    scroll_to_end();
+  }
 };
 
 ws.onerror = function(e) {

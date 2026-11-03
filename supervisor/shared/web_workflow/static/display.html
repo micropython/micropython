@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Display</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/style.css">
+  <link rel="stylesheet" href="http://circuitpython.org/assets/css/webworkflow-9.css">
+</head>
+<body style="max-width: none; margin: 0 16px;">
+  <h1><a href="/"><img src="/favicon.ico"/></a>&nbsp;Display</h1>
+  <div style="display: flex; flex-wrap: wrap; gap: 16px; align-items: stretch;">
+    <div style="flex: 3 1 480px; min-width: 0;">
+      <div id="view" style="position: relative; width: 100%;">
+        <canvas id="screen" width="320" height="240" style="position: absolute; image-rendering: pixelated; background: #000;"></canvas>
+      </div>
+      <p>
+        <button id="refresh">Refresh</button>
+        <button id="rotate">Rotate</button>
+        <button id="unrotate">Reset rotation</button>
+        <span id="status">Connecting</span>
+      </p>
+    </div>
+    <div style="flex: 2 1 320px; min-width: 0; display: flex; flex-direction: column; height: 75vh; font-size: 0.8rem;">
+      <div style="flex: auto; display: flex; overflow: auto; flex-direction: column; border: 1px solid #888;">
+        <pre id="log" style="margin: 0; margin-top: auto; white-space: pre-wrap; word-break: break-all;"></pre>
+      </div>
+      <div id="controls" style="flex: none; display: flex;">
+        <fieldset style="display: inline-block; padding: 0;">
+          <legend>Ctrl</legend>
+          <button id="b">B</button>
+          <button id="c">C</button>
+          <button id="d">D</button>
+        </fieldset>
+        <textarea id="input" rows="1" spellcheck="false" wrap="off" style="resize: none; flex: auto; font-size: 1rem;" autocapitalize="none" autocomplete="off" autocorrect="off"></textarea>
+        <button onclick="onSubmit(); return false;">Send</button>
+      </div>
+    </div>
+  </div>
+  <script src="/serial.js" defer=true></script>
+  <script src="/display.js" defer=true></script>
+</body>
+</html>

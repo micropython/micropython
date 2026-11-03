@@ -239,7 +239,8 @@ $(BUILD)/autogen_web_workflow_static.c: ../../tools/gen_web_workflow_static.py $
 
 ifeq ($(CIRCUITPY_WEB_WORKFLOW),1)
   SRC_SUPERVISOR += supervisor/shared/web_workflow/web_workflow.c \
-                    supervisor/shared/web_workflow/websocket.c
+                    supervisor/shared/web_workflow/websocket.c \
+                    supervisor/shared/web_workflow/display_stream.c
   SRC_SUPERVISOR += $(BUILD)/autogen_web_workflow_static.c
 endif
 

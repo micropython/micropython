@@ -16,17 +16,6 @@
 #include "supervisor/shared/status_bar.h"
 #endif
 
-typedef struct {
-    socketpool_socket_obj_t socket;
-    uint8_t opcode;
-    uint8_t frame_len;
-    uint8_t payload_len_size;
-    bool masked;
-    uint8_t mask[4];
-    int frame_index;
-    size_t payload_remaining;
-} _websocket;
-
 // Buffer the incoming serial data in the background so that we can look for the
 // interrupt character.
 static ringbuf_t _incoming_ringbuf;
@@ -34,7 +23,7 @@ static uint8_t _buf[16];
 // make sure background is not called recursively
 static bool in_web_background = false;
 
-static _websocket cp_serial;
+static websocket_t cp_serial;
 
 void websocket_init(void) {
     socketpool_socket_reset(&cp_serial.socket);
@@ -42,15 +31,33 @@ void websocket_init(void) {
     ringbuf_init(&_incoming_ringbuf, _buf, sizeof(_buf));
 }
 
-void websocket_handoff(socketpool_socket_obj_t *socket) {
-    if (!common_hal_socketpool_socket_get_closed(&cp_serial.socket)) {
-        common_hal_socketpool_socket_close(&cp_serial.socket);
+void websocket_send_close(websocket_t *ws, uint16_t code) {
+    if (common_hal_socketpool_socket_get_closed(&ws->socket) ||
+        !common_hal_socketpool_socket_get_connected(&ws->socket)) {
+        return;
+    }
+    const uint8_t frame[4] = { 1 << 7 | 0x8, 2, code >> 8, code & 0xff };
+    // Only what the socket takes now: a client that stopped reading must not
+    // hold everything up.
+    socketpool_socket_send(&ws->socket, frame, sizeof(frame));
+}
+
+void websocket_take_socket(websocket_t *ws, socketpool_socket_obj_t *socket) {
+    if (!common_hal_socketpool_socket_get_closed(&ws->socket)) {
+        // Tell the page it was replaced, so it doesn't reconnect and take the
+        // connection back.
+        websocket_send_close(ws, WEBSOCKET_CLOSE_REPLACED);
+        common_hal_socketpool_socket_close(&ws->socket);
     }
 
-    socketpool_socket_move(socket, &cp_serial.socket);
-    cp_serial.opcode = 0;
-    cp_serial.frame_index = 0;
-    cp_serial.frame_len = 2;
+    socketpool_socket_move(socket, &ws->socket);
+    ws->opcode = 0;
+    ws->frame_index = 0;
+    ws->frame_len = 2;
+}
+
+void websocket_handoff(socketpool_socket_obj_t *socket) {
+    websocket_take_socket(&cp_serial, socket);
 
     #if CIRCUITPY_STATUS_BAR
     // Send the title bar for the new client.
@@ -64,95 +71,98 @@ bool websocket_connected(void) {
            common_hal_socketpool_socket_get_connected(&cp_serial.socket);
 }
 
-static bool _read_byte(uint8_t *c) {
-    int len = socketpool_socket_recv_into(&cp_serial.socket, c, 1);
+static bool _read_byte(websocket_t *ws, uint8_t *c) {
+    int len = socketpool_socket_recv_into(&ws->socket, c, 1);
     if (len < 1) {
         return false;
     }
     return true;
 }
 
-static void _read_next_frame_header(void) {
-    uint8_t h;
-    if (cp_serial.frame_index == 0 && _read_byte(&h)) {
-        cp_serial.frame_index++;
-        cp_serial.opcode = h & 0xf;
+static void _read_next_frame_header(websocket_t *ws) {
+    uint8_t h = 0;
+    if (ws->frame_index == 0 && _read_byte(ws, &h)) {
+        ws->frame_index++;
+        ws->opcode = h & 0xf;
     }
-    if (cp_serial.frame_index == 1 && _read_byte(&h)) {
-        cp_serial.frame_index++;
+    if (ws->frame_index == 1 && _read_byte(ws, &h)) {
+        ws->frame_index++;
         uint8_t len = h & 0x7f;
-        cp_serial.masked = (h >> 7) == 1;
+        ws->masked = (h >> 7) == 1;
         if (len <= 125) {
-            cp_serial.payload_remaining = len;
-            cp_serial.payload_len_size = 0;
+            ws->payload_remaining = len;
+            ws->payload_len_size = 0;
         } else if (len == 126) { // 16 bit length
-            cp_serial.payload_len_size = 2;
+            ws->payload_len_size = 2;
         } else if (len == 127) { // 64 bit length
-            cp_serial.payload_len_size = 8;
+            ws->payload_len_size = 8;
         }
-        cp_serial.frame_len = 2 + cp_serial.payload_len_size;
-        if (cp_serial.masked) {
-            cp_serial.frame_len += 4;
+        ws->frame_len = 2 + ws->payload_len_size;
+        if (ws->masked) {
+            ws->frame_len += 4;
         }
     }
-    while (cp_serial.frame_index >= 2 &&
-           cp_serial.frame_index < (cp_serial.payload_len_size + 2) &&
-           _read_byte(&h)) {
-        cp_serial.frame_index++;
-        cp_serial.payload_remaining = cp_serial.payload_remaining << 8 | h;
+    while (ws->frame_index >= 2 &&
+           ws->frame_index < (ws->payload_len_size + 2) &&
+           _read_byte(ws, &h)) {
+        ws->frame_index++;
+        ws->payload_remaining = ws->payload_remaining << 8 | h;
     }
-    int mask_start = cp_serial.payload_len_size + 2;
-    while (cp_serial.frame_index >= mask_start &&
-           cp_serial.frame_index < cp_serial.frame_len &&
-           _read_byte(&h)) {
-        size_t mask_offset = cp_serial.frame_index - mask_start;
-        cp_serial.mask[mask_offset] = h;
-        cp_serial.frame_index++;
+    int mask_start = ws->payload_len_size + 2;
+    while (ws->frame_index >= mask_start &&
+           ws->frame_index < ws->frame_len &&
+           _read_byte(ws, &h)) {
+        size_t mask_offset = ws->frame_index - mask_start;
+        ws->mask[mask_offset] = h;
+        ws->frame_index++;
     }
-    // Reply to PINGs and CLOSE.
-    while ((cp_serial.opcode == 0x8 ||
-            cp_serial.opcode == 0x9) &&
-           cp_serial.frame_index >= cp_serial.frame_len) {
+    // Reply to PINGs and CLOSE. Replying can find the client gone, which closes
+    // the socket and drops the payload still to be read.
+    while ((ws->opcode == 0x8 ||
+            ws->opcode == 0x9) &&
+           ws->frame_index >= ws->frame_len &&
+           !common_hal_socketpool_socket_get_closed(&ws->socket)) {
 
-        if (cp_serial.frame_index == cp_serial.frame_len) {
+        if (ws->frame_index == ws->frame_len) {
             uint8_t opcode = 0x8; // CLOSE
-            if (cp_serial.opcode == 0x9) {
+            if (ws->opcode == 0x9) {
                 opcode = 0xA; // PONG
             }
             uint8_t frame_header[2];
             frame_header[0] = 1 << 7 | opcode;
-            frame_header[1] = cp_serial.payload_remaining;
-            web_workflow_send_raw(&cp_serial.socket, cp_serial.opcode != 0x9, (const uint8_t *)frame_header, 2);
+            frame_header[1] = ws->payload_remaining;
+            web_workflow_send_raw(&ws->socket, ws->opcode != 0x9, (const uint8_t *)frame_header, 2);
         }
 
-        if (cp_serial.payload_remaining > 0 && _read_byte(&h)) {
+        if (ws->payload_remaining > 0 && _read_byte(ws, &h)) {
             // Send the payload back to the client.
-            cp_serial.frame_index++;
-            cp_serial.payload_remaining--;
-            web_workflow_send_raw(&cp_serial.socket, false, &h, 1);
+            ws->frame_index++;
+            ws->payload_remaining--;
+            web_workflow_send_raw(&ws->socket, false, &h, 1);
         }
 
-        if (cp_serial.payload_remaining == 0) {
-            cp_serial.frame_index = 0;
-            if (cp_serial.opcode == 0x8) {
-                common_hal_socketpool_socket_close(&cp_serial.socket);
+        if (ws->payload_remaining == 0) {
+            ws->frame_index = 0;
+            if (ws->opcode == 0x8) {
+                common_hal_socketpool_socket_close(&ws->socket);
             }
         }
     }
 }
 
-static bool _read_next_payload_byte(uint8_t *c) {
-    _read_next_frame_header();
-    if (cp_serial.opcode == 0x1 &&
-        cp_serial.frame_index >= cp_serial.frame_len &&
-        cp_serial.payload_remaining > 0) {
-        if (_read_byte(c)) {
-            uint8_t mask_offset = (cp_serial.frame_index - cp_serial.frame_len) % 4;
-            *c ^= cp_serial.mask[mask_offset];
-            cp_serial.frame_index++;
-            cp_serial.payload_remaining--;
-            if (cp_serial.payload_remaining == 0) {
-                cp_serial.frame_index = 0;
+bool websocket_read_payload_byte(websocket_t *ws, uint8_t *c) {
+    _read_next_frame_header(ws);
+    // Text, binary or a continuation of either.
+    if (ws->opcode <= 0x2 &&
+        ws->frame_index >= ws->frame_len &&
+        ws->payload_remaining > 0) {
+        if (_read_byte(ws, c)) {
+            uint8_t mask_offset = (ws->frame_index - ws->frame_len) % 4;
+            *c ^= ws->mask[mask_offset];
+            ws->frame_index++;
+            ws->payload_remaining--;
+            if (ws->payload_remaining == 0) {
+                ws->frame_index = 0;
             }
             return true;
         }
@@ -176,7 +186,7 @@ char websocket_read_char(void) {
     return -1;
 }
 
-static void _websocket_send(_websocket *ws, const char *text, size_t len) {
+static void _websocket_send(websocket_t *ws, const char *text, size_t len) {
     if (!websocket_connected()) {
         return;
     }
@@ -225,7 +235,7 @@ void websocket_background(void) {
     in_web_background = true;
     uint8_t c;
     while (ringbuf_num_empty(&_incoming_ringbuf) > 0 &&
-           _read_next_payload_byte(&c)) {
+           websocket_read_payload_byte(&cp_serial, &c)) {
         if (c == mp_interrupt_char) {
             ringbuf_clear(&_incoming_ringbuf);
             mp_sched_keyboard_interrupt();
