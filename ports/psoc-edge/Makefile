@@ -298,6 +298,7 @@ MOD_SRC_C += \
 	machine_pin.c \
 	machine_pin_af.c \
 	machine_pin_irq.c \
+	machine_i2c.c\
 	machine_rtc.c \
 	modpsocedge.c \
 
@@ -309,6 +310,7 @@ endif
 SRC_C += \
 	clk.c \
 	help.c \
+	i2c.c \
 	main.c \
 	mphalport.c \
 	scb.c \

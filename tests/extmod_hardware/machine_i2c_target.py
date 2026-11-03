@@ -51,6 +51,9 @@ elif sys.platform == "mimxrt":
     else:
         args_controller = {"scl": "D0", "sda": "D1"}
     args_target = (0,)  # pins 19/18 On Teensy 4.x
+elif sys.platform == "psoc-edge":
+    args_controller = {"scl": "P17_2", "sda": "P17_3"}
+    args_target = (5,)  # on pins P17_0/P17_1
 elif sys.platform == "samd":
     args_controller = {"scl": "D5", "sda": "D1"}
     args_target = ()
