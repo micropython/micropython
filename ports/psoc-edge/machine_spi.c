@@ -40,6 +40,8 @@
 #define DEFAULT_SPI_BITS        (SPI_SUPPORTED_BITS)
 // Maximum time (in us) a transfer may go without progress before it is aborted.
 #define DEFAULT_SPI_TIMEOUT     (50000)
+// Size of the scratch buffer that receives the discarded data of write-only transfers.
+#define SPI_RX_SCRATCH_SIZE     (64)
 
 typedef struct _machine_spi_obj_t {
     mp_obj_base_t base;
@@ -182,33 +184,9 @@ static void machine_spi_deinit(mp_obj_base_t *self_in) {
     machine_spi_obj_free(self);
 }
 
-static void machine_spi_transfer(mp_obj_base_t *self_in,
-    size_t len,
-    const uint8_t *src,
-    uint8_t *dest) {
-    machine_spi_obj_t *self = (machine_spi_obj_t *)self_in;
-
-    if (len == 0) {
-        return;
-    }
-
-    // Prepare TX buffer: if src is NULL (read-only), send 0xFF fill bytes
-    uint8_t tx_fill[len];
-    const uint8_t *tx_buf = src;
-    if (tx_buf == NULL) {
-        memset(tx_fill, 0xFF, len);
-        tx_buf = tx_fill;
-    }
-
-    // Prepare RX buffer: if dest is NULL (write-only), use a dummy buffer
-    uint8_t rx_dummy[len];
-    uint8_t *rx_buf = dest;
-    if (rx_buf == NULL) {
-        rx_buf = rx_dummy;
-    }
-
+static void machine_spi_transfer_chunk(machine_spi_obj_t *self, const uint8_t *src, uint8_t *dest, size_t len) {
     // Start full-duplex transfer (interrupt-driven via ISR)
-    cy_en_scb_spi_status_t status = spi_hw_controller_transfer(&self->spi_obj, tx_buf, rx_buf, len);
+    cy_en_scb_spi_status_t status = spi_hw_controller_transfer(&self->spi_obj, src, dest, len);
 
     if (status != CY_SCB_SPI_SUCCESS) {
         mp_raise_msg_varg(&mp_type_OSError,
@@ -229,6 +207,34 @@ static void machine_spi_transfer(mp_obj_base_t *self_in,
             mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("SPI transfer timeout"));
         }
         mp_event_handle_nowait();
+    }
+}
+
+static void machine_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8_t *src, uint8_t *dest) {
+    machine_spi_obj_t *self = (machine_spi_obj_t *)self_in;
+
+    if (len == 0) {
+        return;
+    }
+
+    // A NULL src is passed on as is: the PDL then sends 0xFF fill bytes.
+    if (dest != NULL) {
+        machine_spi_transfer_chunk(self, src, dest, len);
+        return;
+    }
+
+    // Write-only (dest is NULL): the received data is not needed, but the
+    // transfer must still receive into a buffer (see spi_hw_controller_transfer).
+    // Use a small scratch buffer and transfer in chunks of its size, so that
+    // the stack usage does not depend on the transfer length.
+    uint8_t rx_scratch[SPI_RX_SCRATCH_SIZE];
+    while (len > 0) {
+        size_t chunk_len = MIN(len, sizeof(rx_scratch));
+        machine_spi_transfer_chunk(self, src, rx_scratch, chunk_len);
+        if (src != NULL) {
+            src += chunk_len;
+        }
+        len -= chunk_len;
     }
 }
 

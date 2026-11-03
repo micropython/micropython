@@ -24,6 +24,9 @@
  * THE SOFTWARE.
  */
 
+// std includes
+#include <assert.h>
+
 // mpy includes
 #include "py/runtime.h"
 #include "py/mphal.h"
@@ -147,7 +150,11 @@ void spi_hw_controller_init(spi_obj_t *self, uint32_t baudrate) {
     }
 }
 
+// tx_buf may be NULL, then 0xFF is sent. rx_buf must not be NULL: the progress
+// reported by spi_hw_controller_get_num_transferred() only counts received data
+// that is stored in rx_buf.
 cy_en_scb_spi_status_t spi_hw_controller_transfer(spi_obj_t *self, const uint8_t *tx_buf, uint8_t *rx_buf, size_t len) {
+    assert(rx_buf != NULL);
     return Cy_SCB_SPI_Transfer(self->scb_obj->scb, (void *)tx_buf, rx_buf, len, &self->ctx);
 }
 
