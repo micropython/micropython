@@ -239,15 +239,12 @@ void ble_uart_init0(void) {
 
     static char device_name[] = "mpus";
 
-    mp_obj_t service_list = mp_obj_new_list(0, NULL);
-    mp_obj_list_append(service_list, MP_OBJ_FROM_PTR(&ble_uart_service));
-
-    mp_obj_t * services = NULL;
-    mp_uint_t  num_services;
-    mp_obj_get_array(service_list, &num_services, &services);
+    // Not on the heap: nothing there would keep the list alive, while it is
+    // used again to advertise after each disconnect.
+    static mp_obj_t services[] = { MP_OBJ_FROM_PTR(&ble_uart_service) };
 
     m_adv_data_uart_service.p_services      = services;
-    m_adv_data_uart_service.num_of_services = num_services;
+    m_adv_data_uart_service.num_of_services = MP_ARRAY_SIZE(services);
     m_adv_data_uart_service.p_device_name   = (uint8_t *)device_name;
     m_adv_data_uart_service.device_name_len = strlen(device_name);
     m_adv_data_uart_service.connectable     = true;
