@@ -24,9 +24,14 @@ if sys.platform == "alif" and sys.implementation._build == "ALIF_ENSEMBLE":
     args_controller = {"scl": "P1_1", "sda": "P1_0"}
     args_target = (0,)  # on pins P0_3/P0_2
 elif sys.platform == "esp32":
-    args_controller = {"scl": 5, "sda": 6}
-    args_target = (0,)  # on pins 9/8 for C3 and S3, 18/19 for others
-    kwargs_target = {"scl": 9, "sda": 8}
+    if sys.implementation._build == "ESP32_GENERIC_S2":
+        args_controller = {"scl": 10, "sda": 12}
+        args_target = (0,)
+        kwargs_target = {"scl": 11, "sda": 13}
+    else:
+        args_controller = {"scl": 5, "sda": 6}
+        args_target = (0,)  # on pins 9/8 for C3 and S3, 18/19 for others
+        kwargs_target = {"scl": 9, "sda": 8}
 elif sys.platform == "rp2":
     args_controller = {"scl": 5, "sda": 4}
     args_target = (1,)
