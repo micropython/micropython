@@ -1,4 +1,5 @@
 # test construction of array from array with float type
+# requires: float
 
 try:
     from array import array

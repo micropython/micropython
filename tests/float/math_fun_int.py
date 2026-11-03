@@ -1,4 +1,5 @@
 # test the math functions that return ints
+# requires: float
 
 try:
     import math

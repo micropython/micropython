@@ -1,4 +1,6 @@
 # Tests constants of the math module available only with MICROPY_PY_MATH_CONSTANTS.
+# requires: float
+
 try:
     import math
     from math import isnan

@@ -1,3 +1,6 @@
+# requires: asm-xtensa
+
+
 @micropython.asm_xtensa
 def f1(a2):
     abs_(a2, a2)

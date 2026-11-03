@@ -1,4 +1,5 @@
 # negative power should produce float
+# requires: float
 
 x = 2
 print(x**-2)

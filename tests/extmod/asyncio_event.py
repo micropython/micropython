@@ -1,5 +1,5 @@
 # Test Event class
-# requires: async
+# requires: async float
 
 try:
     import asyncio

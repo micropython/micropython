@@ -1,3 +1,6 @@
+# requires: asm-thumb-vfp
+
+
 @micropython.asm_thumb  # test vcmp, vmrs
 def f(r0, r1):
     vmov(s0, r0)

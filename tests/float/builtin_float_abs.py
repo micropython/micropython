@@ -1,4 +1,5 @@
 # test builtin abs function with float args
+# requires: float
 
 for val in (
     "1.0",

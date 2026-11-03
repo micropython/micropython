@@ -32,11 +32,22 @@ _REQUIREMENT_PREFIX = b"# requires:"
 
 # Valid keywords for the "requires:" line.
 _VALID_REQUIREMENTS = (
+    "asm-rv32",
+    "asm-rv32-zba",
+    "asm-rv32-zcmp",
+    "asm-thumb",
+    "asm-thumb-thumb2",
+    "asm-thumb-vfp",
+    "asm-xtensa",
+    "asm-xtensa-windowed",
     "async",
     "bytearray",
     "complex",
     "const",
     "coverage",
+    "float",
+    "float-32bit",
+    "float-64bit",
     "frozenset",
     "fstring",
     "host-endianness",

@@ -1,4 +1,5 @@
 # test arithmetic opcodes
+# requires: asm-rv32
 
 
 @micropython.asm_rv32

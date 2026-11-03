@@ -1,4 +1,5 @@
 # Test struct pack/unpack with 'e' typecode.
+# requires: float-64bit
 
 try:
     import struct

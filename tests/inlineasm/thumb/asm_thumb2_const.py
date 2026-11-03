@@ -1,4 +1,5 @@
 # test constants in assembler
+# requires: asm-thumb-thumb2
 
 
 @micropython.asm_thumb

@@ -1,4 +1,5 @@
 # test passing arguments
+# requires: asm-rv32
 
 
 @micropython.asm_rv32

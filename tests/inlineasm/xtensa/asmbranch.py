@@ -1,4 +1,5 @@
 # test branch instructions
+# requires: asm-xtensa
 
 
 @micropython.asm_xtensa

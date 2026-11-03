@@ -1,4 +1,5 @@
 # test parsing of floats
+# requires: float
 
 inf = float("inf")
 

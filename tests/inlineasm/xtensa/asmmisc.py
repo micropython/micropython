@@ -1,3 +1,6 @@
+# requires: asm-xtensa
+
+
 @micropython.asm_xtensa
 def tnop(a2, a3, a4, a5):
     nop()

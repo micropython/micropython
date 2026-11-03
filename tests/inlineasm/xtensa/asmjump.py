@@ -1,3 +1,6 @@
+# requires: asm-xtensa
+
+
 @micropython.asm_xtensa
 def jump() -> int:
     movi(a2, 0)

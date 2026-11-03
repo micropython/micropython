@@ -1,5 +1,5 @@
 # test basic complex number functionality
-# requires: complex
+# requires: complex float
 
 # constructor
 print(complex(1))

@@ -1,4 +1,5 @@
 # test that cmath functions support user classes with __float__ and __complex__
+# requires: float
 
 try:
     import cmath

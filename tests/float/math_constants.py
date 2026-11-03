@@ -1,4 +1,5 @@
 # Tests various constants of the math module.
+# requires: float
 
 import sys
 

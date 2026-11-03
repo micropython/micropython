@@ -1,5 +1,5 @@
 # test complex interacting with special methods
-# requires: complex
+# requires: complex float
 
 
 class A:

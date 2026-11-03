@@ -1,3 +1,6 @@
+# requires: asm-thumb
+
+
 @micropython.asm_thumb
 def asm_sum_words(r0, r1):
     # r0 = len

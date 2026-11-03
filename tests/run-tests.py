@@ -233,38 +233,6 @@ flaky_tests_to_ignore = {
     "extmod/time_time_ns.py": ("CI runner clock precision", None),
 }
 
-# These tests don't test float explicitly but rather use it to perform the test.
-tests_requiring_float = (
-    "extmod/asyncio_basic.py",
-    "extmod/asyncio_basic2.py",
-    "extmod/asyncio_cancel_task.py",
-    "extmod/asyncio_event.py",
-    "extmod/asyncio_fair.py",
-    "extmod/asyncio_gather.py",
-    "extmod/asyncio_gather_notimpl.py",
-    "extmod/asyncio_get_event_loop.py",
-    "extmod/asyncio_iterator_event.py",
-    "extmod/asyncio_lock.py",
-    "extmod/asyncio_task_done.py",
-    "extmod/asyncio_wait_for.py",
-    "extmod/asyncio_wait_for_fwd.py",
-    "extmod/asyncio_wait_for_linked_task.py",
-    "extmod/asyncio_wait_task.py",
-    "extmod/json_dumps_float.py",
-    "extmod/json_loads_float.py",
-    "extmod/random_extra_float.py",
-    "extmod/select_poll_eintr.py",
-    "extmod/tls_threads.py",
-    "extmod/uctypes_le_float.py",
-    "extmod/uctypes_native_float.py",
-    "extmod/uctypes_sizeof_float.py",
-    "extmod/vfs_rom.py",
-    "micropython/const_float.py",
-    "misc/rge_sm.py",
-    "ports/unix/ffi_float.py",
-    "ports/unix/ffi_float2.py",
-)
-
 
 # unescape wanted regex chars and escape unwanted ones
 def convert_regex_escapes(line):
@@ -707,7 +675,6 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
     test_results = ThreadSafeCounter([])
 
     skip_tests = set()
-    skip_inlineasm = False
     target_capabilities = {}
 
     if True:
@@ -769,17 +736,6 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         output = run_feature_check(pyb, args, "complex.py")
         target_capabilities["complex"] = output == b"complex\n"
 
-        if args.inlineasm_arch == "thumb":
-            for feature in ("thumb2", "vfp"):
-                if feature not in args.inlineasm_features:
-                    for test in glob(f"inlineasm/thumb/asm_{feature}_*.py"):
-                        skip_tests.add(test)
-
-        if args.inlineasm_arch == "rv32":
-            for extension in RV32_ARCH_FLAGS:
-                if extension not in args.inlineasm_features:
-                    skip_tests.add(f"inlineasm/rv32/asm_ext_{extension}.py")
-
         # Check if emacs repl is supported, and skip such tests if it's not
         t = run_feature_check(pyb, args, "repl_emacs_check.py")
         if "True" not in str(t, "ascii"):
@@ -801,32 +757,23 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         )
         target_capabilities["host-endianness"] = upy_byteorder == cpy_byteorder
 
-        skip_inlineasm = not args.inlineasm_arch
+    # Check if the target supports floating point.
+    target_capabilities["float"] = args.float_prec > 0
+    target_capabilities["float-32bit"] = args.float_prec >= 32
+    target_capabilities["float-64bit"] = args.float_prec >= 64
+
+    # Check if the target supports inline assembler.
+    if args.inlineasm_arch:
+        asm = f"asm-{args.inlineasm_arch}"
+        target_capabilities[asm] = True
+        for feature in args.inlineasm_features:
+            target_capabilities[f"{asm}-{feature}"] = True
 
     # Some tests shouldn't be run on GitHub Actions
     if os.getenv("GITHUB_ACTIONS") == "true":
         if os.getenv("RUNNER_OS") == "Windows" and os.getenv("CI_BUILD_CONFIGURATION") == "Debug":
             # fails with stack overflow on Debug builds
             skip_tests.add("misc/sys_settrace_features.py")
-
-    if args.float_prec == 0:
-        skip_tests.update(tests_requiring_float)
-    if args.float_prec < 32:
-        skip_tests.add(
-            "float/float2int_intbig.py"
-        )  # requires fp32, there's float2int_fp30_intbig.py instead
-        skip_tests.add(
-            "float/float_struct_e.py"
-        )  # requires fp32, there's float_struct_e_fp30.py instead
-        skip_tests.add("float/bytes_construct.py")  # requires fp32
-        skip_tests.add("float/bytearray_construct.py")  # requires fp32
-        skip_tests.add("float/float_format_ints_power10.py")  # requires fp32
-    if args.float_prec < 64:
-        skip_tests.add("float/float_divmod.py")  # tested by float/float_divmod_relaxed.py instead
-        skip_tests.add("float/float2int_doubleprec_intbig.py")
-        skip_tests.add("float/float_struct_e_doubleprec.py")
-        skip_tests.add("float/float_format_ints_doubleprec.py")
-        skip_tests.add("float/float_parse_doubleprec.py")
 
     if not args.unicode:
         if args.via_mpy:
@@ -884,15 +831,12 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
                 return
 
         test_basename = test_file.replace("..", "_").replace("./", "").replace("/", "_")
-        test_name = os.path.splitext(os.path.basename(test_file))[0]
-        is_inlineasm = test_name.startswith("asm")
 
         skip_it = os.path.realpath(test_file) in skip_tests
-        skip_it |= skip_inlineasm and is_inlineasm
 
         skip_reasons = []
         for requirement in test.requires_feature:
-            if not target_capabilities[requirement]:
+            if not target_capabilities.get(requirement, False):
                 skip_reasons.append(requirement)
 
         if skip_it:

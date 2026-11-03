@@ -1,3 +1,6 @@
+# requires: asm-thumb-thumb2
+
+
 @micropython.asm_thumb
 def getIPSR():
     mrs(r0, IPSR)
