@@ -25,6 +25,10 @@
 #include "supervisor/shared/display.h"
 #include "supervisor/shared/tick.h"
 
+#if CIRCUITPY_WEB_WORKFLOW
+#include "supervisor/shared/web_workflow/display_stream.h"
+#endif
+
 #if CIRCUITPY_TINYUSB
 #include "supervisor/usb.h"
 #endif
@@ -256,6 +260,9 @@ static bool _refresh_area(busdisplay_busdisplay_obj_t *self, const displayio_are
     if (!displayio_display_core_clip_area(&self->core, area, &clipped)) {
         return true;
     }
+    #if CIRCUITPY_WEB_WORKFLOW
+    display_stream_area_updated(&self->core, &clipped);
+    #endif
     uint16_t rows_per_buffer = displayio_area_height(&clipped);
     uint16_t cols_per_buffer = displayio_area_width(&clipped);
     uint8_t pixels_per_word = (sizeof(uint32_t) * 8) / self->core.colorspace.depth;

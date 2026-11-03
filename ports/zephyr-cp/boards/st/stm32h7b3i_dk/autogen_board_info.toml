@@ -42,6 +42,7 @@ camera = false
 canio = false
 codeop = true
 countio = false
+cryptography = false
 digitalio = true
 displayio = true # Zephyr board has displayio
 dotclockframebuffer = false

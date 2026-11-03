@@ -127,6 +127,19 @@ Human-friendly name the board advertises over mDNS for the Web Workflow.
 Defaults to the human-readable board name if omitted.
 This is not the hostname.
 
+CIRCUITPY_WEB_VNC_PORT (integer)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+TCP port number for VNC viewers to show the board's display, typically 5900.
+Off when omitted. There is no password, so anyone who can reach the board
+on the network can see the display.
+
+CIRCUITPY_WEB_VNC_KEYS (boolean)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Set to ``true`` to send keys typed into a VNC viewer on ``CIRCUITPY_WEB_VNC_PORT`` to the
+serial console. Defaults to ``false``, which ignores them. There is no password, so
+this lets anyone who can reach the board on the network interrupt code and use the REPL,
+and only belongs on a network you trust.
+
 CIRCUITPY_WIFI_SSID (string)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
