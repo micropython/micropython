@@ -72,6 +72,15 @@
 #define MICROPY_PY_BLUETOOTH_ENABLE_HCI_CMD (0)
 #endif
 
+// Enable diagnostic logging for Bluetooth stacks (compile-time only).
+// Level 0 (default): Errors only, minimal code size.
+// Level 1: Stack info logging (INFO/WARN/ERROR).
+// Level 2: Debug logging including internal state tracing.
+// Level 3: HCI packet tracing (hex dumps of all packets).
+#ifndef MICROPY_PY_BLUETOOTH_DIAGNOSTIC_LOGGING
+#define MICROPY_PY_BLUETOOTH_DIAGNOSTIC_LOGGING (0)
+#endif
+
 // This is used to protect the ringbuffer.
 // A port may no-op this if MICROPY_PY_BLUETOOTH_USE_SYNC_EVENTS is enabled.
 #ifndef MICROPY_PY_BLUETOOTH_ENTER
