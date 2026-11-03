@@ -11,6 +11,7 @@
 #include "py/binary.h"
 #include "py/cstack.h"
 #include "py/objarray.h"
+#include "py/objint.h"
 #include "py/objlist.h"
 #include "py/objstringio.h"
 #include "py/parsenum.h"
@@ -175,19 +176,51 @@ static mp_map_elem_t *dict_iter_next(mp_obj_dict_t *dict, size_t *cur) {
     return NULL;
 }
 
-static void pack_int(msgpack_stream_t *s, int32_t x) {
-    if (x > -32 && x < 128) {
-        write1(s, x);
-    } else if ((int8_t)x == x) {
-        write1(s, 0xd0);
-        write1(s, x);
-    } else if ((int16_t)x == x) {
-        write1(s, 0xd1);
-        write2(s, x);
-    } else {
-        write1(s, 0xd2);
-        write4(s, x);
+// Write x in the shortest format that holds it: unsigned formats for values >= 0, signed formats
+// for negative values. Return false, having written nothing, if x does not fit in 64 bits.
+static bool pack_int(msgpack_stream_t *s, mp_obj_t x) {
+    #if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_NONE
+    if (!mp_obj_is_small_int(x) && MP_OBJ_SMALL_INT_VALUE(mp_obj_int_bit_length_impl(x)) > 64) {
+        return false;
     }
+    #endif
+
+    bool negative = mp_obj_int_sign(x) < 0;
+    uint8_t buf[8];
+    mp_obj_int_to_bytes(x, sizeof(buf), buf, true, negative, false);
+    // Below -2**63 the truncated value loses its sign bit.
+    if (negative && !(buf[0] & 0x80)) {
+        return false;
+    }
+
+    // Skip the high bytes that only repeat the sign. A negative value keeps its top bit set.
+    uint8_t fill = negative ? 0xff : 0;
+    size_t skip = 0;
+    while (skip < sizeof(buf) - 1 && buf[skip] == fill) {
+        skip++;
+    }
+    if (negative && !(buf[skip] & 0x80)) {
+        skip--;
+    }
+    size_t needed = sizeof(buf) - skip;
+
+    uint8_t low = buf[sizeof(buf) - 1];
+    if (needed == 1 && (negative ? low >= 0xe0 : low < 0x80)) {
+        // positive or negative fixint
+        write1(s, low);
+        return true;
+    }
+
+    // Both families have consecutive codes for 8, 16, 32 and 64 bits.
+    uint8_t code = negative ? 0xd0 : 0xcc;
+    size_t len = 1;
+    while (len < needed) {
+        len *= 2;
+        code++;
+    }
+    write1(s, code);
+    write(s, buf + sizeof(buf) - len, len);
+    return true;
 }
 
 static void pack_bin(msgpack_stream_t *s, const uint8_t *data, size_t len) {
@@ -256,10 +289,8 @@ static void pack_dict(msgpack_stream_t *s, size_t len) {
 
 static void pack(mp_obj_t obj, msgpack_stream_t *s, mp_obj_t default_handler) {
     mp_cstack_check();
-    if (mp_obj_is_small_int(obj)) {
-        // int
-        int32_t x = MP_OBJ_SMALL_INT_VALUE(obj);
-        pack_int(s, x);
+    if (mp_obj_is_int(obj) && pack_int(s, obj)) {
+        // int that fits in 64 bits; a larger one falls through to default_handler
     } else if (mp_obj_is_str(obj)) {
         // string
         size_t len;
