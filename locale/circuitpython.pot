@@ -1553,7 +1553,7 @@ msgstr ""
 
 #: ports/espressif/common-hal/audioio/AudioOut.c
 #: ports/espressif/common-hal/mipicsi/Camera.c
-#: shared-module/videocore/VideoBuffer.c
+#: shared-module/videocore/VideoBuffer.c shared-module/videogif/GifDecoder.c
 msgid "already playing"
 msgstr ""
 
