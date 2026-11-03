@@ -40,6 +40,7 @@
 #if PICO_RP2350
 #include "hardware/powman.h"
 #include "pico/low_power.h"
+#include "pico/multicore.h"
 #endif
 
 // Light sleep turns off nonvolatile Busio and other wake-only peripherals
@@ -247,6 +248,10 @@ static void MP_NORETURN rp2350_enter_deep_sleep(void) {
     #if CIRCUITPY_CYW43
     cyw43_enter_deep_sleep();
     #endif
+
+    // Powman does not power down until both cores are in __wfi(). Core1 may be
+    // busy, for example running the PIO USB host loop, so park it in the bootrom.
+    multicore_reset_core1();
 
     // pico_low_power arms one wakeup per call and leaves the others alone, so
     // arm every pin alarm first.
