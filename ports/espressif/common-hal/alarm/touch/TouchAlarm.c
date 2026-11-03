@@ -222,5 +222,9 @@ void alarm_touch_touchalarm_reset(void) {
     }
 
     touch_channel_mask = 0;
+
+    // Tear down the channel(s) this alarm configured. Without this, a TouchIn built after
+    // wake would reuse this alarm's sleep-tuned threshold instead of getting a fresh one.
     peripherals_touch_never_reset(false);
+    peripherals_touch_reset();
 }

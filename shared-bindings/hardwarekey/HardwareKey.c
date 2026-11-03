@@ -5,6 +5,7 @@
 // SPDX-License-Identifier: MIT
 
 #include "py/objproperty.h"
+#include "py/objstr.h"
 #include "py/runtime.h"
 
 #include "shared-bindings/hardwarekey/__init__.h"
@@ -19,11 +20,13 @@
 //|     still has a `HardwareKey` object; its `purpose` is `hardwarekey.Purpose.UNUSED`.
 //|
 //|     Compute a MAC with a key by passing it to `hmac.new()` in place of a
-//|     ``bytes`` key.
+//|     ``bytes`` key, or turn a Digital Signature key into a
+//|     :py:class:`cryptography.hazmat.primitives.asymmetric.rsa.DigitalSignatureKey`
+//|     with :py:func:`cryptography.hazmat.primitives.asymmetric.rsa.load_digital_signature_key()`.
 //|
 //|     On espressif the slots are the eFuse key blocks (``BLOCK_KEY0`` -
 //|     ``BLOCK_KEY5``); a slot is usable only if its block was burned with
-//|     purpose ``HMAC_UP``."""
+//|     purpose ``HMAC_UP`` or ``HMAC_DOWN_DIGITAL_SIGNATURE``."""
 //|
 
 static void hardwarekey_hardwarekey_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
@@ -60,8 +63,9 @@ MP_DEFINE_CONST_FUN_OBJ_1(hardwarekey_hardwarekey_get_key_slot_obj, hardwarekey_
 MP_PROPERTY_GETTER(hardwarekey_hardwarekey_key_slot_obj, (mp_obj_t)&hardwarekey_hardwarekey_get_key_slot_obj);
 
 //|     purpose: Purpose
-//|     """What this key slot is provisioned for -- `hardwarekey.Purpose.HMAC_UP` or
-//|     `hardwarekey.Purpose.UNUSED`. (read-only)"""
+//|     """What this key slot is provisioned for -- `hardwarekey.Purpose.HMAC_UP`,
+//|     `hardwarekey.Purpose.HMAC_DOWN_DIGITAL_SIGNATURE`, or `hardwarekey.Purpose.UNUSED`.
+//|     (read-only)"""
 static mp_obj_t hardwarekey_hardwarekey_get_purpose(mp_obj_t self_in) {
     hardwarekey_hardwarekey_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return cp_enum_find(&hardwarekey_purpose_type, common_hal_hardwarekey_hardwarekey_get_purpose(self));

@@ -24,6 +24,7 @@
 #include "supervisor/shared/reload.h"
 #include "supervisor/shared/web_workflow/web_workflow.h"
 #include "supervisor/shared/web_workflow/websocket.h"
+#include "supervisor/shared/web_workflow/display_stream.h"
 #include "supervisor/shared/workflow.h"
 
 #include "shared-bindings/hashlib/__init__.h"
@@ -355,6 +356,21 @@ void supervisor_web_workflow_status(void) {
 #endif
 
 #if CIRCUITPY_WEB_WORKFLOW && CIRCUITPY_SETTINGS_TOML && (CIRCUITPY_WIFI || CIRCUITPY_HOSTNETWORK || CIRCUITPY_MII || CIRCUITPY_AIRLIFT)
+// Reads CIRCUITPY_WEB_API_PASSWORD into _api_password, encoded for HTTP basic
+// auth. Returns false if it isn't set.
+static bool _get_api_password(void) {
+    const size_t api_password_len = sizeof(_api_password) - 1;
+    settings_err_t result = settings_get_str("CIRCUITPY_WEB_API_PASSWORD", _api_password + 1, api_password_len);
+    if (result != SETTINGS_OK) {
+        return false;
+    }
+    _api_password[0] = ':';
+    _base64_in_place(_api_password, strlen(_api_password), sizeof(_api_password) - 1);
+    return true;
+}
+#endif
+
+#if CIRCUITPY_WEB_WORKFLOW && CIRCUITPY_SETTINGS_TOML && (CIRCUITPY_WIFI || CIRCUITPY_HOSTNETWORK || CIRCUITPY_MII || CIRCUITPY_AIRLIFT)
 static bool _open_listening(void) {
     #if CIRCUITPY_SOCKETPOOL_IPV6
     bool opened = socketpool_socket(&pool, SOCKETPOOL_AF_INET6, SOCKETPOOL_SOCK_STREAM, 0, &listening);
@@ -385,6 +401,9 @@ static bool _open_listening(void) {
         common_hal_socketpool_socket_close(&listening);
         return false;
     }
+    #if CIRCUITPY_DISPLAYIO
+    display_stream_listen(&pool);
+    #endif
     return true;
 }
 #endif
@@ -408,21 +427,6 @@ static void _airlift_retry_listening(void) {
     last_try_ms = now;
     last_try_generation = airlift_transport_generation();
     _open_listening();
-}
-#endif
-
-#if CIRCUITPY_WEB_WORKFLOW && CIRCUITPY_SETTINGS_TOML && (CIRCUITPY_WIFI || CIRCUITPY_HOSTNETWORK || CIRCUITPY_MII || CIRCUITPY_AIRLIFT)
-// Reads CIRCUITPY_WEB_API_PASSWORD into _api_password, encoded for HTTP basic
-// auth. Returns false if it isn't set.
-static bool _get_api_password(void) {
-    const size_t api_password_len = sizeof(_api_password) - 1;
-    settings_err_t result = settings_get_str("CIRCUITPY_WEB_API_PASSWORD", _api_password + 1, api_password_len);
-    if (result != SETTINGS_OK) {
-        return false;
-    }
-    _api_password[0] = ':';
-    _base64_in_place(_api_password, strlen(_api_password), sizeof(_api_password) - 1);
-    return true;
 }
 #endif
 
@@ -546,6 +550,14 @@ bool supervisor_start_web_workflow(void) {
         socketpool_socket_reset(&active);
 
         websocket_init();
+        #if CIRCUITPY_DISPLAYIO
+        display_stream_init();
+        mp_int_t vnc_port = 0;
+        (void)settings_get_int("CIRCUITPY_WEB_VNC_PORT", &vnc_port);
+        bool vnc_keys = false;
+        (void)settings_get_bool("CIRCUITPY_WEB_VNC_KEYS", &vnc_keys);
+        display_stream_set_vnc(vnc_port, vnc_keys);
+        #endif
     }
 
     initialized = pool.base.type == &socketpool_socketpool_type;
@@ -1291,6 +1303,10 @@ STATIC_FILE(edit_js);
 STATIC_FILE(style_css);
 STATIC_FILE(serial_html);
 STATIC_FILE(serial_js);
+#if CIRCUITPY_DISPLAYIO
+STATIC_FILE(display_html);
+STATIC_FILE(display_js);
+#endif
 STATIC_FILE(blinka_32x32_ico);
 
 static void _reply_static(socketpool_socket_obj_t *socket, _request *request, const uint8_t *response, size_t response_len, const char *content_type) {
@@ -1332,6 +1348,12 @@ static void _reply_websocket_upgrade(socketpool_socket_obj_t *socket, _request *
         "Connection: Upgrade\r\n",
         "Sec-WebSocket-Accept: ", encoded_accept, "\r\n",
         "\r\n", NULL);
+    #if CIRCUITPY_DISPLAYIO
+    if (strcmp(request->path, "/cp/display/") == 0) {
+        display_stream_handoff(socket, true);
+        return;
+    }
+    #endif
     websocket_handoff(socket);
     // socket is now closed and "disconnected".
 }
@@ -1568,6 +1590,20 @@ static bool _reply(socketpool_socket_obj_t *socket, _request *request) {
             } else {
                 _REPLY_STATIC(socket, request, serial_html);
             }
+        #if CIRCUITPY_DISPLAYIO
+        } else if (strcmp(path, "/display/") == 0) {
+            if (!request->authenticated) {
+                if (_api_password[0] != '\0') {
+                    _reply_unauthorized(socket, request);
+                } else {
+                    _reply_forbidden(socket, request);
+                }
+            } else if (request->websocket) {
+                _reply_websocket_upgrade(socket, request);
+            } else {
+                _REPLY_STATIC(socket, request, display_html);
+            }
+        #endif
         } else {
             _reply_missing(socket, request);
         }
@@ -1584,6 +1620,10 @@ static bool _reply(socketpool_socket_obj_t *socket, _request *request) {
             _REPLY_STATIC(socket, request, welcome_js);
         } else if (strcmp(request->path, "/serial.js") == 0) {
             _REPLY_STATIC(socket, request, serial_js);
+        #if CIRCUITPY_DISPLAYIO
+        } else if (strcmp(request->path, "/display.js") == 0) {
+            _REPLY_STATIC(socket, request, display_js);
+        #endif
         } else if (strcmp(request->path, "/edit.js") == 0) {
             _REPLY_STATIC(socket, request, edit_js);
         } else if (strcmp(request->path, "/style.css") == 0) {
@@ -1844,6 +1884,9 @@ void supervisor_web_workflow_background(void *data) {
 
     // Let the websocket code run.
     websocket_background();
+    #if CIRCUITPY_DISPLAYIO
+    display_stream_background();
+    #endif
 
     #if CIRCUITPY_AIRLIFT
     airlift_socketpool_background_done();

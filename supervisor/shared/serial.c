@@ -32,6 +32,7 @@
 
 #if CIRCUITPY_WEB_WORKFLOW
 #include "supervisor/shared/web_workflow/websocket.h"
+#include "supervisor/shared/web_workflow/display_stream.h"
 #endif
 
 #if CIRCUITPY_CONSOLE_UART
@@ -307,6 +308,12 @@ char serial_read(void) {
     }
     #endif
 
+    #if CIRCUITPY_WEB_WORKFLOW && CIRCUITPY_DISPLAYIO
+    if (display_stream_available()) {
+        return display_stream_read_char();
+    }
+    #endif
+
     #if CIRCUITPY_USB_KEYBOARD_WORKFLOW
     if (usb_keyboard_chars_available() > 0) {
         return usb_keyboard_read_char();
@@ -356,6 +363,10 @@ uint32_t serial_bytes_available(void) {
 
     #if CIRCUITPY_WEB_WORKFLOW
     count += websocket_available();
+    #endif
+
+    #if CIRCUITPY_WEB_WORKFLOW && CIRCUITPY_DISPLAYIO
+    count += display_stream_available();
     #endif
 
     #if CIRCUITPY_USB_KEYBOARD_WORKFLOW

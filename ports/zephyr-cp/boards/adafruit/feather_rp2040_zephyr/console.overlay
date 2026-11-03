@@ -1,0 +1,9 @@
+/* Applied after board.overlay in CONSOLE=1 and DEBUG=1 builds: the Zephyr
+ * console on UART0, on the TX/RX pins (GPIO0/GPIO1). TX/RX are then not
+ * available to busio.UART. */
+/ {
+	chosen {
+		zephyr,console = &uart0;
+		zephyr,shell-uart = &uart0;
+	};
+};

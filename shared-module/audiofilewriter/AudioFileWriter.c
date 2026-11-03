@@ -287,7 +287,7 @@ void common_hal_audiofilewriter_audiofilewriter_construct(audiofilewriter_audiof
     self->file = file;
     self->sample = MP_OBJ_NULL;
     self->ring_size = buffer_size;
-    self->ring = m_malloc(buffer_size);
+    self->ring = m_malloc_without_collect(buffer_size);
     self->ring_head = 0;
     self->ring_tail = 0;
     self->ring_count = 0;

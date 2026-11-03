@@ -6,6 +6,13 @@
 //
 // SPDX-License-Identifier: MIT
 
+// Needed to reach mbedtls_pk_context's private pub_raw/pub_raw_len fields --
+// see the mbedtls_pk_wrap_psa() workaround in
+// common_hal_ssl_sslcontext_wrap_socket() below.
+#define MBEDTLS_ALLOW_PRIVATE_ACCESS
+
+#include <string.h>
+
 #include "shared-bindings/ssl/SSLSocket.h"
 #include "shared-bindings/ssl/SSLContext.h"
 
@@ -228,8 +235,6 @@ static void ssl_socket_close(ssl_sslsocket_obj_t *self) {
     if (nlr_push(&nlr) == 0) {
         mp_call_method_n_kw(0, 0, self->close_args);
         nlr_pop();
-    } else {
-        nlr_pop();
     }
 }
 
@@ -296,6 +301,8 @@ ssl_sslsocket_obj_t *common_hal_ssl_sslcontext_wrap_socket(ssl_sslcontext_obj_t 
     o->ssl_context = self;
     o->sock_obj = socket;
     o->poll_mask = 0;
+    // A missing method raises below. Keep the finaliser away until the object is complete.
+    o->closed = true;
 
     mp_load_method(socket, MP_QSTR_accept, o->accept_args);
     mp_load_method(socket, MP_QSTR_bind, o->bind_args);
@@ -306,6 +313,7 @@ ssl_sslsocket_obj_t *common_hal_ssl_sslcontext_wrap_socket(ssl_sslcontext_obj_t 
     mp_load_method(socket, MP_QSTR_send, o->send_args);
     mp_load_method(socket, MP_QSTR_settimeout, o->settimeout_args);
     mp_load_method(socket, MP_QSTR_setsockopt, o->setsockopt_args);
+    o->closed = false;
 
     mbedtls_ssl_init(&o->ssl);
     mbedtls_ssl_config_init(&o->conf);
@@ -360,11 +368,31 @@ ssl_sslsocket_obj_t *common_hal_ssl_sslcontext_wrap_socket(ssl_sslcontext_obj_t 
     mbedtls_ssl_set_bio(&o->ssl, o, _mbedtls_ssl_send, _mbedtls_ssl_recv, NULL);
 
     if (self->cert_buf.buf != NULL) {
-        ret = mbedtls_pk_parse_key(&o->pkey, self->key_buf.buf, self->key_buf.len + 1, NULL, 0);
+        // Parsed first so its public key is available for the
+        // mbedtls_pk_wrap_psa() workaround below.
+        ret = mbedtls_x509_crt_parse(&o->cert, self->cert_buf.buf, self->cert_buf.len + 1);
         if (ret != 0) {
             goto cleanup;
         }
-        ret = mbedtls_x509_crt_parse(&o->cert, self->cert_buf.buf, self->cert_buf.len + 1);
+
+        if (self->hw_key_id != 0) {
+            // mbedtls_pk_wrap_psa() unconditionally calls
+            // psa_export_public_key() on the handle as part of wrapping it,
+            // but the DS peripheral's PSA driver has no export_public_key
+            // entry point (the private key, and anything derivable from it,
+            // never leaves the peripheral by design), so that call fails
+            // before the wrap can complete. It skips the export once
+            // pub_raw_len is already set, so pre-populate it from the
+            // certificate's own public key -- the public half of this same
+            // key, by construction. (mbedtls_pk_write_pubkey_psa() would do
+            // this copy too, but it needs MBEDTLS_PK_WRITE_C, which not every
+            // port enables, so copy the field directly instead.)
+            memcpy(o->pkey.pub_raw, o->cert.pk.pub_raw, o->cert.pk.pub_raw_len);
+            o->pkey.pub_raw_len = o->cert.pk.pub_raw_len;
+            ret = mbedtls_pk_wrap_psa(&o->pkey, self->hw_key_id);
+        } else {
+            ret = mbedtls_pk_parse_key(&o->pkey, self->key_buf.buf, self->key_buf.len + 1, NULL, 0);
+        }
         if (ret != 0) {
             goto cleanup;
         }
