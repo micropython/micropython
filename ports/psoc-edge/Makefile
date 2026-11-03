@@ -301,6 +301,7 @@ MOD_SRC_C += \
 	machine_pin_irq.c \
 	machine_rtc.c \
 	machine_spi.c \
+	machine_spi_target.c \
 	modpsocedge.c \
 
 ifeq ($(MICROPY_PY_EXT_FLASH),1)

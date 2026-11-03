@@ -38,7 +38,7 @@
 #include "clk.h"
 #include "spi.h"
 
-#if MICROPY_PY_MACHINE_SPI
+#if MICROPY_PY_MACHINE_SPI || MICROPY_PY_MACHINE_SPI_TARGET
 
 #define SPI_CONTROLLER_OVERSAMPLE   (4U)
 #define SPI_CLK_DIV_BASE            (4U)
@@ -170,6 +170,48 @@ void spi_hw_controller_abort_transfer(spi_obj_t *self) {
     Cy_SCB_SPI_AbortTransfer(self->scb_obj->scb, &self->ctx);
 }
 
+// Requires the SCB to be claimed and polarity, phase, bits and firstbit to be set.
+// Raises on failure, cleanup (spi_hw_deinit) is done by the caller.
+void spi_hw_target_init(spi_obj_t *self) {
+    self->pclk_div = pclk_div_init(self->scb_obj->clk, SPI_CLK_DIV_BASE, 0);
+    if (self->pclk_div == NULL) {
+        mp_raise_ValueError(MP_ERROR_TEXT("SPITarget clock dividers exhausted"));
+    }
+
+    cy_en_scb_spi_status_t result = spi_hw_init(self, CY_SCB_SPI_SLAVE);
+    if (result != CY_SCB_SPI_SUCCESS) {
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("SPITarget init failed: 0x%lx"), (uint32_t)result);
+    }
+}
+
+void spi_hw_target_clear_tx_fifo(spi_obj_t *self) {
+    Cy_SCB_SPI_ClearTxFifo(self->scb_obj->scb);
+}
+
+void spi_hw_target_clear_rx_fifo(spi_obj_t *self) {
+    Cy_SCB_SPI_ClearRxFifo(self->scb_obj->scb);
+}
+
+bool spi_hw_target_tx_fifo_has_space(spi_obj_t *self) {
+    return Cy_SCB_GetNumInTxFifo(self->scb_obj->scb) < Cy_SCB_GetFifoSize(self->scb_obj->scb);
+}
+
+void spi_hw_target_write(spi_obj_t *self, uint8_t data) {
+    Cy_SCB_SPI_Write(self->scb_obj->scb, data);
+}
+
+bool spi_hw_target_is_tx_complete(spi_obj_t *self) {
+    return Cy_SCB_SPI_IsTxComplete(self->scb_obj->scb);
+}
+
+uint32_t spi_hw_target_get_num_in_rx_fifo(spi_obj_t *self) {
+    return Cy_SCB_SPI_GetNumInRxFifo(self->scb_obj->scb);
+}
+
+uint8_t spi_hw_target_read(spi_obj_t *self) {
+    return (uint8_t)Cy_SCB_SPI_Read(self->scb_obj->scb);
+}
+
 // Stops the SPI hardware and releases the clock divider. The SCB stays claimed (see spi_free).
 void spi_hw_deinit(spi_obj_t *self) {
     if (self->scb_obj != NULL) {
@@ -183,4 +225,4 @@ void spi_hw_deinit(spi_obj_t *self) {
     }
 }
 
-#endif // MICROPY_PY_MACHINE_SPI
+#endif // MICROPY_PY_MACHINE_SPI || MICROPY_PY_MACHINE_SPI_TARGET
