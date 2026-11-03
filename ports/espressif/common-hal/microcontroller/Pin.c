@@ -477,7 +477,13 @@ void reset_all_pins(void) {
         }
         _reset_pin(i);
     }
+    // A board may claim pins the core must never reset, such as C6_TX/C6_RX on the unused USB PHY.
+    #ifdef CIRCUITPY_BOARD_CLAIMABLE_PIN_MASK
+    _in_use_pin_mask = _never_reset_pin_mask |
+        (pin_mask_reset_forbidden & ~(uint64_t)CIRCUITPY_BOARD_CLAIMABLE_PIN_MASK);
+    #else
     _in_use_pin_mask = _never_reset_pin_mask | pin_mask_reset_forbidden;
+    #endif
     // Don't continue to skip resetting these pins.
     _skip_reset_once_pin_mask = 0;
 }

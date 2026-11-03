@@ -26,5 +26,8 @@
 #define CIRCUITPY_USB_DEVICE_INSTANCE 0
 #define CIRCUITPY_ESP32P4_SWAP_LSFS (1)
 
+// GPIO26/27 sit on the USB-Serial/JTAG PHY when swapped, and carry the UART to the C6.
+#define CIRCUITPY_BOARD_CLAIMABLE_PIN_MASK ((1ULL << 26) | (1ULL << 27))
+
 // USB-A is connected to the dedicated high-speed PHY.
 #define CIRCUITPY_USB_HOST_INSTANCE 1

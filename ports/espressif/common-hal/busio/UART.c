@@ -10,6 +10,14 @@
 
 #include "driver/uart.h"
 
+#ifdef CIRCUITPY_BOARD_CLAIMABLE_PIN_MASK
+#include "esp_rom_gpio.h"
+#include "hal/gpio_ll.h"
+#include "hal/uart_periph.h"
+#include "soc/io_mux_struct.h"
+#include "soc/usb_serial_jtag_struct.h"
+#endif
+
 #include "mpconfigport.h"
 #include "shared/readline/readline.h"
 #include "shared/runtime/interrupt_char.h"
@@ -73,6 +81,33 @@ void common_hal_busio_uart_never_reset(busio_uart_obj_t *self) {
     common_hal_never_reset_pin(self->cts_pin);
     never_reset_uart_mask |= 1 << self->uart_num;
 }
+
+#ifdef CIRCUITPY_BOARD_CLAIMABLE_PIN_MASK
+static bool pin_is_on_swapped_phy(int pin_num) {
+    return pin_num >= 0 && (CIRCUITPY_BOARD_CLAIMABLE_PIN_MASK & (1ULL << pin_num));
+}
+
+// uart_set_pin() can't be used on these pads. gpio_ll_func_sel() assumes USJ is on PHY0, so with
+// the PHYs swapped it would clear USB_WRAP's pad enable, and drop CIRCUITPY's USB connection, and
+// it would leave USJ holding the pads. Route them directly instead.
+static void connect_swapped_phy_pins(uart_port_t uart_num, int tx_num, int rx_num) {
+    USB_SERIAL_JTAG.conf0.usb_pad_enable = 0;
+    if (pin_is_on_swapped_phy(rx_num)) {
+        IO_MUX.gpio[rx_num].fun_ie = 1;
+        IO_MUX.gpio[rx_num].fun_wpu = 1;
+        IO_MUX.gpio[rx_num].mcu_sel = PIN_FUNC_GPIO;
+        esp_rom_gpio_connect_in_signal(rx_num,
+            UART_PERIPH_SIGNAL(uart_num, SOC_UART_PERIPH_SIGNAL_RX), false);
+    }
+    if (pin_is_on_swapped_phy(tx_num)) {
+        IO_MUX.gpio[tx_num].mcu_sel = PIN_FUNC_GPIO;
+        esp_rom_gpio_connect_out_signal(tx_num,
+            UART_PERIPH_SIGNAL(uart_num, SOC_UART_PERIPH_SIGNAL_TX), false, false);
+        gpio_ll_set_output_enable_ctrl(&GPIO, tx_num, false, false);
+        gpio_ll_output_enable(&GPIO, tx_num);
+    }
+}
+#endif
 
 void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     const mcu_pin_obj_t *tx, const mcu_pin_obj_t *rx,
@@ -154,6 +189,9 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
         uart_set_mode(self->uart_num, mode) != ESP_OK) {
         mp_raise_RuntimeError(MP_ERROR_TEXT("UART init"));
     }
+    // IDF interrupts at 120 of the 128 FIFO bytes, which leaves 8 byte times (40 us at 2 Mbaud)
+    // before bytes are dropped. Half the FIFO gives 320 us at 2 Mbaud.
+    uart_set_rx_full_threshold(self->uart_num, UART_HW_FIFO_LEN(self->uart_num) / 2);
 
     // On the console uart, enable pattern detection to look for CTRL+C
     #if CIRCUITPY_CONSOLE_UART
@@ -269,11 +307,21 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
         rts_num = rs485_dir->number;
     }
 
-    if (uart_set_pin(self->uart_num, tx_num, rx_num, rts_num, cts_num) != ESP_OK) {
+    #ifdef CIRCUITPY_BOARD_CLAIMABLE_PIN_MASK
+    int set_pin_tx_num = pin_is_on_swapped_phy(tx_num) ? -1 : tx_num;
+    int set_pin_rx_num = pin_is_on_swapped_phy(rx_num) ? -1 : rx_num;
+    #else
+    int set_pin_tx_num = tx_num;
+    int set_pin_rx_num = rx_num;
+    #endif
+    if (uart_set_pin(self->uart_num, set_pin_tx_num, set_pin_rx_num, rts_num, cts_num) != ESP_OK) {
         // Uninstall driver and clean up.
         common_hal_busio_uart_deinit(self);
         raise_ValueError_invalid_pins();
     }
+    #ifdef CIRCUITPY_BOARD_CLAIMABLE_PIN_MASK
+    connect_swapped_phy_pins(self->uart_num, tx_num, rx_num);
+    #endif
 
     if (have_rx) {
         // On ESP32-C3 and ESP32-S3 (at least),  a junk byte with zero or more consecutive 1's can be
