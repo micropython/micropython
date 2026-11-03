@@ -17,5 +17,9 @@ else:
 pwm_loopback_pins = [(4, 5)]
 
 encoder_loopback_id = 0
-encoder_loopback_out_pins = (4, 12)
-encoder_loopback_in_pins = (5, 13)
+if "ESP32-H2" in sys.implementation._machine:
+    encoder_loopback_out_pins = (4, 10)
+    encoder_loopback_in_pins = (5, 11)
+else:
+    encoder_loopback_out_pins = (4, 12)
+    encoder_loopback_in_pins = (5, 13)
