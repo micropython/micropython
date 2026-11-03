@@ -1,0 +1,21 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "USB",
+        "Display",
+        "Environment Sensor",
+        "microSD"
+    ],
+    "id": "MICROpi",
+    "images": [
+        "MICROpi.jpg"
+    ],
+    "mcu": "rp2040",
+    "product": "MICROpi",
+    "thumbnail": "",
+    "url": "https://www.Pi-Plates.com/MICROpi/",
+    "vendor": "Pi-Plates"
+}
