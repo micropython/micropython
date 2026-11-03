@@ -42,6 +42,19 @@
 #include "extmod/nimble/hal/hal_uart.h"
 #include "mpbthciport.h"
 
+#if defined(STM32WB)
+#include "rfcore.h"
+
+// Runs in Thread mode via mp_handle_pending(). Shuts down the entire
+// BLE stack; all Python BLE operations fail with "not active" errors.
+static mp_obj_t rfcore_timeout_shutdown(mp_obj_t arg) {
+    (void)arg;
+    mp_bluetooth_deinit();
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_1(rfcore_timeout_shutdown_obj, rfcore_timeout_shutdown);
+#endif
+
 // Get any pending data from the UART and send it to NimBLE's HCI buffers.
 // Any further processing by NimBLE will be run via its event queue.
 void mp_bluetooth_hci_poll(void) {
@@ -57,6 +70,19 @@ void mp_bluetooth_hci_poll(void) {
         // Run any remaining events (e.g. if there was no UART data).
         mp_bluetooth_nimble_os_eventq_run_all();
     }
+
+    #if defined(STM32WB)
+    if (rfcore_ipcc_timeout) {
+        // CPU2 unresponsive. Schedule BLE deinit for Thread mode.
+        // mp_sched_schedule is ISR-safe (atomic ring buffer).
+        static bool shutdown_scheduled = false;
+        if (!shutdown_scheduled) {
+            shutdown_scheduled = mp_sched_schedule(
+                MP_OBJ_FROM_PTR(&rfcore_timeout_shutdown_obj), mp_const_none);
+        }
+        return;
+    }
+    #endif
 
     if (mp_bluetooth_nimble_ble_state != MP_BLUETOOTH_NIMBLE_BLE_STATE_OFF) {
         // Call this function again in 128ms to check for new events.
