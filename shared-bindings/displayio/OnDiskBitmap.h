@@ -12,6 +12,8 @@
 extern const mp_obj_type_t displayio_ondiskbitmap_type;
 
 void common_hal_displayio_ondiskbitmap_construct(displayio_ondiskbitmap_t *self, mp_obj_t file);
+void common_hal_displayio_ondiskbitmap_deinit(displayio_ondiskbitmap_t *self);
+bool common_hal_displayio_ondiskbitmap_deinited(displayio_ondiskbitmap_t *self);
 
 uint32_t common_hal_displayio_ondiskbitmap_get_pixel(displayio_ondiskbitmap_t *bitmap,
     int16_t x, int16_t y);
