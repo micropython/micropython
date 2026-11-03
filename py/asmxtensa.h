@@ -28,6 +28,7 @@
 
 #include "py/misc.h"
 #include "py/asmbase.h"
+#include "py/persistentcode.h"
 
 // calling conventions:
 // up to 6 args in a2-a7
@@ -84,6 +85,11 @@
 #define ASM_XTENSA_CC_NALL  (12)
 #define ASM_XTENSA_CC_BS    (13)
 
+// for loop, loopgtz, and loopnez
+#define ASM_XTENSA_LOOP_AL  (0)
+#define ASM_XTENSA_LOOP_NEZ (1)
+#define ASM_XTENSA_LOOP_GTZ (2)
+
 // macros for encoding instructions (little endian versions)
 #define ASM_XTENSA_ENCODE_RRR(op0, op1, op2, r, s, t) \
     ((((uint32_t)op2) << 20) | (((uint32_t)op1) << 16) | ((r) << 12) | ((s) << 8) | ((t) << 4) | (op0))
@@ -119,6 +125,14 @@ typedef struct _asm_xtensa_t {
     uint32_t *const_table;
     uint32_t stack_adjust;
 } asm_xtensa_t;
+
+typedef struct {
+    // 0..2 : LX core version - 2 (eg. LX3 = 1)
+    // 3..7 : Reserved
+    uint8_t core_version : 3;
+} asm_xtensa_backend_options_t;
+
+#define MICROPY_XTENSA_FLAGS (MPY_XTENSA_LX_CORE - 2)
 
 void asm_xtensa_end_pass(asm_xtensa_t *as);
 
@@ -167,6 +181,18 @@ static inline void asm_xtensa_op_bccz(asm_xtensa_t *as, uint cond, uint reg_src,
 
 static inline void asm_xtensa_op_call0(asm_xtensa_t *as, int32_t rel18) {
     asm_xtensa_op24(as, ASM_XTENSA_ENCODE_CALL(5, 0, rel18 & 0x3ffff));
+}
+
+static inline void asm_xtensa_op_call4(asm_xtensa_t *as, int32_t rel18) {
+    asm_xtensa_op24(as, ASM_XTENSA_ENCODE_CALL(21, 0, rel18 & 0x3ffff));
+}
+
+static inline void asm_xtensa_op_call8(asm_xtensa_t *as, int32_t rel18) {
+    asm_xtensa_op24(as, ASM_XTENSA_ENCODE_CALL(37, 0, rel18 & 0x3ffff));
+}
+
+static inline void asm_xtensa_op_call12(asm_xtensa_t *as, int32_t rel18) {
+    asm_xtensa_op24(as, ASM_XTENSA_ENCODE_CALL(53, 0, rel18 & 0x3ffff));
 }
 
 static inline void asm_xtensa_op_callx0(asm_xtensa_t *as, uint reg) {
@@ -301,6 +327,8 @@ void asm_xtensa_bit_branch(asm_xtensa_t *as, mp_uint_t reg, mp_uint_t bit, mp_ui
 void asm_xtensa_immediate_branch(asm_xtensa_t *as, mp_uint_t reg, mp_uint_t immediate, mp_uint_t label, mp_uint_t cond);
 void asm_xtensa_call0(asm_xtensa_t *as, mp_uint_t label);
 void asm_xtensa_l32r(asm_xtensa_t *as, mp_uint_t reg, mp_uint_t label);
+void asm_xtensa_bri8(asm_xtensa_t *as, mp_uint_t r, mp_uint_t s, mp_uint_t t, mp_uint_t label, qstr opcode);
+void asm_xtensa_reg_imm_compare_branch(asm_xtensa_t *as, mp_uint_t reg, mp_int_t imm, mp_uint_t label, mp_uint_t condition, qstr opcode);
 
 // Holds a pointer to mp_fun_table
 #define ASM_XTENSA_REG_FUN_TABLE ASM_XTENSA_REG_A15
