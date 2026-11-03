@@ -73,19 +73,28 @@ class Stream:
                 buf = buf[ret:]
         self.out_buf += buf
 
-    # async
     def drain(self):
-        if not self.out_buf:
-            # Drain must always yield, so a tight loop of write+drain can't block the scheduler.
-            return (yield from core.sleep_ms(0))
-        mv = memoryview(self.out_buf)
+        buf = self.out_buf
+        if not buf:
+            # Must always yield, so a tight loop can't block the scheduler.
+            yield from core.sleep_ms(0)
+            return
+
+        self.out_buf = b""
+
+        mv = memoryview(buf)
         off = 0
         while off < len(mv):
             yield core._io_queue.queue_write(self.s)
             ret = self.s.write(mv[off:])
             if ret is not None:
                 off += ret
-        self.out_buf = b""
+
+    async def awrite(self, buf):
+        if self.out_buf:
+            await self.drain()
+        self.out_buf = buf
+        await self.drain()
 
 
 # Stream can be used for both reading and writing to save code size
@@ -203,20 +212,4 @@ async def start_server(cb, host, port, backlog=5, ssl=None):
     return srv
 
 
-################################################################################
-# Legacy uasyncio compatibility
-
-
-async def stream_awrite(self, buf, off=0, sz=-1):
-    if off != 0 or sz != -1:
-        buf = memoryview(buf)
-        if sz == -1:
-            sz = len(buf)
-        buf = buf[off : off + sz]
-    self.write(buf)
-    await self.drain()
-
-
 Stream.aclose = Stream.wait_closed
-Stream.awrite = stream_awrite
-Stream.awritestr = stream_awrite  # TODO explicitly convert to bytes?
