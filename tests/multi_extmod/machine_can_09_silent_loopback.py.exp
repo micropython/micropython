@@ -1,0 +1,6 @@
+--- instance0 ---
+loopback True
+no external RX True
+--- instance1 ---
+no external TX True
+no ACK True

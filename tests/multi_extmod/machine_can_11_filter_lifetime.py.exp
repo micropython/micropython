@@ -1,0 +1,15 @@
+--- instance0 ---
+default reject True
+standard zero mask True
+extended zero mask True
+mixed filters True
+mixed reversed True
+mixed restart True
+exact standard True
+standard restart True
+extended restart True
+accept all restart True
+reject all restart True
+reinit default reject True
+--- instance1 ---
+done

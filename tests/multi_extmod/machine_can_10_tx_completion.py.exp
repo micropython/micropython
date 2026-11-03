@@ -1,0 +1,15 @@
+--- instance0 ---
+completion count True
+completion indexes True
+bounded queue True
+no pending TX True
+completion count True
+completion indexes True
+bounded queue True
+no pending TX True
+completion count True
+completion indexes True
+bounded queue True
+no pending TX True
+--- instance1 ---
+done

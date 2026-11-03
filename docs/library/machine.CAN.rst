@@ -24,7 +24,12 @@ errors.
 .. note:: The planned ``can`` and ``aiocan`` micropython-lib modules will be the
           recommended way to use CAN with MicroPython.
 
-Availability: **STM32, MIMXRT, Alif**
+Availability: **STM32, MIMXRT, Alif, ESP32**
+
+On ESP32, CAN requires a TWAI-capable chip, ESP-IDF v5.5 or later, and board
+configuration enabling ``MICROPY_HW_ENABLE_CAN`` and defining
+``MICROPY_HW_CAN1_TX`` and ``MICROPY_HW_CAN1_RX``. An external CAN transceiver
+is required unless one is included on the board.
 
 Constructor
 -----------
@@ -58,7 +63,9 @@ Methods
 
    Initialise the CAN bus with the given parameters:
 
-   - *bitrate* is the desired bus bit rate in bits per second.
+   - *bitrate* is the desired bus bit rate in bits per second. It must be positive
+     and within the range supported by the controller and timing parameters;
+     otherwise ``ValueError`` is raised.
    - *mode* is one of the values shown under `can-modes`, indicating the
      desired mode of operation. The default is "normal" operation on the bus.
 
@@ -318,6 +325,14 @@ Methods
 
    See `machine_can_irq_flags` for an example.
 
+   .. note:: On ESP32, hard CAN callbacks require an ISR stack of at least
+      8192 bytes, configured with ``CONFIG_FREERTOS_ISR_STACKSIZE=8192`` in the
+      board's sdkconfig. Soft callbacks do not require this larger stack.
+      ``init()``, ``deinit()``, ``restart()`` and ``set_filters()`` cannot be
+      called from a hard interrupt: they raise ``OSError(EPERM)`` before
+      changing the controller. Use a soft callback or schedule task-context
+      work with :func:`micropython.schedule` instead.
+
 .. method:: CAN.cancel_send(index)
 
    Request the CAN controller to cancel sending a message onto the bus.
@@ -477,6 +492,9 @@ Changing the mode of a running controller requires calling `CAN.deinit()` and th
    all. The CAN controller receives its own transmitted messages without
    interacting with the CAN bus at all. The CAN TX and RX pins remain idle.
 
+   Not supported on ESP32. Requesting this mode raises ``ValueError``;
+   ``MODE_LOOPBACK`` on ESP32 receives its own frames but still drives the bus.
+
 .. _can-states:
 
 States
@@ -618,3 +636,9 @@ IRQ_TX Example
                call ``flags()`` repeatedly until it returns ``0``, as shown in
                this example. Otherwise, CAN interrupts may not be correctly
                re-enabled.
+
+.. note:: On ESP32, when ``IRQ_TX`` is enabled, a completed transmit buffer
+          remains reserved until ``flags()`` reports its completion. Deferring
+          soft callbacks can therefore fill the transmit queue even after
+          transmission finishes. Disabling ``IRQ_TX`` discards unread transmit
+          completions and releases those buffers.

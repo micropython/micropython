@@ -153,7 +153,9 @@ mp_uint_t mp_hal_stdout_tx_strn(const char *str, size_t len) {
     mp_uint_t ret = len;
     bool did_write = false;
     #if MICROPY_HW_ENABLE_UART_REPL || CONFIG_ESP_CONSOLE_USB_SERIAL_JTAG_ENABLED
-    bool release_gil = len > MICROPY_PY_STRING_TX_GIL_THRESHOLD;
+    // Hard IRQ callbacks can print, including when reporting an exception.
+    // Releasing the GIL yields the FreeRTOS task, which is invalid in an ISR.
+    bool release_gil = len > MICROPY_PY_STRING_TX_GIL_THRESHOLD && !xPortInIsrContext();
     #if MICROPY_DEBUG_PRINTERS && MICROPY_DEBUG_VERBOSE && MICROPY_PY_THREAD_GIL
     // If verbose debug output is enabled some strings are printed before the
     // GIL mutex is set up.  When that happens, no Python code is running and
