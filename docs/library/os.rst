@@ -171,7 +171,7 @@ The following functions and classes have been moved to the :mod:`vfs` module.
 They are provided in this module only for backwards compatibility and will be
 removed in version 2 of MicroPython.
 
-.. function:: mount(fsobj, mount_point, *, readonly)
+.. function:: mount(fsobj, mount_point, /, *, readonly=False)
 
     See `vfs.mount`.
 
@@ -183,11 +183,11 @@ removed in version 2 of MicroPython.
 
     See `vfs.VfsFat`.
 
-.. class:: VfsLfs1(block_dev, readsize=32, progsize=32, lookahead=32)
+.. class:: VfsLfs1(block_dev, /, *, readsize=32, progsize=32, lookahead=32)
 
     See `vfs.VfsLfs1`.
 
-.. class:: VfsLfs2(block_dev, readsize=32, progsize=32, lookahead=32, mtime=True)
+.. class:: VfsLfs2(block_dev, /, *, readsize=32, progsize=32, lookahead=32, mtime=True)
 
     See `vfs.VfsLfs2`.
 
