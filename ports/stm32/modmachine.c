@@ -402,6 +402,11 @@ static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
         pyb_rtc_wakeup(2, args2);
     }
     powerctrl_enter_stop_mode();
+    if (n_args != 0) {
+        // Disable the RTC wakeup timer, so it does not wake a later lightsleep().
+        mp_obj_t args2[2] = {MP_OBJ_NULL, mp_const_none};
+        pyb_rtc_wakeup(2, args2);
+    }
 }
 
 static void mp_machine_deepsleep(size_t n_args, const mp_obj_t *args) {
