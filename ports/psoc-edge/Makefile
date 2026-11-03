@@ -209,6 +209,7 @@ PSE_LIB_SRC_C += $(addprefix $(PSE_LIB_TOP_DIR)/, \
 	mtb-dsl-pse8xxgp/pdl/drivers/source/cy_rtc.c \
 	mtb-dsl-pse8xxgp/pdl/drivers/source/cy_scb_common.c \
 	mtb-dsl-pse8xxgp/pdl/drivers/source/cy_scb_i2c.c \
+	mtb-dsl-pse8xxgp/pdl/drivers/source/cy_scb_spi.c \
 	mtb-dsl-pse8xxgp/pdl/drivers/source/cy_scb_uart.c \
 	mtb-dsl-pse8xxgp/pdl/drivers/source/cy_smif.c \
 	mtb-dsl-pse8xxgp/pdl/drivers/source/cy_smif_hb_flash.c \
@@ -299,6 +300,7 @@ MOD_SRC_C += \
 	machine_pin_af.c \
 	machine_pin_irq.c \
 	machine_rtc.c \
+	machine_spi.c \
 	modpsocedge.c \
 
 ifeq ($(MICROPY_PY_EXT_FLASH),1)
@@ -312,6 +314,7 @@ SRC_C += \
 	main.c \
 	mphalport.c \
 	scb.c \
+	spi.c \
 	systick.c \
 	sys_int.c \
 
