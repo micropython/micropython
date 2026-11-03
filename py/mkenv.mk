@@ -26,7 +26,11 @@ MKDIR = mkdir
 SED = sed
 CAT = cat
 TOUCH = touch
+ifeq ($(OS),Windows_NT)
+PYTHON = python
+else
 PYTHON = python3
+endif
 ZIP = zip
 
 AS = $(CROSS_COMPILE)as
