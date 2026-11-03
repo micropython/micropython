@@ -177,6 +177,24 @@ source URL would usually be specified relative to the directory containing the
 
     ["mlx90640/utils.py", "github:org/micropython-mlx90640/mlx90640/utils.py"]
 
+Each entry in ``urls`` (and in ``hashes``, used for packages published to a
+package index) may optionally include a third element: an integer tag that is
+checked against ``sys.implementation._mpy`` on the target device, and the file
+is only installed if it is compatible. This makes it possible for a single
+``package.json`` to serve different files to different devices, for example a
+native module built for several architectures::
+
+    "urls": [
+        ["mymodule.py", "mymodule.py"],
+        ["mymodule.mpy", "armv7m_6.3.mpy", 2566],
+        ["mymodule.mpy", "rv32imc_6.3.mpy", 2822]
+    ]
+
+Entries without this third element are always installed, as before. See
+:ref:`mpy_files` for how the version, architecture and (for architectures
+that have them) extension flags are encoded into ``sys.implementation._mpy``,
+and how compatibility between two such values is determined.
+
 The package depends on ``collections-defaultdict`` and ``os-path`` which will
 be installed automatically from the :term:`micropython-lib`. The third
 dependency installs the content as defined by the ``package.json`` file of the
