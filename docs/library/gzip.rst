@@ -31,15 +31,15 @@ file format.
 Functions
 ---------
 
-.. function:: open(filename, mode, /)
+.. function:: open(filename, mode='rb')
 
    Wrapper around built-in :func:`open` returning a GzipFile instance.
 
-.. function:: decompress(data, /)
+.. function:: decompress(data)
 
    Decompresses *data* into a bytes object.
 
-.. function:: compress(data, /)
+.. function:: compress(data)
 
    Compresses *data* into a bytes object.
 
