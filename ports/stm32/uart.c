@@ -804,6 +804,27 @@ bool uart_init(machine_uart_obj_t *uart_obj,
     huart.Init.ClockPrescaler = presc;
     #endif
 
+    #if defined(STM32L4)
+    // The LPUART BRR register is 20 bits wide and L4 has no LPUART prescaler, so
+    // with PCLK1 at eg 80MHz the lowest baudrate is about 19500.  For lower rates
+    // switch the LPUART clock source to HSI16, or to LSE for very low rates.
+    if (uart_obj->uart_id == PYB_LPUART_1) {
+        const uint32_t brr_max = 0xfffff;
+        uint32_t clk_source = LL_RCC_LPUART1_CLKSOURCE_PCLK1;
+        if ((uint64_t)HAL_RCC_GetPCLK1Freq() * 256 / baudrate > brr_max) {
+            if ((uint64_t)HSI_VALUE * 256 / baudrate <= brr_max || !LL_RCC_LSE_IsReady()) {
+                LL_RCC_HSI_Enable();
+                while (!LL_RCC_HSI_IsReady()) {
+                }
+                clk_source = LL_RCC_LPUART1_CLKSOURCE_HSI;
+            } else {
+                clk_source = LL_RCC_LPUART1_CLKSOURCE_LSE;
+            }
+        }
+        LL_RCC_SetLPUARTClockSource(clk_source);
+    }
+    #endif
+
     // Initialise the UART hardware.
     HAL_UART_Init(&huart);
 
@@ -1128,6 +1149,11 @@ uint32_t uart_get_source_freq(machine_uart_obj_t *self) {
     }
 
     #else
+    #if defined(STM32L4)
+    if (self->uart_id == PYB_LPUART_1) {
+        return LL_RCC_GetLPUARTClockFreq(LL_RCC_LPUART1_CLKSOURCE);
+    }
+    #endif
     if (self->uart_id == 1
         #if defined(USART6)
         || self->uart_id == 6
