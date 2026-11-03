@@ -1,0 +1,4 @@
+# ESP32-P4 Rev3.x is not binary-compatible with earlier silicon.
+CONFIG_ESP32P4_SELECTS_REV_LESS_V3=n
+CONFIG_ESP32P4_REV_MIN_300=y
+CONFIG_SPIRAM_SPEED_250M=y
