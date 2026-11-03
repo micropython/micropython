@@ -508,50 +508,36 @@ void asm_thumb_b_label(asm_thumb_t *as, uint label) {
     mp_int_t rel = dest - as->base.code_offset;
     rel -= 4; // account for instruction prefetch, PC is 4 bytes ahead of this instruction
 
-    if (dest != (mp_uint_t)-1 && rel <= -4) {
-        // is a backwards jump, so we know the size of the jump on the first pass
-        // calculate rel assuming 12 bit relative jump
-        if (SIGNED_FIT12(rel)) {
-            asm_thumb_op16(as, OP_B_N(rel));
-            return;
-        }
+    // calculate rel assuming 12 bit relative jump
+    if (SIGNED_FIT12(rel)) {
+        asm_thumb_op16(as, OP_B_N(rel));
+        return;
     }
 
-    // is a large backwards jump, or a forwards jump (that must be assumed large)
+    // is a large jump
 
     if (asm_thumb_allow_armv7m(as)) {
         asm_thumb_op32(as, OP_BW_HI(rel), OP_BW_LO(rel));
     } else {
-        // this code path has to be the same instruction size irrespective of the value of rel
-        bool need_align = as->base.code_offset & 2u;
-        if (SIGNED_FIT12(rel)) {
-            asm_thumb_op16(as, OP_B_N(rel));
-            asm_thumb_op16(as, ASM_THUMB_OP_NOP);
-            asm_thumb_op16(as, ASM_THUMB_OP_NOP);
-            asm_thumb_op16(as, ASM_THUMB_OP_NOP);
-            if (need_align) {
-                asm_thumb_op16(as, ASM_THUMB_OP_NOP);
-            }
-        } else {
-            // do a large jump using:
-            //     (nop)
-            //     ldr r1, [pc, _data]
-            //     add pc, r1
-            // _data: .word rel
-            //
-            // note: can't use r0 as a temporary because native code can have the return value
-            // in that register and use a large jump to get to the exit point of the function
+        // do a large jump using:
+        //     (nop)
+        //     ldr r1, [pc, _data]
+        //     add pc, r1
+        // _data: .word rel
+        //
+        // note: can't use r0 as a temporary because native code can have the return value
+        // in that register and use a large jump to get to the exit point of the function
 
-            rel -= 2; // account for the "ldr r1, [pc, _data]"
-            if (need_align) {
-                asm_thumb_op16(as, ASM_THUMB_OP_NOP);
-                rel -= 2; // account for this nop
-            }
-            asm_thumb_ldr_rlo_pcrel_i8(as, ASM_THUMB_REG_R1, 0);
-            asm_thumb_add_reg_reg(as, ASM_THUMB_REG_R15, ASM_THUMB_REG_R1);
-            asm_thumb_op16(as, rel & 0xffff);
-            asm_thumb_op16(as, rel >> 16);
+        bool need_align = as->base.code_offset & 2u;
+        rel -= 2; // account for the "ldr r1, [pc, _data]"
+        if (need_align) {
+            asm_thumb_op16(as, ASM_THUMB_OP_NOP);
+            rel -= 2; // account for this nop
         }
+        asm_thumb_ldr_rlo_pcrel_i8(as, ASM_THUMB_REG_R1, 0);
+        asm_thumb_add_reg_reg(as, ASM_THUMB_REG_R15, ASM_THUMB_REG_R1);
+        asm_thumb_op16(as, rel & 0xffff);
+        asm_thumb_op16(as, rel >> 16);
     }
 }
 
@@ -561,13 +547,10 @@ void asm_thumb_bcc_label(asm_thumb_t *as, int cond, uint label) {
     mp_int_t rel = dest - as->base.code_offset;
     rel -= 4; // account for instruction prefetch, PC is 4 bytes ahead of this instruction
 
-    if (dest != (mp_uint_t)-1 && rel <= -4) {
-        // is a backwards jump, so we know the size of the jump on the first pass
-        // calculate rel assuming 9 bit relative jump
-        if (SIGNED_FIT9(rel)) {
-            asm_thumb_op16(as, OP_BCC_N(cond, rel));
-            return;
-        }
+    // calculate rel assuming 9 bit relative jump
+    if (SIGNED_FIT9(rel)) {
+        asm_thumb_op16(as, OP_BCC_N(cond, rel));
+        return;
     }
 
     // is a large backwards jump, or a forwards jump (that must be assumed large)
