@@ -260,6 +260,11 @@ config MICROPY_GETCHAR_CONSOLE_DRIVER_BUF_SIZE
 
 endif # MICROPY_GETCHAR_CONSOLE_DRIVER
 
+config MICROPY_ROM_TEXT_COMPRESSION
+	bool "Enable ROM text compression"
+	help
+		Enable ROM text compression to save flash space.
+
 endmenu # MicroPython Options
 
 source "Kconfig.zephyr"

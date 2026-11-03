@@ -52,12 +52,12 @@
 DT_FOREACH_STATUS_OKAY(zephyr_fstab, FOREACH_FSTAB_DEFINE)
 
 // Add all FSTAB entries to a table for us to use dynamically
-#define FOREACH_FS(fs) FS_FSTAB_ENTRY(fs)
+#define FOREACH_FS(fs) & FS_FSTAB_ENTRY(fs),
 
 #define FOREACH_FSTAB(n) DT_FOREACH_CHILD(n, FOREACH_FS)
 
 static struct fs_mount_t *const zephyr_fs_mounts[] = {
-    &DT_FOREACH_STATUS_OKAY(zephyr_fstab, FOREACH_FSTAB),
+    DT_FOREACH_STATUS_OKAY(zephyr_fstab, FOREACH_FSTAB)
 };
 
 #define zephyr_fs_mounts_size sizeof(zephyr_fs_mounts) / sizeof(struct fs_mount_t *)
