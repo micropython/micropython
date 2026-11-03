@@ -1,3 +1,6 @@
+# requires: asm-thumb-thumb2
+
+
 @micropython.asm_thumb
 def sdiv(r0, r1):
     sdiv(r0, r0, r1)

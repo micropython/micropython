@@ -1,4 +1,5 @@
 # test passing arguments
+# requires: asm-xtensa
 
 
 @micropython.asm_xtensa

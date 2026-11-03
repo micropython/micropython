@@ -1,3 +1,5 @@
+# requires: asm-rv32-zcmp
+
 CMMV_TEMPLATE = """
 @micropython.asm_rv32
 def t():

@@ -1,4 +1,5 @@
 # test return type of inline asm
+# requires: asm-thumb
 
 
 @micropython.asm_thumb

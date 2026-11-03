@@ -1,3 +1,6 @@
+# requires: asm-rv32
+
+
 @micropython.asm_rv32
 def f1():
     li(a0, 0)

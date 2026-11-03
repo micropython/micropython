@@ -1,3 +1,6 @@
+# requires: asm-xtensa
+
+
 @micropython.asm_xtensa
 def lsl1(a2):
     slli(a2, a2, 1)

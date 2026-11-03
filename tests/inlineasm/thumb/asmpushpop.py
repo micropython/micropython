@@ -1,3 +1,6 @@
+# requires: asm-thumb
+
+
 @micropython.asm_thumb
 def f(r0, r1, r2):
     push({r0})

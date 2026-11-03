@@ -1,3 +1,6 @@
+# requires: asm-rv32
+
+
 @micropython.asm_rv32
 def sdiv(a0, a1):
     div(a0, a0, a1)

@@ -1,4 +1,5 @@
 # test passing arguments
+# requires: asm-thumb
 
 
 @micropython.asm_thumb

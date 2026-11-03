@@ -1,4 +1,5 @@
 # test csr instructions
+# requires: asm-rv32
 
 # CSR 0x340 is `mscratch`.  This test suite is only safe to run on a system
 # where it is known that there is no other code that can read from or write

@@ -1,3 +1,5 @@
+# requires: asm-xtensa
+
 import array
 
 # On the ESP8266 the generated code gets put into the IRAM segment, which is

@@ -707,7 +707,6 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
     test_results = ThreadSafeCounter([])
 
     skip_tests = set()
-    skip_inlineasm = False
     target_capabilities = {}
 
     if True:
@@ -769,17 +768,6 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         output = run_feature_check(pyb, args, "complex.py")
         target_capabilities["complex"] = output == b"complex\n"
 
-        if args.inlineasm_arch == "thumb":
-            for feature in ("thumb2", "vfp"):
-                if feature not in args.inlineasm_features:
-                    for test in glob(f"inlineasm/thumb/asm_{feature}_*.py"):
-                        skip_tests.add(test)
-
-        if args.inlineasm_arch == "rv32":
-            for extension in RV32_ARCH_FLAGS:
-                if extension not in args.inlineasm_features:
-                    skip_tests.add(f"inlineasm/rv32/asm_ext_{extension}.py")
-
         # Check if emacs repl is supported, and skip such tests if it's not
         t = run_feature_check(pyb, args, "repl_emacs_check.py")
         if "True" not in str(t, "ascii"):
@@ -801,7 +789,12 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         )
         target_capabilities["host-endianness"] = upy_byteorder == cpy_byteorder
 
-        skip_inlineasm = not args.inlineasm_arch
+    # Check if the target supports inline assembler.
+    if args.inlineasm_arch:
+        asm = f"asm-{args.inlineasm_arch}"
+        target_capabilities[asm] = True
+        for feature in args.inlineasm_features:
+            target_capabilities[f"{asm}-{feature}"] = True
 
     # Some tests shouldn't be run on GitHub Actions
     if os.getenv("GITHUB_ACTIONS") == "true":
@@ -884,15 +877,12 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
                 return
 
         test_basename = test_file.replace("..", "_").replace("./", "").replace("/", "_")
-        test_name = os.path.splitext(os.path.basename(test_file))[0]
-        is_inlineasm = test_name.startswith("asm")
 
         skip_it = os.path.realpath(test_file) in skip_tests
-        skip_it |= skip_inlineasm and is_inlineasm
 
         skip_reasons = []
         for requirement in test.requires_feature:
-            if not target_capabilities[requirement]:
+            if not target_capabilities.get(requirement, False):
                 skip_reasons.append(requirement)
 
         if skip_it:
