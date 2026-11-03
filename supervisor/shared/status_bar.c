@@ -43,8 +43,8 @@ void supervisor_status_bar_clear(void) {
     }
 }
 
-// Write the title up to the version. The display gets single spaces between segments.
-static void write_title(const char *separator) {
+// Write the title up to the version, with single spaces between segments.
+static void write_title(void) {
     // Neighboring "..." "..." are concatenated by the compiler. Without this separation, the hex code
     // doesn't get terminated after two following characters and the value is invalid.
     // This is the OSC command to set the title and the icon text. It can be up to 255 characters
@@ -58,16 +58,16 @@ static void write_title(const char *separator) {
 
     #if CIRCUITPY_WEB_WORKFLOW
     supervisor_web_workflow_status();
-    serial_write(separator);
+    serial_write(" ");
     #endif
 
     #if CIRCUITPY_BLE_FILE_SERVICE || CIRCUITPY_BLE_SERIAL_SERVICE
     supervisor_bluetooth_status();
-    serial_write(separator);
+    serial_write(" ");
     #endif
 
     supervisor_execution_status();
-    serial_write(separator);
+    serial_write(" ");
 }
 
 void supervisor_status_bar_update(void) {
@@ -84,7 +84,7 @@ void supervisor_status_bar_update(void) {
     if (shared_module_supervisor_status_bar_get_console(&shared_module_supervisor_status_bar_obj) &&
         serial_connected()) {
         bool prev_display = serial_display_write_disable(true);
-        write_title(" | ");
+        write_title();
         serial_write(MICROPY_GIT_TAG);
         serial_write("\x1b" "\\");
         serial_display_write_disable(prev_display);
@@ -97,7 +97,7 @@ void supervisor_status_bar_update(void) {
     if (bar != NULL &&
         shared_module_supervisor_status_bar_get_display(&shared_module_supervisor_status_bar_obj)) {
         bool prev_console = serial_console_write_disable(true);
-        write_title(" ");
+        write_title();
         size_t room = bar->width_in_tiles - supervisor_terminal.status_x;
         // The terminal moves status_y past the bar once the title reaches its last tile.
         if (supervisor_terminal.status_y >= bar->height_in_tiles || room < 2) {
