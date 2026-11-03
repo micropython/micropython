@@ -472,9 +472,9 @@ def run_micropython(pyb, args, test, is_special=False, is_feature_check=False):
                                     return rv
 
                     def send_get(what):
-                        # Detect hex {\x00} pattern and convert to ctrl-key codes.
+                        # Detect hex {\x00} pattern and convert to ctrl-key codes or other bytes.
                         ctrl_code = lambda m: bytes([int(m.group(1), 16)])
-                        what = re.sub(rb"{\\x(\d\d)}", ctrl_code, what)
+                        what = re.sub(rb"{\\x([0-9a-f]{2})}", ctrl_code, what)
 
                         os.write(master, what)
                         return get()
@@ -784,11 +784,13 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         t = run_feature_check(pyb, args, "repl_emacs_check.py")
         if "True" not in str(t, "ascii"):
             skip_tests.add("cmdline/repl_emacs_keys.py")
+            skip_tests.add("cmdline/repl_unicode_emacs_keys.py")
 
         # Check if words movement in repl is supported, and skip such tests if it's not
         t = run_feature_check(pyb, args, "repl_words_move_check.py")
         if "True" not in str(t, "ascii"):
             skip_tests.add("cmdline/repl_words_move.py")
+            skip_tests.add("cmdline/repl_unicode_emacs_keys.py")
 
         # Check if it has coverage support.
         output = run_feature_check(pyb, args, "coverage.py")
@@ -832,6 +834,9 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         if args.via_mpy:
             skip_tests.add("basics/string_escape.py")  # stores a utf-8 character in the mpy file
         skip_tests.add("extmod/json_loads.py")  # tests loading a utf-8 character
+        skip_tests.add("cmdline/repl_unicode_edit.py")  # tests editing utf-8 characters
+        skip_tests.add("cmdline/repl_unicode_emacs_keys.py")  # tests editing utf-8 characters
+        skip_tests.add("cmdline/repl_unicode_invalid.py")  # tests dropping invalid utf-8
 
     # Skip thread mutation tests on targets that have unsafe threading behaviour.
     if args.thread == "unsafe":
