@@ -38,15 +38,7 @@
 #define DEFAULT_SPI_TARGET_POLARITY    (0)
 #define DEFAULT_SPI_TARGET_PHASE       (0)
 #define DEFAULT_SPI_TARGET_BITS        (SPI_SUPPORTED_BITS)
-#define SPI_TARGET_TICKS_WRAP_MS       (15000U) // from mp_hal_ticks_ms source timer period in modtime.c
-#define DEFAULT_SPI_TARGET_TIMEOUT_MS  (5000U)  // must stay below SPI_TARGET_TICKS_WRAP_MS
-
-// mp_hal_ticks_ms() on this port wraps every SPI_TARGET_TICKS_WRAP_MS.
-// This computes elapsed time across one wrap; caller keeps timeout < wrap period.
-static inline uint32_t spi_target_elapsed_ms(uint32_t start_ms) {
-    uint32_t now = mp_hal_ticks_ms();
-    return (now >= start_ms) ? (now - start_ms) : (SPI_TARGET_TICKS_WRAP_MS - start_ms + now);
-}
+#define DEFAULT_SPI_TARGET_TIMEOUT_MS  (5000U)
 
 typedef struct _machine_spi_target_obj_t {
     mp_obj_base_t base;
@@ -274,7 +266,7 @@ static mp_obj_t machine_spi_target_read(mp_obj_t self_in, mp_obj_t buf_in) {
             num_available--;
         }
 
-        if (spi_target_elapsed_ms(start) > self->timeout) {
+        if (mp_hal_ticks_ms() - start > self->timeout) {
             mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("SPITarget read timeout"));
         }
         mp_event_handle_nowait();
@@ -301,7 +293,7 @@ static mp_obj_t machine_spi_target_write(mp_obj_t self_in, mp_obj_t buf_in) {
             // Timeout tracks FIFO stall time, not total transfer time.
             start = mp_hal_ticks_ms();
         } else {
-            if (spi_target_elapsed_ms(start) > self->timeout) {
+            if (mp_hal_ticks_ms() - start > self->timeout) {
                 mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("SPITarget write timeout"));
             }
             mp_event_handle_nowait();
@@ -310,7 +302,7 @@ static mp_obj_t machine_spi_target_write(mp_obj_t self_in, mp_obj_t buf_in) {
 
     start = mp_hal_ticks_ms();
     while (!spi_hw_target_is_tx_complete(&self->spi_obj)) {
-        if (spi_target_elapsed_ms(start) > self->timeout) {
+        if (mp_hal_ticks_ms() - start > self->timeout) {
             mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("SPITarget write timeout"));
         }
         mp_event_handle_nowait();
@@ -361,7 +353,7 @@ static mp_obj_t machine_spi_target_write_readinto(mp_obj_t self_in, mp_obj_t tx_
             start = mp_hal_ticks_ms();
         }
 
-        if (spi_target_elapsed_ms(start) > self->timeout) {
+        if (mp_hal_ticks_ms() - start > self->timeout) {
             mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("SPITarget transfer timeout"));
         }
         mp_event_handle_nowait();
