@@ -27,6 +27,8 @@
 
 #include "py/mphal.h"
 #include "py/runtime.h"
+#include "py/gc.h"
+#include "shared/runtime/mpirq.h"
 #include "rtcounter.h"
 #include "nrfx_rtc.h"
 #include "nrf_clock.h"
@@ -83,7 +85,24 @@ static void interrupt_handler(size_t instance_id) {
     const machine_rtc_obj_t *self = &machine_rtc_obj[instance_id];
     machine_rtc_config_t *config = self->config;
     if (config->callback != NULL) {
-        mp_call_function_1((mp_obj_t)config->callback, (mp_obj_t)self);
+        // Run it as a hard IRQ: with the heap (and scheduler) locked, so
+        // that it cannot run scheduled callbacks or raise a pending
+        // exception, and with any exception caught, so that the counter
+        // below is always rearmed.
+        #if MICROPY_ENABLE_SCHEDULER
+        mp_irq_dispatch((mp_obj_t)config->callback, (mp_obj_t)self, true);
+        #else
+        gc_lock();
+        nlr_buf_t nlr;
+        if (nlr_push(&nlr) == 0) {
+            mp_call_function_1((mp_obj_t)config->callback, (mp_obj_t)self);
+            nlr_pop();
+        } else {
+            mp_printf(MICROPY_ERROR_PRINTER, "uncaught exception in RTCounter callback\n");
+            mp_obj_print_exception(MICROPY_ERROR_PRINTER, MP_OBJ_FROM_PTR(nlr.ret_val));
+        }
+        gc_unlock();
+        #endif
     }
     if (config->period == 0) {
         nrfx_rtc_cc_disable(self->p_rtc, 0);

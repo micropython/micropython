@@ -25,7 +25,9 @@
  */
 
 #include "py/runtime.h"
+#include "py/gc.h"
 #include "extmod/modmachine.h"
+#include "shared/runtime/mpirq.h"
 #include "timer.h"
 #include "nrfx_timer.h"
 
@@ -89,7 +91,21 @@ static void timer_event_handler(nrf_timer_event_t event_type, void *p_context) {
     machine_timer_obj_t *self = p_context;
     mp_obj_t callback = machine_timer_callbacks[self->p_instance.instance_id];
     if (callback != NULL) {
-        mp_call_function_1(callback, self);
+        // Run it as a hard IRQ, like the RTCounter callback.
+        #if MICROPY_ENABLE_SCHEDULER
+        mp_irq_dispatch(callback, MP_OBJ_FROM_PTR(self), true);
+        #else
+        gc_lock();
+        nlr_buf_t nlr;
+        if (nlr_push(&nlr) == 0) {
+            mp_call_function_1(callback, MP_OBJ_FROM_PTR(self));
+            nlr_pop();
+        } else {
+            mp_printf(MICROPY_ERROR_PRINTER, "uncaught exception in Timer callback\n");
+            mp_obj_print_exception(MICROPY_ERROR_PRINTER, MP_OBJ_FROM_PTR(nlr.ret_val));
+        }
+        gc_unlock();
+        #endif
     }
 }
 
