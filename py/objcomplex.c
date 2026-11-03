@@ -85,12 +85,7 @@ static mp_obj_t complex_make_new(const mp_obj_type_t *type_in, size_t n_args, si
         case 2:
         default: {
             mp_float_t real, imag;
-            if (mp_obj_is_type(args[0], &mp_type_complex)) {
-                mp_obj_complex_get(args[0], &real, &imag);
-            } else {
-                real = mp_obj_get_float(args[0]);
-                imag = 0;
-            }
+            mp_obj_get_complex(args[0], &real, &imag);
             if (mp_obj_is_type(args[1], &mp_type_complex)) {
                 mp_float_t real2, imag2;
                 mp_obj_complex_get(args[1], &real2, &imag2);

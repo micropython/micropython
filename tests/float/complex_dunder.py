@@ -45,3 +45,16 @@ try:
     print(complex(Test()))
 except TypeError:
     print("TypeError")
+
+print(complex(TestComplex(), 2))
+
+
+class TestRaisingComplex:
+    def __complex__(self):
+        raise ValueError
+
+
+try:
+    print(complex(TestRaisingComplex(), 0))
+except ValueError:
+    print("ValueError")
