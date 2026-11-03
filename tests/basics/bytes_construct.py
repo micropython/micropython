@@ -21,3 +21,13 @@ try:
     a = bytes([1, 2, 3], 1)
 except TypeError:
     print('TypeError')
+
+# str subclass as the source
+class MyStr(str):
+    pass
+
+print(bytes(MyStr('abc'), 'utf-8'))
+try:
+    bytes(MyStr('abc'))
+except TypeError:
+    print('TypeError')
