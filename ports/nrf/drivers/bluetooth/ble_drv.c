@@ -703,13 +703,27 @@ void ble_drv_attr_s_notify(uint16_t conn_handle, uint16_t handle, uint16_t len, 
         ;
     }
 
+    // Count the notification before queueing it: its TX complete event can
+    // be handled as soon as it is queued, before any code after
+    // sd_ble_gatts_hvx() runs.  That event updates the count from an
+    // interrupt, so update it here in a critical region.
+    uint8_t nested;
+    sd_nvic_critical_region_enter(&nested);
+    m_tx_in_progress++;
+    sd_nvic_critical_region_exit(nested);
+
     BLE_DRIVER_LOG("Request TX, m_tx_in_progress: %u\n", m_tx_in_progress);
     uint32_t err_code;
     if ((err_code = sd_ble_gatts_hvx(conn_handle, &hvx_params)) != 0) {
+        // Not queued after all (unless a disconnect reset the count already)
+        sd_nvic_critical_region_enter(&nested);
+        if (m_tx_in_progress > 0) {
+            m_tx_in_progress--;
+        }
+        sd_nvic_critical_region_exit(nested);
         mp_raise_msg_varg(&mp_type_OSError,
             MP_ERROR_TEXT("Can not notify attribute value. status: 0x" HEX2_FMT), (uint16_t)err_code);
     }
-    m_tx_in_progress++;
     BLE_DRIVER_LOG("Queued TX, m_tx_in_progress: %u\n", m_tx_in_progress);
 }
 
@@ -947,6 +961,15 @@ static void sd_evt_handler(uint32_t evt_id) {
 #endif
 }
 
+static void tx_complete(uint8_t count) {
+    // Notifications are counted before they are queued, so this can only
+    // exceed the count for ones queued before a disconnect reset it.
+    if (count > m_tx_in_progress) {
+        count = m_tx_in_progress;
+    }
+    m_tx_in_progress -= count;
+}
+
 static void ble_evt_handler(ble_evt_t * p_ble_evt) {
 // S132 event ranges.
 // Common 0x01 -> 0x0F
@@ -967,6 +990,10 @@ static void ble_evt_handler(ble_evt_t * p_ble_evt) {
 
         case BLE_GAP_EVT_DISCONNECTED:
             BLE_DRIVER_LOG("GAP DISCONNECT\n");
+            // Notifications still queued are dropped without a TX complete
+            // event, so stop counting them.  Otherwise the next notify could
+            // wait for them forever.
+            m_tx_in_progress = 0;
             gap_event_handler(mp_gap_observer, p_ble_evt->header.evt_id, p_ble_evt->evt.gap_evt.conn_handle, p_ble_evt->header.evt_len - (2 * sizeof(uint16_t)), NULL);
             break;
 
@@ -1001,11 +1028,11 @@ static void ble_evt_handler(ble_evt_t * p_ble_evt) {
             BLE_DRIVER_LOG("BLE EVT TX COMPLETE\n");
 #if (BLUETOOTH_SD == 132) || (BLUETOOTH_SD == 140)
             BLE_DRIVER_LOG("HVN_TX_COMPLETE, count: %u\n", p_ble_evt->evt.gatts_evt.params.hvn_tx_complete.count);
-            m_tx_in_progress -= p_ble_evt->evt.gatts_evt.params.hvn_tx_complete.count;
+            tx_complete(p_ble_evt->evt.gatts_evt.params.hvn_tx_complete.count);
             BLE_DRIVER_LOG("TX_COMPLETE, m_tx_in_progress: %u\n", m_tx_in_progress);
 #else
             BLE_DRIVER_LOG("TX_COMPLETE, count: %u\n", p_ble_evt->evt.common_evt.params.tx_complete.count);
-            m_tx_in_progress -= p_ble_evt->evt.common_evt.params.tx_complete.count;
+            tx_complete(p_ble_evt->evt.common_evt.params.tx_complete.count);
             BLE_DRIVER_LOG("TX_COMPLETE, m_tx_in_progress: %u\n", m_tx_in_progress);
 #endif
             break;
