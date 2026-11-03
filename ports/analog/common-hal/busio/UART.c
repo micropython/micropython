@@ -139,7 +139,7 @@ static volatile void uartCallback(mxc_uart_req_t *req, int error) {
     uart_err = error;
 
     MXC_SYS_Crit_Enter();
-    ringbuf_put_n(context->ringbuf, req->rxData, req->rxLen);
+    ringbuf_put_n(&context->ringbuf, req->rxData, req->rxLen);
     MXC_SYS_Crit_Exit();
 }
 
@@ -232,14 +232,13 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
 
     // Initialize ringbuffer
     if (receiver_buffer == NULL) {
-        self->ringbuf = m_malloc_without_collect(receiver_buffer_size);
-        if (!ringbuf_alloc(self->ringbuf, receiver_buffer_size)) {
+        if (!ringbuf_alloc(&self->ringbuf, receiver_buffer_size)) {
             m_malloc_fail(receiver_buffer_size);
             mp_raise_RuntimeError_varg(MP_ERROR_TEXT("Failed to allocate %q buffer"),
                 MP_QSTR_UART);
         }
     } else {
-        if (!(ringbuf_init(self->ringbuf, receiver_buffer, receiver_buffer_size))) {
+        if (!(ringbuf_init(&self->ringbuf, receiver_buffer, receiver_buffer_size))) {
             mp_raise_RuntimeError_varg(MP_ERROR_TEXT("Failed to allocate %q buffer"),
                 MP_QSTR_UART);
         }
@@ -283,7 +282,7 @@ void common_hal_busio_uart_deinit(busio_uart_obj_t *self) {
         self->cts_pin = NULL;
         self->rts_pin = NULL;
 
-        ringbuf_deinit(self->ringbuf);
+        ringbuf_deinit(&self->ringbuf);
 
         // Indicate to this module that the UART is not active
         uarts_active &= ~(1 << self->uart_id);
@@ -350,7 +349,7 @@ size_t common_hal_busio_uart_read(busio_uart_obj_t *self,
 
     // Copy the data from the ringbuf (or return error)
     MXC_SYS_Crit_Enter();
-    err = ringbuf_get_n(context->ringbuf, data, len);
+    err = ringbuf_get_n(&context->ringbuf, data, len);
     MXC_SYS_Crit_Exit();
 
     return err;
@@ -435,12 +434,12 @@ void common_hal_busio_uart_set_timeout(busio_uart_obj_t *self, mp_float_t timeou
 }
 
 uint32_t common_hal_busio_uart_rx_characters_available(busio_uart_obj_t *self) {
-    return ringbuf_num_filled(self->ringbuf);
+    return ringbuf_num_filled(&self->ringbuf);
 }
 
 void common_hal_busio_uart_clear_rx_buffer(busio_uart_obj_t *self) {
     MXC_UART_ClearRXFIFO(self->uart_regs);
-    ringbuf_clear(self->ringbuf);
+    ringbuf_clear(&self->ringbuf);
 }
 
 bool common_hal_busio_uart_ready_to_tx(busio_uart_obj_t *self) {

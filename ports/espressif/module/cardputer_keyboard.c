@@ -104,6 +104,7 @@ static const mcu_pin_obj_t *column_pins[] = {
 };
 
 static void cardputer_keyboard_init(void) {
+    cardputer_keyboard.base.type = &keypad_demux_demuxkeymatrix_type;
     common_hal_keypad_demux_demuxkeymatrix_construct(
         &cardputer_keyboard,          // self
         MP_ARRAY_SIZE(row_addr_pins), // num_row_addr_pins

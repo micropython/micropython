@@ -135,3 +135,50 @@ def test_msgpack_exttype_properties(circuitpython):
     assert "new_code: 10" in output
     assert "range_error:" in output
     assert "done" in output
+
+
+INT_BOUNDARY_CODE = """\
+import msgpack
+from io import BytesIO
+
+CASES = (
+    (127, "7f"),
+    (128, "cc80"),
+    (255, "ccff"),
+    (256, "cd0100"),
+    (65535, "cdffff"),
+    (65536, "ce00010000"),
+    (2**32 - 1, "ceffffffff"),
+    (2**32, "cf0000000100000000"),
+    (2**64 - 1, "cfffffffffffffffff"),
+    (-32, "e0"),
+    (-33, "d0df"),
+    (-129, "d1ff7f"),
+    (-32769, "d2ffff7fff"),
+    (-(2**31) - 1, "d3ffffffff7fffffff"),
+    (-(2**63), "d38000000000000000"),
+)
+for value, expected in CASES:
+    b = BytesIO()
+    msgpack.pack(value, b)
+    b.seek(0)
+    if b.getvalue().hex() != expected or msgpack.unpack(b) != value:
+        print(f"bad: {value} {b.getvalue().hex()}")
+
+for value in (2**64, -(2**63) - 1, -(2**64)):
+    b = BytesIO()
+    msgpack.pack(value, b, default=lambda obj: "big")
+    print(f"default: {b.getvalue().hex()}")
+print("done")
+"""
+
+
+@pytest.mark.circuitpy_drive({"code.py": INT_BOUNDARY_CODE})
+def test_msgpack_int_boundaries(circuitpython):
+    """Ints use the shortest format, and those beyond 64 bits go to the default handler."""
+    circuitpython.wait_until_done()
+
+    output = circuitpython.serial.all_output
+    assert "bad:" not in output
+    assert output.count("default: a3626967") == 3
+    assert "done" in output

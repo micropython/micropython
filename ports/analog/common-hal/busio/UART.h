@@ -22,7 +22,7 @@ typedef struct {
     int uart_id;
     int uart_map;
     mxc_uart_regs_t *uart_regs;
-    ringbuf_t *ringbuf;
+    ringbuf_t ringbuf;
     bool parity;
     uint8_t bits;
     uint8_t stop_bits;

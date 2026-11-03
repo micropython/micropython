@@ -79,6 +79,9 @@ void board_init(void) {
 
     // Initialize the board's peripherals here.
     busio_i2c_obj_t *i2c = MP_OBJ_TO_PTR(common_hal_board_create_i2c(0));
+    // The IO expander pins stay in use after code.py ends, so keep the I2C pins
+    // from being reset with the others.
+    common_hal_busio_i2c_never_reset(i2c);
 
     // Initialize the IOExpander
     ioexpander.base.type = &i2cioexpander_ioexpander_type;
