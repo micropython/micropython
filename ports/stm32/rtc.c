@@ -772,15 +772,10 @@ mp_obj_t pyb_rtc_wakeup(size_t n_args, const mp_obj_t *args) {
                 wucksel -= 1;
             }
             if (div <= 16) {
-                #if defined(STM32L1)
-                if (rtc_use_lse) {
-                    wut = LSE_VALUE / div * ms / 1000;
-                } else {
-                    wut = LSI_VALUE / div * ms / 1000;
-                }
-                #else
-                wut = 32768 / div * ms / 1000;
-                #endif
+                // The prescalers divide the RTC clock down to 1Hz, and are selected for the
+                // clock the RTC actually runs from, so they give its frequency.
+                uint32_t rtc_freq = (RTCHandle.Init.AsynchPrediv + 1) * (RTCHandle.Init.SynchPrediv + 1);
+                wut = rtc_freq / div * ms / 1000;
             } else {
                 // use 1Hz clock
                 wucksel = 4;
