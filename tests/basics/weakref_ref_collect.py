@@ -27,6 +27,13 @@ def callback(r):
     print("callback", r())
 
 
+# Create the ref in its own function, so no reference to it is left on the
+# stack when gc.collect() runs (with native code it can otherwise survive).
+def ref_and_drop(a):
+    r = weakref.ref(a, callback)
+    print(r())
+
+
 def test():
     print("test basic use of ref() with only one argument")
     a = A()
@@ -48,9 +55,7 @@ def test():
 
     print("test when weakref gets collected before the object it refs")
     a = A()
-    r = weakref.ref(a, callback)
-    print(r())
-    r = None
+    ref_and_drop(a)
     clean_the_stack = [0, 0, 0, 0]
     gc.collect()
     a = None
