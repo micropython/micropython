@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include "py/obj.h"
@@ -18,6 +19,14 @@
 typedef enum {
     HARDWAREKEY_PURPOSE_UNUSED = 0,
     HARDWAREKEY_PURPOSE_HMAC,
+    // A Digital Signature (RSA) key. Unlike HMAC, the key material isn't
+    // fully in the eFuse block itself -- the slot only holds the AES key
+    // that decrypts an externally-supplied, already-encrypted RSA private
+    // key (`ds_params`) inside the DS peripheral. So a DS-purpose slot is
+    // usable only after
+    // cryptography.hazmat.primitives.asymmetric.rsa.load_digital_signature_key()
+    // has turned it into a DigitalSignatureKey.
+    HARDWAREKEY_PURPOSE_DS,
 } hardwarekey_purpose_t;
 
 // The handle is portable: it holds a PSA key id. How that id gets created --
@@ -37,7 +46,11 @@ typedef struct {
 // HardwareKey objects are created by the port at startup, one per hardware key
 // slot, and placed in `board`; application code never constructs them. The
 // per-port startup code fills in key_id, key_slot, purpose, exportable and name.
-// The key is used by passing the object to hmac.new().
+// An HMAC key is used by passing the object to hmac.new(); a DS key is used by
+// passing the object to
+// cryptography.hazmat.primitives.asymmetric.rsa.load_digital_signature_key(),
+// which returns a DigitalSignatureKey (see
+// shared-module/cryptography/hazmat/primitives/asymmetric/rsa/DigitalSignatureKey.h).
 
 mp_int_t common_hal_hardwarekey_hardwarekey_get_key_slot(hardwarekey_hardwarekey_obj_t *self);
 hardwarekey_purpose_t common_hal_hardwarekey_hardwarekey_get_purpose(hardwarekey_hardwarekey_obj_t *self);

@@ -16,6 +16,13 @@
 
 #include "shared-bindings/ssl/SSLContext.h"
 
+#if CIRCUITPY_CRYPTOGRAPHY
+#include "shared-bindings/cryptography/hazmat/primitives/asymmetric/rsa/DigitalSignatureKey.h"
+#endif
+
+//| import cryptography.hazmat.primitives.asymmetric.rsa
+//|
+//|
 //| class SSLContext:
 //|     """Settings related to SSL that can be applied to a socket by wrapping it.
 //|     This is useful to provide SSL certificates to specific connections
@@ -31,13 +38,22 @@ static mp_obj_t ssl_sslcontext_make_new(const mp_obj_type_t *type, size_t n_args
     return MP_OBJ_FROM_PTR(s);
 }
 
-//|     def load_cert_chain(self, certfile: str, keyfile: str) -> None:
+//|     def load_cert_chain(
+//|         self, certfile: str, keyfile: str | cryptography.hazmat.primitives.asymmetric.rsa.DigitalSignatureKey | None = None
+//|     ) -> None:
 //|         """Load a private key and the corresponding certificate.
 //|
 //|         The certfile string must be the path to a single file in PEM format
 //|         containing the certificate as well as any number of CA certificates
-//|         needed to establish the certificate's authenticity.  The keyfile string
-//|         must point to a file containing the private key.
+//|         needed to establish the certificate's authenticity.
+//|
+//|         ``keyfile`` is either the path to a file containing the private key, or
+//|         a :py:class:`cryptography.hazmat.primitives.asymmetric.rsa.DigitalSignatureKey`
+//|         (obtained via :py:func:`cryptography.hazmat.primitives.asymmetric.rsa.load_digital_signature_key()`)
+//|         whose key never leaves the hardware -- in which case signing during
+//|         the TLS handshake is done by the hardware and the private key is
+//|         never exposed. If ``keyfile`` is omitted, the private key is read
+//|         from ``certfile``.
 //|         """
 //|
 
@@ -60,15 +76,31 @@ static mp_obj_t ssl_sslcontext_load_cert_chain(size_t n_args, const mp_obj_t *po
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    mp_buffer_info_t cert_buf, key_buf;
+    mp_buffer_info_t cert_buf, key_buf = { 0 };
+    psa_key_id_t hw_key_id = 0;
     get_file_contents(args[ARG_certfile].u_obj, &cert_buf);
-    if (args[ARG_keyfile].u_obj != mp_const_none) {
-        get_file_contents(args[ARG_keyfile].u_obj, &key_buf);
+
+    mp_obj_t keyfile = args[ARG_keyfile].u_obj;
+    #if CIRCUITPY_CRYPTOGRAPHY
+    if (mp_obj_is_type(keyfile, &cryptography_hazmat_primitives_asymmetric_rsa_digitalsignaturekey_type)) {
+        cryptography_hazmat_primitives_asymmetric_rsa_digitalsignaturekey_obj_t *key = MP_OBJ_TO_PTR(keyfile);
+        // TLS client-cert auth signs the handshake, so this commits the key to
+        // signing (see DigitalSignatureKey.sign()'s docstring on the
+        // one-algorithm-per-lifetime rule) -- raises if this key already
+        // committed to a different algorithm (e.g. decrypt()).
+        common_hal_cryptography_hazmat_primitives_asymmetric_rsa_digitalsignaturekey_ensure_algorithm(key,
+            PSA_ALG_RSA_PKCS1V15_SIGN(PSA_ALG_ANY_HASH),
+            PSA_KEY_USAGE_SIGN_MESSAGE | PSA_KEY_USAGE_SIGN_HASH);
+        hw_key_id = common_hal_cryptography_hazmat_primitives_asymmetric_rsa_digitalsignaturekey_get_key_id(key);
+    } else
+    #endif
+    if (keyfile != mp_const_none) {
+        get_file_contents(keyfile, &key_buf);
     } else {
         key_buf = cert_buf;
     }
 
-    common_hal_ssl_sslcontext_load_cert_chain(self, &cert_buf, &key_buf);
+    common_hal_ssl_sslcontext_load_cert_chain(self, &cert_buf, &key_buf, hw_key_id);
     return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_KW(ssl_sslcontext_load_cert_chain_obj, 1, ssl_sslcontext_load_cert_chain);

@@ -213,19 +213,26 @@ volatile uint32_t *common_hal_digitalio_digitalinout_get_reg(digitalio_digitalin
     #endif
     const uint8_t pin = self->pin->number;
 
-    *mask = 1u << pin;
+    // GPIO32 and up are in the separate SIO "hi" registers.
+    #if NUM_BANK0_GPIOS > 32
+    const bool hi = pin >= 32;
+    #else
+    const bool hi = false;
+    #endif
+
+    *mask = 1u << (pin & 0x1fu);
 
     switch (op) {
         case DIGITALINOUT_REG_READ:
-            return (volatile uint32_t *)&sio_hw->gpio_in;
+            return (volatile uint32_t *)(hi ? &sio_hw->gpio_hi_in : &sio_hw->gpio_in);
         case DIGITALINOUT_REG_WRITE:
-            return &sio_hw->gpio_out;
+            return hi ? &sio_hw->gpio_hi_out : &sio_hw->gpio_out;
         case DIGITALINOUT_REG_SET:
-            return &sio_hw->gpio_set;
+            return hi ? &sio_hw->gpio_hi_set : &sio_hw->gpio_set;
         case DIGITALINOUT_REG_RESET:
-            return &sio_hw->gpio_clr;
+            return hi ? &sio_hw->gpio_hi_clr : &sio_hw->gpio_clr;
         case DIGITALINOUT_REG_TOGGLE:
-            return &sio_hw->gpio_togl;
+            return hi ? &sio_hw->gpio_hi_togl : &sio_hw->gpio_togl;
         default:
             return NULL;
     }

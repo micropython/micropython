@@ -16,6 +16,15 @@
 #define RP_SLEEP_WAKEUP_GPIO    1
 #define RP_SLEEP_WAKEUP_RTC     2
 
+// Watchdog scratch registers survive the reset that ends a deep sleep.
+// The SDK and bootrom use scratch registers 4 to 7.
+//
+// RP_WKUP_SCRATCH_REG      holds the RP_SLEEP_WAKEUP_* cause.
+// RP_WKUP_PIN_SCRATCH_REG  holds the GPIO number that woke an RP2040 from deep sleep,
+//                          plus 1. 0 means no pin.
+#define RP_WKUP_SCRATCH_REG     0
+#define RP_WKUP_PIN_SCRATCH_REG 1
+
 // Bits in powman_hw->last_swcore_pwrup. Bit 0 is a chip reset, bits 1 to 4 are
 // the four GPIO wakeups and bit 6 is the timer alarm.
 #define RP_POWMAN_PWRUP_GPIO_LSB  1

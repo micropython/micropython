@@ -156,6 +156,9 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(alarm_light_sleep_until_alarms_obj, 1, MP_OB
 //|     the connection will be maintained and the system will not go into deep sleep.**
 //|     This allows the user to interrupt an existing program with ctrl-C,
 //|     and to edit the files in CIRCUITPY, which would not be possible in true deep sleep.
+//|     When the alarm occurs, ``boot.py`` is not run again. A display set as
+//|     `supervisor.runtime.display <supervisor.Runtime.display>` stays in use,
+//|     so check that property before creating the display again.
 //|
 //|     If CircuitPython goes into a true deep sleep, and USB or BLE is reconnected,
 //|     the next deep sleep will still be a true deep sleep. You must do a hard reset

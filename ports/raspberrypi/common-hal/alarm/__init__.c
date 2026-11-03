@@ -42,10 +42,6 @@
 #include "pico/low_power.h"
 #endif
 
-// Watchdog scratch register
-// Not used elsewhere in the SDK for now, keep an eye on it
-#define RP_WKUP_SCRATCH_REG 0
-
 // Light sleep turns off nonvolatile Busio and other wake-only peripherals
 // TODO: this only saves about 2mA right now, expand with other non-essentials
 #if PICO_RP2040
@@ -304,6 +300,7 @@ void MP_NORETURN common_hal_alarm_enter_deep_sleep(void) {
 
     // Reset uses the watchdog. Use scratch registers to store wake reason
     watchdog_hw->scratch[RP_WKUP_SCRATCH_REG] = _get_wakeup_cause();
+    alarm_pin_pinalarm_save_wake_pin();
 
     // Just before reset, enable the pinalarm interrupt.
     alarm_pin_pinalarm_entering_deep_sleep();

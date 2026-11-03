@@ -85,10 +85,6 @@
 #include "shared-module/picogame/__init__.h"
 #endif
 
-#if CIRCUITPY_KEYPAD
-#include "shared-module/keypad/__init__.h"
-#endif
-
 #if CIRCUITPY_STORAGE_MAP_FILE
 #include "shared-bindings/storage/__init__.h"
 #endif
@@ -425,10 +421,6 @@ static void cleanup_after_vm(mp_obj_t exception) {
     common_hal_canio_reset();
     #endif
 
-    #if CIRCUITPY_KEYPAD
-    keypad_reset();
-    #endif
-
     #if CIRCUITPY_STORAGE_MAP_FILE
     storage_map_file_reset();
     #endif
@@ -648,6 +640,7 @@ static bool __attribute__((noinline)) run_code_py(safe_mode_t safe_mode, bool *s
     // finish, waits for user input, or waits for an autoreload.
     #if CIRCUITPY_ALARM
     bool fake_sleeping = false;
+    bool keep_display_in_fake_sleep = false;
     #endif
     while (!skip_wait) {
         RUN_BACKGROUND_TASKS;
@@ -729,15 +722,24 @@ static bool __attribute__((noinline)) run_code_py(safe_mode_t safe_mode, bool *s
             else if (awoke_from_true_deep_sleep ||
                      port_get_raw_ticks(NULL) > CIRCUITPY_WORKFLOW_CONNECTION_SLEEP_DELAY * 1024) {
                 // OK to start sleeping, real or fake.
+                const bool true_deep_sleep = awoke_from_true_deep_sleep || !supervisor_workflow_active();
                 #if CIRCUITPY_DISPLAYIO
-                common_hal_displayio_release_displays();
+                // A fake sleep doesn't run boot.py again, so keep a display set as
+                // supervisor.runtime.display. Also leave the board as a reload does, because
+                // board_init() can't make its own display if the kept one fills the slots.
+                keep_display_in_fake_sleep = !true_deep_sleep && common_hal_displayio_primary_display_set_by_user();
+                if (!keep_display_in_fake_sleep) {
+                    common_hal_displayio_release_displays();
+                }
                 #endif
                 status_led_deinit();
                 deinit_rxtx_leds();
-                board_deinit();
+                if (!keep_display_in_fake_sleep) {
+                    board_deinit();
+                }
 
                 // Continue with true deep sleep even if workflow is available.
-                if (awoke_from_true_deep_sleep || !supervisor_workflow_active()) {
+                if (true_deep_sleep) {
                     // Enter true deep sleep. When we wake up we'll be back at the
                     // top of main(), not in this loop.
                     common_hal_alarm_enter_deep_sleep();
@@ -844,10 +846,12 @@ static bool __attribute__((noinline)) run_code_py(safe_mode_t safe_mode, bool *s
 
     #if CIRCUITPY_ALARM
     if (fake_sleeping) {
-        board_init();
-        #if CIRCUITPY_DISPLAYIO
-        common_hal_displayio_auto_primary_display();
-        #endif
+        if (!keep_display_in_fake_sleep) {
+            board_init();
+            #if CIRCUITPY_DISPLAYIO
+            common_hal_displayio_auto_primary_display();
+            #endif
+        }
         // Undo any preserve_dios.
         #if CIRCUITPY_ALARM_PRESERVE_DIOS
         common_hal_alarm_clear_pin_preservations();

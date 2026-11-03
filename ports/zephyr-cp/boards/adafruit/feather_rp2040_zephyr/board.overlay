@@ -1,3 +1,12 @@
 /* Partition layout is owned by the mcuboot fork (dts/adafruit/adafruit_feather_rp2040.dtsi)
  * and applied to this image by sysbuild. This overlay only adds board/app config. */
 #include "../../../app.overlay"
+
+/* No Zephyr console by default, so TX/RX (GPIO0/GPIO1) (UART0) are free for busio.UART. A
+ * CONSOLE=1 build puts the console back on UART0 (console.overlay). */
+/ {
+	chosen {
+		/delete-property/ zephyr,console;
+		/delete-property/ zephyr,shell-uart;
+	};
+};

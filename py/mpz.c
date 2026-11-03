@@ -688,7 +688,13 @@ static void mpz_need_dig(mpz_t *z, size_t need) {
         // if z has fixed digit buffer there's not much we can do as the caller will
         // be expecting a buffer with at least "need" bytes (but it shouldn't happen)
         assert(!z->fixed_dig);
-        z->dig = m_renew(mpz_dig_t, z->dig, z->alloc, need);
+        // CIRCUITPY-CHANGE: Don't scan digits for pointers. m_renew(NULL) would allocate a
+        // scanned block; once allocated, m_renew keeps the block unscanned.
+        if (z->dig == NULL) {
+            z->dig = m_malloc_without_collect(sizeof(mpz_dig_t) * need);
+        } else {
+            z->dig = m_renew(mpz_dig_t, z->dig, z->alloc, need);
+        }
         z->alloc = need;
     }
 }
@@ -700,7 +706,8 @@ static mpz_t *mpz_clone(const mpz_t *src) {
     z->fixed_dig = 0;
     z->alloc = src->alloc;
     z->len = src->len;
-    z->dig = m_new(mpz_dig_t, z->alloc);
+    // CIRCUITPY-CHANGE: Don't scan digits for pointers.
+    z->dig = m_malloc_without_collect(sizeof(mpz_dig_t) * z->alloc);
     memcpy(z->dig, src->dig, src->alloc * sizeof(mpz_dig_t));
     return z;
 }
