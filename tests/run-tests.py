@@ -250,6 +250,7 @@ tests_requiring_float = (
     "extmod/asyncio_wait_for_fwd.py",
     "extmod/asyncio_wait_for_linked_task.py",
     "extmod/asyncio_wait_task.py",
+    "extmod/asyncio_wait_for_timeout_race.py",
     "extmod/json_dumps_float.py",
     "extmod/json_loads_float.py",
     "extmod/random_extra_float.py",
