@@ -92,6 +92,7 @@ test('0o8', 8)
 test('0xg', 16)
 test('1 1', 16)
 test('123', 37)
+test(None, 1)
 test('01', 0)
 test('01 ', 0)
 

@@ -74,12 +74,6 @@ mp_obj_t mp_parse_num_integer(const char *restrict str_, size_t len, int base, m
     bool neg = false;
     mp_obj_t ret_val;
 
-    // check radix base
-    if ((base != 0 && base < 2) || base > 36) {
-        // this won't be reached if lex!=NULL
-        mp_raise_ValueError(MP_ERROR_TEXT("int() arg 2 must be >= 2 and <= 36"));
-    }
-
     // skip leading space
     for (; str < top && unichar_isspace(*str); str++) {
     }
