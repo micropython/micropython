@@ -257,3 +257,31 @@ Methods
 .. method:: UART.init(baudrate=9600, bits=8, parity=None, stop=1, *, ...)
 
     The same parameters as the constructor are supported, with the same limitations.
+
+Hardware SPI bus
+----------------
+
+See :ref:`machine.SPI <machine.SPI>`.
+
+Hardware SPI on PSOC™ Edge uses the SCB (Serial Communication Block) peripheral
+in controller mode::
+
+    from machine import SPI, Pin
+
+    spi = SPI(10, baudrate=1_000_000, polarity=0, phase=0)  # pins resolved from the id
+    spi = SPI(sck='P16_0', mosi='P16_1', miso='P16_2')       # id resolved from the pins
+
+    cs = Pin('P16_3', Pin.OUT, value=1)
+    rx = bytearray(4)
+    cs(0)
+    spi.write_readinto(b'\x9f\x00\x00\x00', rx)
+    cs(1)
+
+The following specialization applies to this port:
+
+- ``id`` is the SCB unit number. It can be omitted if the pins are given, in which
+  case it is resolved from the pins. Pins not given are resolved from the ``id``,
+  and pins given must belong to the ``id``.
+- Constructing ``SPI`` for an ``id`` already in use returns that same object.
+- ``bits``: only ``8`` is supported.
+- Chip select (CS) is not driven by ``machine.SPI``; control it with ``machine.Pin``.
