@@ -1,0 +1,13 @@
+{
+    "deploy": [
+        "deploy.md"
+    ],
+    "docs": "",
+    "features": [],
+    "images": [],
+    "mcu": "stm32u5",
+    "product": "UNO Q (STM32U585)",
+    "thumbnail": "",
+    "url": "https://store.arduino.cc/products/uno-q",
+    "vendor": "Arduino"
+}
