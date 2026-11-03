@@ -261,6 +261,10 @@ static mp_obj_t machine_spi_target_read(mp_obj_t self_in, mp_obj_t buf_in) {
 
     while (received < bufinfo.len) {
         uint32_t num_available = spi_hw_target_get_num_in_rx_fifo(&self->spi_obj);
+        if (num_available > 0) {
+            // Timeout tracks no-progress stalls, not total transfer time.
+            start = mp_hal_ticks_ms();
+        }
         while (num_available > 0 && received < bufinfo.len) {
             rx_buf[received++] = spi_hw_target_read(&self->spi_obj);
             num_available--;
