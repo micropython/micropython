@@ -492,9 +492,12 @@ static bool adc_config_channel(ADC_TypeDef *adc, uint32_t channel, uint32_t samp
         #else
         adc_common->CCR |= ADC_CCR_VBATEN;
         #endif
-    #if defined(STM32H5) || defined(STM32N6)
+    #if defined(STM32H5)
     } else if (channel == ADC_CHANNEL_VDDCORE) {
         adc->OR |= ADC_OR_OP0; // Enable Vddcore channel on ADC2
+    #elif defined(STM32N6)
+    } else if (channel == ADC_CHANNEL_VDDCORE) {
+        adc->OR |= ADC_OR_OP2; // Enable Vddcore channel on ADC2
     #endif
     }
 
@@ -643,8 +646,8 @@ static mp_obj_t mp_machine_adc_make_new(const mp_obj_type_t *type, size_t n_args
         channel = mp_obj_get_int(source);
         #if defined(STM32WL)
         adc = ADC;
-        #elif defined(STM32H5)
-        // on STM32H5 vbat and vddcore channels are on ADC2
+        #elif defined(STM32H5) || defined(STM32N6)
+        // on STM32H5 and STM32N6 vbat and vddcore channels are on ADC2
         if (channel == MACHINE_ADC_INT_CH_VBAT || channel == MACHINE_ADC_INT_CH_VDDCORE) {
             adc = ADC2;
         } else {
