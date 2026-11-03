@@ -101,6 +101,13 @@ def _bool_flag(cmd_parser, name, short_name, default, description):
 def argparse_connect():
     cmd_parser = argparse.ArgumentParser(description="connect to given device")
     cmd_parser.add_argument(
+        "-b",
+        "--baud",
+        type=int,
+        default=115200,
+        help="baudrate of the serial console",
+    )
+    cmd_parser.add_argument(
         "device", nargs=1, help="Either list, auto, id:x, port:x, or any valid device name/path"
     )
     return cmd_parser
