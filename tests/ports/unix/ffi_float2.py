@@ -1,4 +1,6 @@
 # test ffi float support
+# requires: float
+
 try:
     import ffi
 except ImportError:

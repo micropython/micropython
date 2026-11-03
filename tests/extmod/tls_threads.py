@@ -1,5 +1,6 @@
 # Ensure that SSL sockets can be allocated from multiple
 # threads without thread safety issues
+# requires: float
 
 try:
     import _thread

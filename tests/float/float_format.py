@@ -1,4 +1,5 @@
 # test float formatting
+# requires: float
 
 # general rounding
 for val in (116, 1111, 1234, 5010, 11111):

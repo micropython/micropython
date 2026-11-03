@@ -1,4 +1,5 @@
 # test basic float capabilities
+# requires: float
 
 # literals
 print(0.12)

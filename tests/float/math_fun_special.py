@@ -1,4 +1,5 @@
 # test the special functions imported from math
+# requires: float
 
 try:
     from math import *

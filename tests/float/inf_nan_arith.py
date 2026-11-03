@@ -1,4 +1,5 @@
 # Test behaviour of inf and nan in basic float operations
+# requires: float
 
 inf = float("inf")
 nan = float("nan")

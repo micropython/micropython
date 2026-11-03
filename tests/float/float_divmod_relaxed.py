@@ -1,5 +1,6 @@
 # test floating point floor divide and modulus
 # it has some tricky corner cases
+# requires: float
 
 # pyboard has 32-bit floating point and gives different (but still
 # correct) answers for certain combinations of divmod arguments.

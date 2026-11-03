@@ -1,4 +1,5 @@
 # test __float__ function support
+# requires: float
 
 
 class TestFloat:

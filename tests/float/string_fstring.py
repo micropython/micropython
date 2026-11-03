@@ -1,5 +1,5 @@
 # Format specifiers with nested replacement fields
-# requires: fstring
+# requires: float fstring
 
 space = 5
 prec = 2

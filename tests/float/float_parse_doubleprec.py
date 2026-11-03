@@ -1,4 +1,5 @@
 # test parsing of floats, requiring double-precision
+# requires: float-64bit
 
 # very large integer part with a very negative exponent should cancel out
 print(float("9" * 400 + "e-100"))

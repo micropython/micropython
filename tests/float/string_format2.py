@@ -1,5 +1,6 @@
 # Change the following to True to get a much more comprehensive set of tests
 # to run, albeit, which take considerably longer.
+# requires: float
 
 full_tests = False
 

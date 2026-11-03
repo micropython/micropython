@@ -1,3 +1,5 @@
+# requires: float
+
 try:
     from array import array
 except ImportError:

@@ -1,5 +1,5 @@
 # test int64 operation with float/complex
-# requires: int-64
+# requires: int-64 float
 
 i = 1 << 40
 

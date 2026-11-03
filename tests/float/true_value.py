@@ -1,5 +1,5 @@
 # Test true-ish value handling
-# requires: complex
+# requires: complex float
 
 if not 0.0:
     print("float 0")

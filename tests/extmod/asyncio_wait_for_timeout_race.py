@@ -2,7 +2,7 @@
 # expires.  The outcome of aw (result or exception) must not be lost, and a
 # genuine timeout must still raise TimeoutError.
 # https://github.com/micropython/micropython/issues/19779
-# requires: async
+# requires: async float
 
 try:
     import asyncio

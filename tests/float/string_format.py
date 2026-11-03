@@ -1,3 +1,6 @@
+# requires: float
+
+
 def test(fmt, *args):
     print("{:8s}".format(fmt) + ">" + fmt.format(*args) + "<")
 

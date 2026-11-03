@@ -1,4 +1,5 @@
 # tests for things that only Python 3.6 supports, needing floats
+# requires: float
 
 # underscores in numeric literals
 print(1_000.1_8)

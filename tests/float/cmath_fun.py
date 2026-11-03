@@ -1,4 +1,5 @@
 # test the functions imported from cmath
+# requires: float
 
 try:
     from cmath import *

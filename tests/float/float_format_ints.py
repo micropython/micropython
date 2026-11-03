@@ -1,4 +1,5 @@
 # Test that integers format to exact values.
+# requires: float
 
 for b in [13, 123, 457, 23456]:
     for r in range(1, 10):

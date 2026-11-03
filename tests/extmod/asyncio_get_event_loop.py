@@ -1,5 +1,5 @@
 # Test get_event_loop()
-# requires: async
+# requires: async float
 
 try:
     import asyncio

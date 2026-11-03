@@ -1,4 +1,5 @@
 # Tests domain errors in math functions
+# requires: float
 
 try:
     import math
