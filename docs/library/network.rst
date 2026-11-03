@@ -124,6 +124,11 @@ parameter should be `id`.
          server via DHCP. This method does not block and wait for an address
          to be obtained. To check if an address was obtained, use the read-only
          property ``has_dhcp4``.
+       * ``autoconf4`` (``True/False``) obtain an IPv4 address randomly in the
+         169.254.0.0/16 address space. This method does not block and wait for
+         an address to be selected and confirmed to be unused on the network. To
+         check if an address has been selected, use the read-only property
+         ``has_autoconf4``.
        * ``gw4`` Get/set the IPv4 default-gateway.
        * ``dhcp6`` (``True/False``) obtain a DNS server via stateless DHCPv6.
          Obtaining IP Addresses via DHCPv6 is currently not implemented.
