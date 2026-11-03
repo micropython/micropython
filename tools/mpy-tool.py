@@ -25,6 +25,7 @@
 # THE SOFTWARE.
 
 import io
+import math
 import struct
 import sys
 from binascii import hexlify
@@ -346,6 +347,14 @@ class Opcode:
         self.opcode_byte = opcode_byte
         self.arg = arg
         self.extra_arg = extra_arg
+
+
+def float_to_c(f):
+    if math.isnan(f):
+        return "NAN"
+    if math.isinf(f):
+        return "INFINITY" if f > 0 else "-INFINITY"
+    return "%.16g" % f
 
 
 # This definition of a small int covers all possible targets, in the sense that every
@@ -793,25 +802,25 @@ class CompiledModule:
                 "#if MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_A || MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_B"
             )
             print(
-                "static const mp_obj_float_t %s = {{&mp_type_float}, (mp_float_t)%.16g};"
-                % (obj_name, obj)
+                "static const mp_obj_float_t %s = {{&mp_type_float}, (mp_float_t)%s};"
+                % (obj_name, float_to_c(obj))
             )
             print("#define %s MP_ROM_PTR(&%s)" % (macro_name, obj_name))
             print("#elif MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_C")
             n = struct.unpack("<I", struct.pack("<f", obj))[0]
-            n = ((n & ~0x3) | 2) + 0x80800000
+            n = (((n & ~0x3) | 2) + 0x80800000) & 0xFFFFFFFF
             print("#define %s ((mp_rom_obj_t)(0x%08x))" % (macro_name, n))
             print("#elif MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_D")
             n = struct.unpack("<Q", struct.pack("<d", obj))[0]
-            n += 0x8004000000000000
+            n = (n + 0x8004000000000000) & 0xFFFFFFFFFFFFFFFF
             print("#define %s ((mp_rom_obj_t)(0x%016x))" % (macro_name, n))
             print("#endif")
             const_obj_content += 3 * 4
             return macro_name
         elif isinstance(obj, complex):
             print(
-                "static const mp_obj_complex_t %s = {{&mp_type_complex}, (mp_float_t)%.16g, (mp_float_t)%.16g};"
-                % (obj_name, obj.real, obj.imag)
+                "static const mp_obj_complex_t %s = {{&mp_type_complex}, (mp_float_t)%s, (mp_float_t)%s};"
+                % (obj_name, float_to_c(obj.real), float_to_c(obj.imag))
             )
             return "MP_ROM_PTR(&%s)" % obj_name
         elif type(obj) is tuple:
@@ -1599,6 +1608,7 @@ def freeze_mpy(firmware_qstr_idents, compiled_modules):
     # Sort by string value (because this is a sorted pool).
     new = sorted(new.values(), key=lambda x: x[2])
 
+    print("#include <math.h>")
     print('#include "py/mpconfig.h"')
     print('#include "py/objint.h"')
     print('#include "py/objstr.h"')

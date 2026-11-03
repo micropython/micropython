@@ -263,6 +263,7 @@ ZeroDivisionError
 X
 '\x1b'
 b'\x00\xff'
+True True -inf
 frzmpy4 1
 frzmpy4 2
 NULL
