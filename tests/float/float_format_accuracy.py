@@ -1,5 +1,6 @@
 # Test accuracy of `repr` conversions.
 # This test also increases code coverage for corner cases.
+# requires: float
 
 try:
     import array, math, random

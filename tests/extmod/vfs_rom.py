@@ -1,5 +1,5 @@
 # Test VfsRom filesystem.
-# requires: slice
+# requires: float slice
 
 try:
     import errno, sys, struct, os, uctypes, vfs

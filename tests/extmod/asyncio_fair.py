@@ -1,5 +1,5 @@
 # Test fairness of scheduler
-# requires: async
+# requires: async float
 
 try:
     import asyncio

@@ -1,3 +1,5 @@
+# requires: float
+
 try:
     import json
 except ImportError:

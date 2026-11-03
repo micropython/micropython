@@ -1,4 +1,5 @@
 # test math.isclose (appeared in Python 3.5)
+# requires: float
 
 try:
     from math import isclose

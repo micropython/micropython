@@ -1,4 +1,5 @@
 # Extended float comparisons
+# requires: float
 
 
 class Foo:

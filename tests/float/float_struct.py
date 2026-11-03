@@ -1,4 +1,6 @@
 # test struct package with floats
+# requires: float
+
 try:
     import struct
 except ImportError:

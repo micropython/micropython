@@ -1,5 +1,5 @@
 # test bignum operation with float/complex
-# requires: complex int-big
+# requires: complex float int-big
 
 i = 1 << 65
 

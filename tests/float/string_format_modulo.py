@@ -1,4 +1,4 @@
-# requires: slice
+# requires: float slice
 
 print("%s" % 1.0)
 print("%r" % 1.0)

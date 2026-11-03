@@ -1,5 +1,6 @@
 # test floating point floor divide and modulus
 # it has some tricky corner cases
+# requires: float-64bit
 
 
 def test(x, y):

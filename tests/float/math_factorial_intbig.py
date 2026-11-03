@@ -1,4 +1,4 @@
-# requires: int-big
+# requires: float int-big
 
 try:
     import math

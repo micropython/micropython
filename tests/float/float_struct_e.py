@@ -1,4 +1,5 @@
 # Test struct pack/unpack with 'e' typecode.
+# requires: float-32bit
 
 try:
     import struct

@@ -1,4 +1,5 @@
 # test round() with floats
+# requires: float
 
 # check basic cases
 tests = [
