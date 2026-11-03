@@ -182,6 +182,7 @@ void spi_hw_target_init(spi_obj_t *self) {
     if (result != CY_SCB_SPI_SUCCESS) {
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("SPITarget init failed: 0x%lx"), (uint32_t)result);
     }
+    spi_hw_target_clear_rx_overflow(self);
 }
 
 void spi_hw_target_clear_tx_fifo(spi_obj_t *self) {
@@ -210,6 +211,14 @@ uint32_t spi_hw_target_get_num_in_rx_fifo(spi_obj_t *self) {
 
 uint8_t spi_hw_target_read(spi_obj_t *self) {
     return (uint8_t)Cy_SCB_SPI_Read(self->scb_obj->scb);
+}
+
+bool spi_hw_target_has_rx_overflow(spi_obj_t *self) {
+    return (Cy_SCB_GetRxInterruptStatus(self->scb_obj->scb) & CY_SCB_RX_INTR_OVERFLOW) != 0U;
+}
+
+void spi_hw_target_clear_rx_overflow(spi_obj_t *self) {
+    Cy_SCB_ClearRxInterrupt(self->scb_obj->scb, CY_SCB_RX_INTR_OVERFLOW);
 }
 
 // Stops the SPI hardware and releases the clock divider. The SCB stays claimed (see spi_free).

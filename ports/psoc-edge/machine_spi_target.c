@@ -93,6 +93,17 @@ static void machine_spi_target_scb_isr(mp_obj_t obj) {
     spi_hw_irq(&self->spi_obj);
 }
 
+// Raises if data was lost because the RX FIFO overflowed, i.e. the controller
+// sent data faster than it was read out. The remaining data of the broken
+// transfer is discarded, so that the next transfer starts clean.
+static void machine_spi_target_check_rx_overflow(machine_spi_target_obj_t *self) {
+    if (spi_hw_target_has_rx_overflow(&self->spi_obj)) {
+        spi_hw_target_clear_rx_fifo(&self->spi_obj);
+        spi_hw_target_clear_rx_overflow(&self->spi_obj);
+        mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("SPITarget RX overflow"));
+    }
+}
+
 enum { ARG_polarity, ARG_phase, ARG_bits, ARG_firstbit, ARG_sck, ARG_mosi, ARG_miso, ARG_ssel };
 
 static const mp_arg_t allowed_args[] = {
@@ -269,6 +280,7 @@ static mp_obj_t machine_spi_target_read(mp_obj_t self_in, mp_obj_t buf_in) {
             rx_buf[received++] = spi_hw_target_read(&self->spi_obj);
             num_available--;
         }
+        machine_spi_target_check_rx_overflow(self);
 
         if (mp_hal_ticks_ms() - start > self->timeout) {
             mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("SPITarget read timeout"));
@@ -313,8 +325,9 @@ static mp_obj_t machine_spi_target_write(mp_obj_t self_in, mp_obj_t buf_in) {
     }
 
     // Discard the data received during the write, so that it is not returned
-    // by a later readinto().
+    // by a later readinto(). An overflow while writing is expected and harmless.
     spi_hw_target_clear_rx_fifo(&self->spi_obj);
+    spi_hw_target_clear_rx_overflow(&self->spi_obj);
 
     return mp_obj_new_int(written);
 }
@@ -333,6 +346,7 @@ static mp_obj_t machine_spi_target_write_readinto(mp_obj_t self_in, mp_obj_t tx_
 
     spi_hw_target_clear_tx_fifo(&self->spi_obj);
     spi_hw_target_clear_rx_fifo(&self->spi_obj);
+    spi_hw_target_clear_rx_overflow(&self->spi_obj);
 
     uint8_t *tx_buf = tx_bufinfo.buf;
     uint8_t *rx_buf = rx_bufinfo.buf;
@@ -355,6 +369,7 @@ static mp_obj_t machine_spi_target_write_readinto(mp_obj_t self_in, mp_obj_t tx_
             rx_buf[rx_idx++] = spi_hw_target_read(&self->spi_obj);
             progressed = true;
         }
+        machine_spi_target_check_rx_overflow(self);
 
         if (progressed) {
             // Timeout tracks no-progress stalls (e.g. FIFO-full with no clocking).

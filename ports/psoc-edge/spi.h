@@ -70,6 +70,8 @@ void spi_hw_target_write(spi_obj_t *self, uint8_t data);
 bool spi_hw_target_is_tx_complete(spi_obj_t *self);
 uint32_t spi_hw_target_get_num_in_rx_fifo(spi_obj_t *self);
 uint8_t spi_hw_target_read(spi_obj_t *self);
+bool spi_hw_target_has_rx_overflow(spi_obj_t *self);
+void spi_hw_target_clear_rx_overflow(spi_obj_t *self);
 
 void spi_hw_deinit(spi_obj_t *self);
 
