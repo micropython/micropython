@@ -103,6 +103,15 @@ the second CPU, the RF core.
 
     Returns a bytes object with the result of the SYS command.
 
+.. function:: rfcore_ble_hci(command, response_buf)
+
+    Execute a HCI command on the BLE channel. The execution is synchronous.
+
+    Takes a *command* bytes/bytearray with a pre-formatted HCI packet and a
+    *response_buf* bytearray to receive the response.
+
+    Returns the number of bytes written to *response_buf*.
+
 Functions specific to STM32WLxx MCUs
 ------------------------------------
 
