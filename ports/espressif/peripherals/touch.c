@@ -30,24 +30,7 @@ void peripherals_touch_deinit(const int channel_id) {
         return;
     }
 
-    touch_sensor_del_channel(touch_channels[idx]);
-    touch_channels[idx] = NULL;
-
-    if (touch_controller == NULL) {
-        return;
-    }
-
-    // Stop scanning and disable when no channels remain.
-    bool any_channel = false;
-    for (unsigned int i = 0; i < TOUCH_TOTAL_CHAN_NUM; i++) {
-        if (touch_channels[i] != NULL) {
-            any_channel = true;
-            break;
-        }
-    }
-    if (any_channel) {
-        return;
-    }
+    // ESP-IDF deletes channels only while the controller is disabled.
     if (touch_scanning) {
         touch_sensor_stop_continuous_scanning(touch_controller);
         touch_scanning = false;
@@ -56,6 +39,29 @@ void peripherals_touch_deinit(const int channel_id) {
         touch_sensor_disable(touch_controller);
         touch_enabled = false;
     }
+
+    touch_sensor_del_channel(touch_channels[idx]);
+    touch_channels[idx] = NULL;
+
+    bool any_channel = false;
+    for (unsigned int i = 0; i < TOUCH_TOTAL_CHAN_NUM; i++) {
+        if (touch_channels[i] != NULL) {
+            any_channel = true;
+            break;
+        }
+    }
+
+    if (any_channel) {
+        // Resume scanning the remaining channels.
+        if (touch_sensor_enable(touch_controller) == ESP_OK) {
+            touch_enabled = true;
+            if (touch_sensor_start_continuous_scanning(touch_controller) == ESP_OK) {
+                touch_scanning = true;
+            }
+        }
+        return;
+    }
+
     touch_sensor_del_controller(touch_controller);
     touch_controller = NULL;
 }
