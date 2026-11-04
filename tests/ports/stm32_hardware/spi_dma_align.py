@@ -1,12 +1,16 @@
 # Regression test for DMA for DCache coherency bugs with cache line
 # written originally for https://github.com/micropython/micropython/issues/13471
-
+#
 # IMPORTANT: This test requires SPI2 MISO (pin Y8 on Pyboard D) to be connected to GND
+#
+# requires: slice target-wiring
 
 import unittest
 from machine import SPI
 
-SPI_NUM = 2
+from target_wiring import spi_standalone_args_list
+
+SPI_NUM = spi_standalone_args_list[0][0]
 BAUDRATE = 5_000_000
 
 
