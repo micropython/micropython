@@ -12,11 +12,15 @@
 #include "bindings/espidf/__init__.h"
 #include "shared-bindings/wifi/Monitor.h"
 #include "shared-bindings/wifi/Packet.h"
+#include "supervisor/port_heap.h"
 
+#include "esp_heap_caps.h"
 #include "esp_log.h"
+#include "esp_memory_utils.h"
 
 #define MONITOR_PAYLOAD_FCS_LEN     (4)
 #define MONITOR_QUEUE_TIMEOUT_TICK  (0)
+#define MONITOR_INTERNAL_RAM_FLOOR  (32 * 1024)
 
 typedef struct {
     void *payload;
@@ -26,6 +30,18 @@ typedef struct {
 } monitor_packet_t;
 
 static const char *TAG = "monitor";
+
+// port_malloc() tries PSRAM first. Keep a frame in internal RAM only while
+// enough stays free for WiFi, DMA bounce buffers and the like.
+static void *alloc_payload(size_t length) {
+    void *payload = port_malloc(length, false);
+    if (payload != NULL && esp_ptr_internal(payload) &&
+        heap_caps_get_free_size(MALLOC_CAP_INTERNAL) < MONITOR_INTERNAL_RAM_FLOOR) {
+        port_free(payload);
+        payload = NULL;
+    }
+    return payload;
+}
 
 static void wifi_monitor_cb(void *recv_buf, wifi_promiscuous_pkt_type_t type) {
     wifi_promiscuous_pkt_t *pkt = (wifi_promiscuous_pkt_t *)recv_buf;
@@ -46,16 +62,17 @@ static void wifi_monitor_cb(void *recv_buf, wifi_promiscuous_pkt_type_t type) {
     // for now, the monitor only dumps the length of the MISC type frame
     if (type != WIFI_PKT_MISC && !pkt->rx_ctrl.rx_state) {
         packet.length -= MONITOR_PAYLOAD_FCS_LEN;
-        packet.payload = malloc(packet.length);
+        packet.payload = alloc_payload(packet.length);
         if (packet.payload) {
             memcpy(packet.payload, pkt->payload, packet.length);
             // send packet
             if (xQueueSendFromISR(self->queue, &packet, NULL) != pdTRUE) {
                 self->lost++;
-                free(packet.payload);
+                port_free(packet.payload);
                 ESP_LOGE(TAG, "packet queue full");
             }
         } else {
+            self->lost++;
             ESP_LOGE(TAG, "not enough memory for packet");
         }
     }
@@ -117,7 +134,7 @@ void common_hal_wifi_monitor_deinit(wifi_monitor_obj_t *self) {
     monitor_packet_t packet;
     while (left_items--) {
         xQueueReceive(self->queue, &packet, MONITOR_QUEUE_TIMEOUT_TICK);
-        free(packet.payload);
+        port_free(packet.payload);
     }
     vQueueDelete(self->queue);
     self->queue = NULL;
@@ -150,7 +167,10 @@ mp_obj_t common_hal_wifi_monitor_get_queued(wifi_monitor_obj_t *self) {
 mp_obj_t common_hal_wifi_monitor_get_packet(wifi_monitor_obj_t *self) {
     monitor_packet_t packet;
 
-    if (xQueueReceive(self->queue, &packet, MONITOR_QUEUE_TIMEOUT_TICK) != pdTRUE) {
+    // Peek, so that if building the dict raises MemoryError, the packet stays
+    // queued for the next call instead of being lost and its payload leaked.
+    // Only this task removes packets, so the one received below is this one.
+    if (xQueuePeek(self->queue, &packet, MONITOR_QUEUE_TIMEOUT_TICK) != pdTRUE) {
         return (mp_obj_t)&mp_const_empty_dict_obj;
     }
 
@@ -161,9 +181,11 @@ mp_obj_t common_hal_wifi_monitor_get_packet(wifi_monitor_obj_t *self) {
     mp_obj_dict_store(dict, cp_enum_find(&wifi_packet_type, PACKET_LEN), MP_OBJ_NEW_SMALL_INT(packet.length));
 
     mp_obj_dict_store(dict, cp_enum_find(&wifi_packet_type, PACKET_RAW), mp_obj_new_bytes(packet.payload, packet.length));
-    free(packet.payload);
 
     mp_obj_dict_store(dict, cp_enum_find(&wifi_packet_type, PACKET_RSSI), MP_OBJ_NEW_SMALL_INT(packet.rssi));
+
+    xQueueReceive(self->queue, &packet, MONITOR_QUEUE_TIMEOUT_TICK);
+    port_free(packet.payload);
 
     return MP_OBJ_FROM_PTR(dict);
 }
