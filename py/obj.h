@@ -1185,6 +1185,11 @@ static inline mp_obj_t mp_obj_new_float_from_d(double o) {
 #if MICROPY_FLOAT_HIGH_QUALITY_HASH
 mp_int_t mp_float_hash(mp_float_t val);
 #else
+#ifdef __has_attribute
+#if __has_attribute(no_sanitize)
+__attribute__((no_sanitize("float-cast-overflow")))
+#endif
+#endif
 static inline mp_int_t mp_float_hash(mp_float_t val) {
     return (mp_int_t)val;
 }
