@@ -4044,8 +4044,7 @@ msgstr ""
 msgid "%q and %q must be different"
 msgstr ""
 
-#: shared-bindings/audiomp3/MP3Decoder.c
-#: shared-bindings/displayio/OnDiskBitmap.c shared-bindings/gifio/OnDiskGif.c
+#: shared-bindings/audiomp3/MP3Decoder.c shared-bindings/gifio/OnDiskGif.c
 #: shared-bindings/synthio/__init__.c shared-module/gifio/GifWriter.c
 msgid "file must be a file opened in byte mode"
 msgstr ""
