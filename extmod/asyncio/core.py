@@ -33,14 +33,14 @@ _exc_context = {"message": "Task exception wasn't retrieved", "exception": None,
 
 # "Yield" once, then raise StopIteration
 class SingletonGenerator:
-    def __init__(self):
+    def __init__(self, /):
         self.state = None
         self.exc = StopIteration()
 
-    def __iter__(self):
+    def __iter__(self, /):
         return self
 
-    def __next__(self):
+    def __next__(self, /):
         if self.state is not None:
             _task_queue.push(cur_task, self.state)
             self.state = None
@@ -52,14 +52,14 @@ class SingletonGenerator:
 
 # Pause task execution for the given time (integer in milliseconds, MicroPython extension)
 # Use a SingletonGenerator to do it without allocating on the heap
-def sleep_ms(t, sgen=SingletonGenerator()):
+def sleep_ms(t, sgen=SingletonGenerator(), /):
     assert sgen.state is None
     sgen.state = ticks_add(ticks(), max(0, t))
     return sgen
 
 
 # Pause task execution for the given time (in seconds)
-def sleep(t):
+def sleep(t, /):
     return sleep_ms(int(t * 1000))
 
 
@@ -68,11 +68,11 @@ def sleep(t):
 
 
 class IOQueue:
-    def __init__(self):
+    def __init__(self, /):
         self.poller = select.poll()
         self.map = {}  # maps id(stream) to [task_waiting_read, task_waiting_write, stream]
 
-    def _enqueue(self, s, idx):
+    def _enqueue(self, s, idx, /):
         if id(s) not in self.map:
             entry = [None, None, s]
             entry[idx] = cur_task
@@ -87,17 +87,17 @@ class IOQueue:
         # Link task to this IOQueue so it can be removed if needed
         cur_task.data = self
 
-    def _dequeue(self, s):
+    def _dequeue(self, s, /):
         del self.map[id(s)]
         self.poller.unregister(s)
 
-    def queue_read(self, s):
+    def queue_read(self, s, /):
         self._enqueue(s, 0)
 
-    def queue_write(self, s):
+    def queue_write(self, s, /):
         self._enqueue(s, 1)
 
-    def remove(self, task):
+    def remove(self, task, /):
         while True:
             del_s = None
             for k in self.map:  # Iterate without allocating on the heap
@@ -110,7 +110,7 @@ class IOQueue:
             else:
                 break
 
-    def wait_io_event(self, dt):
+    def wait_io_event(self, dt, /):
         for s, ev in self.poller.ipoll(dt):
             sm = self.map[id(s)]
             # print('poll', s, sm, ev)
@@ -135,12 +135,12 @@ class IOQueue:
 
 
 # Ensure the awaitable is a task
-def _promote_to_task(aw):
+def _promote_to_task(aw, /):
     return aw if isinstance(aw, Task) else create_task(aw)
 
 
 # Create and schedule a new task from a coroutine
-def create_task(coro):
+def create_task(coro, /):
     if not hasattr(coro, "send"):
         raise TypeError("coroutine expected")
     t = Task(coro, globals())
@@ -149,7 +149,7 @@ def create_task(coro):
 
 
 # Keep scheduling tasks until there are none left to schedule
-def run_until_complete(main_task=None):
+def run_until_complete(main_task=None, /):
     global cur_task
     excs_all = (CancelledError, Exception)  # To prevent heap allocation in loop
     excs_stop = (CancelledError, StopIteration)  # To prevent heap allocation in loop
@@ -244,7 +244,7 @@ def run_until_complete(main_task=None):
 
 
 # Create a new task from a coroutine and run it until it finishes
-def run(coro):
+def run(coro, /):
     return run_until_complete(create_task(coro))
 
 
@@ -263,7 +263,7 @@ _stop_task = None
 class Loop:
     _exc_handler = None
 
-    def create_task(coro):
+    def create_task(coro, /):
         return create_task(coro)
 
     def run_forever():
@@ -272,7 +272,7 @@ class Loop:
         run_until_complete(_stop_task)
         # TODO should keep running until .stop() is called, even if there're no tasks left
 
-    def run_until_complete(aw):
+    def run_until_complete(aw, /):
         return run_until_complete(_promote_to_task(aw))
 
     def stop():
@@ -285,18 +285,18 @@ class Loop:
     def close():
         pass
 
-    def set_exception_handler(handler):
+    def set_exception_handler(handler, /):
         Loop._exc_handler = handler
 
     def get_exception_handler():
         return Loop._exc_handler
 
-    def default_exception_handler(loop, context):
+    def default_exception_handler(loop, context, /):
         print(context["message"], file=sys.stderr)
         print("future:", context["future"], "coro=", context["future"].coro, file=sys.stderr)
         sys.print_exception(context["exception"], sys.stderr)
 
-    def call_exception_handler(context):
+    def call_exception_handler(context, /):
         (Loop._exc_handler or Loop.default_exception_handler)(Loop, context)
 
 

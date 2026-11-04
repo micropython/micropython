@@ -8,7 +8,7 @@ from . import core
 
 
 # pairing-heap meld of 2 heaps; O(1)
-def ph_meld(h1, h2):
+def ph_meld(h1, h2, /):
     if h1 is None:
         return h2
     if h2 is None:
@@ -33,7 +33,7 @@ def ph_meld(h1, h2):
 
 
 # pairing-heap pairing operation; amortised O(log N)
-def ph_pairing(child):
+def ph_pairing(child, /):
     heap = None
     while child is not None:
         n1 = child
@@ -49,7 +49,7 @@ def ph_pairing(child):
 
 
 # pairing-heap delete of a node; stable, amortised O(log N)
-def ph_delete(heap, node):
+def ph_delete(heap, node, /):
     if node is heap:
         child = heap.ph_child
         node.ph_child = None
@@ -93,33 +93,33 @@ def ph_delete(heap, node):
 
 # TaskQueue class based on the above pairing-heap functions.
 class TaskQueue:
-    def __init__(self):
+    def __init__(self, /):
         self.heap = None
 
-    def peek(self):
+    def peek(self, /):
         return self.heap
 
-    def push(self, v, key=None):
+    def push(self, v, key=None, /):
         assert v.ph_child is None
         assert v.ph_next is None
         v.data = None
         v.ph_key = key if key is not None else core.ticks()
         self.heap = ph_meld(v, self.heap)
 
-    def pop(self):
+    def pop(self, /):
         v = self.heap
         assert v.ph_next is None
         self.heap = ph_pairing(v.ph_child)
         v.ph_child = None
         return v
 
-    def remove(self, v):
+    def remove(self, v, /):
         self.heap = ph_delete(self.heap, v)
 
 
 # Task class representing a coroutine, can be waited on and cancelled.
 class Task:
-    def __init__(self, coro, globals=None):
+    def __init__(self, coro, globals=None, /):
         self.coro = coro  # Coroutine of this Task
         self.data = None  # General data for queue it is waiting on
         self.state = True  # None, False, True, a callable, or a TaskQueue instance
@@ -129,7 +129,7 @@ class Task:
         self.ph_next = None  # Paring heap
         self.ph_rightmost_parent = None  # Paring heap
 
-    def __iter__(self):
+    def __iter__(self, /):
         if not self.state:
             # Task finished, signal that is has been await'ed on.
             self.state = False
@@ -141,7 +141,7 @@ class Task:
             raise RuntimeError("can't wait")
         return self
 
-    def __next__(self):
+    def __next__(self, /):
         if not self.state:
             # Task finished, raise return value to caller so it can continue.
             raise self.data
@@ -151,10 +151,10 @@ class Task:
             # Set calling task's data to this task that it waits on, to double-link it.
             core.cur_task.data = self
 
-    def done(self):
+    def done(self, /):
         return not self.state
 
-    def cancel(self):
+    def cancel(self, /):
         # Check if task is already finished.
         if not self.state:
             return False
