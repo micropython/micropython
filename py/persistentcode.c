@@ -144,9 +144,11 @@ void mp_native_relocate(void *ri_in, uint8_t *text, uintptr_t reloc_text) {
         } else if (op == 8) {
             // Destination is mp_fun_table itself
             dest = (uintptr_t)&mp_fun_table;
-        } else {
+        } else if (op - 9 < sizeof(mp_fun_table) / sizeof(uintptr_t)) {
             // Destination is an entry in mp_fun_table
             dest = ((uintptr_t *)&mp_fun_table)[op - 9];
+        } else {
+            break;
         }
         while (n--) {
             *addr_to_adjust++ += dest;
