@@ -165,6 +165,8 @@ static void videocore_videobuffer_compute_destination(
         dest->stride = row_bytes;
         dest->row_bytes = row_bytes;
         dest->height = self->source_height;
+        // draw_fill_area swaps the bytes for displays that need it.
+        dest->reverse_bytes_in_word = false;
         dest->on_stream_end = videocore_videobuffer_on_stream_end;
         if (self->bufinfo.len < self->source_frame_bytes) {
             mp_raise_ValueError(MP_ERROR_TEXT("Buffer too small"));
@@ -202,6 +204,7 @@ static void videocore_videobuffer_compute_destination(
     dest->stride = row_stride;
     dest->row_bytes = row_bytes;
     dest->height = self->source_height;
+    dest->reverse_bytes_in_word = FB_GETTER(get_reverse_pixels_in_word, false);
     dest->on_stream_end = videocore_videobuffer_on_stream_end;
 }
 
@@ -254,6 +257,7 @@ static void videocore_videobuffer_move_dest(
         .stride = row_stride,
         .row_bytes = row_bytes,
         .height = self->source_height,
+        .reverse_bytes_in_word = FB_GETTER(get_reverse_pixels_in_word, false),
         .on_stream_end = videocore_videobuffer_on_stream_end,
     };
     // A rejected destination leaves the stream where it was.
@@ -673,10 +677,14 @@ static bool videocore_videobuffer_draw_fill_area(mp_obj_t self_in, const _displa
     for (int16_t y = overlap.y1; y < overlap.y2; y++) {
         const size_t px = (size_t)(y - area->y1) * span_px + (overlap.x1 - area->x1);
         const int16_t fy = y - self->current_area.y1;
-        memcpy(
-            (uint16_t *)buffer + px,
-            frame + (size_t)fy * row_bytes + (size_t)(overlap.x1 - self->current_area.x1) * bytes_per_pixel,
-            overlap_width * bytes_per_pixel);
+        uint16_t *out = (uint16_t *)buffer + px;
+        const uint8_t *in = frame + (size_t)fy * row_bytes + (size_t)(overlap.x1 - self->current_area.x1) * bytes_per_pixel;
+        memcpy(out, in, overlap_width * bytes_per_pixel);
+        if (colorspace->reverse_bytes_in_word) {
+            for (size_t i = 0; i < overlap_width; i++) {
+                out[i] = __builtin_bswap16(out[i]);
+            }
+        }
     }
     return full_coverage;
 }

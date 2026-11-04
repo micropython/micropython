@@ -29,6 +29,8 @@ typedef struct {
     size_t row_bytes;
     // Source frame height, in rows.
     size_t height;
+    // 16-bit pixels go high byte first instead of low byte first.
+    bool reverse_bytes_in_word;
     // Never NULL. Sources that never end, such as a camera, don't call it.
     videocore_on_stream_end_fun on_stream_end;
 } videocore_destination_t;

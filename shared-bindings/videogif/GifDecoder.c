@@ -56,10 +56,7 @@
 //|         import videocore
 //|         import videogif
 //|
-//|         # Match your display's byte order. A BusDisplay usually swaps the
-//|         # bytes of each pixel (True). Framebuffer displays such as
-//|         # mipidsi.Display don't (False).
-//|         gif = videogif.GifDecoder("/animation.gif", reverse_bytes_in_word=False)
+//|         gif = videogif.GifDecoder("/animation.gif")
 //|         video = videocore.VideoBuffer(bytearray(gif.width * gif.height * 2))
 //|         video.play(gif)
 //|
@@ -73,27 +70,22 @@
 //|     def __init__(
 //|         self,
 //|         filename: str,
-//|         *,
-//|         reverse_bytes_in_word: bool = False,
 //|     ) -> None:
 //|         """Open a GIF file so it can be played.
 //|
 //|         :param str filename: The name of a GIF file, such as ``"/animation.gif"``.
 //|             The GifDecoder closes the file when it is deinitialized.
-//|         :param bool reverse_bytes_in_word: Swap the two bytes of each 16-bit
-//|             pixel. Use the same value as your display, such as
-//|             `busdisplay.BusDisplay`'s ``reverse_bytes_in_word``.
 //|
-//|         Frames are RGB565. Raises `ValueError` if the file is not a GIF or if
+//|         Frames are RGB565, in the byte order of the display or framebuffer
+//|         that shows them. Raises `ValueError` if the file is not a GIF or if
 //|         the GIF is wider than 320 pixels.
 //|         """
 //|         ...
 //|
 static mp_obj_t videogif_gifdecoder_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
-    enum { ARG_filename, ARG_reverse_bytes_in_word, NUM_ARGS };
+    enum { ARG_filename, NUM_ARGS };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_filename, MP_ARG_REQUIRED | MP_ARG_OBJ },
-        { MP_QSTR_reverse_bytes_in_word, MP_ARG_BOOL | MP_ARG_KW_ONLY, {.u_bool = false} },
     };
     MP_STATIC_ASSERT(MP_ARRAY_SIZE(allowed_args) == NUM_ARGS);
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -103,7 +95,7 @@ static mp_obj_t videogif_gifdecoder_make_new(const mp_obj_type_t *type, size_t n
     mp_obj_t file = mp_call_function_2(MP_OBJ_FROM_PTR(&mp_builtin_open_obj), filename, MP_ROM_QSTR(MP_QSTR_rb));
 
     videogif_gifdecoder_obj_t *self = mp_obj_malloc_with_finaliser(videogif_gifdecoder_obj_t, &videogif_gifdecoder_type);
-    common_hal_videogif_gifdecoder_construct(self, file, args[ARG_reverse_bytes_in_word].u_bool);
+    common_hal_videogif_gifdecoder_construct(self, file);
     return MP_OBJ_FROM_PTR(self);
 }
 

@@ -145,9 +145,7 @@ static void videogif_open_gif(GIFIMAGE *gif, mp_obj_t file) {
     }
 }
 
-void common_hal_videogif_gifdecoder_construct(videogif_gifdecoder_obj_t *self, mp_obj_t file,
-    bool reverse_bytes_in_word) {
-    const uint8_t palette_type = reverse_bytes_in_word ? GIF_PALETTE_RGB565_BE : GIF_PALETTE_RGB565_LE;
+void common_hal_videogif_gifdecoder_construct(videogif_gifdecoder_obj_t *self, mp_obj_t file) {
     // Outside the VM heap so it doesn't need a large gap there or grow it. Its
     // only heap pointers, the file and self, are held by self too. The
     // finaliser frees it.
@@ -155,7 +153,7 @@ void common_hal_videogif_gifdecoder_construct(videogif_gifdecoder_obj_t *self, m
     if (self->gif == NULL) {
         m_malloc_fail(sizeof(GIFIMAGE));
     }
-    GIF_begin(self->gif, palette_type);
+    GIF_begin(self->gif, GIF_PALETTE_RGB565_LE);
     self->gif->pfnDraw = videogif_draw_line;
     self->file = file;
     videogif_open_gif(self->gif, file);
@@ -283,6 +281,10 @@ bool common_hal_videogif_gifdecoder_set_destination(videogif_gifdecoder_obj_t *s
     if (moved && self->shown) {
         videogif_finish(self);
     } else if (moved) {
+        // Restarting reads the GIF header again, which converts the global
+        // color table to this byte order.
+        self->gif->ucPaletteType = destination->reverse_bytes_in_word ?
+            GIF_PALETTE_RGB565_BE : GIF_PALETTE_RGB565_LE;
         videogif_restart(self);
     }
     return true;
