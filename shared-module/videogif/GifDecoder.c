@@ -10,7 +10,7 @@
 
 #include "py/mpstate.h"
 #include "py/runtime.h"
-#include "shared-module/gifio/OnDiskGif.h"
+#include "py/stream.h"
 #include "supervisor/port_heap.h"
 #include "supervisor/shared/tick.h"
 
@@ -87,6 +87,64 @@ static void videogif_draw_line(GIFDRAW *draw) {
     }
 }
 
+static int32_t videogif_read_file(GIFFILE *gif_file, uint8_t *buffer, int32_t length) {
+    // A read that would reach the end stops one byte short, the same as gifio:
+    // seeking stops working once the last byte is read.
+    if (gif_file->iSize - gif_file->iPos < length) {
+        length = gif_file->iSize - gif_file->iPos - 1;
+    }
+    if (length <= 0) {
+        return 0;
+    }
+    int errcode = 0;
+    mp_uint_t bytes_read = mp_stream_rw(MP_OBJ_FROM_PTR(gif_file->fHandle), buffer, length,
+        &errcode, MP_STREAM_RW_ONCE);
+    if (errcode != 0) {
+        mp_raise_OSError(errcode);
+    }
+    gif_file->iPos += bytes_read;
+    return bytes_read;
+}
+
+static int32_t videogif_seek_file(GIFFILE *gif_file, int32_t position) {
+    int errcode = 0;
+    mp_off_t new_position = mp_stream_seek(MP_OBJ_FROM_PTR(gif_file->fHandle), position,
+        MP_SEEK_SET, &errcode);
+    if (new_position < 0) {
+        mp_raise_OSError(errcode);
+    }
+    gif_file->iPos = new_position;
+    return new_position;
+}
+
+// Read the GIF header from file, which is already open.
+static void videogif_open_gif(GIFIMAGE *gif, mp_obj_t file) {
+    gif->iError = GIF_SUCCESS;
+    gif->pfnRead = videogif_read_file;
+    gif->pfnSeek = videogif_seek_file;
+    gif->pfnClose = NULL;
+    gif->pfnOpen = NULL;
+    gif->GIFFile.fHandle = MP_OBJ_TO_PTR(file);
+
+    int errcode = 0;
+    mp_off_t size = mp_stream_seek(file, 0, MP_SEEK_END, &errcode);
+    if (size < 0) {
+        mp_raise_OSError(errcode);
+    }
+    mp_stream_seek(file, 0, MP_SEEK_SET, &errcode);
+    if (errcode != 0) {
+        mp_raise_OSError(errcode);
+    }
+    gif->GIFFile.iSize = (int32_t)size;
+
+    if (GIF_init(gif) != 1) {
+        if (gif->iError == GIF_TOO_WIDE) {
+            mp_raise_ValueError_varg(MP_ERROR_TEXT("%q must be <= %d"), MP_QSTR_width, MAX_WIDTH);
+        }
+        mp_arg_error_invalid(MP_QSTR_filename);
+    }
+}
+
 void common_hal_videogif_gifdecoder_construct(videogif_gifdecoder_obj_t *self, mp_obj_t file,
     bool reverse_bytes_in_word) {
     const uint8_t palette_type = reverse_bytes_in_word ? GIF_PALETTE_RGB565_BE : GIF_PALETTE_RGB565_LE;
@@ -100,7 +158,7 @@ void common_hal_videogif_gifdecoder_construct(videogif_gifdecoder_obj_t *self, m
     GIF_begin(self->gif, palette_type);
     self->gif->pfnDraw = videogif_draw_line;
     self->file = file;
-    gifio_open_gif(self->gif, file);
+    videogif_open_gif(self->gif, file);
 }
 
 bool common_hal_videogif_gifdecoder_deinited(videogif_gifdecoder_obj_t *self) {
@@ -121,6 +179,9 @@ void common_hal_videogif_gifdecoder_deinit(videogif_gifdecoder_obj_t *self) {
     if (self->gif != NULL) {
         port_free(self->gif);
         self->gif = NULL;
+    }
+    if (self->file != NULL) {
+        mp_stream_close(self->file);
     }
     self->file = NULL;
 }

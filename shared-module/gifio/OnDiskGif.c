@@ -130,42 +130,6 @@ static void GIFDraw(GIFDRAW *pDraw) {
     }
 }
 
-void gifio_open_gif(GIFIMAGE *gif, mp_obj_t file) {
-    gif->iError = GIF_SUCCESS;
-    gif->pfnRead = GIFReadFile;
-    gif->pfnSeek = GIFSeekFile;
-    gif->pfnClose = NULL;
-    gif->pfnOpen = NULL;
-    gif->GIFFile.fHandle = MP_OBJ_TO_PTR(file);
-
-    int errcode = 0;
-    mp_stream_seek(file, 0, MP_SEEK_SET, &errcode);
-    if (errcode != 0) {
-        mp_raise_OSError(errcode);
-    }
-    mp_off_t size = mp_stream_seek(file, 0, MP_SEEK_END, &errcode);
-    if (size < 0) {
-        mp_raise_OSError(errcode);
-    }
-    mp_stream_seek(file, 0, MP_SEEK_SET, &errcode);
-    if (errcode != 0) {
-        mp_raise_OSError(errcode);
-    }
-    gif->GIFFile.iSize = (int32_t)size;
-
-    int result = GIF_init(gif);
-    if (result != 1) {
-        switch (gif->iError) {
-            case GIF_TOO_WIDE:
-                mp_raise_ValueError_varg(MP_ERROR_TEXT("%q must be <= %d"), MP_QSTR_width, MAX_WIDTH);
-                break;
-            default:
-                mp_arg_error_invalid(MP_QSTR_file);
-                break;
-        }
-    }
-}
-
 void common_hal_gifio_ondiskgif_construct(gifio_ondiskgif_t *self, mp_obj_t file, bool use_palette) {
     self->file = file;
 
@@ -175,8 +139,40 @@ void common_hal_gifio_ondiskgif_construct(gifio_ondiskgif_t *self, mp_obj_t file
         GIF_begin(&self->gif, GIF_PALETTE_RGB565_BE);
     }
 
+    self->gif.iError = GIF_SUCCESS;
+    self->gif.pfnRead = GIFReadFile;
+    self->gif.pfnSeek = GIFSeekFile;
     self->gif.pfnDraw = GIFDraw;
-    gifio_open_gif(&self->gif, self->file);
+    self->gif.pfnClose = NULL;
+    self->gif.pfnOpen = NULL;
+    self->gif.GIFFile.fHandle = MP_OBJ_TO_PTR(self->file);
+
+    int errcode = 0;
+    mp_stream_seek(self->file, 0, MP_SEEK_SET, &errcode);
+    if (errcode != 0) {
+        mp_raise_OSError(errcode);
+    }
+    mp_off_t size = mp_stream_seek(self->file, 0, MP_SEEK_END, &errcode);
+    if (size < 0) {
+        mp_raise_OSError(errcode);
+    }
+    mp_stream_seek(self->file, 0, MP_SEEK_SET, &errcode);
+    if (errcode != 0) {
+        mp_raise_OSError(errcode);
+    }
+    self->gif.GIFFile.iSize = (int32_t)size;
+
+    int result = GIF_init(&self->gif);
+    if (result != 1) {
+        switch (self->gif.iError) {
+            case GIF_TOO_WIDE:
+                mp_raise_ValueError_varg(MP_ERROR_TEXT("%q must be <= %d"), MP_QSTR_width, MAX_WIDTH);
+                break;
+            default:
+                mp_arg_error_invalid(MP_QSTR_file);
+                break;
+        }
+    }
 
     int bpp = 16;
     if (use_palette == true) {

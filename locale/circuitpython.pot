@@ -2555,6 +2555,7 @@ msgstr ""
 
 #: py/argcheck.c shared-bindings/gifio/GifWriter.c
 #: shared-module/_airlift/__init__.c shared-module/gifio/OnDiskGif.c
+#: shared-module/videogif/GifDecoder.c
 msgid "%q must be <= %d"
 msgstr ""
 

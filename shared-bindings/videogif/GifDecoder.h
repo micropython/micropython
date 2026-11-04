@@ -10,11 +10,12 @@
 
 extern const mp_obj_type_t videogif_gifdecoder_type;
 
-// Open the GIF in file (a file opened in binary mode). Frames are RGB565.
+// Open the GIF in file, which the constructor opened from its filename. Frames
+// are RGB565.
 // Raises when the file isn't a GIF or is wider than AnimatedGIF supports.
 void common_hal_videogif_gifdecoder_construct(videogif_gifdecoder_obj_t *self, mp_obj_t file,
     bool reverse_bytes_in_word);
-// Stop playing, free the decoder and drop the file. Safe to call more than
+// Stop playing, free the decoder and close the file. Safe to call more than
 // once.
 void common_hal_videogif_gifdecoder_deinit(videogif_gifdecoder_obj_t *self);
 bool common_hal_videogif_gifdecoder_deinited(videogif_gifdecoder_obj_t *self);

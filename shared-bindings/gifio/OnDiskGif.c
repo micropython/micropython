@@ -15,17 +15,6 @@
 #include "shared-bindings/util.h"
 #include "shared-bindings/gifio/OnDiskGif.h"
 
-mp_obj_t gifio_open_file(mp_obj_t file) {
-    if (mp_obj_is_str(file)) {
-        file = mp_call_function_2(MP_OBJ_FROM_PTR(&mp_builtin_open_obj), file, MP_ROM_QSTR(MP_QSTR_rb));
-    }
-
-    if (!mp_obj_is_fileio(file)) {
-        mp_raise_TypeError(MP_ERROR_TEXT("file must be a file opened in byte mode"));
-    }
-    return file;
-}
-
 //| class OnDiskGif:
 //|     """Loads one frame of a GIF into memory at a time.
 //|
@@ -124,7 +113,14 @@ static mp_obj_t gifio_ondiskgif_make_new(const mp_obj_type_t *type, size_t n_arg
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    mp_obj_t filename = gifio_open_file(args[ARG_filename].u_obj);
+    mp_obj_t filename = args[ARG_filename].u_obj;
+    if (mp_obj_is_str(filename)) {
+        filename = mp_call_function_2(MP_OBJ_FROM_PTR(&mp_builtin_open_obj), filename, MP_ROM_QSTR(MP_QSTR_rb));
+    }
+
+    if (!mp_obj_is_fileio(filename)) {
+        mp_raise_TypeError(MP_ERROR_TEXT("file must be a file opened in byte mode"));
+    }
 
     gifio_ondiskgif_t *self = mp_obj_malloc_with_finaliser(gifio_ondiskgif_t, &gifio_ondiskgif_type);
     common_hal_gifio_ondiskgif_construct(self, filename, args[ARG_use_palette].u_bool);

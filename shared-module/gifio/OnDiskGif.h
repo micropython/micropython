@@ -26,8 +26,3 @@ typedef struct {
     int32_t min_delay;
     int32_t max_delay;
 } gifio_ondiskgif_t;
-
-// Point gif, set up by GIF_begin, at file (a stream object) and read the GIF
-// header through it. Raises when the file can't be read, isn't a GIF or is
-// wider than MAX_WIDTH.
-void gifio_open_gif(GIFIMAGE *gif, mp_obj_t file);
