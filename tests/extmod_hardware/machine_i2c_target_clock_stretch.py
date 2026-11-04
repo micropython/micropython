@@ -3,7 +3,7 @@
 # IMPORTANT: This test requires hardware connections: a SoftI2C instance must be
 # wired to a hardware I2C target.
 #
-# requires: target-wiring
+# requires: slice target-wiring
 
 import sys
 import time
@@ -70,7 +70,7 @@ class SoftI2C:
         # Wait for SCL to be released, with timeout.
         while not self.scl():
             print("stretch")
-            time.sleep(0.005)
+            time.sleep_ms(5)
 
     def start(self):
         self.sda(1)
