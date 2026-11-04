@@ -19,4 +19,9 @@ bool espressif_board_reset_pin_number(gpio_num_t pin_number) {
     return false;
 }
 
+void board_init(void) {
+    // GPIO2 (NEOPIXEL_POWER) powers the NeoPixel. Default to high (on).
+    espressif_board_reset_pin_number(2);
+}
+
 // Use the MP_WEAK supervisor/shared/board.c versions of routines not defined here.

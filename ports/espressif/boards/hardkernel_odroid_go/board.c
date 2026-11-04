@@ -44,6 +44,9 @@ uint8_t display_init_sequence[] = {
 };
 
 void board_init(void) {
+    // GPIO2 (LED) drives an LED. Default to pulled down (off).
+    espressif_board_reset_pin_number(2);
+
     fourwire_fourwire_obj_t *bus = &allocate_display_bus()->fourwire_bus;
     busio_spi_obj_t *spi = &bus->inline_bus;
     common_hal_busio_spi_construct(spi, &pin_GPIO18, &pin_GPIO23, NULL, false);

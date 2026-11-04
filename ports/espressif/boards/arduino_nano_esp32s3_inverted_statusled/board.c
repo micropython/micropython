@@ -26,4 +26,12 @@ bool espressif_board_reset_pin_number(gpio_num_t pin_number) {
     return false;
 }
 
+void board_init(void) {
+    // Set this pin to its default state at boot. reset_pin_number() restores
+    // that state when an object using the pin is deinitialized.
+    //
+    // GPIO13 (A6) defaults to an input with a pull-down.
+    espressif_board_reset_pin_number(13);
+}
+
 // Use the MP_WEAK supervisor/shared/board.c versions of routines not defined here.

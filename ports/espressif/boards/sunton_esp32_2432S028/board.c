@@ -95,6 +95,10 @@ static void display_init(void) {
 }
 
 void board_init(void) {
+    // GPIO26 (SPEAKER) drives the speaker. Default to low, to keep noise off
+    // it.
+    espressif_board_reset_pin_number(26);
+
     display_init();
 }
 

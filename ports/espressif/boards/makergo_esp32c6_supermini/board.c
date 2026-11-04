@@ -19,4 +19,10 @@ bool espressif_board_reset_pin_number(gpio_num_t pin_number) {
     return false;
 }
 
+void board_init(void) {
+    // GPIO15 (LED) drives an LED used as a power indicator. Default to high
+    // (on).
+    espressif_board_reset_pin_number(15);
+}
+
 // Use the MP_WEAK supervisor/shared/board.c versions of routines not defined here.

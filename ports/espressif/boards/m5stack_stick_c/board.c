@@ -199,6 +199,10 @@ static bool display_init(void) {
 }
 
 void board_init(void) {
+    // GPIO9 (IR_LED) drives the IR LED, which is on when the pin is low.
+    // Default to high (off), to save power.
+    espressif_board_reset_pin_number(9);
+
     busio_i2c_obj_t *internal_i2c = common_hal_board_create_i2c(0);
 
     if (!pmic_init(internal_i2c)) {

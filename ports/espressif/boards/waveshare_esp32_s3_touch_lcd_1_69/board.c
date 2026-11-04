@@ -84,6 +84,10 @@ static void display_init(void) {
 }
 
 void board_init(void) {
+    // SYS_EN_PIN is the power latch that keeps the board on when it runs from
+    // the battery. Default to high (on).
+    espressif_board_reset_pin_number(SYS_EN_PIN);
+
     display_init();
 }
 

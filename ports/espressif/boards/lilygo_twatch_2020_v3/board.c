@@ -121,6 +121,9 @@ static void backlight_init(void) {
 */
 
 void board_init(void) {
+    // MOTOR_PIN drives the vibration motor. Default to low (off).
+    espressif_board_reset_pin_number(MOTOR_PIN);
+
     // Display
     display_init();
     // backlight_init();
