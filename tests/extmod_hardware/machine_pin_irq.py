@@ -4,7 +4,7 @@
 #
 # get working on ARDUINO_NANO_33_BLE_SENSE
 #
-# requires: target-wiring
+# requires: slice target-wiring
 
 try:
     from machine import Pin
