@@ -12,6 +12,7 @@
 
 #include "py/obj.h"
 #include "py/proto.h"
+#include "shared-module/displayio/area.h"
 
 // Called from interrupt context or a background task, with the ctx given to
 // set_destination, when the source will write no more frames.
@@ -32,20 +33,16 @@ typedef struct {
     videocore_on_stream_end_fun on_stream_end;
 } videocore_destination_t;
 
-// A rect in source frame coordinates. x2 and y2 are exclusive.
-typedef struct {
-    int16_t x1, y1, x2, y2;
-} videocore_area_t;
-
 // Called from interrupt context or a background task when a frame has landed.
 // frame is the destination base it landed at: usually the latest accepted
 // destination, but a frame already being written when the destination changed
 // (or when the source was paused) still lands at the previous one. changed is
-// the part that differs from the previous frame at that destination. NULL means
+// the part that differs from the previous frame at that destination, in source
+// frame coordinates. NULL means
 // the whole frame changed and the next frame repaints all of it, so this one may
 // be dropped. A source whose next frame may be partial reports the whole frame
 // as a rect instead. The first frame at a new destination must cover it all.
-typedef void (*videocore_on_frame_fun)(void *ctx, const void *frame, const videocore_area_t *changed);
+typedef void (*videocore_on_frame_fun)(void *ctx, const void *frame, const displayio_area_t *changed);
 
 // Protocol implemented by video streamers such as mipicsi.Camera. A source
 // streams continuously while playing (unless paused); the target sets (and can

@@ -57,7 +57,7 @@ static void videocore_videobuffer_add_vacated_frame(videocore_videobuffer_obj_t 
 
 // Called from interrupt context or a background task when the source lands a
 // frame, so keep it tiny.
-static void videocore_videobuffer_on_frame(void *ctx, const void *frame, const videocore_area_t *changed) {
+static void videocore_videobuffer_on_frame(void *ctx, const void *frame, const displayio_area_t *changed) {
     videocore_videobuffer_obj_t *self = ctx;
     if (frame == self->stream_base) {
         const displayio_area_t whole_frame = {
@@ -69,14 +69,8 @@ static void videocore_videobuffer_on_frame(void *ctx, const void *frame, const v
             self->frame_replaceable = true;
         } else {
             // Keep a bad source rect from dirtying other layers.
-            const displayio_area_t reported = {
-                .x1 = changed->x1,
-                .y1 = changed->y1,
-                .x2 = changed->x2,
-                .y2 = changed->y2,
-            };
             displayio_area_t clipped;
-            if (!displayio_area_compute_overlap(&reported, &whole_frame, &clipped)) {
+            if (!displayio_area_compute_overlap(changed, &whole_frame, &clipped)) {
                 return;
             }
             displayio_area_union(&self->frame_changed_area, &clipped, &self->frame_changed_area);

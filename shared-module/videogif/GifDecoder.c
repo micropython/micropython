@@ -353,13 +353,7 @@ static void videogif_step(videogif_gifdecoder_obj_t *self) {
         delay_ms = 100;
     }
     self->next_frame_ms = MAX(self->next_frame_ms + delay_ms, supervisor_ticks_ms64() + VIDEOGIF_MIN_GAP_MS);
-    const videocore_area_t reported = {
-        .x1 = changed.x1,
-        .y1 = changed.y1,
-        .x2 = changed.x2,
-        .y2 = changed.y2,
-    };
-    self->on_frame(self->on_frame_context, self->destination.base, &reported);
+    self->on_frame(self->on_frame_context, self->destination.base, &changed);
     if (!more) {
         videogif_end_loop(self);
     }
