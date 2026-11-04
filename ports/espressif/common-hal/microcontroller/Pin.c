@@ -332,7 +332,6 @@ static bool _reset_forbidden(gpio_num_t pin_number) {
     return pin_mask_reset_forbidden & PIN_BIT(pin_number);
 }
 
-
 static void _reset_pin(gpio_num_t pin_number) {
     // Never ever reset pins used for flash, RAM, and basic communication.
     if (_reset_forbidden(pin_number)) {
@@ -388,7 +387,7 @@ void preserve_pin_number(gpio_num_t pin_number) {
 
 void common_hal_alarm_clear_pin_preservations(void) {
     // Release any actual holds, not just the tracking mask. Without this the
-    // pins would stay held after a pretend deep sleep ends.
+    // pins would stay held after a fake deep sleep ends.
     uint64_t mask = _preserved_pin_mask;
     for (int i = 0; i < 64; i++, mask >>= 1) {
         if ((mask & 1) && GPIO_IS_VALID_OUTPUT_GPIO(i)) {
@@ -430,17 +429,16 @@ void common_hal_reset_pin(const mcu_pin_obj_t *pin) {
     reset_pin_number(pin->number);
 }
 
-// Undo deep sleep holds and re-mark never-reset pins as in use. Called from
-// reset_port(); this restores the state-tracking parts of the old
-// reset_all_pins(), which no longer exists.
-void reset_pin_state(void) {
-    // Undo deep sleep holds in case we woke up from deep sleep.
-    // We still need to unhold individual pins, which is done by _reset_pin.
+void disable_deep_sleep_pin_hold(void) {
+    // preserve_pin_number() turns on the chip-wide deep sleep hold on chips that
+    // can't hold single pins in deep sleep. It stays on until turned off here.
     #if defined(SOC_GPIO_SUPPORT_HOLD_SINGLE_IO_IN_DSLP) && !SOC_GPIO_SUPPORT_HOLD_SINGLE_IO_IN_DSLP
     gpio_deep_sleep_hold_dis();
     #endif
+}
 
-    _in_use_pin_mask = pin_mask_reset_forbidden;
+void claim_reset_forbidden_pins(void) {
+    _in_use_pin_mask |= pin_mask_reset_forbidden;
 }
 
 void claim_pin_number(gpio_num_t pin_number) {

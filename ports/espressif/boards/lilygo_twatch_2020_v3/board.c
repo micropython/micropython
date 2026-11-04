@@ -39,7 +39,6 @@ static void display_init(void) {
         false           // Not half-duplex
         );
 
-
     bus->base.type = &fourwire_fourwire_type;
 
     common_hal_fourwire_fourwire_construct(

@@ -135,10 +135,6 @@ const uint8_t refresh_sequence[] = {
 
 
 void board_init(void) {
-    // Debug UART
-    #ifdef DEBUG
-    #endif /* DEBUG */
-
     fourwire_fourwire_obj_t *bus = &allocate_display_bus()->fourwire_bus;
     busio_spi_obj_t *spi = &bus->inline_bus;
     common_hal_busio_spi_construct(spi, &pin_GPIO18, &pin_GPIO23, NULL, false);

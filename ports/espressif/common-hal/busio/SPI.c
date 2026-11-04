@@ -151,7 +151,6 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     claim_pin(clock);
 }
 
-
 bool common_hal_busio_spi_deinited(busio_spi_obj_t *self) {
     return self->clock == NULL;
 }

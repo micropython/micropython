@@ -120,7 +120,6 @@ pwmout_result_t common_hal_pwmio_pwmout_construct(pwmio_pwmout_obj_t *self,
     return PWMOUT_OK;
 }
 
-
 bool common_hal_pwmio_pwmout_deinited(pwmio_pwmout_obj_t *self) {
     return self->deinited == true;
 }

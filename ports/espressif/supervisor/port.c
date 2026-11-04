@@ -215,6 +215,8 @@ safe_mode_t port_init(void) {
     #define pin_GPIOn(n) pin_GPIO##n
     #define pin_GPIOn_EXPAND(x) pin_GPIOn(x)
 
+    claim_reset_forbidden_pins();
+
     #if CIRCUITPY_HARDWAREKEY
     // Populate board.EFUSE_KEY* from the eFuse key blocks. eFuse reads and the
     // PSA key import need no filesystem or VM, so this is safe here.
@@ -378,9 +380,7 @@ void reset_port_early(void) {
 }
 
 void reset_port(void) {
-    // Undo deep sleep holds and re-mark never-reset pins as in use, as the
-    // old reset_all_pins() did.
-    reset_pin_state();
+    disable_deep_sleep_pin_hold();
 
     #if CIRCUITPY_SSL
     ssl_reset();

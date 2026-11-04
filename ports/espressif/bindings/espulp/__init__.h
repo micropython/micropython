@@ -8,5 +8,4 @@
 
 #include "shared-bindings/microcontroller/Pin.h"
 
-
 mp_int_t common_hal_espulp_get_rtc_gpio_number(const mcu_pin_obj_t *pin);

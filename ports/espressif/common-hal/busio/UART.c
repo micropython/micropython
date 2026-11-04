@@ -20,7 +20,6 @@
 #include "supervisor/port.h"
 #include "supervisor/shared/tick.h"
 
-
 static void uart_event_task(void *param) {
     busio_uart_obj_t *self = param;
     uart_event_t event;
@@ -50,8 +49,6 @@ static void uart_event_task(void *param) {
         }
     }
 }
-
-
 
 void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     const mcu_pin_obj_t *tx, const mcu_pin_obj_t *rx,
