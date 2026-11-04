@@ -187,6 +187,58 @@ void sleep_timer_cb(void *arg);
 #define PICO_V3_02_PSRAM_CS_IO     9
 #endif // CONFIG_SPIRAM
 
+#if defined(CONFIG_IDF_TARGET_ESP32)
+// Claim the ESP32's flash and PSRAM pins so user code can't use them. They depend
+// on the chip package and efuses, so they can't be in the static reset-forbidden mask.
+static void _claim_spi_ram_flash_pins(void) {
+    #if defined(CONFIG_SPIRAM)
+    uint32_t pkg_ver = esp_efuse_get_pkg_ver();
+    if (pkg_ver == EFUSE_RD_CHIP_VER_PKG_ESP32D2WDQ5) {
+        claim_pin_number(D2WD_PSRAM_CLK_IO);
+        claim_pin_number(D2WD_PSRAM_CS_IO);
+    } else if (pkg_ver == EFUSE_RD_CHIP_VER_PKG_ESP32PICOD4 && efuse_hal_get_major_chip_version() >= 3) {
+        // This chip is ESP32-PICO-V3 and doesn't have PSRAM.
+    } else if ((pkg_ver == EFUSE_RD_CHIP_VER_PKG_ESP32PICOD2) || (pkg_ver == EFUSE_RD_CHIP_VER_PKG_ESP32PICOD4)) {
+        claim_pin_number(PICO_PSRAM_CLK_IO);
+        claim_pin_number(PICO_PSRAM_CS_IO);
+    } else if (pkg_ver == EFUSE_RD_CHIP_VER_PKG_ESP32PICOV302) {
+        claim_pin_number(PICO_V3_02_PSRAM_CLK_IO);
+        claim_pin_number(PICO_V3_02_PSRAM_CS_IO);
+    } else if ((pkg_ver == EFUSE_RD_CHIP_VER_PKG_ESP32D0WDQ6) || (pkg_ver == EFUSE_RD_CHIP_VER_PKG_ESP32D0WDQ5)) {
+        claim_pin_number(D0WD_PSRAM_CLK_IO);
+        claim_pin_number(D0WD_PSRAM_CS_IO);
+    } else if (pkg_ver == EFUSE_RD_CHIP_VER_PKG_ESP32D0WDR2V3) {
+        claim_pin_number(D0WDR2_V3_PSRAM_CLK_IO);
+        claim_pin_number(D0WDR2_V3_PSRAM_CS_IO);
+    }
+    #endif // CONFIG_SPIRAM
+
+    const uint32_t spiconfig = esp_rom_efuse_get_flash_gpio_info();
+    if (spiconfig == ESP_ROM_EFUSE_FLASH_DEFAULT_SPI) {
+        claim_pin_number(MSPI_IOMUX_PIN_NUM_CLK);
+        claim_pin_number(MSPI_IOMUX_PIN_NUM_CS0);
+        claim_pin_number(PSRAM_SPIQ_SD0_IO);
+        claim_pin_number(PSRAM_SPID_SD1_IO);
+        claim_pin_number(PSRAM_SPIWP_SD3_IO);
+        claim_pin_number(PSRAM_SPIHD_SD2_IO);
+    } else if (spiconfig == ESP_ROM_EFUSE_FLASH_DEFAULT_HSPI) {
+        claim_pin_number(FLASH_HSPI_CLK_IO);
+        claim_pin_number(FLASH_HSPI_CS_IO);
+        claim_pin_number(PSRAM_HSPI_SPIQ_SD0_IO);
+        claim_pin_number(PSRAM_HSPI_SPID_SD1_IO);
+        claim_pin_number(PSRAM_HSPI_SPIWP_SD3_IO);
+        claim_pin_number(PSRAM_HSPI_SPIHD_SD2_IO);
+    } else {
+        claim_pin_number(EFUSE_SPICONFIG_RET_SPICLK(spiconfig));
+        claim_pin_number(EFUSE_SPICONFIG_RET_SPICS0(spiconfig));
+        claim_pin_number(EFUSE_SPICONFIG_RET_SPIQ(spiconfig));
+        claim_pin_number(EFUSE_SPICONFIG_RET_SPID(spiconfig));
+        claim_pin_number(EFUSE_SPICONFIG_RET_SPIHD(spiconfig));
+        claim_pin_number(bootloader_flash_get_wp_pin());
+    }
+}
+#endif // CONFIG_IDF_TARGET_ESP32
+
 safe_mode_t port_init(void) {
     esp_timer_create_args_t args;
     args.callback = &tick_timer_cb;
@@ -216,6 +268,9 @@ safe_mode_t port_init(void) {
     #define pin_GPIOn_EXPAND(x) pin_GPIOn(x)
 
     claim_reset_forbidden_pins();
+    #if defined(CONFIG_IDF_TARGET_ESP32)
+    _claim_spi_ram_flash_pins();
+    #endif
 
     #if CIRCUITPY_HARDWAREKEY
     // Populate board.EFUSE_KEY* from the eFuse key blocks. eFuse reads and the
