@@ -94,7 +94,7 @@ static void videocore_videobuffer_on_frame(void *ctx, const void *frame, const v
 // Called from interrupt context or a background task when the source reached
 // the end of its stream. Only flag it: end_stream stops the source later, the
 // way audio outputs stop a finished sample.
-static void videocore_videobuffer_on_eos(void *ctx) {
+static void videocore_videobuffer_on_stream_end(void *ctx) {
     videocore_videobuffer_obj_t *self = ctx;
     self->source_ended = true;
 }
@@ -171,7 +171,7 @@ static void videocore_videobuffer_compute_destination(
         dest->stride = row_bytes;
         dest->row_bytes = row_bytes;
         dest->height = self->source_height;
-        dest->on_eos = videocore_videobuffer_on_eos;
+        dest->on_stream_end = videocore_videobuffer_on_stream_end;
         if (self->bufinfo.len < self->source_frame_bytes) {
             mp_raise_ValueError(MP_ERROR_TEXT("Buffer too small"));
         }
@@ -208,7 +208,7 @@ static void videocore_videobuffer_compute_destination(
     dest->stride = row_stride;
     dest->row_bytes = row_bytes;
     dest->height = self->source_height;
-    dest->on_eos = videocore_videobuffer_on_eos;
+    dest->on_stream_end = videocore_videobuffer_on_stream_end;
 }
 
 // Move the framebuffer destination for a new absolute position, capping the
@@ -260,7 +260,7 @@ static void videocore_videobuffer_move_dest(
         .stride = row_stride,
         .row_bytes = row_bytes,
         .height = self->source_height,
-        .on_eos = videocore_videobuffer_on_eos,
+        .on_stream_end = videocore_videobuffer_on_stream_end,
     };
     // A rejected destination leaves the stream where it was.
     if (videosource_set_destination(self->source, &dest, videocore_videobuffer_on_frame, self)) {

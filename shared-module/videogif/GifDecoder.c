@@ -167,9 +167,9 @@ bool common_hal_videogif_gifdecoder_deinited(videogif_gifdecoder_obj_t *self) {
 
 // Tell the destination no more frames are coming, once per play.
 static void videogif_end_stream(videogif_gifdecoder_obj_t *self) {
-    if (self->destination.on_eos != NULL) {
-        self->destination.on_eos(self->on_frame_context);
-        self->destination.on_eos = NULL;
+    if (self->destination.on_stream_end != NULL) {
+        self->destination.on_stream_end(self->on_frame_context);
+        self->destination.on_stream_end = NULL;
     }
 }
 
@@ -390,7 +390,7 @@ void videogif_reset(void) {
     while (self != NULL) {
         videogif_gifdecoder_obj_t *next = self->next;
         self->playing = false;
-        // Forget on_eos too: at gc_deinit the VideoBuffer may be swept first.
+        // Forget on_stream_end too: at gc_deinit the VideoBuffer may be swept first.
         const videocore_destination_t none = {};
         self->destination = none;
         self->next = NULL;
