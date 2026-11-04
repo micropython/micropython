@@ -97,6 +97,8 @@ typedef struct _reloc_info_t {
     mp_module_context_t *context;
     uint8_t *rodata;
     uint8_t *bss;
+    size_t text_len;
+    size_t rodata_len;
 } reloc_info_t;
 
 void mp_native_relocate(void *ri_in, uint8_t *text, uintptr_t reloc_text) {
@@ -110,9 +112,15 @@ void mp_native_relocate(void *ri_in, uint8_t *text, uintptr_t reloc_text) {
             size_t addr = read_uint(ri->reader);
             if ((addr & 1) == 0) {
                 // Point to somewhere in text
+                if ((addr >> 1) >= ri->text_len / sizeof(uintptr_t)) {
+                    break;
+                }
                 addr_to_adjust = &((uintptr_t *)text)[addr >> 1];
             } else {
                 // Point to somewhere in rodata
+                if ((addr >> 1) >= ri->rodata_len / sizeof(uintptr_t)) {
+                    break;
+                }
                 addr_to_adjust = &((uintptr_t *)ri->rodata)[addr >> 1];
             }
         }
@@ -418,7 +426,7 @@ static mp_raw_code_t *load_raw_code(mp_reader_t *reader, mp_module_context_t *co
         #endif
 
         // Relocate and commit code to executable address space
-        reloc_info_t ri = {reader, context, rodata, bss};
+        reloc_info_t ri = {reader, context, rodata, bss, fun_data_len, rodata_size};
         #if MICROPY_PERSISTENT_CODE_TRACK_FUN_DATA
         if (native_scope_flags & MP_SCOPE_FLAG_VIPERRELOC) {
             // Track the function data memory so it's not reclaimed by the GC.
