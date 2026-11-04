@@ -14,3 +14,7 @@ can_args = (1,)
 can_kwargs = {}
 
 pwm_loopback_pins = [("X1", "X2")]
+
+i2c_loopback_controller_kwargs = {"scl": "X1", "sda": "X2"}
+i2c_loopback_target_args = ("X",)
+i2c_loopback_target_kwargs = {}

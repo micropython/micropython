@@ -19,3 +19,7 @@ pwm_loopback_pins = [(4, 5)]
 encoder_loopback_id = 0
 encoder_loopback_out_pins = (4, 12)
 encoder_loopback_in_pins = (5, 13)
+
+i2c_loopback_controller_kwargs = {"scl": 5, "sda": 6}
+i2c_loopback_target_args = (0,)  # on pins 9/8 for C3 and S3, 18/19 for others
+i2c_loopback_target_kwargs = {"scl": 9, "sda": 8}
