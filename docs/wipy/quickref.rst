@@ -3,6 +3,11 @@
 Quick reference for the WiPy
 ============================
 
+.. warning::
+
+   The CC3200/WiPy port is :ref:`not actively maintained and contains security
+   vulnerabilities <cc3200-not-actively-maintained>`.
+
 .. image:: https://raw.githubusercontent.com/wipy/wipy/master/docs/PinOUT.png
     :alt: WiPy pinout and alternate functions table
     :width: 800px
