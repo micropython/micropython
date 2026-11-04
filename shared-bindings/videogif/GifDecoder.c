@@ -33,14 +33,19 @@
 //|     a frame or the file can't be read.
 //|
 //|     Frames are decoded in the background, in short breaks between your
-//|     Python code. If a frame takes longer to decode than its frame time,
+//|     Python code. When those breaks come late, up to 3 late frames are
+//|     decoded in one break to catch up. If it is still behind after that,
 //|     the animation slows down so your Python code still gets time to run.
 //|
 //|     The GIF starts again from its first frame, filled with its background
-//|     color, at each loop. When a VideoBuffer that draws straight into a
-//|     framebuffer is moved, or hidden and shown again, the GIF stops and
-//|     `videocore.VideoBuffer.playing` becomes False. Call
-//|     `videocore.VideoBuffer.play()` to start it again.
+//|     color, at each loop. `videocore.VideoBuffer.play()` always starts it
+//|     from its first frame. There is no pause and resume.
+//|
+//|     When a VideoBuffer that draws straight into a framebuffer is hidden,
+//|     the GIF waits and its time does not advance. When the VideoBuffer is
+//|     shown again or moved, the GIF stops and `videocore.VideoBuffer.playing`
+//|     becomes False, since the screen under it may have been drawn over.
+//|     Call `videocore.VideoBuffer.play()` to start it again.
 //|
 //|     When a frame asks for its area to be cleared after it is shown (GIF
 //|     disposal method 2), that area is filled with the background color.

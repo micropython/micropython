@@ -20,6 +20,10 @@
 // decoding falls behind the GIF's delays.
 #define VIDEOGIF_MIN_GAP_MS 5
 
+// Late frames decoded in one background call to catch up. Each one holds up
+// USB and audio for one decode.
+#define VIDEOGIF_MAX_LATE_FRAMES 3
+
 static inline void videogif_put_pixel(uint8_t *row, int x, uint16_t value) {
     memcpy(row + x * 2, &value, 2);
 }
@@ -359,12 +363,13 @@ static void videogif_step(videogif_gifdecoder_obj_t *self) {
     }
 
     // Like web browsers, show frames with a delay of 0 or 1 centiseconds for
-    // 100 ms. AnimatedGIF already reports 0 as 100 ms. Keep to the GIF's
-    // timing, but when decoding falls behind, leave Python a gap first.
+    // 100 ms. AnimatedGIF already reports 0 as 100 ms.
     if (delay_ms <= 10) {
         delay_ms = 100;
     }
-    self->next_frame_ms = MAX(self->next_frame_ms + delay_ms, supervisor_ticks_ms64() + VIDEOGIF_MIN_GAP_MS);
+    self->next_frame_ms += delay_ms;
+    // Only marks the area: frames decoded in one background call are redrawn
+    // once, together.
     self->on_frame(self->on_frame_context, self->destination.base, &changed);
     self->shown = true;
     if (!more) {
@@ -383,7 +388,14 @@ void videogif_background(void) {
         }
         nlr_buf_t nlr;
         if (nlr_push(&nlr) == 0) {
-            videogif_step(self);
+            // Keep to the GIF's timing: decode the frames that are due, up to
+            // a limit. Still behind after that, fall behind and leave Python a
+            // gap first.
+            for (int i = 0; i < VIDEOGIF_MAX_LATE_FRAMES && self->ticking &&
+                 now >= self->next_frame_ms; i++) {
+                videogif_step(self);
+            }
+            self->next_frame_ms = MAX(self->next_frame_ms, supervisor_ticks_ms64() + VIDEOGIF_MIN_GAP_MS);
             nlr_pop();
         } else {
             // The file can't be read: stop where it is.
