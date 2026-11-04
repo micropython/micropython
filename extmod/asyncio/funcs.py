@@ -4,7 +4,7 @@
 from . import core
 
 
-async def _run(waiter, aw):
+async def _run(waiter, aw, /):
     try:
         result = await aw
         status = True
@@ -21,7 +21,7 @@ async def _run(waiter, aw):
             waiter.data = core.CancelledError(status, result)
 
 
-async def wait_for(aw, timeout, sleep=core.sleep):
+async def wait_for(aw, timeout, /, sleep=core.sleep):
     aw = core._promote_to_task(aw)
     if timeout is None:
         return await aw
@@ -51,19 +51,19 @@ async def wait_for(aw, timeout, sleep=core.sleep):
     raise core.TimeoutError
 
 
-def wait_for_ms(aw, timeout):
+def wait_for_ms(aw, timeout, /):
     return wait_for(aw, timeout, core.sleep_ms)
 
 
 class _Remove:
     @staticmethod
-    def remove(t):
+    def remove(t, /):
         pass
 
 
 # async
 def gather(*aws, return_exceptions=False):
-    def done(t, er):
+    def done(t, er, /):
         # Sub-task "t" has finished, with exception "er".
         nonlocal state
         if gather_task.data is not _Remove:

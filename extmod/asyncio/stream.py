@@ -5,23 +5,23 @@ from . import core
 
 
 class Stream:
-    def __init__(self, s, e={}):
+    def __init__(self, s, e={}, /):
         self.s = s
         self.e = e
         self.out_buf = b""
 
-    def get_extra_info(self, v):
+    def get_extra_info(self, v, /):
         return self.e[v]
 
-    def close(self):
+    def close(self, /):
         pass
 
-    async def wait_closed(self):
+    async def wait_closed(self, /):
         # TODO yield?
         self.s.close()
 
     # async
-    def read(self, n=-1):
+    def read(self, n=-1, /):
         r = b""
         while True:
             yield core._io_queue.queue_read(self.s)
@@ -34,12 +34,12 @@ class Stream:
                 r += r2
 
     # async
-    def readinto(self, buf):
+    def readinto(self, buf, /):
         yield core._io_queue.queue_read(self.s)
         return self.s.readinto(buf)
 
     # async
-    def readexactly(self, n):
+    def readexactly(self, n, /):
         r = b""
         while n:
             yield core._io_queue.queue_read(self.s)
@@ -52,7 +52,7 @@ class Stream:
         return r
 
     # async
-    def readline(self):
+    def readline(self, /):
         l = b""
         while True:
             yield core._io_queue.queue_read(self.s)
@@ -63,7 +63,7 @@ class Stream:
             if not l2 or l[-1] == 10:  # \n (check l in case l2 is str)
                 return l
 
-    def write(self, buf):
+    def write(self, buf, /):
         if not self.out_buf:
             # Try to write immediately to the underlying stream.
             ret = self.s.write(buf)
@@ -74,7 +74,7 @@ class Stream:
         self.out_buf += buf
 
     # async
-    def drain(self):
+    def drain(self, /):
         if not self.out_buf:
             # Drain must always yield, so a tight loop of write+drain can't block the scheduler.
             return (yield from core.sleep_ms(0))
@@ -125,23 +125,23 @@ def open_connection(host, port, ssl=None, server_hostname=None):
 
 # Class representing a TCP stream server, can be closed and used in "async with"
 class Server:
-    async def __aenter__(self):
+    async def __aenter__(self, /):
         return self
 
-    async def __aexit__(self, exc_type, exc, tb):
+    async def __aexit__(self, exc_type, exc, tb, /):
         self.close()
         await self.wait_closed()
 
-    def close(self):
+    def close(self, /):
         # Note: the _serve task must have already started by now due to the sleep
         # in start_server, so `state` won't be clobbered at the start of _serve.
         self.state = True
         self.task.cancel()
 
-    async def wait_closed(self):
+    async def wait_closed(self, /):
         await self.task
 
-    async def _serve(self, s, cb, ssl):
+    async def _serve(self, s, cb, ssl, /):
         self.state = False
         # Accept incoming connections
         while True:
@@ -176,7 +176,7 @@ class Server:
 
 # Helper function to start a TCP stream server, running as a new task
 # TODO could use an accept-callback on socket read activity instead of creating a task
-async def start_server(cb, host, port, backlog=5, ssl=None):
+async def start_server(cb, /, host, port, backlog=5, ssl=None):
     import socket
 
     # Create and bind server socket.
@@ -207,7 +207,7 @@ async def start_server(cb, host, port, backlog=5, ssl=None):
 # Legacy uasyncio compatibility
 
 
-async def stream_awrite(self, buf, off=0, sz=-1):
+async def stream_awrite(self, buf, /, off=0, sz=-1):
     if off != 0 or sz != -1:
         buf = memoryview(buf)
         if sz == -1:
