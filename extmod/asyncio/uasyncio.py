@@ -2,7 +2,7 @@
 # `asyncio` without duplicating its globals dict.
 
 
-def __getattr__(attr):
+def __getattr__(attr, /):
     import asyncio
 
     return getattr(asyncio, attr)
