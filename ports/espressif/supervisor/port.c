@@ -435,8 +435,6 @@ void reset_port_early(void) {
 }
 
 void reset_port(void) {
-    disable_deep_sleep_pin_hold();
-
     #if CIRCUITPY_SSL
     ssl_reset();
     #endif

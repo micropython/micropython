@@ -19,6 +19,10 @@ static bool _pin_is_input(uint8_t pin_number) {
 }
 
 void digitalio_digitalinout_preserve_for_deep_sleep(size_t n_dios, digitalio_digitalinout_obj_t *preserve_dios[]) {
+    // Start from no chip-wide hold, so a hold from an earlier (fake) deep sleep
+    // isn't left on. preserve_pin_number() turns it back on if any pin is preserved.
+    disable_deep_sleep_pin_hold();
+
     // Mark the pin states of the given DigitalInOuts for preservation during deep sleep
     for (size_t i = 0; i < n_dios; i++) {
         if (!common_hal_digitalio_digitalinout_deinited(preserve_dios[i])) {
