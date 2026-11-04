@@ -9,6 +9,7 @@
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/microcontroller/Pin.h"
 
+#include "bindings/espidf/__init__.h"
 #include "esp_sleep.h"
 #include "peripherals/touch.h"
 #include "supervisor/port.h"
@@ -92,7 +93,7 @@ void alarm_touch_touchalarm_set_alarm(const bool deep_sleep, const size_t n_alar
     // Initialize all touch channels used for alarms
     for (uint8_t i = TOUCH_MIN_CHAN_ID; i <= TOUCH_MAX_CHAN_ID; i++) {
         if ((touch_channel_mask & (1 << i)) != 0) {
-            peripherals_touch_init(i);
+            CHECK_ESP_RESULT(peripherals_touch_init(i));
         }
     }
 
