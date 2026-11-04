@@ -320,14 +320,25 @@ bool common_hal_busio_spi_transfer(busio_spi_obj_t *self,
                 cur_trans++;
             }
 
-            for (int i = 0; i < cur_trans; i++) {
-                spi_device_queue_trans(spi_handle[self->host_id], &transactions[i], portMAX_DELAY);
+            // Queueing fails if the driver can't allocate a DMA-capable bounce buffer. Wait only for
+            // the transactions that were queued; waiting for any others would block forever.
+            esp_err_t result = ESP_OK;
+            int queued = 0;
+            while (queued < cur_trans) {
+                result = spi_device_queue_trans(spi_handle[self->host_id], &transactions[queued], portMAX_DELAY);
+                if (result != ESP_OK) {
+                    break;
+                }
+                queued++;
             }
 
             spi_transaction_t *rtrans;
-            for (int x = 0; x < cur_trans; x++) {
+            for (int x = 0; x < queued; x++) {
                 RUN_BACKGROUND_TASKS;
                 spi_device_get_trans_result(spi_handle[self->host_id], &rtrans, portMAX_DELAY);
+            }
+            if (result != ESP_OK) {
+                return false;
             }
         }
     }
@@ -348,13 +359,29 @@ void common_hal_busio_spi_write_start(busio_spi_obj_t *self, const uint8_t *data
         CIRCUITPY_ASYNC_FLAG_SET(done);
         return;
     }
-    for (size_t i = 0; i < chunks; i++) {
-        size_t offset = i * SPI_MAX_DMA_LEN;
-        spi_transaction_t *trans = &self->async_trans[i];
+    size_t queued = 0;
+    while (queued < chunks) {
+        size_t offset = queued * SPI_MAX_DMA_LEN;
+        spi_transaction_t *trans = &self->async_trans[queued];
         memset(trans, 0, sizeof(*trans));
         trans->length = MIN(len - offset, SPI_MAX_DMA_LEN) * 8;
         trans->tx_buffer = data + offset;
-        spi_device_queue_trans(spi_handle[self->host_id], trans, portMAX_DELAY);
+        if (spi_device_queue_trans(spi_handle[self->host_id], trans, portMAX_DELAY) != ESP_OK) {
+            break;
+        }
+        queued++;
+    }
+    if (queued < chunks) {
+        // Queueing fails if the driver can't allocate a DMA-capable bounce buffer. Finish the
+        // chunks that were queued, then send the rest the normal way.
+        spi_transaction_t *trans;
+        for (size_t i = 0; i < queued; i++) {
+            spi_device_get_trans_result(spi_handle[self->host_id], &trans, portMAX_DELAY);
+        }
+        size_t offset = queued * SPI_MAX_DMA_LEN;
+        common_hal_busio_spi_write(self, data + offset, len - offset);
+        CIRCUITPY_ASYNC_FLAG_SET(done);
+        return;
     }
     self->async_count = chunks;
 }
