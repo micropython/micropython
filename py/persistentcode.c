@@ -332,6 +332,9 @@ static mp_raw_code_t *load_raw_code(mp_reader_t *reader, mp_module_context_t *co
         if (kind == MP_CODE_NATIVE_PY) {
             // Read prelude offset within fun_data, and extract scope flags.
             prelude_offset = read_uint(reader);
+            if (prelude_offset >= fun_data_len) {
+                mp_raise_ValueError(MP_ERROR_TEXT(".mpy prelude offset out of range"));
+            }
             const byte *ip = fun_data + prelude_offset;
             MP_BC_PRELUDE_SIG_DECODE(ip);
             native_scope_flags = scope_flags;
