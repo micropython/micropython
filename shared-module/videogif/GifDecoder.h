@@ -43,8 +43,11 @@ typedef struct videogif_gifdecoder_obj {
     bool finished;
     // The supervisor tick is enabled for this decoder.
     bool ticking;
-    // Start again from the first frame: on play, at a new destination, on
-    // resume and after the last frame.
+    // A frame has been shown since play. After that, a new destination or a
+    // resume ends the stream instead of starting the GIF again.
+    bool shown;
+    // Start again from the first frame: on play, at the first destination or
+    // resume of a play, and after the last frame.
     bool restart;
     // Before the first line of the next frame, fill the canvas with the
     // background color, or restore the last frame's rect to it (disposal

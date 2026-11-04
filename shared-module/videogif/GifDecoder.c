@@ -230,6 +230,7 @@ void common_hal_videogif_gifdecoder_play(videogif_gifdecoder_obj_t *self, bool p
     }
     self->playing = true;
     self->paused = paused;
+    self->shown = false;
     self->loops_done = 0;
     const videocore_destination_t none = {};
     self->destination = none;
@@ -260,21 +261,30 @@ void common_hal_videogif_gifdecoder_pause(videogif_gifdecoder_obj_t *self) {
 }
 
 void common_hal_videogif_gifdecoder_resume(videogif_gifdecoder_obj_t *self) {
-    // The destination may have been drawn over while paused.
     self->paused = false;
-    videogif_restart(self);
+    if (self->shown) {
+        // The destination may have been drawn over while paused, and frames
+        // only draw what changed, so end rather than draw over a stale image.
+        videogif_finish(self);
+    } else {
+        videogif_restart(self);
+    }
 }
 
 bool common_hal_videogif_gifdecoder_set_destination(videogif_gifdecoder_obj_t *self,
     const videocore_destination_t *destination, videocore_on_frame_fun on_frame, void *context) {
     // A new destination doesn't hold the previous frame to draw the next one
-    // over, so start again from the first frame.
-    if (destination->base != self->destination.base || destination->stride != self->destination.stride) {
-        videogif_restart(self);
-    }
+    // over. The first one of a play starts the GIF; a later one ends it.
+    const bool moved = destination->base != self->destination.base ||
+        destination->stride != self->destination.stride;
     self->destination = *destination;
     self->on_frame = on_frame;
     self->on_frame_context = context;
+    if (moved && self->shown) {
+        videogif_finish(self);
+    } else if (moved) {
+        videogif_restart(self);
+    }
     return true;
 }
 
@@ -354,6 +364,7 @@ static void videogif_step(videogif_gifdecoder_obj_t *self) {
     }
     self->next_frame_ms = MAX(self->next_frame_ms + delay_ms, supervisor_ticks_ms64() + VIDEOGIF_MIN_GAP_MS);
     self->on_frame(self->on_frame_context, self->destination.base, &changed);
+    self->shown = true;
     if (!more) {
         videogif_end_loop(self);
     }

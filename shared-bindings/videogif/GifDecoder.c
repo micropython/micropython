@@ -37,8 +37,10 @@
 //|     the animation slows down so your Python code still gets time to run.
 //|
 //|     The GIF starts again from its first frame, filled with its background
-//|     color, at each loop and whenever the VideoBuffer showing it directly
-//|     on a display is moved or shown again.
+//|     color, at each loop. When a VideoBuffer that draws straight into a
+//|     framebuffer is moved, or hidden and shown again, the GIF stops and
+//|     `videocore.VideoBuffer.playing` becomes False. Call
+//|     `videocore.VideoBuffer.play()` to start it again.
 //|
 //|     When a frame asks for its area to be cleared after it is shown (GIF
 //|     disposal method 2), that area is filled with the background color.
