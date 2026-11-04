@@ -61,8 +61,8 @@ static mp_obj_t espnow_make_new(const mp_obj_type_t *type, size_t n_args, size_t
         mp_raise_RuntimeError(MP_ERROR_TEXT("Already running"));
     }
 
-    // Allocate a new object
-    self = mp_obj_malloc(espnow_obj_t, &espnow_type);
+    // Allocate a new object. The finaliser deinits it if user code doesn't.
+    self = mp_obj_malloc_with_finaliser(espnow_obj_t, &espnow_type);
 
     // Construct the object
     common_hal_espnow_construct(self, args[ARG_buffer_size].u_int, args[ARG_phy_rate].u_int);
@@ -80,6 +80,11 @@ static mp_obj_t espnow_deinit(mp_obj_t self_in) {
     espnow_obj_t *self = MP_OBJ_TO_PTR(self_in);
     if (!common_hal_espnow_deinited(self)) {
         common_hal_espnow_deinit(self);
+    }
+    // Root pointers are not cleared between VM runs, so don't leave one pointing
+    // into the old heap. Leave it alone if it already points to a newer ESPNow.
+    if (MP_STATE_PORT(espnow_singleton) == self) {
+        MP_STATE_PORT(espnow_singleton) = NULL;
     }
     return mp_const_none;
 }
