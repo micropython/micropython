@@ -50,12 +50,6 @@ uint8_t display_init_sequence[] = {
 
 
 void board_init(void) {
-    // Set this pin to its default state at boot. reset_pin_number() restores
-    // that state when an object using the pin is deinitialized.
-    //
-    // GPIO21 (SW1) defaults to high.
-    espressif_board_reset_pin_number(21);
-
     busio_spi_obj_t *spi = common_hal_board_create_spi(0);
     fourwire_fourwire_obj_t *bus = &allocate_display_bus()->fourwire_bus;
     bus->base.type = &fourwire_fourwire_type;
@@ -103,16 +97,6 @@ void board_init(void) {
         false,          // SH1107_addressing
         50000           // backlight pwm frequency
         );
-}
-
-bool espressif_board_reset_pin_number(gpio_num_t pin_number) {
-    // Override the I2C/TFT power pin reset to prevent resetting the display.
-    if (pin_number == 21) {
-        // Turn on TFT and I2C
-        config_pin_as_output_with_level(pin_number, true);
-        return true;
-    }
-    return false;
 }
 
 // Use the MP_WEAK supervisor/shared/board.c versions of routines not defined here.
