@@ -8,7 +8,13 @@
 
 #include "driver/touch_sens.h"
 
-extern void peripherals_touch_init(const int channel_id);
+// Add a touch channel, creating the touch controller if needed, and (re)start
+// continuous scanning. Does nothing if the channel is already initialized.
+//
+// Returns ESP_OK on success, or the first ESP-IDF error. On failure the channel
+// is not initialized. Scanning of any existing channels is restarted if possible.
+// Does not raise.
+extern esp_err_t peripherals_touch_init(const int channel_id);
 extern uint16_t peripherals_touch_read(int channel_id);
 extern void peripherals_touch_reset(void);
 extern void peripherals_touch_never_reset(const bool enable);

@@ -50,7 +50,7 @@ static mp_obj_t cryptography_hazmat_primitives_asymmetric_rsa_load_digital_signa
 
     cryptography_hazmat_primitives_asymmetric_rsa_digitalsignaturekey_obj_t *self =
         mp_obj_malloc(cryptography_hazmat_primitives_asymmetric_rsa_digitalsignaturekey_obj_t,
-        &cryptography_hazmat_primitives_asymmetric_rsa_digitalsignaturekey_type);
+            &cryptography_hazmat_primitives_asymmetric_rsa_digitalsignaturekey_type);
     self->source_key = key_in;
     common_hal_cryptography_hazmat_primitives_asymmetric_rsa_digitalsignaturekey_construct(self, key, bufinfo.buf, bufinfo.len);
     return MP_OBJ_FROM_PTR(self);

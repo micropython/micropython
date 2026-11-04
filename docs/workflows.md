@@ -73,6 +73,9 @@ To prevent malicious access, even if `CIRCUITPY_BLE_WORKFLOW=true`,
 the user must initiate a bonded connection with the host.
 To bond, press the reset button when the status led blinks blue quickly after reset,
 after the safe mode blinks.
+Entering discovery mode erases all bonds stored on the board.
+A host that bonded earlier with the board still has the old pairing, and it may fail to connect.
+On that host, remove the board from the Bluetooth settings, then pair again.
 The board will restart and advertise the file transfer service UUID (`0xfebb`)
 along with the board's [Creation ID](https://github.com/creationid/creators).
 This public advertisement is done at a lower transmit level so the devices must be closer.

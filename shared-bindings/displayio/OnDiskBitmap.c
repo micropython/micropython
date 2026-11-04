@@ -11,8 +11,10 @@
 #include "py/runtime.h"
 #include "extmod/vfs.h"
 #include "py/objproperty.h"
+#include "shared/runtime/context_manager_helpers.h"
 
 #include "shared-bindings/displayio/OnDiskBitmap.h"
+#include "shared-bindings/util.h"
 
 //| class OnDiskBitmap:
 //|     """Loads values straight from disk. This minimizes memory use but can lead to
@@ -48,40 +50,64 @@
 //|       while True:
 //|           pass"""
 //|
-//|     def __init__(self, file: Union[str, typing.BinaryIO]) -> None:
+//|     def __init__(self, file: str) -> None:
 //|         """Create an OnDiskBitmap object with the given file.
 //|
-//|         :param file file: The name of the bitmap file.  For backwards compatibility, a file opened in binary mode may also be passed.
+//|         :param str file: The name of the bitmap file.
 //|
-//|         Older versions of CircuitPython required a file opened in binary
-//|         mode. CircuitPython 7.0 modified OnDiskBitmap so that it takes a
-//|         filename instead, and opens the file internally.  A future version
-//|         of CircuitPython will remove the ability to pass in an opened file.
+//|         CircuitPython 11 no longer accepts a file opened in binary mode. Pass the filename instead.
+//|         OnDiskBitmap opens the file itself and keeps it open until `deinit()` or
+//|         until the object is garbage collected.
 //|         """
 //|         ...
 //|
 static mp_obj_t displayio_ondiskbitmap_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     mp_arg_check_num(n_args, n_kw, 1, 1, false);
-    mp_obj_t arg = all_args[0];
-
-    if (mp_obj_is_str(arg)) {
-        arg = mp_call_function_2(MP_OBJ_FROM_PTR(&mp_builtin_open_obj), arg, MP_ROM_QSTR(MP_QSTR_rb));
-    }
-    if (!mp_obj_is_fileio(arg)) {
-        mp_raise_TypeError(MP_ERROR_TEXT("file must be a file opened in byte mode"));
-    }
+    mp_obj_t filename = mp_arg_validate_type_string(all_args[0], MP_QSTR_file);
+    mp_obj_t file = mp_call_function_2(MP_OBJ_FROM_PTR(&mp_builtin_open_obj), filename, MP_ROM_QSTR(MP_QSTR_rb));
 
     displayio_ondiskbitmap_t *self = mp_obj_malloc(displayio_ondiskbitmap_t, &displayio_ondiskbitmap_type);
-    common_hal_displayio_ondiskbitmap_construct(self, arg);
+    common_hal_displayio_ondiskbitmap_construct(self, file);
 
     return MP_OBJ_FROM_PTR(self);
 }
+
+static void check_for_deinit(displayio_ondiskbitmap_t *self) {
+    if (common_hal_displayio_ondiskbitmap_deinited(self)) {
+        raise_deinited_error();
+    }
+}
+
+//|     def deinit(self) -> None:
+//|         """Close the file. The object can no longer be used. If a `TileGrid` still shows
+//|         this bitmap, areas redrawn after this use color 0, so remove the `TileGrid` first."""
+//|         ...
+//|
+static mp_obj_t displayio_ondiskbitmap_obj_deinit(mp_obj_t self_in) {
+    displayio_ondiskbitmap_t *self = MP_OBJ_TO_PTR(self_in);
+    common_hal_displayio_ondiskbitmap_deinit(self);
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_1(displayio_ondiskbitmap_deinit_obj, displayio_ondiskbitmap_obj_deinit);
+
+//|     def __enter__(self) -> OnDiskBitmap:
+//|         """No-op used by Context Managers."""
+//|         ...
+//|
+//  Provided by context manager helper.
+
+//|     def __exit__(self) -> None:
+//|         """Automatically deinitializes the object when exiting a context. See
+//|         :ref:`lifetime-and-contextmanagers` for more info."""
+//|         ...
+//|
+//  Provided by context manager helper.
 
 //|     width: int
 //|     """Width of the bitmap. (read only)"""
 static mp_obj_t displayio_ondiskbitmap_obj_get_width(mp_obj_t self_in) {
     displayio_ondiskbitmap_t *self = MP_OBJ_TO_PTR(self_in);
-
+    check_for_deinit(self);
     return MP_OBJ_NEW_SMALL_INT(common_hal_displayio_ondiskbitmap_get_width(self));
 }
 
@@ -94,7 +120,7 @@ MP_PROPERTY_GETTER(displayio_ondiskbitmap_width_obj,
 //|     """Height of the bitmap. (read only)"""
 static mp_obj_t displayio_ondiskbitmap_obj_get_height(mp_obj_t self_in) {
     displayio_ondiskbitmap_t *self = MP_OBJ_TO_PTR(self_in);
-
+    check_for_deinit(self);
     return MP_OBJ_NEW_SMALL_INT(common_hal_displayio_ondiskbitmap_get_height(self));
 }
 
@@ -111,6 +137,7 @@ MP_PROPERTY_GETTER(displayio_ondiskbitmap_height_obj,
 //|
 static mp_obj_t displayio_ondiskbitmap_obj_get_pixel_shader(mp_obj_t self_in) {
     displayio_ondiskbitmap_t *self = MP_OBJ_TO_PTR(self_in);
+    check_for_deinit(self);
     return common_hal_displayio_ondiskbitmap_get_pixel_shader(self);
 }
 
@@ -120,6 +147,9 @@ MP_PROPERTY_GETTER(displayio_ondiskbitmap_pixel_shader_obj,
     (mp_obj_t)&displayio_ondiskbitmap_get_pixel_shader_obj);
 
 static const mp_rom_map_elem_t displayio_ondiskbitmap_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&displayio_ondiskbitmap_deinit_obj) },
+    { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&default___enter___obj) },
+    { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&default___exit___obj) },
     { MP_ROM_QSTR(MP_QSTR_height), MP_ROM_PTR(&displayio_ondiskbitmap_height_obj) },
     { MP_ROM_QSTR(MP_QSTR_pixel_shader), MP_ROM_PTR(&displayio_ondiskbitmap_pixel_shader_obj) },
     { MP_ROM_QSTR(MP_QSTR_width), MP_ROM_PTR(&displayio_ondiskbitmap_width_obj) },

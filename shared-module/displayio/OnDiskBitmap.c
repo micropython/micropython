@@ -209,9 +209,26 @@ void common_hal_displayio_ondiskbitmap_construct(displayio_ondiskbitmap_t *self,
 }
 
 
+void common_hal_displayio_ondiskbitmap_deinit(displayio_ondiskbitmap_t *self) {
+    if (common_hal_displayio_ondiskbitmap_deinited(self)) {
+        return;
+    }
+    mp_stream_close(self->file);
+    self->file = NULL;
+    #if CIRCUITPY_STORAGE_MAP_FILE
+    // A TileGrid may still draw this bitmap, so it must stop reading rows from mapped flash.
+    self->rows_mapped = false;
+    #endif
+}
+
+bool common_hal_displayio_ondiskbitmap_deinited(displayio_ondiskbitmap_t *self) {
+    return self->file == NULL;
+}
+
 uint32_t common_hal_displayio_ondiskbitmap_get_pixel(displayio_ondiskbitmap_t *self,
     int16_t x, int16_t y) {
-    if (x < 0 || x >= self->width || y < 0 || y >= self->height) {
+    if (common_hal_displayio_ondiskbitmap_deinited(self) ||
+        x < 0 || x >= self->width || y < 0 || y >= self->height) {
         return 0;
     }
 
