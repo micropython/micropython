@@ -31,9 +31,9 @@ RUN pip install --no-cache-dir west pytest pyelftools pyyaml intelhex protobuf g
 #   cd ~/circuitpython/ports/zephyr-cp
 #   west init -l zephyr-config
 #   west update
-#   west zephyr-export
 #   pip install -r zephyr/scripts/requirements.txt
 #   pip install -r ../../requirements-dev.txt
+#   west zephyr-export
 #   west sdk install -t x86_64-zephyr-elf
 #   python ../../tools/ci_fetch_deps.py zephyr-cp
 WORKDIR /home/dev/circuitpython/ports/zephyr-cp
