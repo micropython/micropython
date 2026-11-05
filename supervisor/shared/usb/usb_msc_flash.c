@@ -349,7 +349,10 @@ int32_t tud_msc_read10_cb(uint8_t lun, uint32_t lba, uint32_t offset, void *buff
         return -1;
     }
 
-    disk_read(vfs, buffer, lba, block_count);
+    if (disk_read(vfs, buffer, lba, block_count) != RES_OK) {
+        // TinyUSB fails the command and reports MEDIUM NOT PRESENT sense.
+        return TUD_MSC_RET_ERROR;
+    }
 
     return block_count * MSC_FLASH_BLOCK_SIZE;
 }
@@ -368,7 +371,10 @@ int32_t tud_msc_write10_cb(uint8_t lun, uint32_t lba, uint32_t offset, uint8_t *
         return -1;
     }
 
-    disk_write(vfs, buffer, lba, block_count);
+    if (disk_write(vfs, buffer, lba, block_count) != RES_OK) {
+        // TinyUSB fails the command and reports MEDIUM NOT PRESENT sense.
+        return TUD_MSC_RET_ERROR;
+    }
     // Since by getting here we assume the mount is read-only to
     // CircuitPython let's update the cached FatFs sector if it's the one
     // we just wrote.
