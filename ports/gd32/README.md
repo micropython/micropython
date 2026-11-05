@@ -203,6 +203,8 @@ ports/gd32/
 ├── machine_can_port.c       machine.CAN (extmod includefile)
 ├── machine_pwm_port.c       machine.PWM (extmod includefile)
 ├── flashbdev.c              internal-flash block device for littlefs
+├── sdcard.c                 SDIO driver (CMD/ACMD, block read/write)
+├── machine_sdcard_port.c    machine.SDCard Python binding
 ├── modmachine_port.c        port hooks + peripheral registration
 ├── pin_defs.h               pin encoding helpers
 ├── gen_pins.py              pins.csv -> C table generator
@@ -240,6 +242,7 @@ ports/gd32/
 | `machine.Signal` / `PinBase` | ✅ working |
 | `machine.SoftSPI` / `SoftI2C` — bit-bang on any pins | ✅ working |
 | littlefs2 filesystem on internal flash | ✅ working |
+| `machine.SDCard` — SDIO, 1/4-bit bus, hot-plug detection | ✅ working |
 | `machine.freq()`, `machine.reset()`, `machine.unique_id()` | ✅ |
 | `machine.PWM` — timer output compare, freq + duty_u16/duty_ns | ✅ working |
 
@@ -315,6 +318,46 @@ Notes:
 - **Flash wear**: writing to the FS erases 16 KB sectors. Do not use it as
   a scratch buffer in a tight loop.
 
+## SD Card
+
+`machine.SDCard` drives an SD card over the SDIO controller (1-bit for
+init, switching to 4-bit for data transfer).
+
+```python
+from machine import SDCard
+import os
+
+card = SDCard()                 # raises OSError if no card present
+print(card.present())           # True
+print(card.info())              # (blocks, block_size, high_capacity, ready)
+
+# mount it at /sd
+os.mount(card, '/sd')
+print(os.listdir('/sd'))
+os.umount('/sd')
+```
+
+### Wiring (SDIO default pinout)
+
+| Signal | Pin |
+|--------|-----|
+| CLK | PC12 |
+| CMD | PD2 |
+| D0  | PC8 |
+| D1  | PC9 |
+| D2  | PC10 |
+| D3  | PC11 |
+| CD  | PD13 (active low) |
+
+The driver implements CMD0/2/3/6/7/8/9/16/17/18/24/25 and
+ACMD6/ACMD41. Card detect is polled; removing the card invalidates the
+driver state so the next `SDCard()` re-initialises.
+
+**Note:** this driver has been verified to *compile* on both boards but
+has not been exercised against real hardware. The SDIO init sequence,
+CSD capacity decoding and clock switching should be validated on a board
+with an actual card before relying on it.
+
 ## Machine module coverage
 
 Compared with `ports/stm32` for STM32F4:
@@ -334,7 +377,7 @@ Compared with `ports/stm32` for STM32F4:
 | `PWM` | ✅ | TIMER0/1/2/3/7/8/12, duty_u16 + duty_ns |
 | `Signal` / `PinBase` | ✅ | Pin implements the virtpin protocol |
 | `SoftSPI` / `SoftI2C` | ✅ | extmod bit-bang on any GPIO |
-| `SDCard` | ⬜ | needs SDIO driver |
+| `SDCard` | ✅ | SDIO driver, hot-plug, block device protocol |
 | `I2S` | ⬜ | needs SPI/I2S audio driver |
 | `I2CTarget` | ⬜ | needs slave-mode I2C |
 | `USBDevice` | ⬜ | needs USB device stack (CDC/MSC) |

@@ -91,6 +91,7 @@ extern volatile uint32_t systick_ms;
 #define CAN_HW_MAX_FILTER                 (14)
 #define CAN_FILTERS_STD_EXT_SEPARATE      (0)
 #define MICROPY_HW_CAN_IS_RESERVED(can_id) (false)
+#define MICROPY_PY_MACHINE_SDCARD         (1)
 #define MICROPY_PY_MACHINE_SOFTSPI        (1)
 #define MICROPY_PY_MACHINE_SOFTI2C        (1)
 #define MICROPY_PY_MACHINE_PWM            (1)
