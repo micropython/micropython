@@ -129,9 +129,11 @@ esp_err_t peripherals_touch_init(const int channel_id) {
     }
     touch_enabled = true;
 
-    #if SOC_TOUCH_SENSOR_VERSION == 3
-    // The smooth data of a new channel is invalid (reads >= 65535) until it has been
-    // measured. Scan a few times first, as the ESP-IDF touch_sens_basic example does.
+    #if SOC_TOUCH_SENSOR_VERSION >= 2
+    // On touch V2 and V3, a channel's data is invalid (reads >= 65535) until it has
+    // been measured, for example after a chip reset. TouchIn would then set its
+    // threshold from that invalid value. Scan a few times first, as the ESP-IDF
+    // touch_sens_basic example does.
     for (int i = 0; i < 3; i++) {
         err = touch_sensor_trigger_oneshot_scanning(touch_controller, 100);
         if (err != ESP_OK) {
