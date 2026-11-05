@@ -175,7 +175,9 @@ static int one_of(qstr_short_t what, mp_obj_t arg, size_t n_options, const qstr_
 }
 
 static mp_obj_t rp2pio_statemachine_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
-    rp2pio_statemachine_obj_t *self = mp_obj_malloc(rp2pio_statemachine_obj_t, &rp2pio_statemachine_type);
+    rp2pio_statemachine_obj_t *self = mp_obj_malloc_with_finaliser(rp2pio_statemachine_obj_t, &rp2pio_statemachine_type);
+    // Make the finaliser a no-op if construction raises before a state machine is claimed.
+    common_hal_rp2pio_statemachine_mark_deinit(self);
     enum { ARG_program, ARG_frequency, ARG_init, ARG_pio_version, ARG_may_exec,
            ARG_first_out_pin, ARG_out_pin_count, ARG_initial_out_pin_state, ARG_initial_out_pin_direction,
            ARG_first_in_pin, ARG_in_pin_count,
