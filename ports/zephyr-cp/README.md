@@ -53,6 +53,15 @@ To use the container file:
    The script will automatically run or start based on whether the container has been run before.
 3. Init requirements inside the container with `./native_sim_build_init_container.sh`
 
+`ZCP_CONTAINER` and `ZCP_IMAGE` override the container and image names, and `ZCP_PODMAN_ARGS`
+adds options to `podman run` when the container is first created.
+
+If `west sdk install` fails with `Cannot change mode to ...: Operation not permitted`, the
+container runtime is rejecting the `fchmodat2` syscall that Ubuntu 24.04's tar uses. This
+happens with older runtimes such as crun 0.17 from Ubuntu 22.04. Remove the container with
+`podman rm -f zcp` and create it again with `ZCP_PODMAN_ARGS="--runtime runc"` if runc is
+installed, or with `ZCP_PODMAN_ARGS="--security-opt seccomp=unconfined"` otherwise.
+
 To delete the container and cleanup associated files:
 ```sh
 podman ps -a --filter ancestor=zephyr-cp-dev -q | xargs -r podman rm -f
