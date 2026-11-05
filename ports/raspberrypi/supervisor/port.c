@@ -36,6 +36,10 @@
 #include "psa/crypto.h"
 #endif
 
+#if CIRCUITPY_RP2_SHA256_HW
+#include "sha256_hw.h"
+#endif
+
 #if CIRCUITPY_WIFI
 #include "common-hal/wifi/__init__.h"
 #endif
@@ -520,6 +524,10 @@ void reset_port(void) {
     // common_hal_ssl_sslcontext_construct() re-inits PSA on demand.
     // So for raspberrypi, we must call mbedtls_psa_crypto_free() explicitly.
     mbedtls_psa_crypto_free();
+    #endif
+
+    #if CIRCUITPY_RP2_SHA256_HW
+    rp2_sha256_hw_reset();
     #endif
 
     #if CIRCUITPY_WATCHDOG

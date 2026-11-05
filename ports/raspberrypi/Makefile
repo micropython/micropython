@@ -763,6 +763,21 @@ else
 OBJ_MBEDTLS :=
 endif
 
+# Rename the builtin mbedtls_sha256_*() functions to mbedtls_sha256_sw_*() and put
+# sha256_hw.c in their place. It uses the RP2350 SHA-256 block when it can and the
+# builtin code otherwise. The default is set in mpconfigport.mk.
+ifeq ($(CIRCUITPY_RP2_SHA256_HW),1)
+SRC_C += sha256_hw.c
+$(BUILD)/lib/mbedtls/tf-psa-crypto/drivers/builtin/src/sha256.o: CFLAGS += \
+	-Dmbedtls_sha256_init=mbedtls_sha256_sw_init \
+	-Dmbedtls_sha256_free=mbedtls_sha256_sw_free \
+	-Dmbedtls_sha256_clone=mbedtls_sha256_sw_clone \
+	-Dmbedtls_sha256_starts=mbedtls_sha256_sw_starts \
+	-Dmbedtls_sha256_update=mbedtls_sha256_sw_update \
+	-Dmbedtls_sha256_finish=mbedtls_sha256_sw_finish
+endif
+CFLAGS += -DCIRCUITPY_RP2_SHA256_HW=$(CIRCUITPY_RP2_SHA256_HW)
+
 BOOT2_S_CFLAGS ?= -DPICO_FLASH_SPI_CLKDIV=4
 SRC_S_UPPER = sdk/src/rp2_common/hardware_irq/irq_handler_chain.S \
               sdk/src/rp2_common/pico_bit_ops/bit_ops_aeabi.S \

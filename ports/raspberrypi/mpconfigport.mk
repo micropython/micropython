@@ -87,7 +87,13 @@ CIRCUITPY_CYW43_INIT_DELAY ?= 0
 
 # Audio effects
 CIRCUITPY_AUDIOEFFECTS ?= 1
+
+# Run mbedtls SHA-256 (hashlib, hmac, ssl) on the SHA-256 block. Needs the mbedtls
+# sha256.c, which is built for ssl or hashlib-only mbedtls.
+CIRCUITPY_RP2_SHA256_HW ?= $(call enable-if-any,$(CIRCUITPY_SSL) $(CIRCUITPY_HASHLIB_MBEDTLS_ONLY))
 endif
+# After the chip branches, so the RP2350 default above wins. RP2040 has no SHA-256 block.
+CIRCUITPY_RP2_SHA256_HW ?= 0
 
 INTERNAL_LIBM = 1
 
