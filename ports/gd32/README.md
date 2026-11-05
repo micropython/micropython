@@ -151,6 +151,19 @@ print(can.state())                           # CAN.STATE_ACTIVE etc.
 print(can.get_counters())
 ```
 
+# ---- PWM ----
+p = PWM(Pin("PA0"), freq=1000, duty_u16=32768)   # 50% at 1 kHz
+p.freq(2000)
+p.duty_u16(16384)                                 # 25%
+print(p.duty_ns())
+p.deinit()
+```
+
+`machine.PWM` maps pins to timer channels via a static table
+(`pwm_pin_map`); unmatched pins raise `ValueError`. Both `duty_u16`
+(0..65535) and `duty_ns` are supported; frequency is auto-scaled with a
+prescaler so the period fits in the 16-bit ARR.
+
 `machine.CAN` uses the extmod CAN protocol and supports classic CAN
 (8-byte frames) on CAN0/CAN1. Loopback, silent and silent-loopback modes
 are mapped to the bxCAN working modes. Timeout handling and FD frames are
@@ -188,6 +201,7 @@ ports/gd32/
 ├── machine_dac_port.c       machine.DAC
 ├── machine_rtc_port.c       machine.RTC
 ├── machine_can_port.c       machine.CAN (extmod includefile)
+├── machine_pwm_port.c       machine.PWM (extmod includefile)
 ├── modmachine_port.c        port hooks + peripheral registration
 ├── pin_defs.h               pin encoding helpers
 ├── gen_pins.py              pins.csv -> C table generator
@@ -221,8 +235,9 @@ ports/gd32/
 | `machine.DAC` — DAC0/DAC1 on PA4/PA5, `write()`/`read()`, 12-bit | ✅ working |
 | `machine.RTC` — calendar RTC, `init()` / `datetime()` | ✅ working |
 | `machine.CAN` — bxCAN, 2 instances, classic CAN, filters, irq | ✅ working |
+| `machine.PWM` — TIMER0/1/2/3/7/8/12 channels, 16-bit duty | ✅ working |
 | `machine.freq()`, `machine.reset()`, `machine.unique_id()` | ✅ |
-| Hardware `machine.PWM` (timer output compare) | ⬜ next |
+| `machine.PWM` — timer output compare, freq + duty_u16/duty_ns | ✅ working |
 
 | USB device / SD card / filesystem | ⬜ |
 | Frozen modules | ⬜ |
@@ -266,3 +281,35 @@ Adding further peripherals follows the same pattern:
 The MicroPython core is MIT licensed. The vendored GD32F4xx firmware
 library is BSD-3-Clause, Copyright (c) GigaDevice Semiconductor Inc.
 See `gd32lib/` sources for the original headers.
+
+
+## Machine module coverage
+
+Compared with `ports/stm32` for STM32F4:
+
+| Module | GD32 port | Notes |
+|--------|-----------|-------|
+| `Pin` | ✅ | named + numeric, IN/OUT/OPEN_DRAIN/PULL_* |
+| `Timer` | ✅ | software timer (1 kHz SysTick) |
+| `WDT` | ✅ | FWDGT independent watchdog |
+| `UART` | ✅ | up to 6 instances, IRQ-driven RX |
+| `SPI` | ✅ | hardware SPI0-5, master |
+| `I2C` | ✅ | hardware I2C0-2, master |
+| `ADC` | ✅ | ADC0 ch0-15, 12-bit |
+| `DAC` | ✅ | DAC0/DAC1 on PA4/PA5 |
+| `RTC` | ✅ | calendar, BCD conversion internal |
+| `CAN` | ✅ | bxCAN CAN0/CAN1, classic CAN |
+| `PWM` | ✅ | TIMER0/1/2/3/7/8/12, duty_u16 + duty_ns |
+| `Signal` | ⬜ | needs `MICROPY_PY_MACHINE_SIGNAL` + `machine_pinbase_type` |
+| `SoftSPI` / `SoftI2C` | ⬜ | extmod bit-bang; needs pin-level callbacks |
+| `SDCard` | ⬜ | needs SDIO driver |
+| `I2S` | ⬜ | needs SPI/I2S audio driver |
+| `I2CTarget` | ⬜ | needs slave-mode I2C |
+| `USBDevice` | ⬜ | needs USB device stack (CDC/MSC) |
+| `mem8/16/32` | ⬜ | intentionally disabled (`MICROPY_PY_MACHINE_MEMX=0`) |
+| `lightsleep` / `deepsleep` | ⬜ | `deep sleep` maps to PMU standby; sleep not wired |
+| `bitstream` | ⬜ | `MICROPY_PY_MACHINE_BITSTREAM=0` |
+
+Not `machine` modules but relevant gaps versus STM32F4: filesystem
+(`littlefs`/FAT), frozen modules, `network`/`lwIP`, and `pyb`-style legacy
+API (not applicable here).
