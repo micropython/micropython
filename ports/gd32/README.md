@@ -130,6 +130,16 @@ tim.deinit()
 # ---- Watchdog ----
 wdt = WDT(timeout=8000)    # 8 s
 wdt.feed()
+
+# ---- DAC ----
+dac = DAC(Pin("PA4"))      # PA4 -> DAC0, PA5 -> DAC1
+dac.write(2048)            # mid-scale (12-bit)
+print(dac.read())
+
+# ---- RTC ----
+rtc = RTC()
+rtc.init((2026, 11, 5, 3, 20, 15, 0, 0))   # y, m, d, wday, h, min, s, us
+print(rtc.datetime())                       # (2026, 11, 5, 3, 20, 15, 0, 0)
 ```
 
 ### Pin encoding
@@ -161,6 +171,9 @@ ports/gd32/
 ├── machine_i2c_port.c       machine.I2C
 ├── machine_adc_port.c       machine.ADC (extmod includefile)
 ├── machine_wdt_port.c       machine.WDT (extmod includefile)
+├── machine_dac_port.c       machine.DAC
+├── machine_rtc_port.c       machine.RTC
+├── machine_can_port.c       machine.CAN (WIP, disabled)
 ├── modmachine_port.c        port hooks + peripheral registration
 ├── pin_defs.h               pin encoding helpers
 ├── gen_pins.py              pins.csv -> C table generator
@@ -191,8 +204,11 @@ ports/gd32/
 | `machine.SPI` — hardware SPI0-5, polarity/phase/bits/firstbit, transfer | ✅ working |
 | `machine.I2C` — hardware I2C0-2, master transfer via `modmachine` protocol | ✅ working |
 | `machine.ADC` — ADC0 channels 0-15, `read_u16()` | ✅ working |
+| `machine.DAC` — DAC0/DAC1 on PA4/PA5, `write()`/`read()`, 12-bit | ✅ working |
+| `machine.RTC` — calendar RTC, `init()` / `datetime()` | ✅ working |
 | `machine.freq()`, `machine.reset()`, `machine.unique_id()` | ✅ |
 | Hardware `machine.PWM` (timer output compare) | ⬜ next |
+| `machine.CAN` (bxCAN, 2 instances) | 🚧 in progress |
 | USB device / SD card / filesystem | ⬜ |
 | Frozen modules | ⬜ |
 

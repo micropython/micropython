@@ -3,6 +3,10 @@
 
 #include "gd32f4xx.h"
 
+// Types defined by the port itself (no extmod layer for these).
+extern const mp_obj_type_t machine_dac_type;
+extern const mp_obj_type_t machine_rtc_type;
+
 #define MP_UNUSED __attribute__((unused))
 
 // ---- reset ----
@@ -56,6 +60,7 @@ MP_NORETURN MP_UNUSED static void mp_machine_deepsleep(size_t n_args, const mp_o
     { MP_ROM_QSTR(MP_QSTR_Pin),   MP_ROM_PTR(&machine_pin_type) }, \
     { MP_ROM_QSTR(MP_QSTR_Timer), MP_ROM_PTR(&machine_timer_type) }, \
     { MP_ROM_QSTR(MP_QSTR_WDT),   MP_ROM_PTR(&machine_wdt_type) }, \
+    { MP_ROM_QSTR(MP_QSTR_RTC),   MP_ROM_PTR(&machine_rtc_type) }, \
     { MP_ROM_QSTR(MP_QSTR_UART),  MP_ROM_PTR(&machine_uart_type) }, \
     { MP_ROM_QSTR(MP_QSTR_SPI),   MP_ROM_PTR(&machine_spi_type) }, \
     { MP_ROM_QSTR(MP_QSTR_I2C),   MP_ROM_PTR(&machine_i2c_type) }, \

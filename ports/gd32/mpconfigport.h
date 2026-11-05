@@ -65,6 +65,10 @@ extern volatile uint32_t systick_ms;
 #define MICROPY_PY_MACHINE_UART_INCLUDEFILE "machine_uart_port.c"
 #define MICROPY_PY_MACHINE_SPI            (1)
 #define MICROPY_PY_MACHINE_I2C            (1)
+#define MICROPY_HW_NUM_CAN                (2)
+#define MICROPY_PY_MACHINE_CAN            (0)  // TODO: needs full extmod port layer
+#define MICROPY_PY_MACHINE_CAN_INCLUDEFILE "machine_can_port.c"
+#define MICROPY_PY_MACHINE_DAC            (1)
 #define MICROPY_PY_MACHINE_ADC            (1)
 #define MICROPY_PY_MACHINE_ADC_INCLUDEFILE "machine_adc_port.c"
 #define MICROPY_PY_MACHINE_ADC_INIT       (0)

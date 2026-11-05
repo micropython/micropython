@@ -64,6 +64,8 @@ SRC_C = \
 	machine_pin.c \
 	machine_spi_port.c \
 	machine_i2c_port.c \
+	machine_dac_port.c \
+	machine_rtc_port.c \
 	mphalport.c \
 	shared/libc/printf.c \
 	shared/libc/string0.c \
@@ -77,6 +79,9 @@ SRC_C = \
 	gd32lib/peripheral_source/gd32f4xx_spi.c \
 	gd32lib/peripheral_source/gd32f4xx_i2c.c \
 	gd32lib/peripheral_source/gd32f4xx_adc.c \
+	gd32lib/peripheral_source/gd32f4xx_dac.c \
+	gd32lib/peripheral_source/gd32f4xx_rtc.c \
+	gd32lib/peripheral_source/gd32f4xx_can.c \
 	gd32lib/peripheral_source/gd32f4xx_misc.c \
 	gd32lib/peripheral_source/gd32f4xx_fmc.c \
 	gd32lib/peripheral_source/gd32f4xx_pmu.c \
@@ -86,7 +91,7 @@ SRC_S = gd32lib/GCC/$(STARTUP_FILE)
 
 SRC_QSTR += shared/readline/readline.c shared/runtime/pyexec.c machine_pin.c \
 	extmod/modmachine.c extmod/machine_timer.c extmod/machine_wdt.c \
-	extmod/machine_uart.c extmod/machine_spi.c extmod/machine_i2c.c machine_uart_port.c machine_spi_port.c machine_i2c_port.c machine_adc_port.c extmod/machine_adc.c machine_wdt_port.c shared/runtime/mpirq.c
+	extmod/machine_uart.c extmod/machine_spi.c extmod/machine_i2c.c machine_uart_port.c machine_spi_port.c machine_i2c_port.c machine_adc_port.c machine_dac_port.c machine_rtc_port.c extmod/machine_adc.c machine_wdt_port.c shared/runtime/mpirq.c
 
 OBJ += $(PY_CORE_O)
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
