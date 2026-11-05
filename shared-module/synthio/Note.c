@@ -198,9 +198,9 @@ uint32_t synthio_note_step(synthio_note_obj_t *self, int32_t sample_rate, int16_
     int panning = synthio_block_slot_get_scaled(&self->panning, -ALMOST_ONE, ALMOST_ONE);
     int left_panning_scaled = 32768, right_panning_scaled = 32768;
     if (panning >= 0) {
-        left_panning_scaled = 32767 - panning;
+        left_panning_scaled = 32768 - panning;
     } else {
-        right_panning_scaled = 32767 + panning;
+        right_panning_scaled = 32768 + panning;
     }
 
     int amplitude = synthio_block_slot_get_scaled(&self->amplitude, -ALMOST_ONE, ALMOST_ONE);
