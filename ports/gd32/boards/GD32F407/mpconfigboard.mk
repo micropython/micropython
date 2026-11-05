@@ -1,0 +1,4 @@
+MCU_SERIES = gd32f4xx
+CMSIS_MCU = GD32F407
+STARTUP_FILE = startup_gd32f407_427.S
+LD_SCRIPT = gd32f405_407_xE_flash.ld

@@ -1,0 +1,70 @@
+// mpconfigport.h - MicroPython configuration for GD32F4xx port
+#ifndef MICROPY_INCLUDED_GD32_MPCONFIGPORT_H
+#define MICROPY_INCLUDED_GD32_MPCONFIGPORT_H
+
+#include <stdint.h>
+#include <alloca.h>
+
+// Use the "extra features" ROM level as a base and tune below.
+#define MICROPY_CONFIG_ROM_LEVEL (MICROPY_CONFIG_ROM_LEVEL_EXTRA_FEATURES)
+
+#define MICROPY_ENABLE_GC                 (1)
+#define MICROPY_ENABLE_COMPILER           (1)
+#define MICROPY_ENABLE_EXTERNAL_IMPORT    (1)
+#define MICROPY_HELPER_REPL               (1)
+#define MICROPY_ENABLE_PYSTACK            (1)
+#define MICROPY_PYSTACK_SIZE              (2048)
+#define MICROPY_ALLOC_PATH_MAX            (256)
+#define MICROPY_ALLOC_PARSE_CHUNK_INIT    (16)
+
+// type definitions for the specific machine
+typedef long mp_off_t;
+
+#define MP_STATE_PORT MP_STATE_VM
+
+// board/mcu names come from mpconfigboard.h
+
+#define MICROPY_PY_SYS_PLATFORM           "gd32"
+#define MICROPY_PY_SYS_EXIT               (1)
+
+// disable modules whose sources are not included in this port
+#define MICROPY_PY_SYS_STDFILES           (0)
+#define MICROPY_PY_IO                     (0)
+#define MICROPY_PY_UCTYPES                (0)
+#define MICROPY_PY_UZLIB                  (0)
+#define MICROPY_PY_UHASHLIB               (0)
+#define MICROPY_PY_URE                    (0)
+#define MICROPY_PY_UJSON                  (0)
+#define MICROPY_PY_FRAMEBUF               (0)
+#define MICROPY_PY_MACHINE                (1)
+#define MICROPY_PY_MACHINE_PIN_MAKE_NEW   machine_pin_make_new
+#define MICROPY_PY_MACHINE_INCLUDEFILE    "modmachine_port.c"
+
+// trim modmachine to the essentials (Pin + freq + reset)
+#define MICROPY_PY_MACHINE_PIN_BASE         (0)
+#define MICROPY_PY_MACHINE_SIGNAL           (0)
+#define MICROPY_PY_MACHINE_PULSE            (0)
+#define MICROPY_PY_MACHINE_BITSTREAM        (0)
+#define MICROPY_PY_MACHINE_BARE_METAL_FUNCS (0)
+#define MICROPY_PY_MACHINE_MEMX           (0)
+#define MICROPY_PY_MACHINE_MEM_BACKUP     (0)
+#define MICROPY_PY_MACHINE_DISABLE_IRQ_ENABLE_IRQ (0)
+#define MICROPY_PY_MACHINE_RESET            (1)
+#define MICROPY_PY_MACHINE_BOOTLOADER       (0)
+#define MICROPY_PY_MACHINE_FREQ_NUM_ARGS_MAX (1)
+
+
+// UART REPL baud rate
+#ifndef MICROPY_HW_UART_REPL_BAUD
+#define MICROPY_HW_UART_REPL_BAUD   (115200)
+#endif
+
+
+#define MICROPY_GC_STACK_ENTRY_TYPE uint32_t
+
+// CPU frequency default
+#ifndef MICROPY_HW_MCU_FREQ
+#define MICROPY_HW_MCU_FREQ         (168000000)
+#endif
+
+#endif // MICROPY_INCLUDED_GD32_MPCONFIGPORT_H

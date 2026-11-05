@@ -1,0 +1,12 @@
+// GD32F470VET6 board config (Cortex-M4 @ 240MHz)
+#define MICROPY_HW_BOARD_NAME "GD32F470"
+#define MICROPY_HW_MCU_NAME "GD32F470VE"
+
+// HXTAL 25MHz -> 200MHz (safe default; 240MHz needs flash WS tuning)
+#define MICROPY_HW_CLK_HXTAL      (25000000)
+#define MICROPY_HW_MCU_FREQ       (200000000)
+
+#define MICROPY_HW_UART_REPL      (0)
+#define MICROPY_HW_UART_REPL_BAUD (115200)
+
+#define MICROPY_HEAP_SIZE         (48 * 1024)
