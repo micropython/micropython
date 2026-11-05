@@ -79,6 +79,7 @@ make run-sim
 ```
 
 `run-sim` starts the native simulator in realtime.
+Inside the build container there is no display, so run it as `SDL_VIDEODRIVER=dummy make run-sim`.
 It prints the PTY path to connect to the simulator REPL.
 If a local `./CIRCUITPY/` folder exists, its files are used as the simulator's CIRCUITPY drive.
 
