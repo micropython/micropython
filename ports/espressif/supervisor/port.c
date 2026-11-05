@@ -269,6 +269,31 @@ safe_mode_t port_init(void) {
     _claim_spi_ram_flash_pins();
     #endif
 
+    #if defined(ENABLE_JTAG) && ENABLE_JTAG
+    // Keep user code off the JTAG pins in JTAG debug builds.
+    #if defined(CONFIG_IDF_TARGET_ESP32C3) || defined(CONFIG_IDF_TARGET_ESP32C6)
+    claim_pin_number(4);  // MTMS
+    claim_pin_number(5);  // MTDI
+    claim_pin_number(6);  // MTCK
+    claim_pin_number(7);  // MTDO
+    #elif defined(CONFIG_IDF_TARGET_ESP32C61)
+    claim_pin_number(3);  // MTMS
+    claim_pin_number(4);  // MTDI
+    claim_pin_number(5);  // MTCK
+    claim_pin_number(6);  // MTDO
+    #elif defined(CONFIG_IDF_TARGET_ESP32P4)
+    claim_pin_number(2);  // MTCK
+    claim_pin_number(3);  // MTDI
+    claim_pin_number(4);  // MTMS
+    claim_pin_number(5);  // MTDO
+    #elif defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3)
+    claim_pin_number(39); // MTCK
+    claim_pin_number(40); // MTDO
+    claim_pin_number(41); // MTDI
+    claim_pin_number(42); // MTMS
+    #endif
+    #endif
+
     #ifdef DOUBLE_TAP_PIN
     // Pull the double-tap pin down at boot so that resets come back to
     // CircuitPython. reset_pin_number() applies the pull-down.
