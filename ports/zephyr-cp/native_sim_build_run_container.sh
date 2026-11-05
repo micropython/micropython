@@ -23,7 +23,7 @@ read -r -a EXTRA_ARGS <<< "${ZCP_PODMAN_ARGS:-}"
 if podman container exists "$CONTAINER_NAME"; then
     exec podman start -ai "$CONTAINER_NAME"
 else
-    exec podman run -it --name "$CONTAINER_NAME" \
+    exec podman run -it --init --name "$CONTAINER_NAME" \
         -v "$REPO_ROOT:/home/dev/circuitpython:Z" \
         --userns=keep-id \
         ${EXTRA_ARGS[@]+"${EXTRA_ARGS[@]}"} \
