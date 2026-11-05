@@ -5,6 +5,11 @@
 #include <stdint.h>
 #include <alloca.h>
 
+// Board-specific definitions must come first so that they can override the
+// defaults below (e.g. MICROPY_HW_MCU_FREQ).  py/mpconfig.h includes this file
+// very early, before any board header would otherwise be seen.
+#include "mpconfigboard.h"
+
 // Use the "extra features" ROM level as a base and tune below.
 #define MICROPY_CONFIG_ROM_LEVEL (MICROPY_CONFIG_ROM_LEVEL_EXTRA_FEATURES)
 
@@ -26,8 +31,6 @@
 typedef long mp_off_t;
 
 #define MP_STATE_PORT MP_STATE_VM
-
-// board/mcu names come from mpconfigboard.h
 
 #define MICROPY_PY_SYS_PLATFORM           "gd32"
 #define MICROPY_PY_SYS_EXIT               (1)

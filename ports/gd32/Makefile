@@ -1,6 +1,17 @@
 # Location of top-level MicroPython directory
 TOP := $(abspath $(CURDIR)/../..)
 
+# ---- board selection (needed before mkenv/py.mk so BUILD can be derived) ----
+BOARD ?= $(error BOARD not specified. Use BOARD=GD32F407 or BOARD=GD32F470)
+BOARD_DIR = boards/$(BOARD)
+ifeq ($(wildcard $(BOARD_DIR)/.),)
+$(error BOARD=$(BOARD) not found in boards/)
+endif
+
+# Keep build output separate per board, otherwise `build.sh all` reuses the
+# previous board's object files and silently produces a wrong firmware.
+BUILD ?= build-$(BOARD)
+
 include $(TOP)/py/mkenv.mk
 
 # qstr definitions (must come before including py.mk)
@@ -9,13 +20,6 @@ QSTR_DEFS = qstrdefsport.h
 include $(TOP)/py/py.mk
 
 CROSS_COMPILE ?= arm-none-eabi-
-
-# ---- board selection ----
-BOARD ?= $(error BOARD not specified. Use BOARD=GD32F407 or BOARD=GD32F470)
-BOARD_DIR = boards/$(BOARD)
-ifeq ($(wildcard $(BOARD_DIR)/.),)
-$(error BOARD=$(BOARD) not found in boards/)
-endif
 
 include $(BOARD_DIR)/mpconfigboard.mk
 

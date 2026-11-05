@@ -23,7 +23,7 @@ case "$TARGET" in
         build_one "$TARGET"
         ;;
     clean)
-        rm -rf build dist
+        rm -rf build build-* dist
         echo "cleaned"
         ;;
     *)
