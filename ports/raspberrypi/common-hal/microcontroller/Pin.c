@@ -22,6 +22,12 @@ static uint32_t cyw_pin_claimed;
 
 void reset_pin_number_cyw(uint8_t pin_no) {
     cyw_pin_claimed &= ~(1LL << pin_no);
+
+    // Drive the LED (GPIO 0) and SMPS_MODE (GPIO 1) low. Don't touch
+    // VBUS_SENSE (GPIO 2): writing it would switch it to an output for good.
+    if (cyw_ever_init && pin_no <= 1) {
+        cyw43_arch_gpio_put(pin_no, false);
+    }
 }
 #endif
 
