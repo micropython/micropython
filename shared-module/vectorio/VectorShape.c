@@ -435,6 +435,9 @@ bool vectorio_vector_shape_fill_area(vectorio_vector_shape_t *self, const _displ
                 } else if (colorspace->depth == 32) {
                     VECTORIO_SHAPE_PIXEL_DEBUG(" buffer = %04x 32", output_pixel.pixel);
                     *(((uint32_t *)buffer) + pixel_index) = output_pixel.pixel;
+                } else if (colorspace->depth == 24) {
+                    VECTORIO_SHAPE_PIXEL_DEBUG(" buffer = %06x 24", output_pixel.pixel);
+                    memcpy(((uint8_t *)buffer) + pixel_index * 3, &output_pixel.pixel, 3);
                 } else if (colorspace->depth == 8) {
                     VECTORIO_SHAPE_PIXEL_DEBUG(" buffer = %02x 8", output_pixel.pixel);
                     *(((uint8_t *)buffer) + pixel_index) = output_pixel.pixel;

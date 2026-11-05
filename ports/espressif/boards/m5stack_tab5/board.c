@@ -294,7 +294,7 @@ void board_init(void) {
     common_hal_busio_i2c_unlock(i2c);
 
     // Configure display parameters based on detected hardware
-    uint32_t bus_frequency;
+    uint32_t minimum_bus_frequency;
     uint32_t pixel_clock_frequency;
     const uint8_t *init_sequence;
     size_t init_sequence_len;
@@ -303,7 +303,7 @@ void board_init(void) {
 
     if (has_goodix) {
         // ILI9881C display with Goodix touch
-        bus_frequency = 730000000;
+        minimum_bus_frequency = 730000000;
         pixel_clock_frequency = 60000000;
         init_sequence = ili9881c_init_sequence;
         init_sequence_len = sizeof(ili9881c_init_sequence);
@@ -315,7 +315,7 @@ void board_init(void) {
         vsync_front_porch = 20;
     } else if (has_st7123) {
         // ST7123 display
-        bus_frequency = 965000000;
+        minimum_bus_frequency = 965000000;
         pixel_clock_frequency = 70000000;
         init_sequence = NULL;  // ST7123 doesn't use init sequence
         init_sequence_len = 0;
@@ -334,7 +334,7 @@ void board_init(void) {
 
     // Initialize the statically allocated MIPI DSI bus
     board_mipidsi_bus.base.type = &mipidsi_bus_type;
-    common_hal_mipidsi_bus_construct(&board_mipidsi_bus, bus_frequency, 2);  // 2 lanes
+    common_hal_mipidsi_bus_construct(&board_mipidsi_bus, minimum_bus_frequency, 2);  // 2 lanes
 
     // Allocate display bus for the display object
     primary_display_bus_t *display_bus_obj = allocate_display_bus_or_raise();
@@ -361,7 +361,8 @@ void board_init(void) {
         vsync_pulse_width,
         vsync_back_porch,
         vsync_front_porch,
-        pixel_clock_frequency
+        pixel_clock_frequency,
+        true                    // low_power_blanking
         );
 
     // Create framebuffer display

@@ -23,6 +23,7 @@ typedef struct {
     mp_int_t rotation;
     mp_uint_t color_depth;
     mp_uint_t native_frames_per_second;
+    mp_uint_t pixel_clock_frequency;
     uint8_t *framebuffer;
     esp_lcd_panel_io_handle_t dbi_io_handle;
     esp_lcd_panel_handle_t dpi_panel_handle;
