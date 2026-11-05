@@ -1802,6 +1802,14 @@ msgstr ""
 msgid "ISP conversion not supported on this chip"
 msgstr ""
 
+#: ports/espressif/common-hal/mipidsi/Bus.c
+msgid "%q is above %u"
+msgstr ""
+
+#: ports/espressif/common-hal/mipidsi/Bus.c
+msgid "%q is not reachable by the PHY"
+msgstr ""
+
 #: ports/espressif/common-hal/nvm/ByteArray.c
 msgid "NVS Error"
 msgstr "Chyba NVS"
