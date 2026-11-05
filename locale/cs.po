@@ -1564,7 +1564,7 @@ msgstr ""
 
 #: ports/espressif/common-hal/audioio/AudioOut.c
 #: ports/espressif/common-hal/mipicsi/Camera.c
-#: shared-module/videocore/VideoBuffer.c
+#: shared-module/videocore/VideoBuffer.c shared-module/videogif/GifDecoder.c
 msgid "already playing"
 msgstr ""
 
@@ -2577,6 +2577,7 @@ msgstr "%q musí být >= %d"
 
 #: py/argcheck.c shared-bindings/gifio/GifWriter.c
 #: shared-module/_airlift/__init__.c shared-module/gifio/OnDiskGif.c
+#: shared-module/videogif/GifDecoder.c
 msgid "%q must be <= %d"
 msgstr "%q musí být <= %d"
 
