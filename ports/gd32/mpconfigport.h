@@ -34,7 +34,13 @@ typedef long mp_off_t;
 
 // disable modules whose sources are not included in this port
 #define MICROPY_PY_SYS_STDFILES           (0)
-#define MICROPY_PY_IO                     (0)
+
+// filesystem: littlefs2 on internal flash
+#define MICROPY_VFS                       (1)
+#define MICROPY_VFS_LFS2                  (1)
+#define MICROPY_VFS_FAT                   (0)
+#define MICROPY_READER_VFS                (1)
+#define MICROPY_PY_IO                     (1)
 #define MICROPY_PY_UCTYPES                (0)
 #define MICROPY_PY_UZLIB                  (0)
 #define MICROPY_PY_UHASHLIB               (0)
@@ -46,8 +52,8 @@ typedef long mp_off_t;
 #define MICROPY_PY_MACHINE_INCLUDEFILE    "modmachine_port.c"
 
 // trim modmachine to the essentials (Pin + freq + reset)
-#define MICROPY_PY_MACHINE_PIN_BASE         (0)
-#define MICROPY_PY_MACHINE_SIGNAL           (0)
+#define MICROPY_PY_MACHINE_PIN_BASE         (1)
+#define MICROPY_PY_MACHINE_SIGNAL           (1)
 #define MICROPY_PY_MACHINE_PULSE            (0)
 #define MICROPY_PY_MACHINE_BITSTREAM        (0)
 #define MICROPY_PY_MACHINE_BARE_METAL_FUNCS (0)
@@ -85,6 +91,8 @@ extern volatile uint32_t systick_ms;
 #define CAN_HW_MAX_FILTER                 (14)
 #define CAN_FILTERS_STD_EXT_SEPARATE      (0)
 #define MICROPY_HW_CAN_IS_RESERVED(can_id) (false)
+#define MICROPY_PY_MACHINE_SOFTSPI        (1)
+#define MICROPY_PY_MACHINE_SOFTI2C        (1)
 #define MICROPY_PY_MACHINE_PWM            (1)
 #define MICROPY_PY_MACHINE_PWM_INCLUDEFILE "machine_pwm_port.c"
 #define MICROPY_PY_MACHINE_PWM_DUTY_U16_NS (1)

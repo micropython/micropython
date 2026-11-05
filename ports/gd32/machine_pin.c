@@ -4,9 +4,11 @@
 #include "py/runtime.h"
 #include "py/mphal.h"
 #include "py/mperrno.h"
+#include "py/stream.h"
 #include "py/obj.h"
 #include "extmod/modmachine.h"
 
+#include "extmod/virtpin.h"
 #include "gd32f4xx.h"
 #include "pin_defs.h"
 #include "genhdr/pins.h"
@@ -119,7 +121,7 @@ static const machine_pin_obj_t *pin_find(mp_obj_t obj) {
     return NULL;
 }
 
-static mp_obj_t machine_pin_make_new(const mp_obj_type_t *type, size_t n_args,
+mp_obj_t machine_pin_make_new(const mp_obj_type_t *type, size_t n_args,
                                      size_t n_kw, const mp_obj_t *all_args) {
     mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
 
@@ -208,12 +210,45 @@ static const mp_rom_map_elem_t machine_pin_locals_dict_table[] = {
 };
 static MP_DEFINE_CONST_DICT(machine_pin_locals_dict, machine_pin_locals_dict_table);
 
+
+// ---- virtpin protocol so machine.Signal can wrap a Pin ----
+static mp_uint_t machine_pin_ioctl(mp_obj_t obj, mp_uint_t request, uintptr_t arg, int *errcode) {
+    const machine_pin_obj_t *self = MP_OBJ_TO_PTR(obj);
+    uint32_t port = pin_port_base(PIN_PORT(self->pin));
+    uint32_t mask = pin_hal_mask(PIN_NUM(self->pin));
+
+    switch (request) {
+        case MP_PIN_READ:
+            return gpio_input_bit_get(port, mask) ? 1 : 0;
+        case MP_PIN_WRITE:
+            gpio_bit_write(port, mask, arg ? SET : RESET);
+            return 0;
+        case MP_PIN_INPUT:
+            rcu_periph_clock_enable(pin_port_rcu(PIN_PORT(self->pin)));
+            gpio_mode_set(port, GPIO_MODE_INPUT, GPIO_PUPD_NONE, mask);
+            return 0;
+        case MP_PIN_OUTPUT:
+            rcu_periph_clock_enable(pin_port_rcu(PIN_PORT(self->pin)));
+            gpio_mode_set(port, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, mask);
+            gpio_output_options_set(port, GPIO_OTYPE_PP, GPIO_OSPEED_50MHZ, mask);
+            return 0;
+        default:
+            *errcode = MP_EINVAL;
+            return MP_STREAM_ERROR;
+    }
+}
+
+static const mp_pin_p_t machine_pin_pin_p = {
+    .ioctl = machine_pin_ioctl,
+};
+
 MP_DEFINE_CONST_OBJ_TYPE(
     machine_pin_type,
     MP_QSTR_Pin,
     MP_TYPE_FLAG_NONE,
     make_new, machine_pin_make_new,
     print, machine_pin_print,
+    protocol, &machine_pin_pin_p,
     locals_dict, &machine_pin_locals_dict
     );
 
@@ -235,4 +270,29 @@ void mp_hal_pin_write_impl(mp_obj_t pin, int value) {
     const machine_pin_obj_t *self = MP_OBJ_TO_PTR(pin);
     gpio_bit_write(pin_port_base(PIN_PORT(self->pin)),
                    pin_hal_mask(PIN_NUM(self->pin)), value ? SET : RESET);
+}
+
+// ---- mp_hal pin abstraction helpers ----
+mp_hal_pin_obj_t mp_hal_get_pin_obj(mp_obj_t obj) {
+    mp_hal_pin_obj_t p;
+    if (mp_obj_is_type(obj, &machine_pin_type)) {
+        const machine_pin_obj_t *self = MP_OBJ_TO_PTR(obj);
+        p.pin = self->pin;
+    } else {
+        p.pin = (uint8_t)mp_obj_get_int(obj);
+    }
+    return p;
+}
+
+const char *mp_hal_pin_name(mp_hal_pin_obj_t pin) {
+    // The generated board table maps names to encodings; search for a name.
+    for (size_t i = 0; i < machine_pin_board_pins_locals_dict_table_len; i++) {
+        mp_uint_t enc = (mp_uint_t)mp_obj_get_int(
+            machine_pin_board_pins_locals_dict_table[i].value);
+        if (enc == pin.pin) {
+            return qstr_str(MP_OBJ_QSTR_VALUE(
+                machine_pin_board_pins_locals_dict_table[i].key));
+        }
+    }
+    return "?";
 }

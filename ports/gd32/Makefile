@@ -48,6 +48,7 @@ INC += -Igd32lib/peripheral_include
 INC += -I$(TOP)/lib/oofatfs
 
 CFLAGS += $(INC)
+CFLAGS += -DLFS2_NO_MALLOC=0
 
 # ---- sources ----
 SRC_C = \
@@ -61,6 +62,17 @@ SRC_C = \
 	extmod/machine_adc.c \
 	extmod/machine_can.c \
 	extmod/machine_pwm.c \
+	extmod/machine_pinbase.c \
+	extmod/machine_signal.c \
+	extmod/virtpin.c \
+	extmod/vfs.c \
+	extmod/vfs_blockdev.c \
+	extmod/vfs_lfs.c \
+	extmod/vfs_reader.c \
+	lib/littlefs/lfs2.c \
+	lib/littlefs/lfs2_util.c \
+	flashbdev.c \
+	drivers/bus/softspi.c \
 	shared/runtime/softtimer.c \
 	shared/runtime/mpirq.c \
 	machine_pin.c \
@@ -92,9 +104,12 @@ SRC_C = \
 
 SRC_S = gd32lib/GCC/$(STARTUP_FILE)
 
+# VFS sources must be scanned so MP_REGISTER_ROOT_POINTER entries
+# (vfs_cur, vfs_mount_table) land in genhdr/root_pointers.h.
+SRC_QSTR += extmod/vfs.c extmod/vfs_blockdev.c extmod/vfs_lfs.c extmod/vfs_reader.c flashbdev.c
 SRC_QSTR += shared/readline/readline.c shared/runtime/pyexec.c machine_pin.c \
 	extmod/modmachine.c extmod/machine_timer.c extmod/machine_wdt.c \
-	extmod/machine_uart.c extmod/machine_spi.c extmod/machine_i2c.c machine_uart_port.c machine_spi_port.c machine_i2c_port.c machine_adc_port.c machine_dac_port.c machine_rtc_port.c machine_can_port.c machine_pwm_port.c extmod/machine_adc.c extmod/machine_can.c extmod/machine_pwm.c machine_wdt_port.c shared/runtime/mpirq.c
+	extmod/machine_uart.c extmod/machine_spi.c extmod/machine_i2c.c machine_uart_port.c machine_spi_port.c machine_i2c_port.c machine_adc_port.c machine_dac_port.c machine_rtc_port.c machine_can_port.c machine_pwm_port.c extmod/machine_adc.c extmod/machine_can.c extmod/machine_pwm.c extmod/machine_signal.c extmod/machine_pinbase.c flashbdev.c machine_wdt_port.c shared/runtime/mpirq.c
 
 OBJ += $(PY_CORE_O)
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
@@ -151,5 +166,9 @@ dist: all
 	$(Q)ls -lh $(DIST_DIR)
 
 .PHONY: dist
+
+
+# littlefs is third-party code: relax warnings for it
+$(BUILD)/lib/littlefs/%.o: CFLAGS += -Wno-error
 
 include $(TOP)/py/mkrules.mk

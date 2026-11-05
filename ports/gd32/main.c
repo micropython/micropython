@@ -14,6 +14,8 @@
 #include "py/mphal.h"
 #include "shared/runtime/pyexec.h"
 #include "shared/readline/readline.h"
+#include "extmod/vfs.h"
+#include "extmod/vfs_lfs.h"
 
 #include "gd32f4xx.h"
 #include "board.h"
@@ -41,19 +43,21 @@ void gc_collect(void) {
     gc_collect_end();
 }
 
-// import support (no filesystem)
-mp_lexer_t *mp_lexer_new_from_file(qstr filename) {
-    mp_raise_OSError(MP_ENOENT);
-}
+// filesystem support: mount littlefs2 on internal flash at "/"
+extern mp_obj_t pyb_flash_get_block_device(void);
 
-mp_import_stat_t mp_import_stat(const char *path) {
-    return MP_IMPORT_STAT_NO_EXIST;
+static void mount_internal_fs(void) {
+    nlr_buf_t nlr;
+    if (nlr_push(&nlr) == 0) {
+        mp_obj_t bdev = pyb_flash_get_block_device();
+        if (mp_vfs_mount_and_chdir_protected(bdev, MP_OBJ_NEW_QSTR(MP_QSTR__slash_)) != 0) {
+            // mount failed (e.g. unformatted); root stays empty
+        }
+        nlr_pop();
+    } else {
+        // swallow mount errors so the REPL still starts
+    }
 }
-
-mp_obj_t mp_builtin_open(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
-    mp_raise_OSError(MP_ENOENT);
-}
-MP_DEFINE_CONST_FUN_OBJ_KW(mp_builtin_open_obj, 1, mp_builtin_open);
 
 void NORETURN __fatal_error(const char *msg) {
     (void)msg;
@@ -89,6 +93,8 @@ int main(void) {
 
     gc_init(heap, heap + sizeof(heap));
     mp_init();
+
+    mount_internal_fs();
 
     board_init();
 

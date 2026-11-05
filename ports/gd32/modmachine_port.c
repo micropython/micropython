@@ -65,4 +65,6 @@ MP_NORETURN MP_UNUSED static void mp_machine_deepsleep(size_t n_args, const mp_o
     { MP_ROM_QSTR(MP_QSTR_SPI),   MP_ROM_PTR(&machine_spi_type) }, \
     { MP_ROM_QSTR(MP_QSTR_I2C),   MP_ROM_PTR(&machine_i2c_type) }, \
     { MP_ROM_QSTR(MP_QSTR_ADC),   MP_ROM_PTR(&machine_adc_type) }, \
-    { MP_ROM_QSTR(MP_QSTR_PWM),   MP_ROM_PTR(&machine_pwm_type) },
+    { MP_ROM_QSTR(MP_QSTR_PWM),   MP_ROM_PTR(&machine_pwm_type) }, \
+    { MP_ROM_QSTR(MP_QSTR_SoftSPI), MP_ROM_PTR(&mp_machine_soft_spi_type) }, \
+    { MP_ROM_QSTR(MP_QSTR_SoftI2C), MP_ROM_PTR(&mp_machine_soft_i2c_type) },

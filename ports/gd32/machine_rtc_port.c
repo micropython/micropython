@@ -129,3 +129,33 @@ MP_DEFINE_CONST_OBJ_TYPE(
     make_new, machine_rtc_make_new,
     locals_dict, &machine_rtc_locals_dict
     );
+
+// ---- epoch helper for filesystem timestamps ----
+// Simple days-since-epoch calculation from the calendar RTC.
+uint64_t machine_rtc_get_epoch_seconds(void) {
+    rtc_parameter_struct p;
+    rtc_register_sync_wait();
+    rtc_current_time_get(&p);
+
+    int year = 2000 + bcd2dec(p.year);
+    int month = bcd2dec(p.month);
+    int day = bcd2dec(p.date);
+    int hour = bcd2dec(p.hour);
+    int minute = bcd2dec(p.minute);
+    int second = bcd2dec(p.second);
+
+    // days since 1970-01-01
+    static const int mdays[] = { 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334 };
+    uint32_t days = 0;
+    for (int y = 1970; y < year; y++) {
+        days += ((y % 4 == 0 && y % 100 != 0) || y % 400 == 0) ? 366 : 365;
+    }
+    days += mdays[(month >= 1 && month <= 12) ? month - 1 : 0];
+    if (month > 2 && ((year % 4 == 0 && year % 100 != 0) || year % 400 == 0)) {
+        days += 1;
+    }
+    days += (uint32_t)(day - 1);
+
+    return (uint64_t)days * 86400ull + (uint64_t)hour * 3600ull
+         + (uint64_t)minute * 60ull + (uint64_t)second;
+}

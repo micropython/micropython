@@ -202,6 +202,7 @@ ports/gd32/
 ├── machine_rtc_port.c       machine.RTC
 ├── machine_can_port.c       machine.CAN (extmod includefile)
 ├── machine_pwm_port.c       machine.PWM (extmod includefile)
+├── flashbdev.c              internal-flash block device for littlefs
 ├── modmachine_port.c        port hooks + peripheral registration
 ├── pin_defs.h               pin encoding helpers
 ├── gen_pins.py              pins.csv -> C table generator
@@ -236,6 +237,9 @@ ports/gd32/
 | `machine.RTC` — calendar RTC, `init()` / `datetime()` | ✅ working |
 | `machine.CAN` — bxCAN, 2 instances, classic CAN, filters, irq | ✅ working |
 | `machine.PWM` — TIMER0/1/2/3/7/8/12 channels, 16-bit duty | ✅ working |
+| `machine.Signal` / `PinBase` | ✅ working |
+| `machine.SoftSPI` / `SoftI2C` — bit-bang on any pins | ✅ working |
+| littlefs2 filesystem on internal flash | ✅ working |
 | `machine.freq()`, `machine.reset()`, `machine.unique_id()` | ✅ |
 | `machine.PWM` — timer output compare, freq + duty_u16/duty_ns | ✅ working |
 
@@ -283,6 +287,34 @@ library is BSD-3-Clause, Copyright (c) GigaDevice Semiconductor Inc.
 See `gd32lib/` sources for the original headers.
 
 
+## Filesystem
+
+The last 64 KB of internal flash (`0x08070000`–`0x08080000`, sectors 4-7) is
+reserved for a **littlefs2** filesystem mounted at `/` at boot:
+
+```python
+import os
+print(os.listdir('/'))          # []
+
+with open('/boot.py', 'w') as f:
+    f.write("print('hello')\n")
+
+print(open('/boot.py').read())
+os.stat('/boot.py')
+```
+
+Notes:
+
+- The filesystem is mounted read-write; the block device caches one 16 KB
+  sector in RAM and flushes on `sync()`/`ioctl`.
+- If flash is blank, the first mount will fail silently and `/` stays empty.
+  Run `import vfs; vfs.VfsLfs2.mkfs(pyb_flash_get_block_device())` style
+  formatting (see `extmod/vfs_lfs.h`) or re-flash with the FS region erased.
+- File mtimes come from `mp_hal_time_ns()`, which reads the RTC when
+  available and otherwise returns a fixed epoch offset by uptime.
+- **Flash wear**: writing to the FS erases 16 KB sectors. Do not use it as
+  a scratch buffer in a tight loop.
+
 ## Machine module coverage
 
 Compared with `ports/stm32` for STM32F4:
@@ -300,8 +332,8 @@ Compared with `ports/stm32` for STM32F4:
 | `RTC` | ✅ | calendar, BCD conversion internal |
 | `CAN` | ✅ | bxCAN CAN0/CAN1, classic CAN |
 | `PWM` | ✅ | TIMER0/1/2/3/7/8/12, duty_u16 + duty_ns |
-| `Signal` | ⬜ | needs `MICROPY_PY_MACHINE_SIGNAL` + `machine_pinbase_type` |
-| `SoftSPI` / `SoftI2C` | ⬜ | extmod bit-bang; needs pin-level callbacks |
+| `Signal` / `PinBase` | ✅ | Pin implements the virtpin protocol |
+| `SoftSPI` / `SoftI2C` | ✅ | extmod bit-bang on any GPIO |
 | `SDCard` | ⬜ | needs SDIO driver |
 | `I2S` | ⬜ | needs SPI/I2S audio driver |
 | `I2CTarget` | ⬜ | needs slave-mode I2C |

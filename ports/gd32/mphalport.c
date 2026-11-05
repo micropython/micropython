@@ -106,3 +106,57 @@ void mp_hal_delay_us(mp_uint_t us) {
 void mp_hal_set_interrupt_char(int c) {
     (void)c;
 }
+
+// ---- pin low-level operations (used by extmod soft protocols) ----
+void mp_hal_pin_write_impl_(mp_hal_pin_obj_t pin, int value) {
+    uint8_t port = PIN_PORT(pin.pin);
+    uint32_t mask = (uint32_t)(1U << PIN_NUM(pin.pin));
+    rcu_periph_clock_enable(pin_port_rcu(port));
+    gpio_bit_write(pin_port_base(port), mask, value ? SET : RESET);
+}
+
+void mp_hal_pin_open_drain_impl(mp_hal_pin_obj_t pin) {
+    uint8_t port = PIN_PORT(pin.pin);
+    uint32_t mask = (uint32_t)(1U << PIN_NUM(pin.pin));
+    rcu_periph_clock_enable(pin_port_rcu(port));
+    gpio_mode_set(pin_port_base(port), GPIO_MODE_OUTPUT, GPIO_PUPD_PULLUP, mask);
+    gpio_output_options_set(pin_port_base(port), GPIO_OTYPE_OD, GPIO_OSPEED_50MHZ, mask);
+    gpio_bit_set(pin_port_base(port), mask);
+}
+
+int mp_hal_pin_read_impl(mp_hal_pin_obj_t pin) {
+    uint8_t port = PIN_PORT(pin.pin);
+    uint32_t mask = (uint32_t)(1U << PIN_NUM(pin.pin));
+    return gpio_input_bit_get(pin_port_base(port), mask) ? 1 : 0;
+}
+
+void mp_hal_pin_input_impl(mp_hal_pin_obj_t pin) {
+    uint8_t port = PIN_PORT(pin.pin);
+    uint32_t mask = (uint32_t)(1U << PIN_NUM(pin.pin));
+    rcu_periph_clock_enable(pin_port_rcu(port));
+    gpio_mode_set(pin_port_base(port), GPIO_MODE_INPUT, GPIO_PUPD_NONE, mask);
+}
+
+void mp_hal_pin_output_impl(mp_hal_pin_obj_t pin) {
+    uint8_t port = PIN_PORT(pin.pin);
+    uint32_t mask = (uint32_t)(1U << PIN_NUM(pin.pin));
+    rcu_periph_clock_enable(pin_port_rcu(port));
+    gpio_mode_set(pin_port_base(port), GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, mask);
+    gpio_output_options_set(pin_port_base(port), GPIO_OTYPE_PP, GPIO_OSPEED_50MHZ, mask);
+}
+
+// ---- wall-clock time for filesystem timestamps ----
+// We only have a millisecond uptime counter plus (optionally) the RTC.
+// Report epoch time when the RTC is configured, otherwise a fixed epoch
+// offset by uptime so that file mtimes at least increase monotonically.
+extern uint64_t machine_rtc_get_epoch_seconds(void) __attribute__((weak));
+
+uint64_t mp_hal_time_ns(void) {
+    uint64_t secs;
+    if (machine_rtc_get_epoch_seconds != NULL) {
+        secs = machine_rtc_get_epoch_seconds();
+    } else {
+        secs = 1762300000ull;   // fallback epoch (2025-11-05)
+    }
+    return secs * 1000000000ull + (uint64_t)systick_ms * 1000000ull;
+}
