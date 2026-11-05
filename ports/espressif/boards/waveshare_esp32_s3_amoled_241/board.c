@@ -48,7 +48,6 @@ void board_init(void) {
     power_pin.base.type = &digitalio_digitalinout_type;
     common_hal_digitalio_digitalinout_construct(&power_pin, CIRCUITPY_LCD_POWER);
     common_hal_digitalio_digitalinout_set_value(&power_pin, true);
-    common_hal_digitalio_digitalinout_never_reset(&power_pin);
     // Allow power rail to settle before reset/init.
     mp_hal_delay_ms(200);
 

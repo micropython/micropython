@@ -24,4 +24,10 @@ bool espressif_board_reset_pin_number(gpio_num_t pin_number) {
     return false;
 }
 
+void board_init(void) {
+    // GPIO33 (BAT_HOLD) keeps the board on when USB is disconnected or the
+    // power button is released. Default to high (on).
+    espressif_board_reset_pin_number(33);
+}
+
 // Use the MP_WEAK supervisor/shared/board.c versions of routines not defined here.

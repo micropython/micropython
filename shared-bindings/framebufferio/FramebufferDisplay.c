@@ -13,6 +13,7 @@
 #include "py/binary.h"
 #include "py/objproperty.h"
 #include "py/objtype.h"
+#include "py/proto.h"
 #include "py/runtime.h"
 #include "shared-bindings/displayio/Group.h"
 #include "shared-bindings/microcontroller/Pin.h"
@@ -39,7 +40,9 @@
 //|     ) -> None:
 //|         """Create a Display object with the given framebuffer (a buffer, array, ulab.array, etc)
 //|
-//|         :param ~circuitpython_typing.FrameBuffer framebuffer: The framebuffer that the display is connected to
+//|         :param ~circuitpython_typing.FrameBuffer framebuffer: The framebuffer that the display is connected to.
+//|             If it is an instance of a Python subclass of a native framebuffer type, the
+//|             display uses the native object and does not keep the subclass instance.
 //|         :param bool auto_refresh: Automatically refresh the screen
 //|         :param int rotation: The rotation of the display in degrees clockwise. Must be in 90 degree increments (0, 90, 180, 270)
 //|         """
@@ -57,6 +60,17 @@ static mp_obj_t framebufferio_framebufferdisplay_make_new(const mp_obj_type_t *t
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     mp_obj_t framebuffer = args[ARG_framebuffer].u_obj;
+    // Use the native object behind a Python subclass. The framebuffer protocol
+    // functions expect it, and the native object (not the heap instance) is
+    // what stays alive with the display after the VM ends.
+    // Instances only inherit the protocol from a native base, so subobj[0]
+    // exists when the protocol does.
+    if (mp_obj_is_instance_type(mp_obj_get_type(framebuffer)) &&
+        mp_proto_get(MP_QSTR_protocol_framebuffer, framebuffer) != NULL) {
+        mp_obj_instance_t *instance = MP_OBJ_TO_PTR(framebuffer);
+        framebuffer = instance->subobj[0];
+        mp_obj_assert_native_inited(framebuffer);
+    }
 
     mp_int_t rotation = args[ARG_rotation].u_int;
     if (rotation % 90 != 0) {

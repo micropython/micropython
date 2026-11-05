@@ -764,6 +764,8 @@ void common_hal_rp2pio_statemachine_construct(rp2pio_statemachine_obj_t *self,
 
     // Ensure object starts in its deinit state.
     common_hal_rp2pio_statemachine_mark_deinit(self);
+    // No background read has started, so there is none pending.
+    self->dma_completed_read = true;
 
     // First, check that all pins are free OR already in use by any PIO if exclusive_pin_use is false.
     _check_gpio_mask_free(wait_gpio_mask);
@@ -1638,6 +1640,7 @@ bool common_hal_rp2pio_statemachine_stop_background_read(rp2pio_statemachine_obj
     memset(&self->next_read_buf_2, 0, sizeof(self->next_read_buf_2));
     memset(&self->next_read_buf_3, 0, sizeof(self->next_read_buf_3));
     self->pending_buffers_read = 0;
+    self->dma_completed_read = true;
     return true;
 }
 

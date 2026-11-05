@@ -11,6 +11,17 @@
 #include "common-hal/microcontroller/Pin.h"
 
 void board_init(void) {
+    // Most of these pins drive active-high LEDs. Default to pulled down (off).
+    //
+    // GPIO13 (VOLTAGE_MONITOR) measures the battery voltage. Default to no
+    // pull.
+    static const gpio_num_t pins_to_reset[] = {
+        4, 5, 6, 7, 8, 9, 10, 12, 13, 14, 15, 16, 17, 18, 21, 38, 39, 40, 41, 42, 47, 48,
+    };
+    for (size_t i = 0; i < MP_ARRAY_SIZE(pins_to_reset); i++) {
+        espressif_board_reset_pin_number(pins_to_reset[i]);
+    }
+
     reset_board();
 }
 

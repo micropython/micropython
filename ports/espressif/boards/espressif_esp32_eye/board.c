@@ -11,6 +11,11 @@
 #include "common-hal/microcontroller/Pin.h"
 
 void board_init(void) {
+    // GPIO21 (LED_RED) and GPIO22 (LED_WHITE) drive LEDs. Default to pulled
+    // down (off).
+    espressif_board_reset_pin_number(21);
+    espressif_board_reset_pin_number(22);
+
     reset_board();
 }
 

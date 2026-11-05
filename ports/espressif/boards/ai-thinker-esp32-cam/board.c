@@ -11,6 +11,10 @@
 #include "driver/gpio.h"
 
 void board_init(void) {
+    // GPIO4 (FLASHLIGHT) drives a very bright LED. Default to pulled down
+    // (off).
+    espressif_board_reset_pin_number(4);
+
     reset_board();
 }
 

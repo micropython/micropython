@@ -434,6 +434,9 @@ mp_uint_t sdcardio_sdcard_readblocks(mp_obj_t self_in, uint8_t *buf, uint32_t st
             ptr += 512;
         }
 
+        // Keep the first error: the CMD12 status below must not overwrite a failed read.
+        int read_r = r;
+
         // End the multi-block read
         r = cmd(self, 12, 0, NULL, 0, true, false);
 
@@ -446,9 +449,12 @@ mp_uint_t sdcardio_sdcard_readblocks(mp_obj_t self_in, uint8_t *buf, uint32_t st
             }
             r = single_byte;
         }
+        if (read_r != 0) {
+            r = read_r;
+        }
     }
     extraclock_and_unlock_bus(self);
-    // No caller actually uses this value.
+    // Negative errors reach the Python binding, which raises OSError.
     return r;
 }
 

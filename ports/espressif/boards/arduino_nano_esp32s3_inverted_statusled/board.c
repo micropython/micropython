@@ -10,7 +10,7 @@
 #include "driver/gpio.h"
 
 bool espressif_board_reset_pin_number(gpio_num_t pin_number) {
-    if (pin_number == 13) {
+    if (pin_number == 48) {
         // Set D13 LED to input when not in use
         gpio_config_t cfg = {
             .pin_bit_mask = BIT64(pin_number),
@@ -24,6 +24,12 @@ bool espressif_board_reset_pin_number(gpio_num_t pin_number) {
     }
 
     return false;
+}
+
+void board_init(void) {
+    // GPIO48 (LED) drives the D13 LED. Default to an input with a pull-down
+    // (off).
+    espressif_board_reset_pin_number(48);
 }
 
 // Use the MP_WEAK supervisor/shared/board.c versions of routines not defined here.

@@ -41,7 +41,6 @@ void board_init(void) {
     // HIGH. FourWire assumes active low and leaves the pin high, which holds
     // this panel in reset forever with no error. So assert it here, release
     // it low, and hand FourWire reset = None.
-    common_hal_never_reset_pin(&pin_GPIO48);
     config_pin_as_output_with_level(GPIO_NUM_48, true);
     mp_hal_delay_ms(10);
     config_pin_as_output_with_level(GPIO_NUM_48, false);
@@ -50,7 +49,6 @@ void board_init(void) {
     fourwire_fourwire_obj_t *bus = &allocate_display_bus()->fourwire_bus;
     busio_spi_obj_t *spi = &bus->inline_bus;
     common_hal_busio_spi_construct(spi, &pin_GPIO7, &pin_GPIO6, NULL, false);
-    common_hal_busio_spi_never_reset(spi);
 
     bus->base.type = &fourwire_fourwire_type;
     common_hal_fourwire_fourwire_construct(bus,

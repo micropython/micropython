@@ -1811,6 +1811,14 @@ msgstr ""
 msgid "ISP conversion not supported on this chip"
 msgstr ""
 
+#: ports/espressif/common-hal/mipidsi/Bus.c
+msgid "%q is above %u"
+msgstr ""
+
+#: ports/espressif/common-hal/mipidsi/Bus.c
+msgid "%q is not reachable by the PHY"
+msgstr ""
+
 #: ports/espressif/common-hal/nvm/ByteArray.c
 msgid "NVS Error"
 msgstr "Ошибка NVS"
@@ -4103,8 +4111,7 @@ msgstr ""
 msgid "%q and %q must be different"
 msgstr "%q и %q должны быть разными"
 
-#: shared-bindings/audiomp3/MP3Decoder.c
-#: shared-bindings/displayio/OnDiskBitmap.c shared-bindings/gifio/OnDiskGif.c
+#: shared-bindings/audiomp3/MP3Decoder.c shared-bindings/gifio/OnDiskGif.c
 #: shared-bindings/synthio/__init__.c shared-module/gifio/GifWriter.c
 msgid "file must be a file opened in byte mode"
 msgstr "Файл должен быть файлом, открытым в байтовом режиме"

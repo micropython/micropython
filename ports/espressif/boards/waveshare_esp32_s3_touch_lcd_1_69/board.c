@@ -36,7 +36,6 @@ static void display_init(void) {
     fourwire_fourwire_obj_t *bus = &allocate_display_bus()->fourwire_bus;
     busio_spi_obj_t *spi = &bus->inline_bus;
     common_hal_busio_spi_construct(spi, &pin_GPIO6, &pin_GPIO7, NULL, false);
-    common_hal_busio_spi_never_reset(spi);
 
     bus->base.type = &fourwire_fourwire_type;
     common_hal_fourwire_fourwire_construct(
@@ -85,6 +84,10 @@ static void display_init(void) {
 }
 
 void board_init(void) {
+    // SYS_EN_PIN is the power latch that keeps the board on when it runs from
+    // the battery. Default to high (on).
+    espressif_board_reset_pin_number(SYS_EN_PIN);
+
     display_init();
 }
 

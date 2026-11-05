@@ -37,6 +37,7 @@
 //|         brightness: float = 1.0,
 //|         native_frames_per_second: int = 60,
 //|         backlight_on_high: bool = True,
+//|         low_power_blanking: bool = True,
 //|     ) -> None:
 //|         """Create a MIPI DSI Display object connected to the given bus.
 //|
@@ -51,6 +52,9 @@
 //|         A Display is often used in conjunction with a
 //|         `framebufferio.FramebufferDisplay`.
 //|
+//|         Drivers for DSI bridges can subclass Display. Set up the bridge before
+//|         calling ``super().__init__()``, which starts DSI video.
+//|
 //|         :param Bus bus: the DSI bus to use
 //|         :param ~circuitpython_typing.ReadableBuffer init_sequence: Byte-packed initialization sequence for the display
 //|         :param int width: the width of the framebuffer in pixels
@@ -61,7 +65,8 @@
 //|         :param int vsync_pulse_width: vertical sync pulse width in lines
 //|         :param int vsync_back_porch: vertical back porch in lines
 //|         :param int vsync_front_porch: vertical front porch in lines
-//|         :param int pixel_clock_frequency: pixel clock frequency in Hz
+//|         :param int pixel_clock_frequency: pixel clock frequency in Hz. The clock actually
+//|             generated can differ; read it back from `pixel_clock_frequency`.
 //|         :param int virtual_channel: the DSI virtual channel (0-3)
 //|         :param int rotation: the rotation of the display in degrees clockwise (0, 90, 180, 270)
 //|         :param int color_depth: the color depth of the framebuffer in bits (16 or 24)
@@ -69,6 +74,9 @@
 //|         :param float brightness: Initial display brightness (0.0 to 1.0)
 //|         :param int native_frames_per_second: Number of display refreshes per second
 //|         :param bool backlight_on_high: If True, pulling the backlight pin high turns the backlight on
+//|         :param bool low_power_blanking: If True, the DSI lanes may drop to low power mode
+//|             during blanking. Set False to keep them in high speed mode, which bridges
+//|             that regenerate the pixel clock from the DSI clock (such as the LT8912B) need.
 //|         """
 //|
 
@@ -77,7 +85,7 @@ static mp_obj_t mipidsi_display_make_new(const mp_obj_type_t *type, size_t n_arg
            ARG_hsync_front_porch, ARG_vsync_pulse_width, ARG_vsync_back_porch, ARG_vsync_front_porch,
            ARG_pixel_clock_frequency, ARG_virtual_channel, ARG_rotation,
            ARG_color_depth, ARG_backlight_pin, ARG_brightness, ARG_native_frames_per_second,
-           ARG_backlight_on_high };
+           ARG_backlight_on_high, ARG_low_power_blanking };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_bus, MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_init_sequence, MP_ARG_REQUIRED | MP_ARG_OBJ },
@@ -97,6 +105,7 @@ static mp_obj_t mipidsi_display_make_new(const mp_obj_type_t *type, size_t n_arg
         { MP_QSTR_brightness, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = MP_OBJ_NEW_SMALL_INT(1)} },
         { MP_QSTR_native_frames_per_second, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 60} },
         { MP_QSTR_backlight_on_high, MP_ARG_BOOL | MP_ARG_KW_ONLY, {.u_bool = true} },
+        { MP_QSTR_low_power_blanking, MP_ARG_BOOL | MP_ARG_KW_ONLY, {.u_bool = true} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -138,7 +147,8 @@ static mp_obj_t mipidsi_display_make_new(const mp_obj_type_t *type, size_t n_arg
         args[ARG_vsync_pulse_width].u_int,
         args[ARG_vsync_back_porch].u_int,
         args[ARG_vsync_front_porch].u_int,
-        args[ARG_pixel_clock_frequency].u_int);
+        args[ARG_pixel_clock_frequency].u_int,
+        args[ARG_low_power_blanking].u_bool);
 
     return MP_OBJ_FROM_PTR(self);
 }
@@ -206,6 +216,19 @@ MP_DEFINE_CONST_FUN_OBJ_1(mipidsi_display_get_color_depth_obj, mipidsi_display_g
 MP_PROPERTY_GETTER(mipidsi_display_color_depth_obj,
     (mp_obj_t)&mipidsi_display_get_color_depth_obj);
 
+//|     pixel_clock_frequency: int
+//|     """The pixel clock frequency the DSI host actually generates, in Hz. This
+//|     can differ from the requested frequency when the clock source cannot divide
+//|     down to it exactly."""
+static mp_obj_t mipidsi_display_get_pixel_clock_frequency(mp_obj_t self_in) {
+    mipidsi_display_obj_t *self = native_display(self_in);
+    check_for_deinit(self);
+    return mp_obj_new_int_from_uint(common_hal_mipidsi_display_get_pixel_clock_frequency(self));
+}
+MP_DEFINE_CONST_FUN_OBJ_1(mipidsi_display_get_pixel_clock_frequency_obj, mipidsi_display_get_pixel_clock_frequency);
+MP_PROPERTY_GETTER(mipidsi_display_pixel_clock_frequency_obj,
+    (mp_obj_t)&mipidsi_display_get_pixel_clock_frequency_obj);
+
 
 static const mp_rom_map_elem_t mipidsi_display_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&mipidsi_display_deinit_obj) },
@@ -214,6 +237,7 @@ static const mp_rom_map_elem_t mipidsi_display_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_width), MP_ROM_PTR(&mipidsi_display_width_obj) },
     { MP_ROM_QSTR(MP_QSTR_height), MP_ROM_PTR(&mipidsi_display_height_obj) },
     { MP_ROM_QSTR(MP_QSTR_color_depth), MP_ROM_PTR(&mipidsi_display_color_depth_obj) },
+    { MP_ROM_QSTR(MP_QSTR_pixel_clock_frequency), MP_ROM_PTR(&mipidsi_display_pixel_clock_frequency_obj) },
 };
 static MP_DEFINE_CONST_DICT(mipidsi_display_locals_dict, mipidsi_display_locals_dict_table);
 
@@ -233,8 +257,7 @@ static bool mipidsi_display_set_brightness_proto(mp_obj_t self_in, mp_float_t va
 // These versions exist so that the prototype matches the protocol,
 // avoiding a type cast that can hide errors
 static void mipidsi_display_swapbuffers(mp_obj_t self_in, uint8_t *dirty_row_bitmap) {
-    (void)dirty_row_bitmap;
-    common_hal_mipidsi_display_refresh(self_in);
+    common_hal_mipidsi_display_refresh_rows(self_in, dirty_row_bitmap);
 }
 
 static void mipidsi_display_deinit_proto(mp_obj_t self_in) {

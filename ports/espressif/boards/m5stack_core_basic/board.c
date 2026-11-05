@@ -35,6 +35,10 @@ uint8_t display_init_sequence[] = {
 };
 
 void board_init(void) {
+    // GPIO25 (SPEAKER) drives the speaker. Default to low, to keep noise off
+    // it.
+    espressif_board_reset_pin_number(25);
+
     busio_spi_obj_t *spi = common_hal_board_create_spi(0);
     fourwire_fourwire_obj_t *bus = &allocate_display_bus()->fourwire_bus;
     bus->base.type = &fourwire_fourwire_type;

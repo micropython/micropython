@@ -25,8 +25,6 @@ void common_hal_mii_mdio_construct(mii_mdio_obj_t *self,
     self->mdio = mdio->number;
 
     claim_pin(mdc);
-    never_reset_pin_number(mdc->number);
     claim_pin(mdio);
-    never_reset_pin_number(mdio->number);
     #endif
 }

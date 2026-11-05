@@ -465,7 +465,6 @@ static const uint8_t hosted_pins[] = {
 static bool start_hosted(void) {
     for (size_t i = 0; i < MP_ARRAY_SIZE(hosted_pins); i++) {
         claim_pin_number(hosted_pins[i]);
-        never_reset_pin_number(hosted_pins[i]);
     }
     esp_hosted_coprocessor_fwver_t version;
     // esp_hosted_connect_to_slave() waits for the transport but always returns ESP_OK. The version

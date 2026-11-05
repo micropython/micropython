@@ -42,6 +42,10 @@ uint8_t display_init_sequence[] = {
 };
 
 void board_init(void) {
+    // GPIO46 (POWER_HOLD) keeps the board on when it runs from the battery.
+    // Default to high (on).
+    espressif_board_reset_pin_number(46);
+
     busio_spi_obj_t *spi = common_hal_board_create_spi(0);
     fourwire_fourwire_obj_t *bus = &allocate_display_bus()->fourwire_bus;
     bus->base.type = &fourwire_fourwire_type;

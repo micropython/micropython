@@ -73,7 +73,6 @@ void board_init(void) {
     fourwire_fourwire_obj_t *bus = &allocate_display_bus()->fourwire_bus;
     busio_spi_obj_t *spi = &bus->inline_bus;
     common_hal_busio_spi_construct(spi, &pin_GPIO8, &pin_GPIO10, NULL, false);
-    common_hal_busio_spi_never_reset(spi);
 
     bus->base.type = &fourwire_fourwire_type;
     common_hal_fourwire_fourwire_construct(bus,
@@ -111,10 +110,6 @@ void board_init(void) {
     args.two_byte_sequence_length = true;
     args.address_little_endian = true;
     common_hal_epaperdisplay_epaperdisplay_construct(display, &args);
-}
-
-bool espressif_board_reset_pin_number(gpio_num_t pin_number) {
-    return false;
 }
 
 void board_deinit(void) {

@@ -8,7 +8,6 @@
 
 static touch_sensor_handle_t touch_controller = NULL;
 static touch_channel_handle_t touch_channels[TOUCH_TOTAL_CHAN_NUM] = {NULL};
-static bool touch_never_reset_flag = false;
 static bool touch_enabled = false;
 static bool touch_scanning = false;
 
@@ -24,8 +23,51 @@ touch_channel_handle_t peripherals_touch_get_handle(int channel_id) {
     return touch_channels[chan_index(channel_id)];
 }
 
+void peripherals_touch_deinit(const int channel_id) {
+    int idx = chan_index(channel_id);
+
+    if (touch_channels[idx] == NULL) {
+        return;
+    }
+
+    // ESP-IDF deletes channels only while the controller is disabled.
+    if (touch_scanning) {
+        touch_sensor_stop_continuous_scanning(touch_controller);
+        touch_scanning = false;
+    }
+    if (touch_enabled) {
+        touch_sensor_disable(touch_controller);
+        touch_enabled = false;
+    }
+
+    touch_sensor_del_channel(touch_channels[idx]);
+    touch_channels[idx] = NULL;
+
+    bool any_channel = false;
+    for (unsigned int i = 0; i < TOUCH_TOTAL_CHAN_NUM; i++) {
+        if (touch_channels[i] != NULL) {
+            any_channel = true;
+            break;
+        }
+    }
+
+    if (any_channel) {
+        // Resume scanning the remaining channels.
+        if (touch_sensor_enable(touch_controller) == ESP_OK) {
+            touch_enabled = true;
+            if (touch_sensor_start_continuous_scanning(touch_controller) == ESP_OK) {
+                touch_scanning = true;
+            }
+        }
+        return;
+    }
+
+    touch_sensor_del_controller(touch_controller);
+    touch_controller = NULL;
+}
+
 void peripherals_touch_reset(void) {
-    if (touch_controller != NULL && !touch_never_reset_flag) {
+    if (touch_controller != NULL) {
         if (touch_scanning) {
             touch_sensor_stop_continuous_scanning(touch_controller);
             touch_scanning = false;
@@ -45,25 +87,33 @@ void peripherals_touch_reset(void) {
     }
 }
 
-void peripherals_touch_never_reset(const bool enable) {
-    touch_never_reset_flag = enable;
+static esp_err_t first_error(esp_err_t first, esp_err_t second) {
+    return first != ESP_OK ? first : second;
 }
 
-void peripherals_touch_init(const int channel_id) {
+esp_err_t peripherals_touch_init(const int channel_id) {
     int idx = chan_index(channel_id);
 
     // Already initialized this channel
     if (touch_channels[idx] != NULL) {
-        return;
+        return ESP_OK;
     }
+
+    esp_err_t err;
 
     // Stop scanning and disable before modifying channels
     if (touch_scanning) {
-        touch_sensor_stop_continuous_scanning(touch_controller);
+        err = touch_sensor_stop_continuous_scanning(touch_controller);
+        if (err != ESP_OK) {
+            return err;
+        }
         touch_scanning = false;
     }
     if (touch_enabled) {
-        touch_sensor_disable(touch_controller);
+        err = touch_sensor_disable(touch_controller);
+        if (err != ESP_OK) {
+            return err;
+        }
         touch_enabled = false;
     }
 
@@ -78,7 +128,10 @@ void peripherals_touch_init(const int channel_id) {
         #error bad SOC_TOUCH_SENSOR_VERSION
         #endif
         touch_sensor_config_t sens_cfg = TOUCH_SENSOR_DEFAULT_BASIC_CONFIG(1, &sample_cfg);
-        touch_sensor_new_controller(&sens_cfg, &touch_controller);
+        err = touch_sensor_new_controller(&sens_cfg, &touch_controller);
+        if (err != ESP_OK) {
+            return err;
+        }
     }
 
     #if SOC_TOUCH_SENSOR_VERSION == 1
@@ -103,13 +156,36 @@ void peripherals_touch_init(const int channel_id) {
     #error bad SOC_TOUCH_SENSOR_VERSION
     #endif
 
-    touch_sensor_new_channel(touch_controller, channel_id, &chan_cfg, &touch_channels[idx]);
+    // On failure, touch_channels[idx] is left NULL.
+    esp_err_t result = touch_sensor_new_channel(touch_controller, channel_id, &chan_cfg, &touch_channels[idx]);
 
-    // Enable and start continuous scanning
-    touch_sensor_enable(touch_controller);
+    // Enable and start continuous scanning, even if the new channel failed,
+    // so existing channels keep working. Return the first error.
+    err = touch_sensor_enable(touch_controller);
+    if (err != ESP_OK) {
+        return first_error(result, err);
+    }
     touch_enabled = true;
-    touch_sensor_start_continuous_scanning(touch_controller);
+
+    #if SOC_TOUCH_SENSOR_VERSION == 3
+    // The smooth data of a new channel is invalid (reads >= 65535) until it has been
+    // measured. Scan a few times first, as the ESP-IDF touch_sens_basic example does.
+    for (int i = 0; i < 3; i++) {
+        err = touch_sensor_trigger_oneshot_scanning(touch_controller, 100);
+        if (err != ESP_OK) {
+            result = first_error(result, err);
+            break;
+        }
+    }
+    #endif
+
+    err = touch_sensor_start_continuous_scanning(touch_controller);
+    if (err != ESP_OK) {
+        return first_error(result, err);
+    }
     touch_scanning = true;
+
+    return result;
 }
 
 uint16_t peripherals_touch_read(int channel_id) {

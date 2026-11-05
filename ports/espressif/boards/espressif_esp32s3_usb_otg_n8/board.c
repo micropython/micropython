@@ -52,10 +52,21 @@ uint8_t display_init_sequence[] = {
 };
 
 void board_init(void) {
+    // Default these pins to pulled down:
+    //   GPIO13  BOOST_EN    boost converter off
+    //   GPIO15  LED_GREEN   LED off
+    //   GPIO16  LED_YELLOW  LED off
+    //   GPIO18  USB_SEL     low
+    static const gpio_num_t pins_to_reset[] = {
+        13, 15, 16, 18,
+    };
+    for (size_t i = 0; i < MP_ARRAY_SIZE(pins_to_reset); i++) {
+        espressif_board_reset_pin_number(pins_to_reset[i]);
+    }
+
     fourwire_fourwire_obj_t *bus = &allocate_display_bus()->fourwire_bus;
     busio_spi_obj_t *spi = &bus->inline_bus;
     common_hal_busio_spi_construct(spi, &pin_GPIO6, &pin_GPIO7, NULL, false);
-    common_hal_busio_spi_never_reset(spi);
 
     bus->base.type = &fourwire_fourwire_type;
     common_hal_fourwire_fourwire_construct(bus,
