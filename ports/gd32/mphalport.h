@@ -25,4 +25,14 @@ static inline void mp_hal_pin_low(const mp_obj_t pin) {
     mp_hal_pin_write_impl(pin, 0);
 }
 
+
+// ---- soft timer / PendSV critical section ----
+// Serialise access to the soft-timer pair-heap against the SysTick
+// handler by masking interrupts above the SysTick priority.
+#if MICROPY_PY_MACHINE_TIMER
+#include "gd32f4xx.h"
+#define MICROPY_PY_PENDSV_ENTER    uint32_t atomic_state = (uint32_t)__get_PRIMASK(); __disable_irq()
+#define MICROPY_PY_PENDSV_EXIT     do { if (!atomic_state) { __enable_irq(); } } while (0)
+#endif
+
 #endif // MICROPY_INCLUDED_GD32_MPHALPORT_H

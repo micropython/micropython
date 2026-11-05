@@ -93,6 +93,50 @@ print(Pin("PA0"))               # Pin(PA0)
 Available constants: `Pin.IN`, `Pin.OUT`, `Pin.OPEN_DRAIN`,
 `Pin.PULL_UP`, `Pin.PULL_DOWN`, `Pin.PULL_NONE`.
 
+## Using peripherals
+
+```python
+from machine import Pin, UART, SPI, I2C, ADC, Timer, WDT
+
+# ---- UART ----
+u = UART(1, baudrate=115200, bits=8, parity=None, stop=1,
+         tx=Pin("PA2"), rx=Pin("PA3"))
+u.write(b"hello\r\n")
+n = u.any()
+data = u.read(10)          # blocks up to timeout
+
+# ---- SPI (master, software NSS) ----
+spi = SPI(0, baudrate=10_000_000, polarity=0, phase=0,
+          sck=Pin("PA5"), mosi=Pin("PA7"), miso=Pin("PA6"))
+spi.write(b"\x9f")
+val = spi.read(3)
+
+# ---- I2C ----
+i2c = I2C(0, freq=400000, scl=Pin("PB6"), sda=Pin("PB7"))
+i2c.writeto(0x68, b"\x00")
+raw = i2c.readfrom(0x68, 6)
+
+# ---- ADC ----
+adc = ADC(Pin("PA0"))      # PA0..PA7 -> ch0..7, PB0/1 -> ch8/9, PC0..5 -> ch10..15
+print(adc.read_u16())      # 0..4095 (12-bit)
+
+# ---- Timer (software timer, 1 kHz tick) ----
+def tick(t):
+    print("tick")
+
+tim = Timer(0, mode=Timer.PERIODIC, callback=tick, period=500)   # every 500 ms
+tim.deinit()
+
+# ---- Watchdog ----
+wdt = WDT(timeout=8000)    # 8 s
+wdt.feed()
+```
+
+### Pin encoding
+
+Pins are identified either by name (from `pins.csv`) or by an encoded
+integer `port << 4 | num`, e.g. `PA0` = `0`, `PB7` = `1 << 4 | 7` = `23`.
+
 ## Memory layout (GD32F407, 512K/128K)
 
 ```
@@ -112,7 +156,12 @@ ports/gd32/
 ├── main.c                   entry point, REPL loop
 ├── mphalport.c/.h           HAL: UART REPL, SysTick, delays
 ├── machine_pin.c            machine.Pin implementation
-├── modmachine_port.c        port hooks for extmod/modmachine.c
+├── machine_uart_port.c      machine.UART (extmod includefile)
+├── machine_spi_port.c       machine.SPI
+├── machine_i2c_port.c       machine.I2C
+├── machine_adc_port.c       machine.ADC (extmod includefile)
+├── machine_wdt_port.c       machine.WDT (extmod includefile)
+├── modmachine_port.c        port hooks + peripheral registration
 ├── pin_defs.h               pin encoding helpers
 ├── gen_pins.py              pins.csv -> C table generator
 ├── mpconfigport.h           MicroPython configuration
@@ -131,15 +180,25 @@ ports/gd32/
 
 ## Current feature status
 
-| Feature            | Status |
-|--------------------|--------|
+| Feature | Status |
+|---------|--------|
 | Boot + REPL (UART) | ✅ working |
 | `sys`, `gc`, `struct`, `array`, full compiler | ✅ |
-| `machine.Pin` (get/set, on/off/toggle, named + numeric) | ✅ working |
+| `machine.Pin` — get/set, on/off/toggle, named + numeric, IN/OUT/OPEN_DRAIN/PULL_* | ✅ working |
+| `machine.Timer` — soft timer, ONE_SHOT / PERIODIC, callback | ✅ working |
+| `machine.WDT` — independent watchdog (FWDGT), configurable timeout | ✅ working |
+| `machine.UART` — 6 instances, baudrate/bits/parity/stop, read/write/any/txdone | ✅ working |
+| `machine.SPI` — hardware SPI0-5, polarity/phase/bits/firstbit, transfer | ✅ working |
+| `machine.I2C` — hardware I2C0-2, master transfer via `modmachine` protocol | ✅ working |
+| `machine.ADC` — ADC0 channels 0-15, `read_u16()` | ✅ working |
 | `machine.freq()`, `machine.reset()`, `machine.unique_id()` | ✅ |
-| Timers / PWM / ADC / I2C / SPI / UART objects | ⬜ |
-| USB / SD card / filesystem | ⬜ |
-| Frozen modules     | ⬜ |
+| Hardware `machine.PWM` (timer output compare) | ⬜ next |
+| USB device / SD card / filesystem | ⬜ |
+| Frozen modules | ⬜ |
+
+The peripheral set is modelled on `ports/stm32` for STM32F4. Modules are
+implemented as either extmod `INCLUDEFILE` hooks or standalone files
+registered through `MICROPY_PY_MACHINE_EXTRA_GLOBALS`.
 
 This is a **bootable, REPL-capable port with working GPIO** intended
 as a solid base. `machine.Pin` is implemented against the GD32

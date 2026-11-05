@@ -5,6 +5,7 @@
 #include "py/mphal.h"
 #include "gd32f4xx.h"
 #include "mphalport.h"
+#include "shared/runtime/softtimer.h"
 
 // REPL UART: USART0 PA9(TX)/PA10(RX) AF7
 #define REPL_UART       USART0
@@ -61,10 +62,14 @@ mp_uint_t mp_hal_stdout_tx_strn(const char *str, size_t len) {
 }
 
 // SysTick
-static volatile uint32_t systick_ms = 0;
+volatile uint32_t systick_ms = 0;
 
 void SysTick_Handler(void) {
     systick_ms++;
+    #if MICROPY_PY_MACHINE_TIMER
+    // run soft timer callbacks at 1 kHz
+    soft_timer_handler();
+    #endif
 }
 
 mp_uint_t mp_hal_ticks_ms(void) {

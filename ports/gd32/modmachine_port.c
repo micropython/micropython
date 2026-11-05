@@ -53,4 +53,10 @@ MP_NORETURN MP_UNUSED static void mp_machine_deepsleep(size_t n_args, const mp_o
 // ---- machine.Pin registration ----
 // modmachine.c expands MICROPY_PY_MACHINE_EXTRA_GLOBALS into its globals table.
 #define MICROPY_PY_MACHINE_EXTRA_GLOBALS \
-    { MP_ROM_QSTR(MP_QSTR_Pin), MP_ROM_PTR(&machine_pin_type) },
+    { MP_ROM_QSTR(MP_QSTR_Pin),   MP_ROM_PTR(&machine_pin_type) }, \
+    { MP_ROM_QSTR(MP_QSTR_Timer), MP_ROM_PTR(&machine_timer_type) }, \
+    { MP_ROM_QSTR(MP_QSTR_WDT),   MP_ROM_PTR(&machine_wdt_type) }, \
+    { MP_ROM_QSTR(MP_QSTR_UART),  MP_ROM_PTR(&machine_uart_type) }, \
+    { MP_ROM_QSTR(MP_QSTR_SPI),   MP_ROM_PTR(&machine_spi_type) }, \
+    { MP_ROM_QSTR(MP_QSTR_I2C),   MP_ROM_PTR(&machine_i2c_type) }, \
+    { MP_ROM_QSTR(MP_QSTR_ADC),   MP_ROM_PTR(&machine_adc_type) },

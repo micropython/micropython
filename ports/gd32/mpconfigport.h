@@ -53,6 +53,32 @@ typedef long mp_off_t;
 #define MICROPY_PY_MACHINE_BOOTLOADER       (0)
 #define MICROPY_PY_MACHINE_FREQ_NUM_ARGS_MAX (1)
 
+// peripherals
+#define MICROPY_PY_MACHINE_TIMER          (1)
+// soft timer uses this 32-bit ms counter (provided by mphalport.c)
+extern volatile uint32_t systick_ms;
+#define MICROPY_SOFT_TIMER_TICKS_MS systick_ms
+#define MICROPY_PY_MACHINE_WDT            (1)
+#define MICROPY_PY_MACHINE_WDT_INCLUDEFILE "machine_wdt_port.c"
+#define MICROPY_PY_MACHINE_WDT_TIMEOUT_MS (1)
+#define MICROPY_PY_MACHINE_UART           (1)
+#define MICROPY_PY_MACHINE_UART_INCLUDEFILE "machine_uart_port.c"
+#define MICROPY_PY_MACHINE_SPI            (1)
+#define MICROPY_PY_MACHINE_I2C            (1)
+#define MICROPY_PY_MACHINE_ADC            (1)
+#define MICROPY_PY_MACHINE_ADC_INCLUDEFILE "machine_adc_port.c"
+#define MICROPY_PY_MACHINE_ADC_INIT       (0)
+#define MICROPY_PY_MACHINE_ADC_DEINIT     (0)
+#define MICROPY_PY_MACHINE_ADC_BLOCK      (0)
+#define MICROPY_PY_MACHINE_ADC_READ_UV    (0)
+#define MICROPY_PY_MACHINE_ADC_ATTEN_WIDTH (0)
+#define MICROPY_PY_MACHINE_ADC_READ       (0)
+#define MICROPY_PY_MACHINE_ADC_READ_TIMED (0)
+#define MICROPY_PY_MACHINE_ADC_CLASS_CONSTANTS
+#define MICROPY_PY_MACHINE_UART_CLASS_CONSTANTS \
+    { MP_ROM_QSTR(MP_QSTR_RTS), MP_ROM_INT(1) }, \
+    { MP_ROM_QSTR(MP_QSTR_CTS), MP_ROM_INT(2) },
+
 
 // UART REPL baud rate
 #ifndef MICROPY_HW_UART_REPL_BAUD
