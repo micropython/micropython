@@ -112,10 +112,6 @@ void board_init(void) {
     common_hal_epaperdisplay_epaperdisplay_construct(display, &args);
 }
 
-bool espressif_board_reset_pin_number(gpio_num_t pin_number) {
-    return false;
-}
-
 void board_deinit(void) {
     epaperdisplay_epaperdisplay_obj_t *display = &displays[0].epaper_display;
     if (display->base.type == &epaperdisplay_epaperdisplay_type) {
