@@ -131,6 +131,11 @@
 #define MICROPY_HW_ENABLE_DCMI (0)
 #endif
 
+// Whether to enable the LTDC display controller, exposed as stm.LTDC
+#ifndef MICROPY_HW_ENABLE_LTDC
+#define MICROPY_HW_ENABLE_LTDC (0)
+#endif
+
 // Whether to enable USB support
 #ifndef MICROPY_HW_ENABLE_USB
 #define MICROPY_HW_ENABLE_USB (0)

@@ -33,6 +33,7 @@
 #include "rfcore.h"
 #include "portmodules.h"
 #include "subghz.h"
+#include "ltdc.h"
 
 #if MICROPY_PY_STM
 
@@ -47,6 +48,10 @@ static const mp_rom_map_elem_t stm_module_globals_table[] = {
 
     #if MICROPY_PY_STM_CONST
     #include "genhdr/modstm_const.h"
+    #endif
+
+    #if MICROPY_HW_ENABLE_LTDC
+    { MP_ROM_QSTR(MP_QSTR_LTDC), MP_ROM_PTR(&stm_ltdc_type) },
     #endif
 
     #if defined(STM32WB)
