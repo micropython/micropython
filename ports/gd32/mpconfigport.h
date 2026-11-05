@@ -8,6 +8,11 @@
 // Use the "extra features" ROM level as a base and tune below.
 #define MICROPY_CONFIG_ROM_LEVEL (MICROPY_CONFIG_ROM_LEVEL_EXTRA_FEATURES)
 
+#define MICROPY_LONGINT_IMPL              (MICROPY_LONGINT_IMPL_MPZ)
+// newlib (bare-metal) does not provide SSIZE_MAX
+#ifndef SSIZE_MAX
+#define SSIZE_MAX (0x7FFFFFFF)
+#endif
 #define MICROPY_ENABLE_GC                 (1)
 #define MICROPY_ENABLE_COMPILER           (1)
 #define MICROPY_ENABLE_EXTERNAL_IMPORT    (1)
@@ -66,7 +71,21 @@ extern volatile uint32_t systick_ms;
 #define MICROPY_PY_MACHINE_SPI            (1)
 #define MICROPY_PY_MACHINE_I2C            (1)
 #define MICROPY_HW_NUM_CAN                (2)
-#define MICROPY_PY_MACHINE_CAN            (0)  // TODO: needs full extmod port layer
+
+// GD32F4 bxCAN timing limits (tq counts, classic CAN only)
+#define CAN_TSEG1_MIN                     (1)
+#define CAN_TSEG1_MAX                     (16)
+#define CAN_TSEG2_MIN                     (1)
+#define CAN_TSEG2_MAX                     (8)
+#define CAN_SJW_MIN                       (1)
+#define CAN_SJW_MAX                       (4)
+#define CAN_BRP_MIN                       (1)
+#define CAN_BRP_MAX                       (1024)
+#define CAN_TX_QUEUE_LEN                  (3)
+#define CAN_HW_MAX_FILTER                 (14)
+#define CAN_FILTERS_STD_EXT_SEPARATE      (0)
+#define MICROPY_HW_CAN_IS_RESERVED(can_id) (false)
+#define MICROPY_PY_MACHINE_CAN            (1)
 #define MICROPY_PY_MACHINE_CAN_INCLUDEFILE "machine_can_port.c"
 #define MICROPY_PY_MACHINE_DAC            (1)
 #define MICROPY_PY_MACHINE_ADC            (1)

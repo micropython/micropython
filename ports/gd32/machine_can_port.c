@@ -21,7 +21,6 @@ struct machine_can_port {
     uint8_t  filter_count;
 };
 
-static struct machine_can_port can_ports[CAN_NUM_INSTANCES];
 static machine_can_obj_t *can_obj_by_idx[CAN_NUM_INSTANCES];
 
 static uint32_t can_periph(uint8_t idx) {
@@ -165,7 +164,7 @@ static mp_int_t machine_can_port_send(machine_can_obj_t *self, mp_uint_t id,
     }
 
     uint8_t mb = can_message_transmit(can, &tx);
-    if (mb == CAN_NOMSG) {
+    if (mb == CAN_NOMAILBOX) {
         return -1;
     }
 

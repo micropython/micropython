@@ -59,6 +59,7 @@ SRC_C = \
 	extmod/machine_spi.c \
 	extmod/machine_i2c.c \
 	extmod/machine_adc.c \
+	extmod/machine_can.c \
 	shared/runtime/softtimer.c \
 	shared/runtime/mpirq.c \
 	machine_pin.c \
@@ -91,7 +92,7 @@ SRC_S = gd32lib/GCC/$(STARTUP_FILE)
 
 SRC_QSTR += shared/readline/readline.c shared/runtime/pyexec.c machine_pin.c \
 	extmod/modmachine.c extmod/machine_timer.c extmod/machine_wdt.c \
-	extmod/machine_uart.c extmod/machine_spi.c extmod/machine_i2c.c machine_uart_port.c machine_spi_port.c machine_i2c_port.c machine_adc_port.c machine_dac_port.c machine_rtc_port.c extmod/machine_adc.c machine_wdt_port.c shared/runtime/mpirq.c
+	extmod/machine_uart.c extmod/machine_spi.c extmod/machine_i2c.c machine_uart_port.c machine_spi_port.c machine_i2c_port.c machine_adc_port.c machine_dac_port.c machine_rtc_port.c machine_can_port.c extmod/machine_adc.c extmod/machine_can.c machine_wdt_port.c shared/runtime/mpirq.c
 
 OBJ += $(PY_CORE_O)
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
