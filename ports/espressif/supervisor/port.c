@@ -272,6 +272,12 @@ safe_mode_t port_init(void) {
     _claim_spi_ram_flash_pins();
     #endif
 
+    #ifdef DOUBLE_TAP_PIN
+    // Pull the double-tap pin down at boot so that resets come back to
+    // CircuitPython. reset_pin_number() applies the pull-down.
+    reset_pin_number(DOUBLE_TAP_PIN->number);
+    #endif
+
     #if CIRCUITPY_HARDWAREKEY
     // Populate board.EFUSE_KEY* from the eFuse key blocks. eFuse reads and the
     // PSA key import need no filesystem or VM, so this is safe here.
