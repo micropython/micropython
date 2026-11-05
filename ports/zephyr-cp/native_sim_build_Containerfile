@@ -1,4 +1,4 @@
-FROM ubuntu:24.04
+FROM docker.io/library/ubuntu:24.04
 ENV DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC
 ENV PKG_CONFIG_PATH=/usr/lib/i386-linux-gnu/pkgconfig
 

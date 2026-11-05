@@ -11,7 +11,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 CONTAINER_NAME="zcp"
-IMAGE="zephyr-cp-dev"
+IMAGE="localhost/zephyr-cp-dev"
 
 if podman container exists "$CONTAINER_NAME"; then
     exec podman start -ai "$CONTAINER_NAME"
