@@ -264,9 +264,6 @@ safe_mode_t port_init(void) {
     esp_rom_install_uart_printf();
     #endif
 
-    #define pin_GPIOn(n) pin_GPIO##n
-    #define pin_GPIOn_EXPAND(x) pin_GPIOn(x)
-
     claim_reset_forbidden_pins();
     #if defined(CONFIG_IDF_TARGET_ESP32)
     _claim_spi_ram_flash_pins();
