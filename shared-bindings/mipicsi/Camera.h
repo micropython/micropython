@@ -55,7 +55,7 @@ bool common_hal_mipicsi_camera_set_destination(
     mipicsi_camera_obj_t *self,
     uint8_t *base,
     size_t stride,
-    void (*on_frame)(void *ctx, const void *frame),
+    videocore_on_frame_fun on_frame,
     void *ctx);
 
 mipicsi_pixel_format_t common_hal_mipicsi_camera_get_pixel_format(mipicsi_camera_obj_t *self);

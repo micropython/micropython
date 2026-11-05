@@ -12,6 +12,11 @@
 
 #include "py/obj.h"
 #include "py/proto.h"
+#include "shared-module/displayio/area.h"
+
+// Called from interrupt context or a background task, with the ctx given to
+// set_destination, when the source will write no more frames.
+typedef void (*videocore_on_stream_end_fun)(void *ctx);
 
 // Destination for a video stream. The caller checks that the whole frame
 // fits before handing it to a source.
@@ -24,13 +29,22 @@ typedef struct {
     size_t row_bytes;
     // Source frame height, in rows.
     size_t height;
+    // 16-bit pixels go high byte first instead of low byte first.
+    bool reverse_bytes_in_word;
+    // Never NULL. Sources that never end, such as a camera, don't call it.
+    videocore_on_stream_end_fun on_stream_end;
 } videocore_destination_t;
 
-// Called (in interrupt context) when a frame has landed. frame is the
-// destination base it landed at: usually the latest accepted destination, but
-// a frame already being written when the destination changed (or when the
-// source was paused) still lands at the previous one.
-typedef void (*videocore_on_frame_fun)(void *ctx, const void *frame);
+// Called from interrupt context or a background task when a frame has landed.
+// frame is the destination base it landed at: usually the latest accepted
+// destination, but a frame already being written when the destination changed
+// (or when the source was paused) still lands at the previous one. changed is
+// the part that differs from the previous frame at that destination, in source
+// frame coordinates. NULL means
+// the whole frame changed and the next frame repaints all of it, so this one may
+// be dropped. A source whose next frame may be partial reports the whole frame
+// as a rect instead. The first frame at a new destination must cover it all.
+typedef void (*videocore_on_frame_fun)(void *ctx, const void *frame, const displayio_area_t *changed);
 
 // Protocol implemented by video streamers such as mipicsi.Camera. A source
 // streams continuously while playing (unless paused); the target sets (and can
@@ -64,9 +78,8 @@ typedef struct _videosource_p_t {
     void (*resume)(mp_obj_t self);
 
     // Direct frames into dest, starting with the next frame. Never raises:
-    // returns whether the source accepted dest. on_frame(ctx, frame) is
-    // called from interrupt context each time a frame lands, with the base
-    // it landed at.
+    // returns whether the source accepted dest. on_frame(ctx, frame, changed)
+    // is called each time a frame lands, with the base it landed at.
     bool (*set_destination)(mp_obj_t self, const videocore_destination_t *dest,
         videocore_on_frame_fun on_frame, void *ctx);
 

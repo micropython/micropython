@@ -36,9 +36,15 @@ typedef struct {
     // is none.
     const void *stream_base;
     // Set from interrupt context when the source lands a frame in the
-    // destination; cleared by the refresh pass once the new frame has been
-    // rendered into the display.
+    // destination; cleared when the refresh takes the changed area.
     volatile bool frame_ready;
+    // What changed in the frames landed since the last refresh, in source
+    // coordinates. Grown with frame_ready and cleared with it.
+    displayio_area_t frame_changed_area;
+    // The last frame landed passed NULL, so the next one repaints everything.
+    volatile bool frame_replaceable;
+    // frame_changed_area in screen coordinates, as handed to the refresh.
+    displayio_area_t frame_dirty_area;
     // Screen area of frames that landed where the video used to be: the frame
     // in flight when the destination moves or the source pauses still lands
     // at the old destination, possibly after that area was repainted. Grown
@@ -65,6 +71,9 @@ typedef struct {
     // the video won't show until stop and play again.
     bool stale_size;
     bool playing;
+    // Set from interrupt context or a background task when the source reached
+    // the end of its stream; the VideoBuffer then stops it lazily.
+    volatile bool source_ended;
     // True while a framebuffer target isn't shown, so its source is paused.
     // Tracked while stopped too, so play() can start the source paused.
     // Plain buffer targets are never paused.
