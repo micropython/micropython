@@ -6,10 +6,10 @@ from synthio import Biquad, FilterMode
 @synth_test
 def basic_filter():
     effect = Filter(
-        filter=[
+        filter=(
             Biquad(FilterMode.LOW_PASS, 400),
             Biquad(FilterMode.HIGH_PASS, 300, Q=8),
-        ],
+        ),
         bits_per_sample=16,
         samples_signed=True,
     )
