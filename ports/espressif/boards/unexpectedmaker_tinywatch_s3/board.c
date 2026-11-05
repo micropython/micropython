@@ -24,4 +24,10 @@ bool espressif_board_reset_pin_number(gpio_num_t pin_number) {
     return false;
 }
 
+void board_init(void) {
+    // GPIO21 (USER_PWR_SHUTDOWN) cuts power when high. Default to pulled down
+    // (power stays on).
+    espressif_board_reset_pin_number(21);
+}
+
 // Use the MP_WEAK supervisor/shared/board.c versions of routines not defined here.

@@ -33,5 +33,3 @@ typedef struct {
     bool waiting_cmd_response;
     uint8_t cmd_response;
 } ps2io_ps2_obj_t;
-
-void ps2_reset(void);

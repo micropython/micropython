@@ -153,11 +153,6 @@ void common_hal_espnow_deinit(espnow_obj_t *self) {
     self->recv_buffer = NULL;
 }
 
-void espnow_reset(void) {
-    common_hal_espnow_deinit(MP_STATE_PORT(espnow_singleton));
-    MP_STATE_PORT(espnow_singleton) = NULL;
-}
-
 void common_hal_espnow_set_phy_rate(espnow_obj_t *self, mp_int_t value) {
     self->phy_rate = mp_arg_validate_int_range(value, 0, WIFI_PHY_RATE_MAX - 1, MP_QSTR_phy_rate);
 };

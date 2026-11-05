@@ -19,4 +19,11 @@ bool espressif_board_reset_pin_number(gpio_num_t pin_number) {
     return false;
 }
 
+void board_init(void) {
+    // GPIO20 (NEOPIXEL_I2C_POWER) powers the NeoPixel and the STEMMA QT
+    // connector. Default to high (on). After a chip reset the pin is an input
+    // with no pull-up, which leaves them unpowered.
+    espressif_board_reset_pin_number(20);
+}
+
 // Use the MP_WEAK supervisor/shared/board.c versions of routines not defined here.

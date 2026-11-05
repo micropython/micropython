@@ -163,15 +163,12 @@ void common_hal_mipidsi_display_construct(mipidsi_display_obj_t *self,
         if (result != PWMOUT_OK) {
             self->backlight_inout.base.type = &digitalio_digitalinout_type;
             common_hal_digitalio_digitalinout_construct(&self->backlight_inout, backlight_pin);
-            common_hal_never_reset_pin(backlight_pin);
         } else {
             self->backlight_pwm.base.type = &pwmio_pwmout_type;
-            common_hal_pwmio_pwmout_never_reset(&self->backlight_pwm);
         }
         #else
         self->backlight_inout.base.type = &digitalio_digitalinout_type;
         common_hal_digitalio_digitalinout_construct(&self->backlight_inout, backlight_pin);
-        common_hal_never_reset_pin(backlight_pin);
         #endif
 
         // Set initial brightness

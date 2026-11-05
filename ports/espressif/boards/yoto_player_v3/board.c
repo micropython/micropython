@@ -34,7 +34,6 @@ void board_init(void) {
     busio_i2c_obj_t *i2c = MP_OBJ_TO_PTR(common_hal_board_create_i2c(0));
     // The IO expander pins stay in use after code.py ends, so keep the I2C pins
     // from being reset with the others.
-    common_hal_busio_i2c_never_reset(i2c);
 
     // Initialize the IOExpanders
     // V3/V3-E uses two PI4IOE5V6416 chips (16 pins each)
@@ -137,7 +136,6 @@ void board_init(void) {
         common_hal_sdioio_sdcard_deinit(&sdmmc);
         return;
     }
-    common_hal_sdioio_sdcard_never_reset(&sdmmc);
 
     filesystem_set_concurrent_write_protection((supervisor_vfs_t *)vfs, true);
     filesystem_set_writable_by_usb((supervisor_vfs_t *)vfs, false);

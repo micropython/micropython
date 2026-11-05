@@ -70,7 +70,6 @@ void common_hal_paralleldisplaybus_parallelbus_construct_nonsequential(paralleld
     CHECK_ESP_RESULT(esp_lcd_new_panel_io_i80(self->bus_handle, &panel_io_config, &self->panel_io_handle));
 
     if (read != NULL) {
-        common_hal_never_reset_pin(read);
         gpio_config_t read_config = {
             .pin_bit_mask = 1ull << read->number,
                 .mode = GPIO_MODE_OUTPUT,
@@ -85,7 +84,6 @@ void common_hal_paralleldisplaybus_parallelbus_construct_nonsequential(paralleld
 
     self->reset_pin_number = NO_PIN;
     if (reset != NULL) {
-        common_hal_never_reset_pin(reset);
         self->reset_pin_number = reset->number;
     }
 
@@ -100,13 +98,6 @@ void common_hal_paralleldisplaybus_parallelbus_construct_nonsequential(paralleld
     gpio_config(&chip_select_config);
     gpio_set_level(self->cs_pin_number, true);
 
-    common_hal_never_reset_pin(chip_select);
-    common_hal_never_reset_pin(command);
-    common_hal_never_reset_pin(write);
-
-    for (uint8_t i = 0; i < n_pins; i++) {
-        common_hal_never_reset_pin(data_pins[i]);
-    }
 }
 
 

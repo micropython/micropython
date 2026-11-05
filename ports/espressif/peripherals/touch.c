@@ -8,7 +8,6 @@
 
 static touch_sensor_handle_t touch_controller = NULL;
 static touch_channel_handle_t touch_channels[TOUCH_TOTAL_CHAN_NUM] = {NULL};
-static bool touch_never_reset_flag = false;
 static bool touch_enabled = false;
 static bool touch_scanning = false;
 
@@ -24,8 +23,51 @@ touch_channel_handle_t peripherals_touch_get_handle(int channel_id) {
     return touch_channels[chan_index(channel_id)];
 }
 
+void peripherals_touch_deinit(const int channel_id) {
+    int idx = chan_index(channel_id);
+
+    if (touch_channels[idx] == NULL) {
+        return;
+    }
+
+    // ESP-IDF deletes channels only while the controller is disabled.
+    if (touch_scanning) {
+        touch_sensor_stop_continuous_scanning(touch_controller);
+        touch_scanning = false;
+    }
+    if (touch_enabled) {
+        touch_sensor_disable(touch_controller);
+        touch_enabled = false;
+    }
+
+    touch_sensor_del_channel(touch_channels[idx]);
+    touch_channels[idx] = NULL;
+
+    bool any_channel = false;
+    for (unsigned int i = 0; i < TOUCH_TOTAL_CHAN_NUM; i++) {
+        if (touch_channels[i] != NULL) {
+            any_channel = true;
+            break;
+        }
+    }
+
+    if (any_channel) {
+        // Resume scanning the remaining channels.
+        if (touch_sensor_enable(touch_controller) == ESP_OK) {
+            touch_enabled = true;
+            if (touch_sensor_start_continuous_scanning(touch_controller) == ESP_OK) {
+                touch_scanning = true;
+            }
+        }
+        return;
+    }
+
+    touch_sensor_del_controller(touch_controller);
+    touch_controller = NULL;
+}
+
 void peripherals_touch_reset(void) {
-    if (touch_controller != NULL && !touch_never_reset_flag) {
+    if (touch_controller != NULL) {
         if (touch_scanning) {
             touch_sensor_stop_continuous_scanning(touch_controller);
             touch_scanning = false;
@@ -43,10 +85,6 @@ void peripherals_touch_reset(void) {
         touch_sensor_del_controller(touch_controller);
         touch_controller = NULL;
     }
-}
-
-void peripherals_touch_never_reset(const bool enable) {
-    touch_never_reset_flag = enable;
 }
 
 static esp_err_t first_error(esp_err_t first, esp_err_t second) {

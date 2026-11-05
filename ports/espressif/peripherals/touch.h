@@ -15,8 +15,12 @@
 // is not initialized. Scanning of any existing channels is restarted if possible.
 // Does not raise.
 extern esp_err_t peripherals_touch_init(const int channel_id);
+
+// Remove a touch channel. Scanning of any remaining channels is restarted;
+// when no channels remain, the touch controller is deleted. Does nothing if
+// the channel is not initialized. ESP-IDF errors are ignored. Does not raise.
+extern void peripherals_touch_deinit(const int channel_id);
 extern uint16_t peripherals_touch_read(int channel_id);
 extern void peripherals_touch_reset(void);
-extern void peripherals_touch_never_reset(const bool enable);
 extern touch_sensor_handle_t peripherals_touch_get_controller(void);
 extern touch_channel_handle_t peripherals_touch_get_handle(int channel_id);

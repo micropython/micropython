@@ -12,6 +12,19 @@
 #include "soc/usb_serial_jtag_struct.h"
 
 void board_init(void) {
+    // These pins drive LEDs. Default to pulled down (off):
+    //   GPIO3   LED_RED
+    //   GPIO4   LED_GREEN
+    //   GPIO5   LED_BLUE
+    //   GPIO18  LED_YELLOW
+    //   GPIO19  LED_WHITE
+    static const gpio_num_t pins_to_reset[] = {
+        3, 4, 5, 18, 19,
+    };
+    for (size_t i = 0; i < MP_ARRAY_SIZE(pins_to_reset); i++) {
+        espressif_board_reset_pin_number(pins_to_reset[i]);
+    }
+
     // This board has LEDs connected to the USB pins
     USB_SERIAL_JTAG.conf0.usb_pad_enable = 0;
     USB_SERIAL_JTAG.conf0.dp_pullup = 0;

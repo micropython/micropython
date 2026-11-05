@@ -37,6 +37,7 @@ void common_hal_touchio_touchin_deinit(touchio_touchin_obj_t *self) {
     if (common_hal_touchio_touchin_deinited(self)) {
         return;
     }
+    peripherals_touch_deinit(self->pin->touch_channel);
     reset_pin_number(self->pin->number);
     self->pin = NULL;
 }

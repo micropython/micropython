@@ -25,19 +25,5 @@
  */
 
 #include "supervisor/board.h"
-#include "mpconfigboard.h"
-#include "shared-bindings/microcontroller/Pin.h"
-#include "driver/gpio.h"
-#include "common-hal/microcontroller/Pin.h"
-
-bool espressif_board_reset_pin_number(gpio_num_t pin_number) {
-    if (pin_number == 16) {
-        // Turn on I2C power by default.
-        config_pin_as_output_with_level(pin_number, true);
-        return true;
-    }
-
-    return false;
-}
 
 // Use the MP_WEAK supervisor/shared/board.c versions of routines not defined here.

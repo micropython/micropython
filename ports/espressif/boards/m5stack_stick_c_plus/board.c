@@ -147,7 +147,6 @@ static bool display_init(void) {
     fourwire_fourwire_obj_t *bus = &allocate_display_bus()->fourwire_bus;
     busio_spi_obj_t *spi = &bus->inline_bus;
     common_hal_busio_spi_construct(spi, &pin_GPIO13, &pin_GPIO15, NULL, false);
-    common_hal_busio_spi_never_reset(spi);
 
     bus->base.type = &fourwire_fourwire_type;
 
@@ -200,6 +199,10 @@ static bool display_init(void) {
 }
 
 void board_init(void) {
+    // GPIO9 (IR_LED) drives the IR LED, which is on when the pin is low.
+    // Default to high (off), to save power.
+    espressif_board_reset_pin_number(9);
+
     busio_i2c_obj_t *internal_i2c = common_hal_board_create_i2c(0);
 
     if (!pmic_init(internal_i2c)) {

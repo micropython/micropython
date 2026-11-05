@@ -202,6 +202,10 @@ static void display_init(void) {
 }
 
 void board_init(void) {
+    // BACKLIGHT_PIN controls the backlight. Default to high (on). The pin isn't
+    // claimed, so user code can still use it for PWM brightness.
+    espressif_board_reset_pin_number(BACKLIGHT_PIN);
+
     display_init();
 }
 

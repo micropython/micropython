@@ -37,7 +37,6 @@ void board_init(void) {
     // What we would do if it wasn't the shared board I2C: (for reference)
     // busio_i2c_obj_t *i2c = &allocate_display_bus()->i2cdisplay_bus.inline_bus;
     // common_hal_busio_i2c_construct(i2c, &pin_GPIO23, &pin_GPIO22, 100000, 0);
-    // common_hal_busio_i2c_never_reset(i2c);
 
     i2cdisplaybus_i2cdisplaybus_obj_t *bus = &allocate_display_bus()->i2cdisplay_bus;
     bus->base.type = &i2cdisplaybus_i2cdisplaybus_type;

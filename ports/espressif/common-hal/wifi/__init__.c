@@ -471,7 +471,6 @@ void common_hal_wifi_init(bool user_initiated) {
         };
         for (size_t i = 0; i < MP_ARRAY_SIZE(pins); i++) {
             claim_pin_number(pins[i]);
-            never_reset_pin_number(pins[i]);
         }
         ESP_ERROR_CHECK(esp_hosted_init());
         #endif
