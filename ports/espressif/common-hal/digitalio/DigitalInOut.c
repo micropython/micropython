@@ -106,6 +106,10 @@ digitalinout_result_t common_hal_digitalio_digitalinout_set_drive_mode(
     gpio_mode_t mode = GPIO_MODE_OUTPUT;
     if (drive_mode == DRIVE_MODE_OPEN_DRAIN) {
         mode |= GPIO_MODE_OUTPUT_OD;
+        // Turn on open drain before gpio_set_direction() enables the output driver. It
+        // enables the output first, so a pin coming from input would briefly drive a
+        // push-pull high. On an I2C SDA line held low by a peripheral, that is a STOP.
+        gpio_od_enable(number);
     }
     esp_err_t result = gpio_set_direction(number, mode);
     if (result != ESP_OK) {
