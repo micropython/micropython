@@ -44,12 +44,19 @@ typedef long mp_off_t;
 #define MICROPY_VFS_FAT                   (0)
 #define MICROPY_READER_VFS                (1)
 #define MICROPY_PY_IO                     (1)
-#define MICROPY_PY_UCTYPES                (0)
+// os: listdir/stat/rename/remove/mkdir/mount over the built-in VFS
+#define MICROPY_PY_OS                     (1)
+#define MICROPY_PY_OS_SYNC                (1)
+#define MICROPY_PY_OS_UNAME               (1)
+#define MICROPY_PY_OS_URANDOM             (1)
+#define MICROPY_PY_UCTYPES                (1)
 #define MICROPY_PY_UZLIB                  (0)
 #define MICROPY_PY_UHASHLIB               (0)
-#define MICROPY_PY_URE                    (0)
-#define MICROPY_PY_UJSON                  (0)
+#define MICROPY_PY_URE                    (1)
+#define MICROPY_PY_UJSON                  (1)
 #define MICROPY_PY_FRAMEBUF               (0)
+#define MICROPY_PY_UBINASCII              (1)
+#define MICROPY_PY_HEAPQ                  (1)
 #define MICROPY_PY_MACHINE                (1)
 #define MICROPY_PY_MACHINE_PIN_MAKE_NEW   machine_pin_make_new
 #define MICROPY_PY_MACHINE_INCLUDEFILE    "modmachine_port.c"
@@ -57,12 +64,12 @@ typedef long mp_off_t;
 // trim modmachine to the essentials (Pin + freq + reset)
 #define MICROPY_PY_MACHINE_PIN_BASE         (1)
 #define MICROPY_PY_MACHINE_SIGNAL           (1)
-#define MICROPY_PY_MACHINE_PULSE            (0)
-#define MICROPY_PY_MACHINE_BITSTREAM        (0)
-#define MICROPY_PY_MACHINE_BARE_METAL_FUNCS (0)
-#define MICROPY_PY_MACHINE_MEMX           (0)
+#define MICROPY_PY_MACHINE_PULSE            (1)
+#define MICROPY_PY_MACHINE_BITSTREAM        (1)
+#define MICROPY_PY_MACHINE_BARE_METAL_FUNCS (1)
+#define MICROPY_PY_MACHINE_MEMX           (1)
 #define MICROPY_PY_MACHINE_MEM_BACKUP     (0)
-#define MICROPY_PY_MACHINE_DISABLE_IRQ_ENABLE_IRQ (0)
+#define MICROPY_PY_MACHINE_DISABLE_IRQ_ENABLE_IRQ (1)
 #define MICROPY_PY_MACHINE_RESET            (1)
 #define MICROPY_PY_MACHINE_BOOTLOADER       (0)
 #define MICROPY_PY_MACHINE_FREQ_NUM_ARGS_MAX (1)
@@ -117,6 +124,19 @@ extern volatile uint32_t systick_ms;
 #define MICROPY_PY_MACHINE_UART_CLASS_CONSTANTS \
     { MP_ROM_QSTR(MP_QSTR_RTS), MP_ROM_INT(1) }, \
     { MP_ROM_QSTR(MP_QSTR_CTS), MP_ROM_INT(2) },
+
+// ---- stdlib modules that need no external dependencies ----
+// time: backed by mp_hal_time_ns() (RTC when set, else uptime epoch)
+#define MICROPY_PY_TIME                     (1)
+#define MICROPY_PY_TIME_INCLUDEFILE         "modtime_port.c"
+#define MICROPY_PY_TIME_TIME_TIME_NS        (1)
+#define MICROPY_PY_TIME_GMTIME_LOCALTIME_MKTIME (0)
+
+// random: seed from the GD32 hardware true random number generator
+uint32_t mp_hal_get_hw_random_u32(void);
+#define MICROPY_PY_RANDOM                   (1)
+#define MICROPY_PY_RANDOM_EXTRA_FUNCS       (1)
+#define MICROPY_PY_RANDOM_SEED_INIT_FUNC    (mp_hal_get_hw_random_u32())
 
 
 // UART REPL baud rate

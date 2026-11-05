@@ -84,6 +84,13 @@ mp_uint_t mp_hal_ticks_cpu(void) {
     return DWT->CYCCNT;
 }
 
+// Enable the DWT cycle counter, required by machine.bitstream for precise timing.
+void mp_hal_ticks_cpu_enable(void) {
+    CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
+    DWT->CYCCNT = 0;
+    DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
+}
+
 void mp_hal_delay_ms(mp_uint_t ms) {
     uint32_t start = systick_ms;
     while ((systick_ms - start) < ms) {
@@ -159,4 +166,38 @@ uint64_t mp_hal_time_ns(void) {
         secs = 1762300000ull;   // fallback epoch (2025-11-05)
     }
     return secs * 1000000000ull + (uint64_t)systick_ms * 1000000ull;
+}
+
+// ---- hardware true random number generator ----
+// Feeds MICROPY_PY_RANDOM_SEED_INIT_FUNC so that `random` starts from real
+// entropy instead of a fixed value.  TRNG is present on GD32F4xx; it needs the
+// 48 MHz clock, which the vendored system_gd32f4xx.c already enables.
+uint32_t mp_hal_get_hw_random_u32(void) {
+    static int trng_ready = 0;
+    if (!trng_ready) {
+        rcu_periph_clock_enable(RCU_TRNG);
+        trng_deinit();
+        trng_enable();
+        trng_ready = 1;
+    }
+    // Wait for a fresh sample; the generator fills roughly every 40 cycles.
+    for (uint32_t i = 0; i < 100000; ++i) {
+        if (trng_flag_get(TRNG_FLAG_DRDY) == SET) {
+            return trng_get_true_random_data();
+        }
+    }
+    // Fall back to the uptime counter if the generator is not responding.
+    return (uint32_t)systick_ms * 2654435761u;
+}
+
+// ---- fill a buffer from the hardware TRNG (os.urandom) ----
+void mp_hal_get_random(size_t n, uint8_t *buf) {
+    size_t i = 0;
+    while (i < n) {
+        uint32_t r = mp_hal_get_hw_random_u32();
+        for (size_t j = 0; j < 4 && i < n; ++j) {
+            buf[i++] = (uint8_t)(r & 0xff);
+            r >>= 8;
+        }
+    }
 }

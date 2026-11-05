@@ -267,6 +267,11 @@ Adding further peripherals follows the same pattern:
 
 ## Notes and gotchas
 
+0. **qstr registration**: this port lists its sources by hand instead of
+   including `extmod/extmod.mk`, so it must add `SRC_QSTR += $(SRC_C)`
+   explicitly.  Without that line the qstr scanner never sees the port and
+   extmod sources, and any `MP_QSTR_*` used only by them fails to compile.
+
 1. **Clock setup**: `system_gd32f4xx.c` selects the clock source via a
    `#define` near the top of the file. The vendored copy defaults to
    `__SYSTEM_CLOCK_200M_PLL_25M_HXTAL`. Adjust if your board uses a
@@ -381,10 +386,30 @@ Compared with `ports/stm32` for STM32F4:
 | `I2S` | ⬜ | needs SPI/I2S audio driver |
 | `I2CTarget` | ⬜ | needs slave-mode I2C |
 | `USBDevice` | ⬜ | needs USB device stack (CDC/MSC) |
-| `mem8/16/32` | ⬜ | intentionally disabled (`MICROPY_PY_MACHINE_MEMX=0`) |
-| `lightsleep` / `deepsleep` | ⬜ | `deep sleep` maps to PMU standby; sleep not wired |
-| `bitstream` | ⬜ | `MICROPY_PY_MACHINE_BITSTREAM=0` |
+| `mem8/16/32` | ✅ | raw memory access |
+| `lightsleep` / `deepsleep` | ✅ | `lightsleep` = WFI; `deepsleep` = PMU standby |
+| `bitstream` | ✅ | DWT cycle counter + GPIO BOP |
+| `unique_id` | ✅ | 96-bit factory UID at `0x1FFF7A10` |
+| `freq` | ✅ | returns `SystemCoreClock` |
+| `disable_irq` / `enable_irq` | ✅ | PRIMASK based |
+| `time_pulse_us` | ✅ | IRQ-timed pulse measurement |
 
-Not `machine` modules but relevant gaps versus STM32F4: filesystem
-(`littlefs`/FAT), frozen modules, `network`/`lwIP`, and `pyb`-style legacy
-API (not applicable here).
+### Python standard-library modules
+
+These are enabled and use no external dependencies:
+
+| Module | Notes |
+|--------|-------|
+| `binascii` | `hexlify`, `unhexlify`, `a2b_base64`, `b2a_base64`, `crc32` |
+| `json` | `dump`, `dumps`, `load`, `loads` |
+| `re` | `compile`, `match`, `search`, `sub` (MicroPython subset) |
+| `uctypes` | struct/pointer access to raw memory |
+| `heapq` | `heappush`, `heappop`, `heapify` |
+| `random` | seeded from the TRNG; `getrandbits`, `choice`, `randint` |
+| `time` | `time`, `time_ns`, `sleep*`, `ticks_*` via RTC/uptime |
+| `os` | `listdir`, `stat`, `mkdir`, `rename`, `remove`, `mount`, `uname`, `urandom`, `sync` |
+
+Remaining gaps versus STM32F4: `network`/`lwIP`, USB device stack, I2S
+audio, I2C target mode, frozen modules, and the `pyb`-style legacy API
+(not applicable here).  Note the `re` module is MicroPython's cut-down
+implementation: only `compile`, `match`, `search` and `sub` are available.

@@ -9,10 +9,13 @@ void mp_hal_set_interrupt_char(int c);
 mp_uint_t mp_hal_ticks_ms(void);
 mp_uint_t mp_hal_ticks_us(void);
 mp_uint_t mp_hal_ticks_cpu(void);
+// Enable the DWT cycle counter (used by machine.bitstream).
+void mp_hal_ticks_cpu_enable(void);
 void mp_hal_delay_ms(mp_uint_t ms);
 void mp_hal_delay_us(mp_uint_t us);
 // Wall-clock timestamp (Unix epoch ns) used by littlefs file times.
 uint64_t mp_hal_time_ns(void);
+void mp_hal_get_random(size_t n, uint8_t *buf);
 
 int mp_hal_stdin_rx_chr(void);
 mp_uint_t mp_hal_stdout_tx_strn(const char *str, size_t len);

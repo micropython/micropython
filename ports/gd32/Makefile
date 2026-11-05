@@ -66,6 +66,9 @@ SRC_C = \
 	extmod/machine_adc.c \
 	extmod/machine_can.c \
 	extmod/machine_pwm.c \
+	extmod/machine_mem.c \
+	extmod/machine_bitstream.c \
+	extmod/machine_pulse.c \
 	extmod/machine_pinbase.c \
 	extmod/machine_signal.c \
 	extmod/virtpin.c \
@@ -73,6 +76,15 @@ SRC_C = \
 	extmod/vfs_blockdev.c \
 	extmod/vfs_lfs.c \
 	extmod/vfs_reader.c \
+	extmod/modos.c \
+	extmod/modbinascii.c \
+	extmod/modjson.c \
+	extmod/modre.c \
+	extmod/moductypes.c \
+	extmod/modheapq.c \
+	extmod/modtime.c \
+	extmod/modrandom.c \
+	lib/uzlib/crc32.c \
 	lib/littlefs/lfs2.c \
 	lib/littlefs/lfs2_util.c \
 	flashbdev.c \
@@ -82,6 +94,7 @@ SRC_C = \
 	shared/runtime/softtimer.c \
 	shared/runtime/mpirq.c \
 	machine_pin.c \
+	machine_bitstream_port.c \
 	machine_spi_port.c \
 	machine_i2c_port.c \
 	machine_dac_port.c \
@@ -108,6 +121,7 @@ SRC_C = \
 	gd32lib/peripheral_source/gd32f4xx_fmc.c \
 	gd32lib/peripheral_source/gd32f4xx_pmu.c \
 	gd32lib/peripheral_source/gd32f4xx_fwdgt.c \
+	gd32lib/peripheral_source/gd32f4xx_trng.c \
 
 SRC_S = gd32lib/GCC/$(STARTUP_FILE)
 
@@ -174,6 +188,11 @@ dist: all
 
 .PHONY: dist
 
+
+# List of sources for qstr extraction.  This port lists its sources by hand
+# instead of including extmod/extmod.mk, so the automatic
+# SRC_QSTR += $(SRC_EXTMOD_C) never runs and must be replaced here.
+SRC_QSTR += $(SRC_C)
 
 # littlefs is third-party code: relax warnings for it
 $(BUILD)/lib/littlefs/%.o: CFLAGS += -Wno-error
