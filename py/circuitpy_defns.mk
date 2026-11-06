@@ -887,12 +887,16 @@ SRC_SHARED_MODULE_ALL = \
 	sdcardio/SDCard.c \
 	sdcardio/__init__.c \
 	cryptography/__init__.c \
+	cryptography/exceptions/__init__.c \
 	cryptography/hazmat/__init__.c \
 	cryptography/hazmat/primitives/__init__.c \
 	cryptography/hazmat/primitives/asymmetric/__init__.c \
+	cryptography/hazmat/primitives/asymmetric/ec/__init__.c \
+	cryptography/hazmat/primitives/asymmetric/ec/EllipticCurvePublicKey.c \
 	cryptography/hazmat/primitives/asymmetric/padding/__init__.c \
 	cryptography/hazmat/primitives/asymmetric/rsa/__init__.c \
 	cryptography/hazmat/primitives/asymmetric/rsa/DigitalSignatureKey.c \
+	cryptography/hazmat/primitives/asymmetric/utils/__init__.c \
 	cryptography/hazmat/primitives/hashes/__init__.c \
 	hardwarekey/HardwareKey.c \
 	sharpdisplay/SharpMemoryFramebuffer.c \

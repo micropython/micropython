@@ -8,6 +8,7 @@
 #include "py/runtime.h"
 
 #include "shared-bindings/cryptography/__init__.h"
+#include "shared-bindings/cryptography/exceptions/__init__.h"
 #include "shared-bindings/cryptography/hazmat/__init__.h"
 
 //| """A subset of PyCA's `cryptography <https://cryptography.io>`_ package
@@ -22,6 +23,7 @@
 
 static mp_rom_map_elem_t cryptography_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_cryptography) },
+    { MP_ROM_QSTR(MP_QSTR_exceptions), MP_OBJ_FROM_PTR(&cryptography_exceptions_module) },
     { MP_ROM_QSTR(MP_QSTR_hazmat), MP_OBJ_FROM_PTR(&cryptography_hazmat_module) },
 };
 static MP_DEFINE_CONST_DICT(cryptography_module_globals, cryptography_module_globals_table);

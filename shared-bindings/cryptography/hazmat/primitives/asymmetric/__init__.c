@@ -8,8 +8,10 @@
 #include "py/runtime.h"
 
 #include "shared-bindings/cryptography/hazmat/primitives/asymmetric/__init__.h"
+#include "shared-bindings/cryptography/hazmat/primitives/asymmetric/ec/__init__.h"
 #include "shared-bindings/cryptography/hazmat/primitives/asymmetric/padding/__init__.h"
 #include "shared-bindings/cryptography/hazmat/primitives/asymmetric/rsa/__init__.h"
+#include "shared-bindings/cryptography/hazmat/primitives/asymmetric/utils/__init__.h"
 
 //| """Asymmetric-key primitives
 //|
@@ -19,8 +21,10 @@
 
 static mp_rom_map_elem_t cryptography_hazmat_primitives_asymmetric_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_cryptography_dot_hazmat_dot_primitives_dot_asymmetric) },
+    { MP_ROM_QSTR(MP_QSTR_ec), MP_OBJ_FROM_PTR(&cryptography_hazmat_primitives_asymmetric_ec_module) },
     { MP_ROM_QSTR(MP_QSTR_padding), MP_OBJ_FROM_PTR(&cryptography_hazmat_primitives_asymmetric_padding_module) },
     { MP_ROM_QSTR(MP_QSTR_rsa), MP_OBJ_FROM_PTR(&cryptography_hazmat_primitives_asymmetric_rsa_module) },
+    { MP_ROM_QSTR(MP_QSTR_utils), MP_OBJ_FROM_PTR(&cryptography_hazmat_primitives_asymmetric_utils_module) },
 };
 static MP_DEFINE_CONST_DICT(cryptography_hazmat_primitives_asymmetric_module_globals, cryptography_hazmat_primitives_asymmetric_module_globals_table);
 
