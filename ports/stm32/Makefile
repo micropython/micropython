@@ -257,6 +257,7 @@ SRC_C += \
 	msc_disk.c \
 	mpnetworkport.c \
 	mpusbhostport.c \
+	jpeg.c \
 	mpthreadport.c \
 	irq.c \
 	pendsv.c \
