@@ -116,6 +116,10 @@ emitter_tests_to_skip = {
         "misc/sys_settrace_loop.py",
         # These are bytecode-specific tests.
         "stress/bytecode_limit.py",
+        # CIRCUITPY-CHANGE: native code records no traceback entries.
+        "circuitpython/traceback_test.py",
+        # CIRCUITPY-CHANGE: these require "raise from".
+        "circuitpython/traceback_test_chained.py",
     ),
 }
 
@@ -1389,6 +1393,7 @@ the last matching regex is used:
         if args.test_dirs is None or main_tests_dir_in_args is not None:
             test_dirs = (
                 "basics",
+                "circuitpython",  # CIRCUITPY-CHANGE
                 "micropython",
                 "misc",
                 "extmod",
