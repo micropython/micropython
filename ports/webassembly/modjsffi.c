@@ -48,6 +48,7 @@ static mp_obj_t mp_jsffi_create_proxy(mp_obj_t arg) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(mp_jsffi_create_proxy_obj, mp_jsffi_create_proxy);
 
+
 EM_JS(void, proxy_convert_mp_to_js_then_js_to_js_then_js_to_mp_obj_jsside, (uint32_t * out), {
     const ret = proxy_convert_mp_to_js_obj_jsside(out);
     const js_obj = PyProxy.toJs(ret);
@@ -111,46 +112,65 @@ static MP_DEFINE_CONST_FUN_OBJ_0(mp_jsffi_mem_info_obj, mp_jsffi_mem_info);
 
 #if MICROPY_JSPI
 
+// Outcome of js_run_sync_wait(), below.
+enum {
+    RUN_SYNC_RESOLVED = 0,
+    RUN_SYNC_REJECTED = 1,
+    RUN_SYNC_NOT_AWAITABLE = 2,
+    RUN_SYNC_INTERRUPTED = 3,
+    RUN_SYNC_ERROR = 4,
+};
+
 // *FORMAT-OFF*
 
-// Adopt the converted object as a promise if it is thenable, recording
-// its settlement into a slot that C polls.  Returns a slot handle, or
-// zero when the object is not awaitable.  Slots are keyed by integer
-// rather than proxied because they are short-lived and self-cleaning.
-EM_JS(int, js_run_sync_start, (uint32_t * value), {
-    const obj = proxy_convert_mp_to_js_obj_jsside(value);
-    if (!obj || typeof obj.then !== "function") {
-        return 0;
+// Suspend until the object in "value" is fulfilled or rejected, or a
+// KeyboardInterrupt arrives.  Under -sJSPI an EM_ASYNC_JS function is a
+// WebAssembly.Suspending import: the engine parks this frame and resumes
+// it when the awaited promise is done, so nothing polls in between.  The
+// interrupt arrives through Module.jspiInterrupt, a promise created here
+// and fulfilled by api.js when a KeyboardInterrupt arrives.  Returns a
+// RUN_SYNC_* code.  When the object was fulfilled or rejected, its value
+// or rejection reason is written back into "value".
+EM_ASYNC_JS(int, js_run_sync_wait, (uint32_t * value), {
+    // Everything is inside try/catch: a JS exception thrown from here
+    // would pass straight through the C frames, skipping their clean-up,
+    // so it is reported as a status code instead.
+    try {
+        const obj = proxy_convert_mp_to_js_obj_jsside(value);
+        if (!obj || typeof obj.then !== "function") {
+            return 2; // RUN_SYNC_NOT_AWAITABLE
+        }
+        // Create a promise to be resolved if a KeyboardInterrupt arrives.
+        const interrupt = {};
+        interrupt.promise = new Promise((resolve) => {
+            interrupt.resolve = resolve;
+        });
+        Module.jspiInterrupt = interrupt;
+        // Promise.race takes the outcome of whichever promise finishes
+        // first and ignores the rest.  Each input is wrapped with .then
+        // so a win is always a plain { status, result } object: the
+        // awaited object's rejection becomes status 1 rather than a
+        // throw, and the interrupt gives status 3 with no result.  If
+        // the interrupt wins, the awaited promise carries on in the
+        // background and its eventual outcome is dropped.
+        const outcome = await Promise.race([
+            Promise.resolve(obj).then(
+                (result) => ({ status: 0, result }), // RUN_SYNC_RESOLVED
+                (error) => ({ status: 1, result: error }), // RUN_SYNC_REJECTED
+            ),
+            interrupt.promise.then(() => ({ status: 3 })), // RUN_SYNC_INTERRUPTED
+        ]);
+        if (outcome.status !== 3) {
+            proxy_convert_js_to_mp_obj_jsside(outcome.result, value);
+        }
+        return outcome.status;
+    } catch (error) {
+        proxy_convert_js_to_mp_obj_jsside(error, value);
+        return 4; // RUN_SYNC_ERROR
+    } finally {
+        // Clear the interrupt promise.
+        Module.jspiInterrupt = null;
     }
-    if (!Module.runSyncPending) {
-        Module.runSyncPending = { nextId: 1, slots: new Map() };
-    }
-    const state = Module.runSyncPending;
-    const id = state.nextId++;
-    const slot = { done: false, rejected: false, value: undefined };
-    state.slots.set(id, slot);
-    Promise.resolve(obj).then(
-        (result) => { slot.done = true; slot.value = result; },
-        (error) => { slot.done = true; slot.rejected = true; slot.value = error; },
-    );
-    return id;
-});
-
-// Poll a slot: 0 pending, 1 resolved, 2 rejected.  On settlement the
-// value is converted into "value" and the slot is released.
-EM_JS(int, js_run_sync_poll, (int id, uint32_t * value), {
-    const slot = Module.runSyncPending.slots.get(id);
-    if (!slot.done) {
-        return 0;
-    }
-    Module.runSyncPending.slots.delete(id);
-    proxy_convert_js_to_mp_obj_jsside(slot.value, value);
-    return slot.rejected ? 2 : 1;
-});
-
-// Abandon a slot when an exception breaks the wait.
-EM_JS(void, js_run_sync_cancel, (int id), {
-    Module.runSyncPending.slots.delete(id);
 });
 
 // *FORMAT-ON*
@@ -169,39 +189,31 @@ static mp_obj_t mp_jsffi_run_sync(mp_obj_t arg) {
     // on the JS side.
     uint32_t value[PVN];
     proxy_convert_mp_to_js_obj_cside(arg, value);
-    int id = js_run_sync_start(value);
-    if (id == 0) {
+
+    // Suspend here until the promise is fulfilled or rejected, or a
+    // KeyboardInterrupt arrives.  js_run_sync_wait() catches every JS
+    // exception and reports it as a status code, and the other two
+    // calls cannot raise, so suspension_end() always runs and the
+    // "already pending" flag can never be left set.
+    mp_js_suspension_begin();
+    int status = js_run_sync_wait(value);
+    mp_js_suspension_end();
+
+    if (status == RUN_SYNC_NOT_AWAITABLE) {
         mp_raise_TypeError(MP_ERROR_TEXT("object is not awaitable"));
     }
-
-    // Park this entry until the promise settles.  emscripten_sleep()
-    // suspends via JSPI, handing control to the event loop; pending
-    // events (e.g. KeyboardInterrupt) are serviced between polls.
-    mp_js_suspension_begin();
-    int status = 0;
-    nlr_buf_t nlr;
-    if (nlr_push(&nlr) == 0) {
-        for (;;) {
-            status = js_run_sync_poll(id, value);
-            if (status != 0) {
-                break;
-            }
-            emscripten_sleep(0);
-            mp_handle_pending(true);
-        }
-        nlr_pop();
-        mp_js_suspension_end();
-    } else {
-        // An exception (e.g. KeyboardInterrupt) broke the wait; tidy
-        // up and re-raise it.
-        js_run_sync_cancel(id);
-        mp_js_suspension_end();
-        nlr_jump(nlr.ret_val);
+    if (status == RUN_SYNC_INTERRUPTED) {
+        // A KeyboardInterrupt arrived while suspended.  In that case
+        // api.js only wakes the wait and does not queue the
+        // KeyboardInterrupt, so queue and raise it here.
+        mp_sched_keyboard_interrupt();
+        mp_handle_pending(true);
     }
 
     mp_obj_t result = proxy_convert_js_to_mp_obj_cside(value);
-    if (status == 2) {
-        // The promise rejected: raise the reason as Python sees it.
+    if (status == RUN_SYNC_REJECTED || status == RUN_SYNC_ERROR) {
+        // The promise rejected, or the wait itself threw a JS exception:
+        // raise the reason as Python sees it.
         if (mp_obj_get_type(result) == &mp_type_jsproxy) {
             nlr_raise(mp_obj_jsproxy_make_js_exception(result));
         }

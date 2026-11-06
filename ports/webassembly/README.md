@@ -57,6 +57,11 @@ The port has three variants, selected with `VARIANT=`:
   The `browser` variant needs a JS engine with JSPI: recent browsers,
   and Node 25 or later (see Dependencies).
 
+  While Python is suspended in `jsffi.run_sync()`, the garbage collector
+  does not run; it runs again once the awaited promise settles and
+  control returns to JS. Code that suspends for a long time while
+  allocating should keep that in mind.
+
 Running with Node.js
 --------------------
 

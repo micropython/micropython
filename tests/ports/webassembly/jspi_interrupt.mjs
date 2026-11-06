@@ -1,5 +1,5 @@
-// Test that KeyboardInterrupt breaks a pending run_sync(): pending
-// events are serviced between suspension polls.
+// Test that KeyboardInterrupt breaks a pending run_sync(): queueing
+// the interrupt wakes the suspended wait, which then raises it.
 
 const mp = await (await import(process.argv[2])).loadMicroPython();
 
