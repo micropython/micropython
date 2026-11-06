@@ -1,0 +1,79 @@
+SPDX-FileCopyrightText: Copyright (c) 2026 Mikey Sklar for Adafruit Industries
+SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
+
+Adds port PSA drivers to the hash dispatch in mbedtls's driver wrapper template.
+mbedtls 4 has no hook for this: hash dispatch is hand-written in the template, and
+the _ALT options are gone. Ports that need it set MBEDTLS_DRIVER_PATCH to this file;
+py/circuitpy_defns.mk applies it with no fuzz, so an mbedtls update that moves this
+code stops the build. Upstream: https://github.com/Mbed-TLS/TF-PSA-Crypto/issues/833
+
+--- a/psa_crypto_driver_wrappers.h.jinja
++++ b/psa_crypto_driver_wrappers.h.jinja
+@@ -57,2 +57,7 @@
+ 
++#if defined(CIRCUITPY_PSA_RP2_SHA256)
++#include "rp2_sha256_psa.h"
++#define CIRCUITPY_RP2_SHA256_DRIVER_ID (0x43505348u) /* "CPSH", clear of generated IDs */
++#endif
++
+ /* BEGIN-Common Macro definitions */
+@@ -1856,2 +1861,12 @@
+     /* If software fallback is compiled in, try fallback */
++#if defined(CIRCUITPY_PSA_RP2_SHA256)
++    if( alg == PSA_ALG_SHA_256 )
++    {
++        status = rp2_sha256_psa_hash_compute( alg, input, input_length,
++                                              hash, hash_size, hash_length );
++        if( status != PSA_ERROR_NOT_SUPPORTED )
++            return( status );
++    }
++#endif
++
+ #if defined(MBEDTLS_PSA_BUILTIN_HASH)
+@@ -1891,2 +1906,14 @@
+     /* If software fallback is compiled in, try fallback */
++#if defined(CIRCUITPY_PSA_RP2_SHA256)
++    if( alg == PSA_ALG_SHA_256 )
++    {
++        status = rp2_sha256_psa_hash_setup( &operation->ctx.mbedtls_ctx, alg );
++        if( status == PSA_SUCCESS )
++            operation->id = CIRCUITPY_RP2_SHA256_DRIVER_ID;
++
++        if( status != PSA_ERROR_NOT_SUPPORTED )
++            return( status );
++    }
++#endif
++
+ #if defined(MBEDTLS_PSA_BUILTIN_HASH)
+@@ -1912,2 +1939,8 @@
+     {
++#if defined(CIRCUITPY_PSA_RP2_SHA256)
++        case CIRCUITPY_RP2_SHA256_DRIVER_ID:
++            target_operation->id = CIRCUITPY_RP2_SHA256_DRIVER_ID;
++            return( rp2_sha256_psa_hash_clone( &source_operation->ctx.mbedtls_ctx,
++                                               &target_operation->ctx.mbedtls_ctx ) );
++#endif
+ #if defined(MBEDTLS_PSA_BUILTIN_HASH)
+@@ -1938,2 +1971,7 @@
+     {
++#if defined(CIRCUITPY_PSA_RP2_SHA256)
++        case CIRCUITPY_RP2_SHA256_DRIVER_ID:
++            return( rp2_sha256_psa_hash_update( &operation->ctx.mbedtls_ctx,
++                                                input, input_length ) );
++#endif
+ #if defined(MBEDTLS_PSA_BUILTIN_HASH)
+@@ -1964,2 +2002,7 @@
+     {
++#if defined(CIRCUITPY_PSA_RP2_SHA256)
++        case CIRCUITPY_RP2_SHA256_DRIVER_ID:
++            return( rp2_sha256_psa_hash_finish( &operation->ctx.mbedtls_ctx,
++                                                hash, hash_size, hash_length ) );
++#endif
+ #if defined(MBEDTLS_PSA_BUILTIN_HASH)
+@@ -1988,2 +2031,6 @@
+     {
++#if defined(CIRCUITPY_PSA_RP2_SHA256)
++        case CIRCUITPY_RP2_SHA256_DRIVER_ID:
++            return( rp2_sha256_psa_hash_abort( &operation->ctx.mbedtls_ctx ) );
++#endif
+ #if defined(MBEDTLS_PSA_BUILTIN_HASH)

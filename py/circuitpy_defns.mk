@@ -1041,6 +1041,24 @@ SRC_MOD += lib/tjpgd/src/tjpgd.c
 $(BUILD)/lib/tjpgd/src/tjpgd.o: CFLAGS += -Wno-shadow -Wno-cast-align
 endif
 
+# A port adds its own PSA drivers to mbedtls's hash dispatch by setting
+# MBEDTLS_DRIVER_PATCH (in mpconfigport.mk) to a patch for mbedtls's driver wrapper
+# templates. The templates are copied to the build directory and patched with no
+# fuzz, so an mbedtls update that moves the patched code stops the build here.
+ifneq ($(MBEDTLS_DRIVER_PATCH),)
+MBEDTLS_TEMPLATES := $(BUILD)/psa_driver_templates
+MBEDTLS_TEMPLATES_STAMP := $(MBEDTLS_TEMPLATES)/.patched
+MBEDTLS_WRAPPERS_ARGS := --template-dir $(MBEDTLS_TEMPLATES)
+
+$(MBEDTLS_TEMPLATES_STAMP): $(MBEDTLS_DRIVER_PATCH)
+	$(STEPECHO) "PATCH $<"
+	$(Q)rm -rf $(MBEDTLS_TEMPLATES)
+	$(Q)mkdir -p $(MBEDTLS_TEMPLATES)
+	$(Q)cp $(TOP)/lib/mbedtls/tf-psa-crypto/scripts/data_files/driver_templates/* $(MBEDTLS_TEMPLATES)/
+	$(Q)patch -s -F0 -p1 -d $(MBEDTLS_TEMPLATES) < $<
+	$(Q)touch $@
+endif
+
 ifeq ($(CIRCUITPY_HASHLIB_MBEDTLS_ONLY),1)
 # mbedtls 4.x moved the crypto implementations out of lib/mbedtls/library into the
 # tf-psa-crypto submodule and made the legacy mbedtls_sha256_*() headers private, so
@@ -1075,10 +1093,10 @@ SRC_MOD += $(MBEDTLS_HASHLIB_WRAPPERS_C:$(BUILD)/%=%)
 $(MBEDTLS_HASHLIB_WRAPPERS_C): $(MBEDTLS_HASHLIB_WRAPPERS_H)
 	@true
 
-$(MBEDTLS_HASHLIB_WRAPPERS_H): $(TOP)/lib/mbedtls/tf-psa-crypto/scripts/generate_driver_wrappers.py
+$(MBEDTLS_HASHLIB_WRAPPERS_H): $(TOP)/lib/mbedtls/tf-psa-crypto/scripts/generate_driver_wrappers.py $(MBEDTLS_TEMPLATES_STAMP)
 	$(STEPECHO) "GEN $@"
 	$(Q)mkdir -p $(MBEDTLS_HASHLIB_GEN)
-	$(Q)PYTHONPATH=$(TOP)/lib/mbedtls/framework/scripts $(PYTHON) $< $(MBEDTLS_HASHLIB_GEN)
+	$(Q)PYTHONPATH=$(TOP)/lib/mbedtls/framework/scripts $(PYTHON) $< $(MBEDTLS_WRAPPERS_ARGS) $(MBEDTLS_HASHLIB_GEN)
 
 # psa_crypto.c and friends #include the generated header.
 $(addprefix $(BUILD)/, $(SRC_MOD:.c=.o)): $(MBEDTLS_HASHLIB_WRAPPERS_H)

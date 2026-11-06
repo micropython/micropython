@@ -37,7 +37,7 @@
 #endif
 
 #if CIRCUITPY_RP2_SHA256_HW
-#include "sha256_hw.h"
+#include "rp2_sha256_psa.h"
 #endif
 
 #if CIRCUITPY_WIFI
@@ -527,7 +527,7 @@ void reset_port(void) {
     #endif
 
     #if CIRCUITPY_RP2_SHA256_HW
-    rp2_sha256_hw_reset();
+    rp2_sha256_psa_reset();
     #endif
 
     #if CIRCUITPY_WATCHDOG

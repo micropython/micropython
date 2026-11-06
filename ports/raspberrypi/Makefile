@@ -740,10 +740,10 @@ MBEDTLS_WRAPPERS_C := $(MBEDTLS_GEN)/psa_crypto_driver_wrappers_no_static.c
 $(MBEDTLS_WRAPPERS_C): $(MBEDTLS_WRAPPERS_H)
 	@true
 
-$(MBEDTLS_WRAPPERS_H): $(TOP)/lib/mbedtls/tf-psa-crypto/scripts/generate_driver_wrappers.py
+$(MBEDTLS_WRAPPERS_H): $(TOP)/lib/mbedtls/tf-psa-crypto/scripts/generate_driver_wrappers.py $(MBEDTLS_TEMPLATES_STAMP)
 	$(STEPECHO) "GEN $@"
 	$(Q)mkdir -p $(MBEDTLS_GEN)
-	$(Q)PYTHONPATH=$(TOP)/lib/mbedtls/framework/scripts $(PYTHON) $< $(MBEDTLS_GEN)
+	$(Q)PYTHONPATH=$(TOP)/lib/mbedtls/framework/scripts $(PYTHON) $< $(MBEDTLS_WRAPPERS_ARGS) $(MBEDTLS_GEN)
 
 OBJ_MBEDTLS += $(MBEDTLS_WRAPPERS_C:.c=.o)
 CFLAGS += -I$(MBEDTLS_GEN)
@@ -763,18 +763,12 @@ else
 OBJ_MBEDTLS :=
 endif
 
-# Rename the builtin mbedtls_sha256_*() functions to mbedtls_sha256_sw_*() and put
-# sha256_hw.c in their place. It uses the RP2350 SHA-256 block when it can and the
-# builtin code otherwise. The default is set in mpconfigport.mk.
+# SHA-256 on the RP2350 SHA-256 block, as a PSA driver that mbedtls's hash dispatch
+# calls before its builtin code. The default and MBEDTLS_DRIVER_PATCH, which adds
+# the driver to the dispatch, are set in mpconfigport.mk.
 ifeq ($(CIRCUITPY_RP2_SHA256_HW),1)
-SRC_C += sha256_hw.c
-$(BUILD)/lib/mbedtls/tf-psa-crypto/drivers/builtin/src/sha256.o: CFLAGS += \
-	-Dmbedtls_sha256_init=mbedtls_sha256_sw_init \
-	-Dmbedtls_sha256_free=mbedtls_sha256_sw_free \
-	-Dmbedtls_sha256_clone=mbedtls_sha256_sw_clone \
-	-Dmbedtls_sha256_starts=mbedtls_sha256_sw_starts \
-	-Dmbedtls_sha256_update=mbedtls_sha256_sw_update \
-	-Dmbedtls_sha256_finish=mbedtls_sha256_sw_finish
+SRC_C += sha256_psa/rp2_sha256_psa.c sha256_psa/rp2_sha256_block_rp2350.c
+CFLAGS += -DCIRCUITPY_PSA_RP2_SHA256 -Isha256_psa
 endif
 CFLAGS += -DCIRCUITPY_RP2_SHA256_HW=$(CIRCUITPY_RP2_SHA256_HW)
 
