@@ -409,7 +409,6 @@ These are enabled and use no external dependencies:
 | `time` | `time`, `time_ns`, `sleep*`, `ticks_*` via RTC/uptime |
 | `os` | `listdir`, `stat`, `mkdir`, `rename`, `remove`, `mount`, `uname`, `urandom`, `sync` |
 
-Remaining gaps versus STM32F4: `network`/`lwIP`, USB device stack
-audio, I2C target mode, frozen modules, and the `pyb`-style legacy API
-(not applicable here).  Note the `re` module is MicroPython's cut-down
+Remaining gaps versus STM32F4: `network`/`lwIP`, USB device stack,
+frozen modules, and the `pyb`-style legacy API (not applicable here).  Note the `re` module is MicroPython's cut-down
 implementation: only `compile`, `match`, `search` and `sub` are available.
