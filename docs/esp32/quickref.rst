@@ -142,8 +142,9 @@ the :class:`network.LAN` constructor::
     lan.active(True)                      # activate the interface
     lan.ipconfig('addr4')                 # get the interface's IPv4 addresses
 
-
-Required keyword arguments for the constructor:
+Some boards define default values for the constructor arguments, in which case
+``network.LAN()`` can be called without any arguments. If not, the following
+keyword arguments are required:
 
 - ``mdc`` and ``mdio`` - :class:`machine.Pin` objects (or integers) specifying
   the MDC and MDIO pins.
@@ -154,8 +155,6 @@ Required keyword arguments for the constructor:
   constants defined in the ``network`` module.
 - ``phy_addr`` - The address number of the PHY device. Must be an integer in the
   range 0x00 to 0x1f, inclusive. Common values are ``0`` and ``1``.
-
-All of the above keyword arguments must be present to configure the interface.
 
 Optional keyword arguments:
 
