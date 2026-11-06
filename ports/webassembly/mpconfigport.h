@@ -34,6 +34,12 @@
 // Variant-specific definitions.
 #include "mpconfigvariant.h"
 
+// Whether the build links with Emscripten JSPI (JavaScript Promise
+// Integration) support, enabling jsffi.run_sync() to suspend.
+#ifndef MICROPY_JSPI
+#define MICROPY_JSPI (0)
+#endif
+
 #ifndef MICROPY_CONFIG_ROM_LEVEL
 #define MICROPY_CONFIG_ROM_LEVEL (MICROPY_CONFIG_ROM_LEVEL_EXTRA_FEATURES)
 #endif

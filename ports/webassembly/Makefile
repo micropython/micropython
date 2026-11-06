@@ -91,7 +91,12 @@ JSFLAGS += -s EXPORTED_RUNTIME_METHODS="\
 	cwrap,\
 	FS$(EXPORTED_RUNTIME_METHODS_EXTRA)"
 JSFLAGS += --js-library library.js
-JSFLAGS += -s SUPPORT_LONGJMP=emscripten
+# Longjmp support mode; the browser variant overrides this to "wasm"
+# because the JS invoke_* trampolines used by the emscripten mode are
+# incompatible with JSPI stack suspension.
+SUPPORT_LONGJMP ?= emscripten
+CFLAGS += -s SUPPORT_LONGJMP=$(SUPPORT_LONGJMP)
+JSFLAGS += -s SUPPORT_LONGJMP=$(SUPPORT_LONGJMP)
 JSFLAGS += -s MODULARIZE -s EXPORT_NAME=_createMicroPythonModule
 
 ################################################################################

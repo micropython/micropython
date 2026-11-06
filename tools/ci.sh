@@ -1154,10 +1154,12 @@ function ci_webassembly_build {
     source emsdk/emsdk_env.sh
     make ${MAKEOPTS} -C ports/webassembly VARIANT=pyscript submodules
     make ${MAKEOPTS} -C ports/webassembly VARIANT=pyscript
+    make ${MAKEOPTS} -C ports/webassembly VARIANT=browser
 }
 
 function ci_webassembly_run_tests {
     make -C ports/webassembly VARIANT=pyscript test_min
+    make -C ports/webassembly VARIANT=browser test
 }
 
 ########################################################################################
