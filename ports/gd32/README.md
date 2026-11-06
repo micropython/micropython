@@ -278,7 +278,8 @@ Adding further peripherals follows the same pattern:
 
 2. **No filesystem**: `mp_import_stat` and `mp_lexer_new_from_file`
    are stubs returning "does not exist", so `import` of external files
-   and `open()` are unavailable. Frozen modules can be enabled later.
+   and `open()` are unavailable until littlefs is mounted. Modules listed in
+   `manifest.py` are frozen instead and can always be imported.
 
 3. **STDIO disabled**: `MICROPY_PY_SYS_STDFILES` and `MICROPY_PY_IO`
    are off to avoid pulling in `mp_sys_stdout_obj`; the REPL talks
