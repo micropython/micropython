@@ -15,6 +15,14 @@ definition (startup file, linker script, clock setup) differs.
 
 ## Requirements
 
+> **New to this port?** Read **[BUILD_GD32.md](BUILD_GD32.md)** first - it is a
+> complete manual build guide covering toolchain setup, submodule
+> initialisation, the TinyUSB patch, verified build times, and the mistakes
+> people actually hit.
+
+The short version:
+
+
 ```bash
 sudo apt-get install -y gcc-arm-none-eabi binutils-arm-none-eabi \
                         libnewlib-arm-none-eabi libnewlib-dev
