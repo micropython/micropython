@@ -239,15 +239,15 @@ static const uint64_t pin_mask_reset_forbidden =
     #if defined(CONFIG_IDF_TARGET_ESP32P4)
     // SPI flash is on dedicated pins.
 
-    // USB is on the FS OTG
+    // USB is on the FS OTG, whose PHY is on 26 and 27 by default and on 24 and 25 when swapped.
     #if CIRCUITPY_USB_DEVICE_INSTANCE == 0
     #if CIRCUITPY_ESP32P4_SWAP_LSFS == 1
-    // We leave 24 and 25 alone in addition to 26 and 27 when swapped. It doesn't work otherwise. (Not sure why.)
     GPIO_SEL_24 |         // USB D-
     GPIO_SEL_25 |         // USB D+
-    #endif
+    #else
     GPIO_SEL_26 |         // USB D-
     GPIO_SEL_27 |         // USB D+
+    #endif
     #endif
     #if CIRCUITPY_ESP_USB_SERIAL_JTAG || (defined(CONFIG_ESP_CONSOLE_USB_SERIAL_JTAG) && CONFIG_ESP_CONSOLE_USB_SERIAL_JTAG)
     // Never ever reset serial/JTAG communication pins.

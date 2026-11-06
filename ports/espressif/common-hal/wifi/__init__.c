@@ -446,6 +446,52 @@ static bool wifi_inited;
 static bool wifi_ever_inited;
 static bool wifi_user_initiated;
 
+#ifdef CONFIG_ESP_HOSTED_ENABLED
+// Set when the co-processor didn't answer as ESP-Hosted firmware. Its firmware can't change
+// without resetting this chip too, so don't wait for it again until then.
+static bool hosted_unavailable;
+
+static const uint8_t hosted_pins[] = {
+    CONFIG_ESP_HOSTED_SDIO_PIN_CLK, CONFIG_ESP_HOSTED_SDIO_PIN_CMD,
+    CONFIG_ESP_HOSTED_SDIO_PIN_D0, CONFIG_ESP_HOSTED_SDIO_PIN_D1,
+    CONFIG_ESP_HOSTED_SDIO_PIN_D2, CONFIG_ESP_HOSTED_SDIO_PIN_D3,
+    CONFIG_ESP_HOSTED_SDIO_GPIO_RESET_SLAVE,
+};
+
+// Start ESP-Hosted and check that the co-processor answers as ESP-Hosted firmware. Other firmware
+// (one that doesn't use SDIO, or speaks another protocol over it) never brings the transport up.
+// Every Wi-Fi call then fails, and connect() would wait forever for an event, which hangs boot when
+// web workflow is configured. So if it doesn't answer, undo the start and release the pins.
+static bool start_hosted(void) {
+    for (size_t i = 0; i < MP_ARRAY_SIZE(hosted_pins); i++) {
+        claim_pin_number(hosted_pins[i]);
+    }
+    esp_hosted_coprocessor_fwver_t version;
+    // esp_hosted_connect_to_slave() waits for the transport but always returns ESP_OK. The version
+    // request fails at once if the transport isn't up, and otherwise needs a working RPC reply.
+    if (esp_hosted_init() == ESP_OK) {
+        esp_hosted_connect_to_slave();
+        if (esp_hosted_get_coprocessor_fwversion(&version) == ESP_OK) {
+            return true;
+        }
+    }
+    ESP_LOGE(TAG, "Co-processor is not answering as ESP-Hosted; Wi-Fi is unavailable");
+    esp_hosted_deinit();
+    for (size_t i = 0; i < MP_ARRAY_SIZE(hosted_pins); i++) {
+        reset_pin_number(hosted_pins[i]);
+    }
+    hosted_unavailable = true;
+    return false;
+}
+
+// Raises when called from the VM. Outside it (web workflow at boot) the caller sees the radio off.
+static void hosted_failed(void) {
+    if (gc_alloc_possible()) {
+        mp_raise_RuntimeError(MP_ERROR_TEXT("WiFi is not enabled"));
+    }
+}
+#endif
+
 void common_hal_wifi_init(bool user_initiated) {
     wifi_radio_obj_t *self = &common_hal_wifi_radio_obj;
 
@@ -455,27 +501,27 @@ void common_hal_wifi_init(bool user_initiated) {
         }
         return;
     }
-    wifi_inited = true;
-    wifi_user_initiated = user_initiated;
     common_hal_wifi_radio_obj.base.type = &wifi_radio_type;
 
     if (!wifi_ever_inited) {
+        #ifdef CONFIG_ESP_HOSTED_ENABLED
+        if (hosted_unavailable) {
+            hosted_failed();
+            return;
+        }
+        #endif
         ESP_ERROR_CHECK(esp_event_loop_create_default());
         ESP_ERROR_CHECK(esp_netif_init());
         #ifdef CONFIG_ESP_HOSTED_ENABLED
-        const uint8_t pins[] = {
-            CONFIG_ESP_HOSTED_SDIO_PIN_CLK, CONFIG_ESP_HOSTED_SDIO_PIN_CMD,
-            CONFIG_ESP_HOSTED_SDIO_PIN_D0, CONFIG_ESP_HOSTED_SDIO_PIN_D1,
-            CONFIG_ESP_HOSTED_SDIO_PIN_D2, CONFIG_ESP_HOSTED_SDIO_PIN_D3,
-            CONFIG_ESP_HOSTED_SDIO_GPIO_RESET_SLAVE,
-        };
-        for (size_t i = 0; i < MP_ARRAY_SIZE(pins); i++) {
-            claim_pin_number(pins[i]);
+        if (!start_hosted()) {
+            hosted_failed();
+            return;
         }
-        ESP_ERROR_CHECK(esp_hosted_init());
         #endif
         wifi_ever_inited = true;
     }
+    wifi_inited = true;
+    wifi_user_initiated = user_initiated;
 
     self->netif = esp_netif_create_default_wifi_sta();
     self->ap_netif = esp_netif_create_default_wifi_ap();

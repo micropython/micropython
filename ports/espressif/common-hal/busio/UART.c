@@ -130,6 +130,9 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
         uart_set_mode(self->uart_num, mode) != ESP_OK) {
         mp_raise_RuntimeError(MP_ERROR_TEXT("UART init"));
     }
+    // IDF interrupts at 120 of the 128 FIFO bytes, which leaves 8 byte times (40 us at 2 Mbaud)
+    // before bytes are dropped. Half the FIFO gives 320 us at 2 Mbaud.
+    uart_set_rx_full_threshold(self->uart_num, UART_HW_FIFO_LEN(self->uart_num) / 2);
 
     // On the console uart, enable pattern detection to look for CTRL+C
     #if CIRCUITPY_CONSOLE_UART
