@@ -379,13 +379,33 @@ port adds a Cortex-M4 variant:
 
 A ready-made patch is checked in as
 [0001-tinyusb-add-GD32F4-USBFS.patch](0001-tinyusb-add-GD32F4-USBFS.patch).
-After a fresh `make submodules`, apply it with:
+It is a plain `git diff` against the submodule's pinned commit, so it applies
+with either tool after a fresh `make submodules`:
 
 ```bash
 cd lib/tinyusb
-git am ../../ports/gd32/0001-tinyusb-add-GD32F4-USBFS.patch
+
+# Option A: apply as working-tree changes (no commit needed)
+git apply ../../ports/gd32/0001-tinyusb-add-GD32F4-USBFS.patch
+
+# Option B: commit it so `git status` stays clean in the submodule
+git apply ../../ports/gd32/0001-tinyusb-add-GD32F4-USBFS.patch
+git add -A && git commit -m "dwc2: add GD32F4 (Cortex-M4) USBFS support"
+
 cd ../..
 ```
+
+The patch was verified to apply cleanly (`git apply --check` returns 0) onto a
+fresh clone of `micropython/tinyusb` at the pinned commit `b549ac1d`, and it
+provides every hook `dwc2_common.h` requires:
+
+`_dwc2_controller[]`, `DWC2_EP_MAX`, `dwc2_clock_init`, `dwc2_phy_init`,
+`dwc2_phy_update`, `dwc2_phy_deinit`, `dwc2_dcd_int_enable`,
+`dwc2_dcd_int_disable`, `dwc2_remote_wakeup_delay`, `dwc2_mcu_init`.
+
+If a future TinyUSB update moves these anchors, `git apply -3` will attempt a
+three-way merge; otherwise re-derive the patch from a working tree with
+`git diff <base> HEAD > 0001-tinyusb-add-GD32F4-USBFS.patch`.
 
 Wiring: USBFS uses **PA11 (DM) / PA12 (DP)** with AF10. The CDC serial is the
 96-bit factory UID, and the REPL is shared with the UART through a common
