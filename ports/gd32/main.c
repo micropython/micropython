@@ -96,6 +96,12 @@ int main(void) {
 
     mount_internal_fs();
 
+    // Run the frozen _boot.py (if present) so user boot code can run before
+    // the REPL appears.  This matches what ports/stm32 and ports/samd do.
+    #if MICROPY_MODULE_FROZEN
+    pyexec_frozen_module("_boot.py", false);
+    #endif
+
     board_init();
 
     #if MICROPY_REPL_EVENT_DRIVEN

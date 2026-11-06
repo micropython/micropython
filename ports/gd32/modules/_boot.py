@@ -1,20 +1,19 @@
-# _boot.py - runs automatically at startup when frozen into the firmware.
+# _boot.py - runs at startup because it is frozen into the firmware.
 #
-# Anything here executes before the REPL comes up, so keep it short: it lives
-# in Flash and does not consume the Python heap.
+# Keep this short: it executes before the REPL appears.  The internal littlefs
+# filesystem is already mounted by main.c (mount_internal_fs) before this runs,
+# so there is nothing to mount here.
 import gc
-import os
 
 gc.collect()
 
-# Mount the internal littlefs filesystem if it is not already mounted, so that
-# scripts written to the device survive a reset.
+# If the filesystem mount failed because the partition is unformatted, the
+# root is simply empty.  Formatting from here would overwrite user data, so we
+# only report it and leave recovery to the user.
 try:
-    os.stat("/")
-except OSError:
-    try:
-        import vfs
+    import os
 
-        vfs.mount(vfs.VfsLfs2(bdev=__import__("machine").SDCard), "/")
-    except Exception:
-        pass
+    if not os.listdir("/"):
+        print("littlefs: root is empty (run machine.Flash.mkfs() to format)")
+except OSError:
+    print("littlefs: root not mounted")

@@ -531,6 +531,15 @@ These are enabled and use no external dependencies:
 | `time` | `time`, `time_ns`, `sleep*`, `ticks_*` via RTC/uptime |
 | `os` | `listdir`, `stat`, `mkdir`, `rename`, `remove`, `mount`, `uname`, `urandom`, `sync` |
 
-The only remaining gap versus STM32F4 is the `pyb`-style legacy API, which is
-specific to ST boards and not applicable here.  Note the `re` module is MicroPython's cut-down
+### Deliberately omitted versus STM32F4
+
+| Item | Why |
+|------|-----|
+| `framebuf` | no display driver in this port (the TLI controller is not wrapped) |
+| `machine.ADCBlock` | the simpler single-channel `ADC` covers the GD32F4 use case |
+| `pyb` legacy API | specific to ST boards, not applicable to GD32 |
+
+Everything else the STM32F4 port exposes is present: 20 `machine` types,
+`network.LAN` on lwIP, littlefs, USB CDC, frozen modules, `asyncio`,
+`socket`, `webrepl` and the usual standard library.  Note the `re` module is MicroPython's cut-down
 implementation: only `compile`, `match`, `search` and `sub` are available.

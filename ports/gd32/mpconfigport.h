@@ -121,6 +121,9 @@ extern const struct _mp_obj_type_t network_lan_type;
 #define MICROPY_HW_USB_VID                (0x28E9)
 #define MICROPY_HW_USB_PID                (0x0189)
 #define MICROPY_HW_USB_MSC                (0)
+// Expose machine.USBDevice so the device descriptors can be inspected and
+// runtime device registration is available.
+#define MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE (1)
 #define MICROPY_PY_MACHINE_I2S            (1)
 #define MICROPY_PY_MACHINE_I2S_INCLUDEFILE "machine_i2s_port.c"
 #define MICROPY_PY_MACHINE_I2S_RING_BUF   (1)

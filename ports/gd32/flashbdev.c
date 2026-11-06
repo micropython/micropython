@@ -173,6 +173,39 @@ static flash_bdev_obj_t flash_bdev_obj = {
     .base = { &flash_bdev_type },
 };
 
+
+mp_obj_t pyb_flash_get_block_device(void);
+
+// ---- machine.Flash: let Python format the littlefs partition ----
+// The block device itself is not a Python type here; instead this exposes a
+// small object with the operations a user actually needs (format), which keeps
+// the surface area minimal.
+
+static mp_obj_t machine_flash_mkfs(void) {
+    // Lazy import: vfs is only available when MICROPY_VFS is enabled.
+    mp_obj_t vfs_mod = mp_import_name(MP_QSTR_vfs, mp_const_none, MP_OBJ_NEW_SMALL_INT(0));
+    mp_obj_t bdev = pyb_flash_get_block_device();
+    mp_obj_t args[2] = { bdev, MP_OBJ_NEW_SMALL_INT(0) };
+    // vfs.VfsLfs2.mkfs(bdev)
+    mp_obj_t vfslfs2 = mp_load_attr(vfs_mod, MP_QSTR_VfsLfs2);
+    mp_obj_t mkfs = mp_load_attr(vfslfs2, MP_QSTR_mkfs);
+    mp_call_function_n_kw(mkfs, 1, 0, args);
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_0(machine_flash_mkfs_obj, machine_flash_mkfs);
+
+static const mp_rom_map_elem_t machine_flash_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_mkfs), MP_ROM_PTR(&machine_flash_mkfs_obj) },
+};
+static MP_DEFINE_CONST_DICT(machine_flash_locals_dict, machine_flash_locals_dict_table);
+
+MP_DEFINE_CONST_OBJ_TYPE(
+    machine_flash_type,
+    MP_QSTR_Flash,
+    MP_TYPE_FLAG_NONE,
+    locals_dict, &machine_flash_locals_dict
+    );
+
 mp_obj_t pyb_flash_get_block_device(void) {
     return MP_OBJ_FROM_PTR(&flash_bdev_obj);
 }
