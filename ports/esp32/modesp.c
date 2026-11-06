@@ -36,11 +36,243 @@
 #include "py/mperrno.h"
 #include "py/mphal.h"
 
+#if MICROPY_PY_ESP_OSDEBUG_REPL
+
+#include <string.h>
+
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "freertos/ringbuf.h"
+#include "esp_heap_caps.h"
+#include "shared/runtime/interrupt_char.h"
+#include "shared/runtime/pyexec.h"
+
+#define ESP_OSDEBUG_REPL (-1)
+
+// IDF logs from any task, and from the MicroPython task with the GIL released,
+// so the log hook must not enter the REPL output path (GIL, scheduler, USB
+// stack, dupterm).  It only queues complete lines into a ring buffer, which the
+// MicroPython task writes out from a scheduled callback.
+#define LOG_REPL_RING_SIZE (MICROPY_PY_ESP_OSDEBUG_REPL_BUF_SIZE)
+#define LOG_REPL_LINE_MAX (256)
+#define LOG_REPL_LINE_SLOTS (4)
+#define LOG_REPL_WAIT_MS (MICROPY_PY_ESP_OSDEBUG_REPL_WAIT_MS)
+#define LOG_REPL_DRAIN_CHUNK (128)
+
+// Per-task line assembly: some IDF code emits one line in several calls (the
+// Wi-Fi libraries and log v2 send the prefix, message and newline separately)
+// without holding a lock across them.
+typedef struct _log_repl_line_t {
+    TaskHandle_t owner;
+    size_t len;
+    char buf[LOG_REPL_LINE_MAX];
+} log_repl_line_t;
+
+typedef struct _log_repl_t {
+    portMUX_TYPE lock; // guards the line owners and the drop state
+    RingbufHandle_t ring;
+    size_t dropped;
+    bool dropping;
+    log_repl_line_t line[LOG_REPL_LINE_SLOTS];
+} log_repl_t;
+
+// Never freed: other tasks may be inside the hook.
+static log_repl_t *log_repl;
+static mp_sched_node_t log_repl_node;
+static vprintf_like_t log_repl_prev_vprintf;
+
+static void log_repl_drain(mp_sched_node_t *node) {
+    (void)node;
+    // In the raw REPL only a running script's output may be mixed with logs, the
+    // rest is protocol.  The interrupt char is set exactly while a script runs.
+    if (pyexec_mode_kind == PYEXEC_MODE_RAW_REPL && mp_interrupt_char == -1) {
+        mp_sched_schedule_node(&log_repl_node, log_repl_drain);
+        return;
+    }
+    // Only what was queued on entry: it ends on a line boundary, and fast
+    // producers can't keep this running.  Later lines schedule another run.
+    UBaseType_t budget;
+    vRingbufferGetInfo(log_repl->ring, NULL, NULL, NULL, NULL, &budget);
+    while (budget > 0) {
+        // In small pieces, so the space is freed while the output is slow.
+        size_t n;
+        char *data = xRingbufferReceiveUpTo(log_repl->ring, &n, 0,
+            MIN(budget, LOG_REPL_DRAIN_CHUNK));
+        if (data == NULL) {
+            break;
+        }
+        // IDF lines end with a bare '\n', the REPL wants "\r\n".
+        mp_hal_stdout_tx_strn_cooked(data, n);
+        vRingbufferReturnItem(log_repl->ring, data);
+        budget -= n;
+        // The output moves again, so logging tasks may wait for space.
+        log_repl->dropping = false;
+    }
+    portENTER_CRITICAL(&log_repl->lock);
+    size_t dropped = log_repl->dropped;
+    log_repl->dropped = 0;
+    log_repl->dropping = false;
+    portEXIT_CRITICAL(&log_repl->lock);
+    if (dropped != 0) {
+        char buf[48];
+        int len = snprintf(buf, sizeof(buf), "[esp.REPL: %u bytes of log dropped]\r\n",
+            (unsigned int)dropped);
+        mp_hal_stdout_tx_strn(buf, len);
+    }
+}
+
+static void log_repl_schedule(void) {
+    if (mp_sched_schedule_node(&log_repl_node, log_repl_drain)) {
+        mp_hal_wake_main_task();
+    }
+}
+
+static void log_repl_send(const char *str, size_t len) {
+    if (len == 0) {
+        return;
+    }
+    // The MicroPython task drains the buffer, so it must never wait for it.
+    // While the output is stalled, drop at once until the next drain.
+    TickType_t wait = 0;
+    if (!log_repl->dropping
+        && xTaskGetSchedulerState() == taskSCHEDULER_RUNNING
+        && xTaskGetCurrentTaskHandle() != mp_main_task_handle) {
+        wait = pdMS_TO_TICKS(LOG_REPL_WAIT_MS);
+    }
+    if (xRingbufferSend(log_repl->ring, str, len, wait) != pdTRUE) {
+        portENTER_CRITICAL(&log_repl->lock);
+        log_repl->dropped += len;
+        log_repl->dropping = true;
+        portEXIT_CRITICAL(&log_repl->lock);
+    }
+    log_repl_schedule();
+}
+
+// The calling task's line slot, or a free one; NULL if all are taken.
+static log_repl_line_t *log_repl_line_get(void) {
+    TaskHandle_t self = xTaskGetCurrentTaskHandle();
+    log_repl_line_t *line = NULL;
+    log_repl_line_t *free_line = NULL;
+    portENTER_CRITICAL(&log_repl->lock);
+    for (size_t i = 0; i < LOG_REPL_LINE_SLOTS && line == NULL; ++i) {
+        if (log_repl->line[i].owner == self) {
+            line = &log_repl->line[i];
+        } else if (log_repl->line[i].owner == NULL && free_line == NULL) {
+            free_line = &log_repl->line[i];
+        }
+    }
+    if (line == NULL && free_line != NULL) {
+        line = free_line;
+        line->owner = self;
+        line->len = 0;
+    }
+    portEXIT_CRITICAL(&log_repl->lock);
+    return line;
+}
+
+static int log_repl_vprintf(const char *format, va_list ap) {
+    if (xPortInIsrContext()) {
+        return 0;
+    }
+    // Format straight after the task's partial line.  Without a free slot the
+    // output is queued as it comes and may interleave with other tasks.
+    log_repl_line_t *line = log_repl_line_get();
+    char stack_buf[128];
+    char *buf = stack_buf;
+    size_t pos = 0;
+    size_t size = sizeof(stack_buf);
+    if (line != NULL) {
+        buf = line->buf;
+        pos = line->len;
+        size = sizeof(line->buf);
+    }
+    va_list ap_copy;
+    va_copy(ap_copy, ap);
+    int n = vsnprintf(buf + pos, size - pos, format, ap);
+    char *heap_buf = NULL;
+    if (n >= (int)(size - pos)) {
+        // Too long for the line buffer: assemble the line on the heap.
+        heap_buf = heap_caps_malloc(pos + n + 1, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
+        if (heap_buf != NULL) {
+            memcpy(heap_buf, buf, pos);
+            vsnprintf(heap_buf + pos, n + 1, format, ap_copy);
+            buf = heap_buf;
+        } else {
+            n = size - pos - 1;
+        }
+    }
+    va_end(ap_copy);
+    size_t len = pos + MAX(n, 0);
+
+    // Queue all complete lines in one piece, keep the rest for the next call.
+    size_t end = len;
+    if (line != NULL) {
+        while (end > 0 && buf[end - 1] != '\n') {
+            --end;
+        }
+        if (len - end >= sizeof(line->buf)) {
+            end = len;
+        }
+    }
+    log_repl_send(buf, end);
+    if (line != NULL) {
+        memmove(line->buf, buf + end, len - end);
+        line->len = len - end;
+        if (line->len == 0) {
+            portENTER_CRITICAL(&log_repl->lock);
+            line->owner = NULL;
+            portEXIT_CRITICAL(&log_repl->lock);
+        }
+    }
+    heap_caps_free(heap_buf);
+    return n;
+}
+
+static void log_repl_restore(void) {
+    if (log_repl_prev_vprintf == NULL) {
+        return;
+    }
+    vprintf_like_t current = esp_log_set_vprintf(log_repl_prev_vprintf);
+    if (current == log_repl_vprintf) {
+        log_repl_prev_vprintf = NULL;
+    } else {
+        // Replaced since (e.g. by the raw REPL): keep it.
+        esp_log_set_vprintf(current);
+    }
+}
+
+#endif // MICROPY_PY_ESP_OSDEBUG_REPL
+
 static mp_obj_t esp_osdebug(size_t n_args, const mp_obj_t *args) {
     esp_log_level_t level = LOG_LOCAL_LEVEL; // Maximum available level
     if (n_args == 2) {
         level = mp_obj_get_int(args[1]);
     }
+    #if MICROPY_PY_ESP_OSDEBUG_REPL
+    if (mp_obj_is_small_int(args[0]) && MP_OBJ_SMALL_INT_VALUE(args[0]) == ESP_OSDEBUG_REPL) {
+        if (log_repl == NULL) {
+            log_repl_t *l = heap_caps_calloc(1, sizeof(log_repl_t), MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
+            if (l == NULL) {
+                mp_raise_type(&mp_type_MemoryError);
+            }
+            l->ring = xRingbufferCreateWithCaps(LOG_REPL_RING_SIZE, RINGBUF_TYPE_BYTEBUF,
+                MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
+            if (l->ring == NULL) {
+                heap_caps_free(l);
+                mp_raise_type(&mp_type_MemoryError);
+            }
+            portMUX_INITIALIZE(&l->lock);
+            log_repl = l;
+        }
+        vprintf_like_t prev = esp_log_set_vprintf(log_repl_vprintf);
+        if (prev != log_repl_vprintf) {
+            log_repl_prev_vprintf = prev;
+        }
+        esp_log_level_set("*", level);
+        return mp_const_none;
+    }
+    log_repl_restore();
+    #endif
     if (args[0] == mp_const_none) {
         // Set logging back to boot default of ESP_LOG_ERROR
         esp_log_level_set("*", ESP_LOG_ERROR);
@@ -125,6 +357,11 @@ static const mp_rom_map_elem_t esp_module_globals_table[] = {
 
     { MP_ROM_QSTR(MP_QSTR_gpio_matrix_in), MP_ROM_PTR(&esp_gpio_matrix_in_obj) },
     { MP_ROM_QSTR(MP_QSTR_gpio_matrix_out), MP_ROM_PTR(&esp_gpio_matrix_out_obj) },
+
+    #if MICROPY_PY_ESP_OSDEBUG_REPL
+    // Constant for first arg of osdebug()
+    { MP_ROM_QSTR(MP_QSTR_REPL), MP_ROM_INT(ESP_OSDEBUG_REPL) },
+    #endif
 
     // Constants for second arg of osdebug()
     { MP_ROM_QSTR(MP_QSTR_LOG_NONE), MP_ROM_INT((mp_uint_t)ESP_LOG_NONE)},
