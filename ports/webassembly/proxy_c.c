@@ -611,7 +611,7 @@ static mp_obj_t proxy_resume_execute(mp_obj_t self_in, mp_obj_t send_value, mp_o
 void proxy_c_to_js_resume(uint32_t c_ref, uint32_t *args) {
     external_call_depth_inc();
     #if MICROPY_JSPI
-    size_t prev_depth = mp_js_allow_suspend_begin();
+    bool prev = mp_js_allow_suspend_begin();
     #endif
     nlr_buf_t nlr;
     if (nlr_push(&nlr) == 0) {
@@ -630,6 +630,6 @@ void proxy_c_to_js_resume(uint32_t c_ref, uint32_t *args) {
         external_call_depth_dec(nlr.ret_val);
     }
     #if MICROPY_JSPI
-    mp_js_allow_suspend_end(prev_depth);
+    mp_js_allow_suspend_end(prev);
     #endif
 }
