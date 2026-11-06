@@ -1,0 +1,22 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "https://www.waveshare.com/wiki/RP2350-PiZero",
+    "features": [
+        "Dual-core",
+        "External Flash",
+        "External RAM",
+        "USB-C",
+        "microSD"
+    ],
+    "images": [],
+    "mcu": "rp2350",
+    "product": "RP2350-PiZero",
+    "thumbnail": "",
+    "url": "https://www.waveshare.com/rp2350-pizero.htm",
+    "variants": {
+        "RISCV": "RISC V"
+    },
+    "vendor": "Waveshare"
+}
