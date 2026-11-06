@@ -285,3 +285,56 @@ The following specialization applies to this port:
 - Constructing ``SPI`` for an ``id`` already in use returns that same object.
 - ``bits``: only ``8`` is supported.
 - Chip select (CS) is not driven by ``machine.SPI``; control it with ``machine.Pin``.
+
+Hardware SPI target
+-------------------
+
+``machine.SPITarget`` is a PSOC™ Edge specific class. It uses the same SCB units as
+``machine.SPI`` to act as an SPI target, with the clock and chip select driven by an
+external controller::
+
+    from machine import SPITarget
+
+    target = SPITarget(10)                                               # pins resolved from the id
+    target = SPITarget(sck='P16_0', mosi='P16_1', miso='P16_2', ssel='P16_3')  # id resolved from the pins
+
+    rx = bytearray(4)
+    target.readinto(rx)                             # receive 4 bytes from the controller
+    target.write(b'\x11\x22\x33\x44')               # send 4 bytes to the controller
+    target.write_readinto(b'\x11\x22\x33\x44', rx)  # send and receive at the same time
+    target.deinit()
+
+.. class:: SPITarget([id], *, polarity=0, phase=0, bits=8, firstbit=SPITarget.MSB, sck=None, mosi=None, miso=None, ssel=None)
+
+   - ``id``, ``sck``, ``mosi`` and ``miso`` are handled as for ``machine.SPI``.
+   - ``ssel`` is the chip select input, driven by the controller.
+   - ``polarity``, ``phase`` and ``firstbit`` must match the controller.
+   - ``bits``: only ``8`` is supported.
+
+.. method:: SPITarget.init(*, polarity=0, phase=0, bits=8, firstbit=SPITarget.MSB, sck=None, mosi=None, miso=None, ssel=None)
+
+   Reconfigure the object, keeping its ``id``. Arguments not given are reset to their defaults.
+
+.. method:: SPITarget.readinto(buf)
+
+   Receive ``len(buf)`` bytes from the controller into ``buf``. Returns the number of bytes received.
+
+.. method:: SPITarget.write(buf)
+
+   Send ``buf`` to the controller and wait until it has been clocked out. Returns the number
+   of bytes sent. The data received from the controller during the write is discarded.
+
+.. method:: SPITarget.write_readinto(write_buf, read_buf)
+
+   Send ``write_buf`` and receive into ``read_buf`` at the same time. Both buffers must have
+   the same length. Returns the number of bytes transferred.
+
+.. method:: SPITarget.deinit()
+
+   Release the SCB unit.
+
+``SPITarget.MSB`` and ``SPITarget.LSB`` are the values for ``firstbit``.
+
+The transfer methods are blocking. They raise ``OSError`` if the controller stops sending
+or receiving data for 5 seconds, or if received data was lost because it arrived faster than
+it could be read (``SPITarget RX overflow``).
