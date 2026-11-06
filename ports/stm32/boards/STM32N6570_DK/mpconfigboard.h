@@ -73,6 +73,9 @@
 #define MICROPY_HW_USB_HOST_RHPORT              (1)
 #define MICROPY_HW_USB_HOST_VBUS_PIN            (pyb_pin_USB2_PWR_EN)
 
+// The jpeg module, using the hardware JPEG codec.
+#define MICROPY_PY_JPEG                         (1)
+
 /******************************************************************************/
 // Bootloader configuration
 
