@@ -331,11 +331,13 @@ os.stat('/boot.py')
 
 Notes:
 
-- **Partition**: Sector 6 + Sector 7 of internal flash, i.e.
-  `0x08040000 - 0x0807FFFF` (256 KB).  The firmware image must stay below
-  `0x08040000`; the current build ends around `0x0803DD00`, so there is a
-  little headroom.  GD32F4 sector sizes are 16 KB (0-3), 64 KB (4) and 128 KB
-  (5-7), so a smaller partition is not possible above the image.
+- **Partition**: Sector 7 of internal flash only, i.e.
+  `0x08060000 - 0x0807FFFF` (128 KB).  Sector 6 is left to the firmware, which
+  gives the image a 384 KB ceiling; the current build ends at `0x0803DF24`,
+  so ~136 KB is free.  Both linker scripts assert this at link time and fail
+  with `FIRMWARE TOO LARGE` if the image ever grows past `0x08060000`.
+  GD32F4 sector sizes are 16 KB (0-3), 64 KB (4) and 128 KB (5-7), so 128 KB
+  is the smallest erasure unit available above the image.
 - **Block size equals the erase size** (128 KB).  littlefs erases before it
   programs and never reads back a block it is writing, so the driver keeps no
   read-modify-write buffer.  That is deliberate: caching a 128 KB sector would
