@@ -22,6 +22,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v7
+    # Pin the Node major so upgrades are deliberate.  This step must come
+    # before webassembly_setup, because emsdk only adds its own node to
+    # PATH when none is already there.
+    - uses: actions/setup-node@v7
+      with:
+        node-version: 26
     - name: Install packages
       run: tools/ci.sh webassembly_setup
     - name: Build
