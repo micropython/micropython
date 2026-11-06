@@ -117,6 +117,11 @@ void pew_deinit(void) {
     pewpew_tc_index = 0xff;
 }
 
+void pew_reset(void) {
+    pew_deinit();
+    MP_STATE_VM(pew_singleton) = NULL;
+}
+
 uint16_t pew_get_ticks(void) {
     return pewpew_ticks;
 }

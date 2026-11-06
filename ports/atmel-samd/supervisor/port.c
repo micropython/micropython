@@ -369,6 +369,14 @@ void reset_port(void) {
     watchdog_reset();
     #endif
 
+    // Stop PewPew before the heap is swept.
+    //
+    // Its timer interrupt drives pins through DigitalInOut objects on the heap,
+    // and gc_sweep_all() may finalize them before the PewPew object.
+    #if CIRCUITPY_PEW
+    pew_reset();
+    #endif
+
     #ifdef SAMD21
     if (!tick_enabled())
     // SAMD21 ticks depend on the event system, so don't disturb the event system if we need ticks,
