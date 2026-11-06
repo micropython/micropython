@@ -94,6 +94,7 @@ CLK PA21 PCC_D? (D32)  BROWN
         gpio_set_pin_pull_mode(functions[i]->pin,
             (i == 1 || i == 5) ? GPIO_PULL_OFF : GPIO_PULL_UP);
         gpio_set_pin_function(functions[i]->pin, GPIO_PIN_FUNCTION_SDIO);
+        claim_pin(functions[i]->obj);
     }
 
     self->num_data = num_data;

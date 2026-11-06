@@ -35,6 +35,9 @@ void common_hal_paralleldisplaybus_parallelbus_construct(paralleldisplaybus_para
         wrconfig |= 0xff << (data_pin % 32);
     }
     g->WRCONFIG.reg = wrconfig;
+    for (uint8_t i = 0; i < 8; i++) {
+        claim_pin_number(data_pin + i);
+    }
     self->bus = ((uint8_t *)&g->OUT.reg) + (data0->number % 32 / 8);
 
     self->command.base.type = &digitalio_digitalinout_type;

@@ -27,8 +27,14 @@ bool speaker_enable_in_use;
 #endif
 
 static uint32_t never_reset_pins[PORT_COUNT];
+static uint32_t claimed_pins[PORT_COUNT];
 
 void reset_all_pins(void) {
+    // Keep claims only on pins that keep their configuration.
+    for (uint32_t i = 0; i < PORT_COUNT; i++) {
+        claimed_pins[i] &= never_reset_pins[i];
+    }
+
     uint32_t pin_mask[PORT_COUNT] = PORT_OUT_IMPLEMENTED;
 
     // Do not full reset USB lines.
@@ -87,6 +93,7 @@ void reset_pin_number(uint8_t pin_number) {
     }
 
     never_reset_pins[GPIO_PORT(pin_number)] &= ~(1 << GPIO_PIN(pin_number));
+    claimed_pins[GPIO_PORT(pin_number)] &= ~(1 << GPIO_PIN(pin_number));
 
     if (pin_number == PIN_PA30
         #ifdef SAM_D5X_E5X
@@ -115,7 +122,17 @@ void common_hal_never_reset_pin(const mcu_pin_obj_t* pin) {
     never_reset_pin_number(pin->number);
 }
 
+void claim_pin_number(uint8_t pin_number) {
+    if (pin_number >= PORT_BITS) {
+        return;
+    }
+
+    claimed_pins[GPIO_PORT(pin_number)] |= 1 << GPIO_PIN(pin_number);
+}
+
 void claim_pin(const mcu_pin_obj_t* pin) {
+    claim_pin_number(pin->number);
+
     #ifdef SPEAKER_ENABLE_PIN
     if (pin == SPEAKER_ENABLE_PIN) {
         speaker_enable_in_use = true;
@@ -124,27 +141,16 @@ void claim_pin(const mcu_pin_obj_t* pin) {
 }
 
 bool pin_number_is_free(uint8_t pin_number) {
-    PortGroup *const port = &PORT->Group[(enum gpio_port)GPIO_PORT(pin_number)];
-    uint8_t pin_index = GPIO_PIN(pin_number);
-    volatile PORT_PINCFG_Type *state = &port->PINCFG[pin_index];
-    volatile PORT_PMUX_Type *pmux = &port->PMUX[pin_index / 2];
-
-    if (pin_number == PIN_PA30 || pin_number == PIN_PA31) {
-        if (DSU->STATUSB.bit.DBGPRES == 1) {
-            return false;
-        }
-        if (pin_number == PIN_PA30
-            #ifdef SAMD21
-            || pin_number == PIN_PA31
-            #endif
-            )
-            {
-            return state->bit.PMUXEN == 1 && ((pmux->reg >> (4 * pin_index % 2)) & 0xf) == SWD_MUX;
-        }
+    if (pin_number >= PORT_BITS) {
+        return false;
     }
 
-    return state->bit.PMUXEN == 0 && state->bit.INEN == 0 &&
-           state->bit.PULLEN == 0 && (port->DIR.reg & (1 << pin_index)) == 0;
+    // SWD pins are in use while a debugger is attached.
+    if ((pin_number == PIN_PA30 || pin_number == PIN_PA31) && DSU->STATUSB.bit.DBGPRES == 1) {
+        return false;
+    }
+
+    return (claimed_pins[GPIO_PORT(pin_number)] & (1 << GPIO_PIN(pin_number))) == 0;
 }
 
 bool common_hal_mcu_pin_is_free(const mcu_pin_obj_t* pin) {
