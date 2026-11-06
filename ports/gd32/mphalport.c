@@ -5,6 +5,15 @@
 #include "py/mphal.h"
 #include "gd32f4xx.h"
 #include "mphalport.h"
+#if MICROPY_HW_ENABLE_USBDEV
+#include "shared/tinyusb/mp_usbd.h"
+#endif
+
+// REPL input ring buffer.  Both the UART and (when enabled) the USB CDC
+// endpoint feed characters into this buffer.
+static uint8_t stdin_ringbuf_array[MICROPY_HW_STDIN_BUFFER_LEN];
+ringbuf_t stdin_ringbuf = { stdin_ringbuf_array, sizeof(stdin_ringbuf_array) };
+int mp_interrupt_char = 3;   // Ctrl-C
 #include "shared/runtime/softtimer.h"
 
 // REPL UART: USART0 PA9(TX)/PA10(RX) AF7
@@ -43,11 +52,21 @@ void uart_repl_init(void) {
 }
 
 int mp_hal_stdin_rx_chr(void) {
-    uart_repl_init();
-    while (RESET == usart_flag_get(REPL_UART, USART_FLAG_RBNE)) {
-        ;
+    for (;;) {
+        // USB CDC input (if enabled) arrives through the shared ring buffer.
+        int c = ringbuf_get(&stdin_ringbuf);
+        if (c != -1) {
+            return c;
+        }
+        #if MICROPY_HW_ENABLE_USBDEV
+        mp_usbd_task();
+        #endif
+        // Fall back to the UART REPL.
+        uart_repl_init();
+        if (usart_flag_get(REPL_UART, USART_FLAG_RBNE) != RESET) {
+            return (int)usart_data_receive(REPL_UART);
+        }
     }
-    return (int)usart_data_receive(REPL_UART);
 }
 
 mp_uint_t mp_hal_stdout_tx_strn(const char *str, size_t len) {
@@ -200,4 +219,12 @@ void mp_hal_get_random(size_t n, uint8_t *buf) {
             r >>= 8;
         }
     }
+}
+
+// ---- scheduler wakeup ----
+// The USB device stack calls this from its interrupt when it has queued work.
+// There is no separate main task here: the REPL loop calls mp_handle_pending()
+// regularly, so requesting a pending pass is sufficient.
+void mp_hal_wake_main_task_from_isr(void) {
+    mp_sched_schedule(MP_OBJ_NULL, MP_OBJ_NULL);
 }

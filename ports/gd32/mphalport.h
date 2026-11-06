@@ -41,6 +41,19 @@ static inline void mp_hal_pin_low(const mp_obj_t pin) {
 #endif
 
 
+// ---- REPL input ring buffer (shared by UART REPL and USB CDC) ----
+#include "py/ringbuf.h"
+#ifndef MICROPY_HW_STDIN_BUFFER_LEN
+#define MICROPY_HW_STDIN_BUFFER_LEN (256)
+#endif
+extern ringbuf_t stdin_ringbuf;
+extern int mp_interrupt_char;
+
+// ---- scheduler wakeup used by the USB device stack ----
+// The port runs without a separate task; the main loop polls, so an ISR only
+// needs to request a scheduler pass.
+void mp_hal_wake_main_task_from_isr(void);
+
 // ---- pin operations for extmod soft protocols ----
 #include "pin_defs.h"
 

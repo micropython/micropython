@@ -19,6 +19,9 @@
 #define SSIZE_MAX (0x7FFFFFFF)
 #endif
 #define MICROPY_ENABLE_GC                 (1)
+// The USB device stack schedules a task from its interrupt handler.
+#define MICROPY_ENABLE_SCHEDULER          (1)
+#define MICROPY_SCHEDULER_STATIC_NODES    (1)
 #define MICROPY_ENABLE_COMPILER           (1)
 #define MICROPY_ENABLE_EXTERNAL_IMPORT    (1)
 #define MICROPY_HELPER_REPL               (1)
@@ -86,6 +89,14 @@ extern volatile uint32_t systick_ms;
 #define MICROPY_PY_MACHINE_UART_INCLUDEFILE "machine_uart_port.c"
 #define MICROPY_PY_MACHINE_SPI            (1)
 #define MICROPY_PY_MACHINE_I2C            (1)
+// USB device (TinyUSB DWC2 on USBFS)
+#define MICROPY_HW_ENABLE_USBDEV          (1)
+#define MICROPY_HW_USB_CDC                (1)
+// GigaDevice is 0x28E9; use a private PID range for the MicroPython CDC
+// interface so it does not clash with the vendor's own examples.
+#define MICROPY_HW_USB_VID                (0x28E9)
+#define MICROPY_HW_USB_PID                (0x0189)
+#define MICROPY_HW_USB_MSC                (0)
 #define MICROPY_PY_MACHINE_I2S            (1)
 #define MICROPY_PY_MACHINE_I2S_INCLUDEFILE "machine_i2s_port.c"
 #define MICROPY_PY_MACHINE_I2S_RING_BUF   (1)

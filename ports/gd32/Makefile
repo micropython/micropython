@@ -60,6 +60,8 @@ INC += -I$(BOARD_DIR)
 INC += -Igd32lib/CMSIS_include
 INC += -Igd32lib/peripheral_include
 INC += -I$(TOP)/lib/oofatfs
+INC += -I$(TOP)/lib/tinyusb/src
+INC += -I$(TOP)/shared/tinyusb
 
 CFLAGS += $(INC)
 CFLAGS += -DLFS2_NO_MALLOC=0
@@ -101,11 +103,16 @@ SRC_C = \
 	lib/littlefs/lfs2_util.c \
 	flashbdev.c \
 	sdcard.c \
+	usbd.c \
 	flash_ws.c \
 	machine_sdcard_port.c \
 	drivers/bus/softspi.c \
 	shared/runtime/softtimer.c \
 	shared/runtime/mpirq.c \
+	shared/tinyusb/mp_usbd.c \
+	shared/tinyusb/mp_usbd_cdc.c \
+	shared/tinyusb/mp_usbd_descriptor.c \
+	shared/tinyusb/mp_usbd_runtime.c \
 	machine_pin.c \
 	machine_bitstream_port.c \
 	machine_spi_port.c \
@@ -145,6 +152,27 @@ SRC_QSTR += extmod/vfs.c extmod/vfs_blockdev.c extmod/vfs_lfs.c extmod/vfs_reade
 SRC_QSTR += shared/readline/readline.c shared/runtime/pyexec.c machine_pin.c \
 	extmod/modmachine.c extmod/machine_timer.c extmod/machine_wdt.c \
 	extmod/machine_uart.c extmod/machine_spi.c extmod/machine_i2c.c machine_i2c_target_port.c machine_i2s_port.c extmod/machine_i2c_target.c extmod/machine_i2s.c machine_uart_port.c machine_spi_port.c machine_i2c_port.c machine_adc_port.c machine_dac_port.c machine_rtc_port.c machine_can_port.c machine_pwm_port.c extmod/machine_adc.c extmod/machine_can.c extmod/machine_pwm.c extmod/machine_signal.c extmod/machine_pinbase.c flashbdev.c sdcard.c machine_sdcard_port.c machine_wdt_port.c shared/runtime/mpirq.c
+
+# TinyUSB (device stack for USBDevice / CDC) on the GD32F4 USBFS DWC2 core.
+# tinyusb.mk contributes paths relative to lib/tinyusb/ (e.g. src/tusb.c).
+# Reset first so a second inclusion cannot stack the prefix.
+TINYUSB_SRC_C_REL :=
+-include $(TOP)/lib/tinyusb/src/tinyusb.mk
+TINYUSB_SRC_C_REL := $(TINYUSB_SRC_C)
+TINYUSB_SRC_C := $(sort $(addprefix lib/tinyusb/, \
+	$(TINYUSB_SRC_C_REL) \
+	src/portable/synopsys/dwc2/dcd_dwc2.c \
+	src/portable/synopsys/dwc2/dwc2_common.c \
+	))
+CFLAGS += -DCFG_TUSB_MCU=OPT_MCU_GD32F4
+CFLAGS += -DCFG_TUSB_OS=OPT_OS_NONE
+CFLAGS += -DCFG_TUD_ENABLED=1
+CFLAGS += -I$(TOP)/lib/tinyusb/src
+# TinyUSB is third-party code; keep its warnings from breaking -Werror.
+$(BUILD)/lib/tinyusb/%.o: CFLAGS += -Wno-error
+
+# TinyUSB objects must be added here (after TINYUSB_SRC_C is defined).
+OBJ += $(addprefix $(BUILD)/, $(TINYUSB_SRC_C:.c=.o))
 
 OBJ += $(PY_CORE_O)
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
@@ -210,5 +238,6 @@ SRC_QSTR += $(SRC_C)
 
 # littlefs is third-party code: relax warnings for it
 $(BUILD)/lib/littlefs/%.o: CFLAGS += -Wno-error
+
 
 include $(TOP)/py/mkrules.mk
