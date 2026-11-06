@@ -35,10 +35,36 @@
 // to HS in mpconfigboard_common.h) or by the shared default in
 // shared/tinyusb/tusb_config.h (RHPORT0 in FS device mode).
 
+#if MICROPY_HW_USB_HOST
+// The host uses its own root hub port, at high speed on controllers with an embedded
+// high speed PHY.
+#ifndef MICROPY_HW_USB_HOST_TUSB_SPEED
+#if defined(STM32N6)
+#define MICROPY_HW_USB_HOST_TUSB_SPEED (OPT_MODE_HIGH_SPEED)
+#else
+#define MICROPY_HW_USB_HOST_TUSB_SPEED (OPT_MODE_FULL_SPEED)
+#endif
+#endif
+#if MICROPY_HW_USB_HOST_RHPORT == 0
+#define CFG_TUSB_RHPORT0_MODE (OPT_MODE_HOST | MICROPY_HW_USB_HOST_TUSB_SPEED)
+#else
+#define CFG_TUSB_RHPORT1_MODE (OPT_MODE_HOST | MICROPY_HW_USB_HOST_TUSB_SPEED)
+#if MICROPY_HW_TINYUSB_STACK && !MICROPY_HW_USB_HS && !defined(CFG_TUSB_RHPORT0_MODE)
+// The shared default device port only applies when no port is configured.
+#define CFG_TUSB_RHPORT0_MODE (OPT_MODE_DEVICE)
+#endif
+#endif
+// The host's isochronous IN stream (see shared/tinyusb/mp_usbh_dwc2.c) needs buffer
+// DMA, which TinyUSB only uses on controllers that have it.
+#define CFG_TUH_DWC2_DMA_ENABLE (1)
+#endif
+
 // These families place OTG_HS on RHPORT1. Extend the list if a new family
 // also uses OTG_HS on RHPORT1 rather than RHPORT0.
 #if MICROPY_HW_USB_HS && (defined(STM32F4) || defined(STM32F7) || defined(STM32H7))
+#ifndef CFG_TUSB_RHPORT0_MODE
 #define CFG_TUSB_RHPORT0_MODE (OPT_MODE_NONE)
+#endif
 #if MICROPY_HW_USB_HS_IN_FS
 #define CFG_TUSB_RHPORT1_MODE (OPT_MODE_DEVICE | OPT_MODE_FULL_SPEED)
 #else

@@ -100,7 +100,7 @@ void MICROPY_WRAP_TUD_CDC_RX_CB(tud_cdc_rx_cb)(uint8_t itf) {
 }
 
 mp_uint_t mp_usbd_cdc_tx_strn(const char *str, mp_uint_t len) {
-    if (!tusb_inited()) {
+    if (!tud_inited()) {
         return 0;
     }
     mp_uint_t last_write = mp_hal_ticks_ms();

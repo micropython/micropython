@@ -63,7 +63,16 @@
 
 // Initialise TinyUSB device.
 static inline void mp_usbd_init_tud(void) {
+    #if CFG_TUH_ENABLED
+    // Only initialise the device port, as tusb_init() would also start the host.
+    const tusb_rhport_init_t dev_init = {
+        .role = TUSB_ROLE_DEVICE,
+        .speed = TUD_OPT_HIGH_SPEED ? TUSB_SPEED_HIGH : TUSB_SPEED_FULL,
+    };
+    tusb_rhport_init(TUD_OPT_RHPORT, &dev_init);
+    #else
     tusb_init();
+    #endif
     #if TUSB_VERSION_NUMBER < 2100 && MICROPY_HW_USB_CDC
     // TinyUSB prior to 0.21.0 had TX persistence configurable at runtime.
     tud_cdc_configure_t cfg = {

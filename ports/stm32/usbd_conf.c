@@ -353,7 +353,7 @@ static void mp_usbd_ll_init_hs(void) {
 
 void mp_usbd_ll_init(void) {
     // Only initialize the USB hardware once.
-    if (tusb_inited()) {
+    if (tud_inited()) {
         return;
     }
 

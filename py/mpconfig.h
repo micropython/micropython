@@ -2190,6 +2190,11 @@ typedef time_t mp_timestamp_t;
 #define MICROPY_PY_FRAMEBUF (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
 #endif
 
+// Whether to provide the "jpeg" module, which needs a decoder from the port
+#ifndef MICROPY_PY_JPEG
+#define MICROPY_PY_JPEG (0)
+#endif
+
 #ifndef MICROPY_PY_BTREE
 #define MICROPY_PY_BTREE (0)
 #endif

@@ -281,6 +281,26 @@ void mp_usbd_ll_init(void);
 #endif
 #endif
 
+// Whether to enable USB host support (machine.USBHost), using the TinyUSB host stack on
+// a USB OTG controller that isn't used by the USB device.  MICROPY_HW_USB_HOST_RHPORT
+// selects the controller by its TinyUSB root hub port: 0 for OTG_FS and 1 for OTG_HS,
+// or on STM32N6, 0 for USB1_OTG_HS and 1 for USB2_OTG_HS.  The board can also define
+// MICROPY_HW_USB_HOST_VBUS_PIN (and MICROPY_HW_USB_HOST_VBUS_ON, the level that turns
+// it on) for a pin that switches on the port's VBUS supply.
+#ifndef MICROPY_HW_USB_HOST
+#define MICROPY_HW_USB_HOST (0)
+#endif
+
+#if MICROPY_HW_USB_HOST
+#ifndef MICROPY_HW_USB_HOST_RHPORT
+#define MICROPY_HW_USB_HOST_RHPORT (1)
+#endif
+#define MICROPY_HW_USB_HOST_LL_INIT mp_usbh_ll_init
+#define MICROPY_HW_USB_HOST_LL_DEINIT mp_usbh_ll_deinit
+void mp_usbh_ll_init(void);
+void mp_usbh_ll_deinit(void);
+#endif
+
 // Configure maximum number of CDC VCP interfaces, and whether MSC/HID are supported
 #ifndef MICROPY_HW_USB_CDC_NUM
 #define MICROPY_HW_USB_CDC_NUM (1)
