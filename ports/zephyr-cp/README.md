@@ -53,6 +53,21 @@ To use the container file:
    The script will automatically run or start based on whether the container has been run before.
 3. Init requirements inside the container with `./native_sim_build_init_container.sh`
 
+`ZCP_CONTAINER` and `ZCP_IMAGE` override the container and image names, and `ZCP_PODMAN_ARGS`
+adds options to `podman run` when the container is first created.
+
+If `DISPLAY` is set when the container is first created, the run script shares the host's X11
+socket and a copy of your X cookie with it, so the simulator can open its display window. This
+works on a Linux desktop and under WSLg. The cookie is copied with `xauth` each time the script
+runs. Set `ZCP_NO_DISPLAY=1` to turn it off. A container created before this needs to be removed
+with `podman rm -f zcp` and created again.
+
+If `west sdk install` fails with `Cannot change mode to ...: Operation not permitted`, the
+container runtime is rejecting the `fchmodat2` syscall that Ubuntu 24.04's tar uses. This
+happens with older runtimes such as crun 0.17 from Ubuntu 22.04. Remove the container with
+`podman rm -f zcp` and create it again with `ZCP_PODMAN_ARGS="--runtime runc"` if runc is
+installed, or with `ZCP_PODMAN_ARGS="--security-opt seccomp=unconfined"` otherwise.
+
 To delete the container and cleanup associated files:
 ```sh
 podman ps -a --filter ancestor=zephyr-cp-dev -q | xargs -r podman rm -f
@@ -74,6 +89,25 @@ It prints the PTY path to connect to the simulator REPL.
 If a local `./CIRCUITPY/` folder exists, its files are used as the simulator's CIRCUITPY drive.
 
 Edit files in `./CIRCUITPY` (for example `code.py`) and rerun `make run-sim` to test changes.
+
+### Running the simulator interactively
+
+`make run-sim` opens a window for the simulated display and waits until something connects to
+its UART before it starts CircuitPython. Look for the PTY path in its output:
+
+```
+uart connected to pseudotty: /dev/pts/1
+```
+
+and open it from a second terminal. In the build container, open the second shell with
+`podman exec -it zcp bash` and use pyserial's terminal (exit with Ctrl-]):
+
+```sh
+python -m serial.tools.miniterm /dev/pts/1 115200
+```
+
+If the container has no display (it was created without `DISPLAY` or with `ZCP_NO_DISPLAY=1`),
+run the simulator as `SDL_VIDEODRIVER=dummy make run-sim`.
 
 ## Shields
 
