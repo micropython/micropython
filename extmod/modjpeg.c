@@ -36,11 +36,6 @@
 
 #include "extmod/modjpeg.h"
 
-// Output formats, with the same values as the framebuf module where it has them.
-#define JPEG_FORMAT_RGB565 (1)
-#define JPEG_FORMAT_GS8 (6)
-#define JPEG_FORMAT_RGB888 (7)
-
 // Standard Huffman tables (ITU T.81 Annex K.3) as a DHT segment.  Motion JPEG from
 // webcams often leaves these out, expecting the decoder to use them.
 static const uint8_t jpeg_std_dht[] = {
@@ -189,7 +184,7 @@ MP_NOINLINE void mp_jpeg_output_mcu(mp_jpeg_decode_t *d, const uint8_t *mcu) {
         const uint8_t *y_row = mcu + (py >> 3) * d->y_blocks_h * 64 + (py & 7) * 8;
         const size_t offset = (dy0 + j) * d->dest_w + dx0;
 
-        if (d->format == JPEG_FORMAT_GS8) {
+        if (d->format == MP_JPEG_FORMAT_GS8) {
             uint8_t *dest = d->dest + offset;
             for (int i = i_start; i < i_end; ++i) {
                 const int px = i * s;
@@ -211,7 +206,7 @@ MP_NOINLINE void mp_jpeg_output_mcu(mp_jpeg_decode_t *d, const uint8_t *mcu) {
             }
         }
 
-        if (d->format == JPEG_FORMAT_RGB888) {
+        if (d->format == MP_JPEG_FORMAT_RGB888) {
             jpeg_row_rgb888(d->dest + offset * 3, i_start, i_end, s, y_row,
                 r_term, g_term, b_term, d->chroma_shift_x, d->swap);
         } else {
@@ -251,7 +246,7 @@ static mp_obj_t jpeg_decode_(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
         { MP_QSTR_buf, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_width, MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_height, MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
-        { MP_QSTR_format, MP_ARG_INT, {.u_int = JPEG_FORMAT_RGB565} },
+        { MP_QSTR_format, MP_ARG_INT, {.u_int = MP_JPEG_FORMAT_RGB565} },
         { MP_QSTR_x, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_y, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_scale, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1} },
@@ -277,11 +272,11 @@ static mp_obj_t jpeg_decode_(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
     };
 
     size_t bpp;
-    if (d.format == JPEG_FORMAT_RGB565) {
+    if (d.format == MP_JPEG_FORMAT_RGB565) {
         bpp = 2;
-    } else if (d.format == JPEG_FORMAT_GS8) {
+    } else if (d.format == MP_JPEG_FORMAT_GS8) {
         bpp = 1;
-    } else if (d.format == JPEG_FORMAT_RGB888) {
+    } else if (d.format == MP_JPEG_FORMAT_RGB888) {
         bpp = 3;
     } else {
         mp_raise_ValueError(MP_ERROR_TEXT("format"));
@@ -328,9 +323,9 @@ static const mp_rom_map_elem_t jpeg_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_jpeg) },
     { MP_ROM_QSTR(MP_QSTR_info), MP_ROM_PTR(&jpeg_info_obj) },
     { MP_ROM_QSTR(MP_QSTR_decode), MP_ROM_PTR(&jpeg_decode_obj) },
-    { MP_ROM_QSTR(MP_QSTR_RGB565), MP_ROM_INT(JPEG_FORMAT_RGB565) },
-    { MP_ROM_QSTR(MP_QSTR_GS8), MP_ROM_INT(JPEG_FORMAT_GS8) },
-    { MP_ROM_QSTR(MP_QSTR_RGB888), MP_ROM_INT(JPEG_FORMAT_RGB888) },
+    { MP_ROM_QSTR(MP_QSTR_RGB565), MP_ROM_INT(MP_JPEG_FORMAT_RGB565) },
+    { MP_ROM_QSTR(MP_QSTR_GS8), MP_ROM_INT(MP_JPEG_FORMAT_GS8) },
+    { MP_ROM_QSTR(MP_QSTR_RGB888), MP_ROM_INT(MP_JPEG_FORMAT_RGB888) },
 };
 static MP_DEFINE_CONST_DICT(jpeg_module_globals, jpeg_module_globals_table);
 

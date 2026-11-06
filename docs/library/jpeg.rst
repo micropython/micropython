@@ -10,8 +10,20 @@ into a display's frame buffer, or wrapped in a ``FrameBuffer`` to be drawn on.
 
 Availability: ports that provide a decoder and boards that enable it.  On stm32 the
 decoder is the hardware JPEG codec of the STM32F7, STM32H7 and STM32N6, enabled with
-``MICROPY_PY_JPEG``.  Decoding an 800x448 camera frame to RGB565 takes about 33ms on
-an STM32N6.
+``MICROPY_PY_JPEG``.
+
+On the STM32N6, the DMA2D converts the decoded image to RGB while the codec decodes,
+which takes about 5ms for an 800x448 camera frame.  The DMA2D is used when all of the
+following are true, and otherwise the CPU converts the colours, which takes about 32ms
+for the same frame:
+
+- ``format`` is `RGB565` or `RGB888`;
+- ``scale`` is 1;
+- the image is in colour, not greyscale;
+- the whole image fits in the destination at ``x`` and ``y``, so nothing is clipped;
+- for `RGB565` with ``swap=True``, the width of the image is even.
+
+On the STM32F7 and STM32H7 the CPU always converts the colours.
 
 Chroma is upsampled by repeating samples rather than interpolating, which is fast but
 can make the edges of strongly coloured areas slightly blocky in 4:2:2 and 4:2:0

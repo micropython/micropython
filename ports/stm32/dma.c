@@ -110,7 +110,8 @@ static const DMA_InitTypeDef dma_init_struct_spi_i2c = {
     .Mode = DMA_NORMAL, // DMA_NORMAL or DMA_PFCTRL (peripheral flow control mode)
 };
 #if defined(STM32N6) && MICROPY_PY_JPEG
-// The JPEG codec's output FIFO requests DMA 8 words at a time.
+// The JPEG codec's output FIFO requests DMA 8 words at a time.  Reading and writing
+// through different ports keeps up with the codec better.
 static const DMA_InitTypeDef dma_init_struct_jpeg_out = {
     .Request = 0, // set by dma_init_handle
     .BlkHWRequest = DMA_BREQ_SINGLE_BURST,
@@ -122,7 +123,7 @@ static const DMA_InitTypeDef dma_init_struct_jpeg_out = {
     .Priority = DMA_HIGH_PRIORITY,
     .SrcBurstLength = 8,
     .DestBurstLength = 8,
-    .TransferAllocatedPort = DMA_SRC_ALLOCATED_PORT0 | DMA_DEST_ALLOCATED_PORT0,
+    .TransferAllocatedPort = DMA_SRC_ALLOCATED_PORT0 | DMA_DEST_ALLOCATED_PORT1,
     .TransferEventMode = DMA_TCEM_BLOCK_TRANSFER,
     .Mode = DMA_NORMAL,
 };

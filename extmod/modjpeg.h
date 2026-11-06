@@ -28,6 +28,11 @@
 
 #include "py/obj.h"
 
+// Output formats, with the same values as the framebuf module where it has them.
+#define MP_JPEG_FORMAT_RGB565 (1)
+#define MP_JPEG_FORMAT_GS8 (6)
+#define MP_JPEG_FORMAT_RGB888 (7)
+
 // State of a decode.  The port's decoder fills in the image layout, and modjpeg.c
 // the destination.
 typedef struct _mp_jpeg_decode_t {
