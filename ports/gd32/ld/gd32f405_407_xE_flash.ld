@@ -175,6 +175,22 @@ SECTIONS
   } > TCMRAM AT> FLASH
 }
 
+
+/* ---------------------------------------------------------------------------
+ * Firmware size guard.
+ *
+ * The last 256 KB of internal flash (0x08040000 - 0x0807FFFF, Sector 6 and
+ * Sector 7) hold the littlefs partition used by flashbdev.c.  If the image
+ * ever grows into that range the filesystem would be overwritten (or worse,
+ * the image itself corrupted), and the failure would only show up at runtime
+ * on a device that has already been flashed.
+ *
+ * Assert at link time instead.  Keep this in sync with FLASH_BDEV_START_ADDR
+ * in ports/gd32/flashbdev.c.
+ * ------------------------------------------------------------------------- */
+ASSERT(_sidata + SIZEOF(.data) <= 0x08040000,
+       "FIRMWARE TOO LARGE: image overruns the internal littlefs partition at 0x08040000. Reduce features or move FLASH_BDEV_START_ADDR.")
+
 /* input sections */
 GROUP(libgcc.a libc.a libm.a libnosys.a)
 

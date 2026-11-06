@@ -36,13 +36,20 @@
 
 #include "gd32f4xx.h"
 
-// Filesystem region: the last two 128 KB sectors.
+// Filesystem region: Sector 6 + Sector 7, i.e. 0x08040000 - 0x0807FFFF.
+// Sector 6 starts at 0x08040000 (not 0x08060000) - see the layout table above.
 #define FLASH_BDEV_BLOCK_SIZE    (128 * 1024)                    // == erase size
 #define FLASH_BDEV_BLOCK_COUNT   (2)
-#define FLASH_BDEV_START_ADDR    (0x08060000)                    // Sector 6
+#define FLASH_BDEV_START_ADDR    (0x08040000)                    // Sector 6
 #define FLASH_BDEV_FIRST_SECTOR  (6)                             // physical sector number
 
-_Static_assert(FLASH_BDEV_START_ADDR == 0x08060000, "start must match Sector 6");
+// The two representations of the start address must agree, and the region must
+// end inside the 512 KB flash.
+_Static_assert(FLASH_BDEV_FIRST_SECTOR == 6 && FLASH_BDEV_START_ADDR == 0x08040000,
+               "start address must match physical sector 6");
+_Static_assert(FLASH_BDEV_START_ADDR + FLASH_BDEV_BLOCK_SIZE * FLASH_BDEV_BLOCK_COUNT
+               <= 0x08080000,
+               "filesystem region must fit inside the 512 KB flash");
 
 typedef struct _flash_bdev_obj_t {
     mp_obj_base_t base;
