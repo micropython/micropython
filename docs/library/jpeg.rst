@@ -10,7 +10,7 @@ into a display's frame buffer, or wrapped in a ``FrameBuffer`` to be drawn on.
 
 Availability: ports that provide a decoder and boards that enable it.  On stm32 the
 decoder is the hardware JPEG codec of the STM32F7, STM32H7 and STM32N6, enabled with
-``MICROPY_PY_JPEG``.  Decoding an 800x448 camera frame to RGB565 takes about 38ms on
+``MICROPY_PY_JPEG``.  Decoding an 800x448 camera frame to RGB565 takes about 33ms on
 an STM32N6.
 
 Chroma is upsampled by repeating samples rather than interpolating, which is fast but

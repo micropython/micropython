@@ -161,6 +161,9 @@ extern const dma_descr_t dma_SPI_5_RX;
 extern const dma_descr_t dma_SPI_5_TX;
 extern const dma_descr_t dma_SPI_6_RX;
 extern const dma_descr_t dma_SPI_6_TX;
+#if MICROPY_PY_JPEG
+extern const dma_descr_t dma_JPEG_OUT;
+#endif
 
 #endif
 

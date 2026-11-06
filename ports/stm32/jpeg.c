@@ -26,8 +26,9 @@
 
 // Decoder for the jpeg module (see extmod/modjpeg.c), using the JPEG codec found on
 // STM32F7, STM32H7 and STM32N6.  The codec parses the header and decodes the image to
-// YCbCr MCUs.  The CPU moves the data through the codec's FIFOs and colour converts
-// each MCU as it comes out, while the codec decodes the next ones.
+// YCbCr MCUs, which are colour converted as they come out while the codec decodes the
+// next ones.  The CPU feeds the input FIFO, and empties the output FIFO unless there's
+// a DMA channel for it.
 
 #include <string.h>
 
@@ -49,19 +50,25 @@
 // The largest MCU, which is 4 luma blocks and 2 chroma blocks.
 #define JPEG_MCU_MAX_BYTES (6 * 64)
 
+#if defined(STM32N6)
+// Moving the output by DMA is faster than reading the FIFO with the CPU, as the CPU can
+// colour convert in the meantime.
+#define JPEG_OUT_DMA (1)
+#include "dma.h"
+// Holds a whole number of MCUs of any size.
+#define JPEG_OUT_HALF_SIZE (6144)
+static DMA_HandleTypeDef jpeg_dma_out;
+static uint8_t jpeg_out_buf[2][JPEG_OUT_HALF_SIZE] __attribute__((aligned(32)));
+#else
+#define JPEG_OUT_DMA (0)
+#endif
+
 static void jpeg_clock_enable(void) {
     #if defined(STM32H7)
     __HAL_RCC_JPGDECEN_CLK_ENABLE();
     #else
     __HAL_RCC_JPEG_CLK_ENABLE();
     #endif
-}
-
-static void jpeg_stop(void) {
-    JPEG->CR = JPEG_CR_JCEN;
-    JPEG->CONFR0 = 0;
-    JPEG->CR |= JPEG_CR_IFF | JPEG_CR_OFF;
-    JPEG->CFR = JPEG_CFR_CEOCF | JPEG_CFR_CHPDF;
 }
 
 // Read the image layout from the codec once it has parsed the header.
@@ -99,13 +106,140 @@ static void jpeg_get_layout(mp_jpeg_decode_t *d) {
     d->chroma_shift_y = v - 1;
 }
 
-static void jpeg_decode(mp_jpeg_decode_t *d, const uint8_t *src, size_t len) {
+typedef struct {
+    const uint8_t *src;
+    size_t len;
+    size_t pos;
+    mp_uint_t t_progress;
+} jpeg_input_t;
+
+// Keep the input FIFO topped up.  The last word may run past the end of the data, but
+// as the data is word aligned it stays within the same word.
+static void jpeg_feed_input(jpeg_input_t *in) {
+    while (in->pos < in->len && (JPEG->SR & JPEG_SR_IFNFF)) {
+        JPEG->DIR = *(const uint32_t *)(in->src + in->pos);
+        in->pos += 4;
+        in->t_progress = mp_hal_ticks_ms();
+    }
+}
+
+static void jpeg_check_timeout(jpeg_input_t *in) {
+    if (mp_hal_ticks_ms() - in->t_progress > JPEG_TIMEOUT_MS) {
+        mp_raise_OSError(MP_ETIMEDOUT);
+    }
+}
+
+#if JPEG_OUT_DMA
+
+static void jpeg_dma_out_start(uint8_t *dest, size_t len) {
+    DMA_Channel_TypeDef *ch = jpeg_dma_out.Instance;
+    ch->CFCR = DMA_CFCR_TCF | DMA_CFCR_HTF | DMA_CFCR_DTEF | DMA_CFCR_ULEF | DMA_CFCR_USEF | DMA_CFCR_SUSPF | DMA_CFCR_TOF;
+    ch->CBR1 = len;
+    ch->CSAR = (uint32_t)&JPEG->DOR;
+    ch->CDAR = (uint32_t)dest;
+    ch->CCR |= DMA_CCR_EN;
+    JPEG->CR |= JPEG_CR_ODMAEN;
+}
+
+static bool jpeg_dma_out_done(void) {
+    const uint32_t csr = jpeg_dma_out.Instance->CSR;
+    if (csr & (DMA_CSR_DTEF | DMA_CSR_ULEF | DMA_CSR_USEF)) {
+        mp_raise_OSError(MP_EIO);
+    }
+    return csr & DMA_CSR_TCF;
+}
+
+static void jpeg_dma_out_stop(void) {
+    DMA_Channel_TypeDef *ch = jpeg_dma_out.Instance;
+    if (ch == NULL) {
+        return;
+    }
+    if (ch->CCR & DMA_CCR_EN) {
+        ch->CCR |= DMA_CCR_SUSP;
+        mp_uint_t t0 = mp_hal_ticks_ms();
+        while (!(ch->CSR & DMA_CSR_SUSPF) && mp_hal_ticks_ms() - t0 < 2) {
+        }
+        ch->CCR |= DMA_CCR_RESET;
+    }
+    dma_deinit(&dma_JPEG_OUT);
+}
+
+// The DMA fills one half of the output buffer while the CPU converts the MCUs in the
+// other half, feeding the input in between.
+static void jpeg_output_dma(mp_jpeg_decode_t *d, jpeg_input_t *in, size_t mcus) {
+    const size_t mcu_bytes = d->num_blocks * 64;
+    const size_t half_size = JPEG_OUT_HALF_SIZE / mcu_bytes * mcu_bytes;
+    const size_t total = mcus * mcu_bytes;
+    size_t half = 0;
+    size_t half_len[2];
+    half_len[0] = MIN(half_size, total);
+    size_t started = half_len[0];
+    size_t done = 0;
+
+    dma_init(&jpeg_dma_out, &dma_JPEG_OUT, DMA_PERIPH_TO_MEMORY, NULL);
+    jpeg_dma_out_start(jpeg_out_buf[0], half_len[0]);
+    while (done < total) {
+        jpeg_feed_input(in);
+        if (!jpeg_dma_out_done()) {
+            jpeg_check_timeout(in);
+            continue;
+        }
+        const size_t full = half;
+        JPEG->CR &= ~JPEG_CR_ODMAEN;
+        if (started < total) {
+            half ^= 1;
+            half_len[half] = MIN(half_size, total - started);
+            jpeg_dma_out_start(jpeg_out_buf[half], half_len[half]);
+            started += half_len[half];
+        }
+        SCB_InvalidateDCache_by_Addr(jpeg_out_buf[full], half_len[full]);
+        for (size_t i = 0; i < half_len[full]; i += mcu_bytes) {
+            mp_jpeg_output_mcu(d, jpeg_out_buf[full] + i);
+            jpeg_feed_input(in);
+        }
+        done += half_len[full];
+        in->t_progress = mp_hal_ticks_ms();
+    }
+}
+
+#else
+
+// The CPU empties the output FIFO, 8 words at a time when it's at least half full, and
+// converts each MCU once it's complete.
+static void jpeg_output_cpu(mp_jpeg_decode_t *d, jpeg_input_t *in, size_t mcus) {
     uint32_t mcu[JPEG_MCU_MAX_BYTES / 4];
-    size_t mcu_words = 0; // words per MCU, once the layout is known
+    const size_t mcu_words = d->num_blocks * 64 / 4;
     size_t mcu_fill = 0;
-    size_t mcus_left = 0;
-    size_t in_pos = 0;
-    mp_uint_t t_progress = mp_hal_ticks_ms();
+    for (;;) {
+        jpeg_feed_input(in);
+        const uint32_t sr = JPEG->SR;
+        size_t n;
+        if (sr & JPEG_SR_OFTF) {
+            n = 8;
+        } else if (sr & JPEG_SR_OFNEF) {
+            n = 1;
+        } else {
+            jpeg_check_timeout(in);
+            continue;
+        }
+        in->t_progress = mp_hal_ticks_ms();
+        while (n--) {
+            mcu[mcu_fill++] = JPEG->DOR;
+            if (mcu_fill == mcu_words) {
+                mp_jpeg_output_mcu(d, (const uint8_t *)mcu);
+                mcu_fill = 0;
+                if (--mcus == 0) {
+                    return;
+                }
+            }
+        }
+    }
+}
+
+#endif
+
+static void jpeg_decode(mp_jpeg_decode_t *d, const uint8_t *src, size_t len) {
+    jpeg_input_t in = { .src = src, .len = len, .pos = 0, .t_progress = mp_hal_ticks_ms() };
 
     JPEG->CR = JPEG_CR_JCEN;
     JPEG->CONFR0 = 0;
@@ -114,59 +248,30 @@ static void jpeg_decode(mp_jpeg_decode_t *d, const uint8_t *src, size_t len) {
     JPEG->CFR = JPEG_CFR_CEOCF | JPEG_CFR_CHPDF;
     JPEG->CONFR0 = JPEG_CONFR0_START;
 
-    for (;;) {
-        bool progress = false;
-
-        // Keep the input FIFO topped up.  The last word may run past the end of the
-        // data, but it's word aligned so stays within the same word.
-        while (in_pos < len && (JPEG->SR & JPEG_SR_IFNFF)) {
-            JPEG->DIR = *(const uint32_t *)(src + in_pos);
-            in_pos += 4;
-            progress = true;
-        }
-
-        if (mcu_words == 0) {
-            if (!(JPEG->SR & JPEG_SR_HPDF)) {
-                goto check_timeout;
-            }
-            jpeg_get_layout(d);
-            JPEG->CFR = JPEG_CFR_CHPDF;
-            mcu_words = d->num_blocks * 64 / 4;
-            mcus_left = (size_t)((d->width + d->mcu_w - 1) / d->mcu_w) * ((d->height + d->mcu_h - 1) / d->mcu_h);
-        }
-
-        // Empty the output FIFO, 8 words at a time when it's at least half full, and
-        // convert each MCU once it's complete.
-        for (;;) {
-            const uint32_t sr = JPEG->SR;
-            size_t n;
-            if (sr & JPEG_SR_OFTF) {
-                n = 8;
-            } else if (sr & JPEG_SR_OFNEF) {
-                n = 1;
-            } else {
-                break;
-            }
-            progress = true;
-            while (n--) {
-                mcu[mcu_fill++] = JPEG->DOR;
-                if (mcu_fill == mcu_words) {
-                    mp_jpeg_output_mcu(d, (const uint8_t *)mcu);
-                    mcu_fill = 0;
-                    if (--mcus_left == 0) {
-                        return;
-                    }
-                }
-            }
-        }
-
-    check_timeout:
-        if (progress) {
-            t_progress = mp_hal_ticks_ms();
-        } else if (mp_hal_ticks_ms() - t_progress > JPEG_TIMEOUT_MS) {
-            mp_raise_OSError(MP_ETIMEDOUT);
-        }
+    // Feed the codec until it has parsed the header.
+    while (!(JPEG->SR & JPEG_SR_HPDF)) {
+        jpeg_feed_input(&in);
+        jpeg_check_timeout(&in);
     }
+    jpeg_get_layout(d);
+    JPEG->CFR = JPEG_CFR_CHPDF;
+    const size_t mcus = (size_t)((d->width + d->mcu_w - 1) / d->mcu_w) * ((d->height + d->mcu_h - 1) / d->mcu_h);
+
+    #if JPEG_OUT_DMA
+    jpeg_output_dma(d, &in, mcus);
+    #else
+    jpeg_output_cpu(d, &in, mcus);
+    #endif
+}
+
+static void jpeg_stop(void) {
+    #if JPEG_OUT_DMA
+    jpeg_dma_out_stop();
+    #endif
+    JPEG->CR = JPEG_CR_JCEN;
+    JPEG->CONFR0 = 0;
+    JPEG->CR |= JPEG_CR_IFF | JPEG_CR_OFF;
+    JPEG->CFR = JPEG_CFR_CEOCF | JPEG_CFR_CHPDF;
 }
 
 void mp_jpeg_port_decode(mp_jpeg_decode_t *d, const uint8_t *src, size_t len) {
