@@ -43,7 +43,12 @@
 #define MICROPY_HW_XSPI_PRESCALER_SLOW (4) // F_CLK = F_AHB/4
 #endif
 #ifndef MICROPY_HW_XSPI_PRESCALER
+#if BUILDING_MBOOT
+// Run mboot at the slow clock to ensure compatibility with older firmware.
+#define MICROPY_HW_XSPI_PRESCALER (MICROPY_HW_XSPI_PRESCALER_SLOW)
+#else
 #define MICROPY_HW_XSPI_PRESCALER (1) // F_CLK = F_AHB/1
+#endif
 #endif
 
 #ifndef MICROPY_HW_XSPI_CS_HIGH_CYCLES

@@ -77,6 +77,11 @@ mp_obj_t mod_network_hostname(size_t n_args, const mp_obj_t *args);
 
 #include "lwip/init.h"
 
+#if MICROPY_PY_NETWORK_WIZNET5K
+mp_obj_t wiznet5k_get_active_spi(void);
+#endif
+
+
 #if MICROPY_PY_NETWORK_PPP_LWIP
 extern const struct _mp_obj_type_t mp_network_ppp_lwip_type;
 #endif
