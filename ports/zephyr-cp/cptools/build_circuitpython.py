@@ -3,6 +3,7 @@ import logging
 import os
 import pathlib
 import pickle
+import re
 import sys
 
 import board_tools
@@ -201,15 +202,45 @@ async def collect_defs(mode, build_path):
     return output_file
 
 
+def _rewrite_qstr_lines_if_changed(input_file, output_file, pattern, replacement):
+    content = re.sub(pattern, replacement, input_file.read_text(), flags=re.MULTILINE)
+    if not output_file.exists() or output_file.read_text() != content:
+        output_file.write_text(content)
+
+
+async def preprocess_qstrdefs(build_path, compiler, flags):
+    """Preprocess py/qstrdefs.h like py/py.mk does. It holds the qstrs whose value
+    can't be recovered from their MP_QSTR_ name, such as {:#b}. The Q() lines are
+    quoted so the preprocessor passes them through unchanged."""
+    quoted = build_path / "genhdr" / "qstrdefs.quoted.c"
+    quoted_pp = build_path / "genhdr" / "qstrdefs.quoted.pp"
+    preprocessed = build_path / "genhdr" / "qstrdefs.preprocessed.h"
+    await cpbuild.run_function(
+        _rewrite_qstr_lines_if_changed,
+        (srcdir / "py" / "qstrdefs.h", quoted, r"^Q\(.*\)$", r'"\g<0>"'),
+        {},
+        description=f"Quote py/qstrdefs.h -> {quoted.relative_to(build_path)}",
+    )
+    await compiler.preprocess(quoted, quoted_pp, flags)
+    await cpbuild.run_function(
+        _rewrite_qstr_lines_if_changed,
+        (quoted_pp, preprocessed, r'^"(Q\(.*\))"$', r"\1"),
+        {},
+        description=f"Unquote -> {preprocessed.relative_to(build_path)}",
+    )
+    return preprocessed
+
+
 async def generate_qstr_headers(build_path, compiler, flags, translation):
     collected = await collect_defs("qstr", build_path)
+    qstrdefs = await preprocess_qstrdefs(build_path, compiler, flags)
     generated = build_path / "genhdr" / "qstrdefs.generated.h"
 
     # check_hash: the collected file is rewritten on every build, so this reruns every
     # build too. Keep the old modification time when the header comes out unchanged, or
     # every file that includes it would be recompiled.
     await cpbuild.run_command(
-        ["python", srcdir / "py" / "makeqstrdata.py", collected, ">", generated],
+        ["python", srcdir / "py" / "makeqstrdata.py", qstrdefs, collected, ">", generated],
         srcdir,
         check_hash=[generated],
     )
