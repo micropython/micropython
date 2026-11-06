@@ -363,6 +363,37 @@ has not been exercised against real hardware. The SDIO init sequence,
 CSD capacity decoding and clock switching should be validated on a board
 with an actual card before relying on it.
 
+
+## USB device (TinyUSB) — extra setup
+
+`machine.USBDevice` needs TinyUSB to know about the GD32F4 USBFS controller.
+The stock `lib/tinyusb` submodule only carries a RISC-V GD32VF103 port, so this
+port adds a Cortex-M4 variant:
+
+| File | Change |
+|------|--------|
+| `src/portable/synopsys/dwc2/dwc2_gd32f4.h` | **new** — controller description (0x5000_0000, 4 EPs, 320-word DFIFO, NVIC IRQ) |
+| `src/tusb_option.h` | `OPT_MCU_GD32F4` = 1601 |
+| `src/common/tusb_mcu.h` | GD32F4 → `TUP_USBIP_DWC2`, 4 endpoints |
+| `src/portable/synopsys/dwc2/dwc2_common.h` | select `dwc2_gd32f4.h` |
+
+A ready-made patch is checked in as
+[0001-tinyusb-add-GD32F4-USBFS.patch](0001-tinyusb-add-GD32F4-USBFS.patch).
+After a fresh `make submodules`, apply it with:
+
+```bash
+cd lib/tinyusb
+git am ../../ports/gd32/0001-tinyusb-add-GD32F4-USBFS.patch
+cd ../..
+```
+
+Wiring: USBFS uses **PA11 (DM) / PA12 (DP)** with AF10. The CDC serial is the
+96-bit factory UID, and the REPL is shared with the UART through a common
+input ring buffer, so either interface can drive the console.
+
+VID/PID default to GigaDevice's 0x28E9 / 0x0189; override
+`MICROPY_HW_USB_VID` / `MICROPY_HW_USB_PID` in the board header if needed.
+
 ## Machine module coverage
 
 Compared with `ports/stm32` for STM32F4:
