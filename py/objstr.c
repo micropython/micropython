@@ -358,7 +358,8 @@ static mp_obj_t bytes_make_new(const mp_obj_type_t *type_in, size_t n_args, size
         return args[0];
     }
 
-    if (mp_obj_is_str(args[0])) {
+    mp_obj_t str_in = mp_obj_cast_to_native_base(args[0], MP_OBJ_FROM_PTR(&mp_type_str));
+    if (str_in != MP_OBJ_NULL) {
         if (n_args < 2 || n_args > 3) {
             #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
             goto wrong_args;
@@ -367,8 +368,8 @@ static mp_obj_t bytes_make_new(const mp_obj_type_t *type_in, size_t n_args, size
             #endif
         }
 
-        GET_STR_DATA_LEN(args[0], str_data, str_len);
-        GET_STR_HASH(args[0], str_hash);
+        GET_STR_DATA_LEN(str_in, str_data, str_len);
+        GET_STR_HASH(str_in, str_hash);
         if (str_hash == 0) {
             str_hash = qstr_compute_hash(str_data, str_len);
         }
