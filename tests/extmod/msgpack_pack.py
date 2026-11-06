@@ -7,7 +7,7 @@ except ImportError:
     raise SystemExit
 
 b = BytesIO()
-msgpack.pack(False, s)
+msgpack.pack(False, b)
 print(b.getvalue())
 
 b = BytesIO()
