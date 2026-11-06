@@ -1,0 +1,32 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "deploy_options": {
+        "flash_offset": "0x2000"
+    },
+    "docs": "",
+    "features": [
+        "BLE",
+        "Battery Charging",
+        "Dual-core",
+        "Ethernet",
+        "External Flash",
+        "External RAM",
+        "JST-PH",
+        "JST-SH",
+        "PoE",
+        "RGB LED",
+        "USB-C",
+        "WiFi",
+        "microSD"
+    ],
+    "images": [
+        "sparkfun_iot_redboard_esp32_p4.jpg"
+    ],
+    "mcu": "esp32p4",
+    "product": "IoT RedBoard ESP32-P4",
+    "thumbnail": "",
+    "url": "https://www.sparkfun.com/sparkfun-iot-redboard-esp32-p4-esp32-c5-wifi-ble.html",
+    "vendor": "SparkFun"
+}
