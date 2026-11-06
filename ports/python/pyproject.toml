@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools", "pybind11"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "jonnor-micropython"
+version = "1.28.0.3"
+description = "CPython wrapper for MicroPython"
+authors = [{name = "MicroPython community"}]
+dependencies = ["pybind11"]
+
+[project.scripts]
+micropython = "micropython:main"
+
+[tool.setuptools]
+py-modules = ["micropython"]
+zip-safe = false

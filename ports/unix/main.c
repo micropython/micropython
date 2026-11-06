@@ -435,7 +435,7 @@ static void sys_set_excecutable(char *argv0) {
 
 MP_NOINLINE int main_(int argc, char **argv);
 
-int main(int argc, char **argv) {
+int micropython_unix_main(int argc, char **argv) {
     #if MICROPY_PY_THREAD
     mp_thread_init();
     #endif
@@ -446,11 +446,18 @@ int main(int argc, char **argv) {
     // We should capture stack top ASAP after start, and it should be
     // captured guaranteedly before any other stack variables are allocated.
     // For this, actual main (renamed main_) should not be inlined into
-    // this function. main_() itself may have other functions inlined (with
-    // their own stack variables), that's why we need this main/main_ split.
+    // this function.
+    // main_() itself may have other functions inlined (with
+    // their own stack variables), that's why we need this split.
     mp_cstack_init_with_sp_here(stack_size);
     return main_(argc, argv);
 }
+
+#if !MICROPY_UNIX_NO_MAIN
+int main(int argc, char **argv) {
+    return micropython_unix_main(argc, argv);
+}
+#endif
 
 MP_NOINLINE int main_(int argc, char **argv) {
     #ifdef SIGPIPE
