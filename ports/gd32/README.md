@@ -246,7 +246,6 @@ ports/gd32/
 | `machine.freq()`, `machine.reset()`, `machine.unique_id()` | ✅ |
 | `machine.PWM` — timer output compare, freq + duty_u16/duty_ns | ✅ working |
 
-| USB device / SD card / filesystem | ⬜ |
 | Frozen modules | ⬜ |
 
 The peripheral set is modelled on `ports/stm32` for STM32F4. Modules are
@@ -394,6 +393,54 @@ input ring buffer, so either interface can drive the console.
 VID/PID default to GigaDevice's 0x28E9 / 0x0189; override
 `MICROPY_HW_USB_VID` / `MICROPY_HW_USB_PID` in the board header if needed.
 
+## Networking (lwIP)
+
+`network.LAN` brings up the GD32 ENET MAC with lwIP running in the main loop.
+
+```python
+import network
+nic = network.LAN()
+nic.active(True)
+nic.ifconfig(("192.168.1.50", "255.255.255.0", "192.168.1.1", "192.168.1.1"))
+print(nic.ifconfig())
+print(nic.status())
+```
+
+### Wiring (RMII, all AF11)
+
+| Signal | Pin |
+|--------|-----|
+| REF_CLK | PA1 |
+| MDIO | PA2 |
+| MDC | PC1 |
+| RXD0 | PC4 |
+| RXD1 | PC5 |
+| TX_EN | PB11 |
+| TXD0 | PB12 |
+| TXD1 | PB13 |
+
+MII vs RMII is selected through SYSCFG using
+`syscfg_enet_phy_interface_config`, which differs from STM32 where the
+choice lives in the AF configuration.
+
+### lwIP memory
+
+`lwip_inc/lwipopts.h` keeps the footprint small because the GD32F407 build
+only leaves about 24 KB of RAM free:
+
+| Setting | Value |
+|---------|-------|
+| `MEM_SIZE` | 16 KB |
+| `PBUF_POOL_SIZE` | 8 |
+| `MEMP_NUM_TCP_SEG` | 16 |
+
+Raise these for sustained throughput, and lower `MICROPY_HEAP_SIZE` in the
+board header to make room.
+
+NOTE: the driver compiles on both boards but has not been exercised against
+a real PHY. Auto-negotiation timing and the RMII clock setup should be
+verified on hardware before relying on it.
+
 ## Machine module coverage
 
 Compared with `ports/stm32` for STM32F4:
@@ -440,6 +487,6 @@ These are enabled and use no external dependencies:
 | `time` | `time`, `time_ns`, `sleep*`, `ticks_*` via RTC/uptime |
 | `os` | `listdir`, `stat`, `mkdir`, `rename`, `remove`, `mount`, `uname`, `urandom`, `sync` |
 
-Remaining gaps versus STM32F4: `network`/`lwIP`, frozen modules, and the
-`pyb`-style legacy API (not applicable here).  Note the `re` module is MicroPython's cut-down
+Remaining gaps versus STM32F4: frozen modules, and the `pyb`-style legacy
+API (not applicable here).  Note the `re` module is MicroPython's cut-down
 implementation: only `compile`, `match`, `search` and `sub` are available.

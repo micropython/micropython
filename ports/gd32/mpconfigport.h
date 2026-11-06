@@ -89,6 +89,25 @@ extern volatile uint32_t systick_ms;
 #define MICROPY_PY_MACHINE_UART_INCLUDEFILE "machine_uart_port.c"
 #define MICROPY_PY_MACHINE_SPI            (1)
 #define MICROPY_PY_MACHINE_I2C            (1)
+// Networking: lwIP over the GD32 ENET MAC
+#ifndef MICROPY_PY_LWIP
+#define MICROPY_PY_LWIP                    (1)
+#endif
+#define MICROPY_PY_LWIP_REPEAT_ARP         (1)
+#define MICROPY_PY_NETWORK                 (1)
+#define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT "gd32"
+
+// Expose network.LAN in the network module (picked up by extmod/modnetwork.c).
+// mpconfig.h is included very early, so forward-declare the type tag instead of
+// pulling in py/obj.h here.
+struct _mp_obj_type_t;
+extern const struct _mp_obj_type_t network_lan_type;
+#define MICROPY_PORT_NETWORK_INTERFACES \
+    { MP_ROM_QSTR(MP_QSTR_LAN), MP_ROM_PTR(&network_lan_type) },
+#define MICROPY_PY_SOCKET                  (1)
+#define MICROPY_PY_WEBSOCKET               (1)
+#define MICROPY_PY_WEBREPL                 (1)
+
 // USB device (TinyUSB DWC2 on USBFS)
 #define MICROPY_HW_ENABLE_USBDEV          (1)
 #define MICROPY_HW_USB_CDC                (1)

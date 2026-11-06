@@ -35,6 +35,10 @@ GEN_PINS_TBL = $(GEN_PINS_DIR)/pin_table.h
 MCU_ARCH = -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16
 
 CFLAGS += $(MCU_ARCH)
+
+# lwIP configuration (consumed by extmod.mk)
+MICROPY_PY_LWIP ?= 1
+MICROPY_PY_LWIP_REPEAT_ARP ?= 1
 CFLAGS += -D$(CMSIS_MCU) -DUSE_STDPERIPH_DRIVER
 
 # Flash wait states for the target core frequency (GD32F4xx datasheet).
@@ -62,6 +66,13 @@ INC += -Igd32lib/peripheral_include
 INC += -I$(TOP)/lib/oofatfs
 INC += -I$(TOP)/lib/tinyusb/src
 INC += -I$(TOP)/shared/tinyusb
+INC += -I$(TOP)/extmod/lwip-include
+INC += -Ilwip_inc
+
+# extmod.mk contributes lwIP sources plus its include paths, so it must run
+# before CFLAGS picks up $(INC).  This port still lists its own extmod module
+# sources explicitly in SRC_C.
+include $(TOP)/extmod/extmod.mk
 
 CFLAGS += $(INC)
 CFLAGS += -DLFS2_NO_MALLOC=0
@@ -69,42 +80,13 @@ CFLAGS += -DLFS2_NO_MALLOC=0
 # ---- sources ----
 SRC_C = \
 	main.c \
-	extmod/modmachine.c \
-	extmod/machine_timer.c \
-	extmod/machine_wdt.c \
-	extmod/machine_uart.c \
-	extmod/machine_spi.c \
-	extmod/machine_i2c.c \
-	extmod/machine_i2c_target.c \
-	extmod/machine_i2s.c \
-	extmod/machine_adc.c \
-	extmod/machine_can.c \
-	extmod/machine_pwm.c \
-	extmod/machine_mem.c \
-	extmod/machine_bitstream.c \
-	extmod/machine_pulse.c \
-	extmod/machine_pinbase.c \
-	extmod/machine_signal.c \
-	extmod/virtpin.c \
-	extmod/vfs.c \
-	extmod/vfs_blockdev.c \
-	extmod/vfs_lfs.c \
-	extmod/vfs_reader.c \
-	extmod/modos.c \
-	extmod/modbinascii.c \
-	extmod/modjson.c \
-	extmod/modre.c \
-	extmod/moductypes.c \
-	extmod/modheapq.c \
-	extmod/modtime.c \
-	extmod/modrandom.c \
-	lib/uzlib/crc32.c \
 	lib/littlefs/lfs2.c \
 	lib/littlefs/lfs2_util.c \
 	flashbdev.c \
 	sdcard.c \
+	eth.c \
+	network_lan.c \
 	usbd.c \
-	flash_ws.c \
 	machine_sdcard_port.c \
 	drivers/bus/softspi.c \
 	shared/runtime/softtimer.c \
@@ -120,8 +102,6 @@ SRC_C = \
 	machine_dac_port.c \
 	machine_rtc_port.c \
 	mphalport.c \
-	shared/libc/printf.c \
-	shared/libc/string0.c \
 	shared/readline/readline.c \
 	shared/runtime/pyexec.c \
 	shared/runtime/stdout_helpers.c \
@@ -138,6 +118,8 @@ SRC_C = \
 	gd32lib/peripheral_source/gd32f4xx_timer.c \
 	gd32lib/peripheral_source/gd32f4xx_sdio.c \
 	gd32lib/peripheral_source/gd32f4xx_dma.c \
+	gd32lib/peripheral_source/gd32f4xx_enet.c \
+	gd32lib/peripheral_source/gd32f4xx_syscfg.c \
 	gd32lib/peripheral_source/gd32f4xx_misc.c \
 	gd32lib/peripheral_source/gd32f4xx_fmc.c \
 	gd32lib/peripheral_source/gd32f4xx_pmu.c \
@@ -174,6 +156,11 @@ $(BUILD)/lib/tinyusb/%.o: CFLAGS += -Wno-error
 # TinyUSB objects must be added here (after TINYUSB_SRC_C is defined).
 OBJ += $(addprefix $(BUILD)/, $(TINYUSB_SRC_C:.c=.o))
 
+# Sources contributed by extmod.mk.  The lwIP/network modules are enabled
+# via MICROPY_PY_LWIP/NETWORK in mpconfigport.h, which makes extmod.mk list
+# them in SRC_EXTMOD_C; this port no longer enumerates them by hand.
+OBJ += $(addprefix $(BUILD)/, $(SRC_EXTMOD_C:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(SRC_THIRDPARTY_C:.c=.o))
 OBJ += $(PY_CORE_O)
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_S:.S=.o))

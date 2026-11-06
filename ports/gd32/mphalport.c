@@ -228,3 +228,12 @@ void mp_hal_get_random(size_t n, uint8_t *buf) {
 void mp_hal_wake_main_task_from_isr(void) {
     mp_sched_schedule(MP_OBJ_NULL, MP_OBJ_NULL);
 }
+
+#if MICROPY_PY_LWIP
+// lwIP time base.  The stack is polled from the main loop and uses this for
+// retransmission timers, so it must be monotonic in milliseconds.
+#include "lwip/opt.h"
+u32_t sys_now(void) {
+    return (u32_t)mp_hal_ticks_ms();
+}
+#endif
