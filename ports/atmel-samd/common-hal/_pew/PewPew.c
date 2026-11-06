@@ -106,14 +106,6 @@ void pew_deinit(void) {
     tc_disable_interrupts(pewpew_tc_index);
     tc_reset(tc);
     set_timer_handler(true, pewpew_tc_index, TC_HANDLER_NO_INTERRUPT);
-    // We use GCLK0 for SAMD21 and GCLK1 for SAMD51 because they both run
-    // at 48mhz making our math the same across the boards.
-    #ifdef SAMD21
-    turn_off_clocks(true, pewpew_tc_index, 0);
-    #endif
-    #ifdef SAM_D5X_E5X
-    turn_off_clocks(true, pewpew_tc_index, 1);
-    #endif
     pewpew_tc_index = 0xff;
 }
 

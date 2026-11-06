@@ -226,7 +226,6 @@ void common_hal_pwmio_pwmout_deinit(pwmio_pwmout_obj_t *self) {
         tc_set_enable(tc, false);
         tc->COUNT16.CTRLA.bit.SWRST = true;
         tc_wait_for_sync(tc);
-        turn_off_clocks(true, t->index, 0);
     } else {
         tcc_refcount[t->index]--;
         tcc_channels[t->index] &= ~(1 << tcc_channel(t));
@@ -238,7 +237,6 @@ void common_hal_pwmio_pwmout_deinit(pwmio_pwmout_obj_t *self) {
             while (tcc->SYNCBUSY.bit.SWRST != 0) {
                 /* Wait for sync */
             }
-            turn_off_clocks(false, t->index, 0);
         }
     }
     reset_pin_number(self->pin->number);

@@ -311,13 +311,6 @@ void common_hal_audioio_audioout_deinit(audioio_audioout_obj_t *self) {
         tc_set_enable(t, false);
         tc_reset(t);
         set_timer_handler(true, self->tc_index, TC_HANDLER_NO_INTERRUPT);
-        // Use the 48MHz clocks on both the SAMD21 and 51 because we will be going much slower.
-        #ifdef SAMD21
-        turn_off_clocks(true, self->tc_index, 0);
-        #endif
-        #ifdef SAM_D5X_E5X
-        turn_off_clocks(true, self->tc_index, 1);
-        #endif
         self->tc_index = 0xff;
     }
 
