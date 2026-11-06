@@ -1,8 +1,30 @@
 // flashbdev.c - internal flash block device + littlefs root filesystem
 // for the GD32F4xx port.
 //
-// The last FLASH_BDEV_NUM_SECTORS 128 KB sectors of internal flash are
-// reserved for a littlefs2 filesystem mounted at "/".
+// GD32F4xx (512 KB part) flash sector layout, from the user manual:
+//
+//   Sector 0  16 KB   0x08000000 - 0x08003FFF
+//   Sector 1  16 KB   0x08004000 - 0x08007FFF
+//   Sector 2  16 KB   0x08008000 - 0x0800BFFF
+//   Sector 3  16 KB   0x0800C000 - 0x0800FFFF
+//   Sector 4  64 KB   0x08010000 - 0x0801FFFF
+//   Sector 5  128 KB  0x08020000 - 0x0803FFFF
+//   Sector 6  128 KB  0x08040000 - 0x0805FFFF
+//   Sector 7  128 KB  0x08060000 - 0x0807FFFF
+//
+// The filesystem occupies Sector 6 and Sector 7 (256 KB), which sit above the
+// firmware image on the boards this port targets.
+//
+// Design notes
+// ------------
+// * `fmc_sector_erase()` takes a *sector number* (it is written straight into
+//   FMC_CTL.SN), not an address.  Passing an address silently selects sector 0
+//   and erases the start of the firmware.
+// * The logical block size is set equal to the physical sector size.  littlefs
+//   erases a block before programming it and never reads back a block it is
+//   writing, so no read-modify-write buffer is needed.  Keeping block_size ==
+//   erase size is what makes that safe, and it costs no RAM beyond the
+//   peripheral FIFO.
 
 #include <string.h>
 
@@ -14,114 +36,127 @@
 
 #include "gd32f4xx.h"
 
-// 16 KB sector size on GD32F4xx; use the last 4 sectors (64 KB) for the FS.
-#define FLASH_BDEV_SECTOR_SIZE   (16 * 1024)
-#define FLASH_BDEV_NUM_SECTORS   (4)
-#define FLASH_BDEV_SIZE          (FLASH_BDEV_SECTOR_SIZE * FLASH_BDEV_NUM_SECTORS)
-#define FLASH_BDEV_START_ADDR    (0x08080000 - FLASH_BDEV_SIZE)   // 0x08070000
+// Filesystem region: the last two 128 KB sectors.
+#define FLASH_BDEV_BLOCK_SIZE    (128 * 1024)                    // == erase size
+#define FLASH_BDEV_BLOCK_COUNT   (2)
+#define FLASH_BDEV_START_ADDR    (0x08060000)                    // Sector 6
+#define FLASH_BDEV_FIRST_SECTOR  (6)                             // physical sector number
 
-#if defined(__GNUC__)
-#define FLASH_BDEV_ATTR __attribute__((aligned(4)))
-#else
-#define FLASH_BDEV_ATTR
-#endif
+_Static_assert(FLASH_BDEV_START_ADDR == 0x08060000, "start must match Sector 6");
 
 typedef struct _flash_bdev_obj_t {
     mp_obj_base_t base;
 } flash_bdev_obj_t;
 
-static uint8_t flash_bdev_cache[FLASH_BDEV_SECTOR_SIZE] FLASH_BDEV_ATTR;
-static uint32_t flash_bdev_cache_sector = 0xffffffff;
-static bool flash_bdev_cache_dirty = false;
-
-// ---- flash helpers ----
-static void flash_bdev_erase_sector(uint32_t sector) {
-    fmc_unlock();
-    fmc_flag_clear(FMC_FLAG_END | FMC_FLAG_OPERR | FMC_FLAG_WPERR | FMC_FLAG_PGMERR | FMC_FLAG_PGSERR);
-    fmc_sector_erase(FLASH_BDEV_START_ADDR + sector * FLASH_BDEV_SECTOR_SIZE);
-    fmc_lock();
+// Translate a block number into the hardware sector number and its address.
+static uint32_t flash_bdev_sector_number(uint32_t block) {
+    return FLASH_BDEV_FIRST_SECTOR + block;
 }
 
-static void flash_bdev_flush(void) {
-    if (!flash_bdev_cache_dirty) {
-        return;
-    }
-    flash_bdev_erase_sector(flash_bdev_cache_sector);
+static uint32_t flash_bdev_sector_addr(uint32_t block) {
+    return FLASH_BDEV_START_ADDR + block * FLASH_BDEV_BLOCK_SIZE;
+}
+
+// ---- flash primitives ----
+static bool flash_bdev_erase_block(uint32_t block) {
+    fmc_state_enum state;
+
     fmc_unlock();
-    uint32_t addr = FLASH_BDEV_START_ADDR + flash_bdev_cache_sector * FLASH_BDEV_SECTOR_SIZE;
-    for (size_t i = 0; i < FLASH_BDEV_SECTOR_SIZE; i += 4) {
+    fmc_flag_clear(FMC_FLAG_END | FMC_FLAG_OPERR | FMC_FLAG_WPERR |
+                   FMC_FLAG_PGMERR | FMC_FLAG_PGSERR);
+    state = fmc_sector_erase(flash_bdev_sector_number(block));
+    fmc_flag_clear(FMC_FLAG_END | FMC_FLAG_OPERR | FMC_FLAG_WPERR |
+                   FMC_FLAG_PGMERR | FMC_FLAG_PGSERR);
+    fmc_lock();
+
+    return state == FMC_READY;
+}
+
+static bool flash_bdev_program(uint32_t addr, const uint8_t *src, size_t len) {
+    bool ok = true;
+
+    fmc_unlock();
+    for (size_t i = 0; i < len; i += 4) {
         uint32_t word;
-        memcpy(&word, &flash_bdev_cache[i], 4);
-        fmc_word_program(addr + i, word);
+        size_t n = (len - i < 4) ? (len - i) : 4;
+        if (n == 4) {
+            memcpy(&word, &src[i], 4);
+        } else {
+            // Pad a short tail with 0xff so we do not write past the request.
+            word = 0xffffffffu;
+            memcpy(&word, &src[i], n);
+        }
+        if (fmc_word_program(addr + i, word) != FMC_READY) {
+            ok = false;
+            break;
+        }
     }
+    fmc_flag_clear(FMC_FLAG_END | FMC_FLAG_OPERR | FMC_FLAG_WPERR |
+                   FMC_FLAG_PGMERR | FMC_FLAG_PGSERR);
     fmc_lock();
-    flash_bdev_cache_dirty = false;
+
+    return ok;
 }
 
-static void flash_bdev_load_sector(uint32_t sector) {
-    if (flash_bdev_cache_sector == sector) {
-        return;
-    }
-    flash_bdev_flush();
-    flash_bdev_cache_sector = sector;
-    memcpy(flash_bdev_cache, (const void *)(FLASH_BDEV_START_ADDR + sector * FLASH_BDEV_SECTOR_SIZE),
-           FLASH_BDEV_SECTOR_SIZE);
-    flash_bdev_cache_dirty = false;
-}
-
-// ---- Python block device protocol ----
+// ---- Python block-device protocol ----
+// readblocks(block, buf[, offset])
 static mp_obj_t flash_bdev_readblocks(size_t n_args, const mp_obj_t *args) {
-    flash_bdev_obj_t *self = MP_OBJ_TO_PTR(args[0]);
-    (void)self;
-    uint32_t block_num = mp_obj_get_int(args[1]);
+    uint32_t block = mp_obj_get_int(args[1]);
+    if (block >= FLASH_BDEV_BLOCK_COUNT) {
+        mp_raise_ValueError(MP_ERROR_TEXT("block out of range"));
+    }
 
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[2], &bufinfo, MP_BUFFER_WRITE);
 
-    size_t len = bufinfo.len;
-    if (len > FLASH_BDEV_SECTOR_SIZE) {
-        len = FLASH_BDEV_SECTOR_SIZE;
-    }
-
-    // optional offset argument (new protocol)
     size_t offset = 0;
+    size_t len = bufinfo.len;
     if (n_args > 3) {
         offset = mp_obj_get_int(args[3]);
-        if (offset + len > FLASH_BDEV_SECTOR_SIZE) {
-            len = FLASH_BDEV_SECTOR_SIZE - offset;
-        }
+    }
+    if (offset > FLASH_BDEV_BLOCK_SIZE) {
+        offset = FLASH_BDEV_BLOCK_SIZE;
+    }
+    if (len > FLASH_BDEV_BLOCK_SIZE - offset) {
+        len = FLASH_BDEV_BLOCK_SIZE - offset;
     }
 
-    flash_bdev_load_sector(block_num);
-    memcpy(bufinfo.buf, flash_bdev_cache + offset, len);
+    memcpy(bufinfo.buf, (const void *)(flash_bdev_sector_addr(block) + offset), len);
     return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(flash_bdev_readblocks_obj, 3, 4, flash_bdev_readblocks);
 
+// writeblocks(block, buf[, offset])
+// littlefs always erases a block first, so a write that starts at offset 0 is
+// programmed directly.  A partial write has to fall back to erase-then-program
+// of the surrounding data, which we refuse rather than corrupt the block.
 static mp_obj_t flash_bdev_writeblocks(size_t n_args, const mp_obj_t *args) {
-    flash_bdev_obj_t *self = MP_OBJ_TO_PTR(args[0]);
-    (void)self;
-    uint32_t block_num = mp_obj_get_int(args[1]);
+    uint32_t block = mp_obj_get_int(args[1]);
+    if (block >= FLASH_BDEV_BLOCK_COUNT) {
+        mp_raise_ValueError(MP_ERROR_TEXT("block out of range"));
+    }
 
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[2], &bufinfo, MP_BUFFER_READ);
 
-    size_t len = bufinfo.len;
-    if (len > FLASH_BDEV_SECTOR_SIZE) {
-        len = FLASH_BDEV_SECTOR_SIZE;
-    }
-
     size_t offset = 0;
+    size_t len = bufinfo.len;
     if (n_args > 3) {
         offset = mp_obj_get_int(args[3]);
-        if (offset + len > FLASH_BDEV_SECTOR_SIZE) {
-            len = FLASH_BDEV_SECTOR_SIZE - offset;
-        }
     }
 
-    flash_bdev_load_sector(block_num);
-    memcpy(flash_bdev_cache + offset, bufinfo.buf, len);
-    flash_bdev_cache_dirty = true;
+    if (offset != 0) {
+        // A partial write would need the rest of the sector, which we do not
+        // keep in RAM.  littlefs never does this, so treat it as an error.
+        mp_raise_OSError(MP_EINVAL);
+    }
+    if (len > FLASH_BDEV_BLOCK_SIZE) {
+        len = FLASH_BDEV_BLOCK_SIZE;
+    }
+
+    if (!flash_bdev_program(flash_bdev_sector_addr(block), bufinfo.buf, len)) {
+        mp_raise_OSError(MP_EIO);
+    }
     return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(flash_bdev_writeblocks_obj, 3, 4, flash_bdev_writeblocks);
@@ -129,25 +164,24 @@ static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(flash_bdev_writeblocks_obj, 3, 4, fla
 static mp_obj_t flash_bdev_ioctl(mp_obj_t self_in, mp_obj_t cmd_in, mp_obj_t arg_in) {
     (void)self_in;
     mp_int_t cmd = mp_obj_get_int(cmd_in);
+
     switch (cmd) {
         case MP_BLOCKDEV_IOCTL_INIT:
             return MP_OBJ_NEW_SMALL_INT(0);
         case MP_BLOCKDEV_IOCTL_DEINIT:
-            flash_bdev_flush();
-            return MP_OBJ_NEW_SMALL_INT(0);
         case MP_BLOCKDEV_IOCTL_SYNC:
-            flash_bdev_flush();
+            // Nothing is buffered, so there is nothing to flush.
             return MP_OBJ_NEW_SMALL_INT(0);
         case MP_BLOCKDEV_IOCTL_BLOCK_COUNT:
-            return MP_OBJ_NEW_SMALL_INT(FLASH_BDEV_NUM_SECTORS);
+            return MP_OBJ_NEW_SMALL_INT(FLASH_BDEV_BLOCK_COUNT);
         case MP_BLOCKDEV_IOCTL_BLOCK_SIZE:
-            return MP_OBJ_NEW_SMALL_INT(FLASH_BDEV_SECTOR_SIZE);
+            return MP_OBJ_NEW_SMALL_INT(FLASH_BDEV_BLOCK_SIZE);
         case MP_BLOCKDEV_IOCTL_BLOCK_ERASE: {
             uint32_t block = mp_obj_get_int(arg_in);
-            flash_bdev_load_sector(block);
-            memset(flash_bdev_cache, 0xff, FLASH_BDEV_SECTOR_SIZE);
-            flash_bdev_cache_dirty = true;
-            return MP_OBJ_NEW_SMALL_INT(0);
+            if (block >= FLASH_BDEV_BLOCK_COUNT) {
+                return MP_OBJ_NEW_SMALL_INT(-1);
+            }
+            return MP_OBJ_NEW_SMALL_INT(flash_bdev_erase_block(block) ? 0 : -1);
         }
         default:
             return MP_OBJ_NEW_SMALL_INT(-1);
@@ -173,22 +207,15 @@ static flash_bdev_obj_t flash_bdev_obj = {
     .base = { &flash_bdev_type },
 };
 
-
 mp_obj_t pyb_flash_get_block_device(void);
 
-// ---- machine.Flash: let Python format the littlefs partition ----
-// The block device itself is not a Python type here; instead this exposes a
-// small object with the operations a user actually needs (format), which keeps
-// the surface area minimal.
-
+// ---- machine.Flash: format helper ----
+// Formatting wipes the whole 256 KB partition, so it is deliberately explicit.
 static mp_obj_t machine_flash_mkfs(void) {
-    // Lazy import: vfs is only available when MICROPY_VFS is enabled.
     mp_obj_t vfs_mod = mp_import_name(MP_QSTR_vfs, mp_const_none, MP_OBJ_NEW_SMALL_INT(0));
-    mp_obj_t bdev = pyb_flash_get_block_device();
-    mp_obj_t args[2] = { bdev, MP_OBJ_NEW_SMALL_INT(0) };
-    // vfs.VfsLfs2.mkfs(bdev)
     mp_obj_t vfslfs2 = mp_load_attr(vfs_mod, MP_QSTR_VfsLfs2);
     mp_obj_t mkfs = mp_load_attr(vfslfs2, MP_QSTR_mkfs);
+    mp_obj_t args[1] = { pyb_flash_get_block_device() };
     mp_call_function_n_kw(mkfs, 1, 0, args);
     return mp_const_none;
 }

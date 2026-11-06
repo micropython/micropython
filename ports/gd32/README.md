@@ -8,7 +8,7 @@ Based on the MicroPython v1.30.0 core with the official
 | Board      | MCU         | Flash | RAM   | Core clock | REPL UART        |
 |------------|-------------|-------|-------|------------|------------------|
 | GD32F407   | GD32F407VE  | 512K  | 128K  | 168 MHz    | USART0 PA9/PA10  |
-| GD32F470   | GD32F470VE  | 512K  | 192K  | 200 MHz    | USART0 PA9/PA10  |
+| GD32F470   | GD32F470VE  | 512K  | 192K  | 240 MHz    | USART0 PA9/PA10  |
 
 Both targets share the same port implementation; only the board
 definition (startup file, linker script, clock setup) differs.
@@ -271,10 +271,28 @@ Adding further peripherals follows the same pattern:
    explicitly.  Without that line the qstr scanner never sees the port and
    extmod sources, and any `MP_QSTR_*` used only by them fails to compile.
 
-1. **Clock setup**: `system_gd32f4xx.c` selects the clock source via a
-   `#define` near the top of the file. The vendored copy defaults to
-   `__SYSTEM_CLOCK_200M_PLL_25M_HXTAL`. Adjust if your board uses a
-   different crystal (8 MHz and 16 MHz IRC variants are also provided).
+1. **Clock setup**: `system_gd32f4xx.c` picks the clock through a `#define`
+   near the top of the file. The vendored copy enables
+   `__SYSTEM_CLOCK_168M_PLL_25M_HXTAL` for the GD32F405/407 branch and
+   `__SYSTEM_CLOCK_240M_PLL_25M_HXTAL` for GD32F470. Both assume a 25 MHz
+   crystal; 8 MHz and 16 MHz IRC variants exist if your board differs.
+
+   The resulting configuration, checked against the GD32F4xx datasheet:
+
+   | | GD32F407 | GD32F470 | Datasheet limit |
+   |---|---|---|---|
+   | PLL input | 25 MHz / 25 = 1 MHz | 25 MHz / 25 = 1 MHz | 1-2 MHz recommended |
+   | VCO | 336 MHz | 480 MHz | 100-500 MHz |
+   | CK_SYS | 168 MHz | 240 MHz | 168 / 240 MHz |
+   | AHB | 168 MHz | 240 MHz | 168 / 240 MHz |
+   | APB2 (AHB/2) | 84 MHz | 120 MHz | 84 / 120 MHz |
+   | APB1 (AHB/4) | 42 MHz | 60 MHz | 42 / 60 MHz |
+   | PLLQ (USB) | 48 MHz | 48 MHz | 48 MHz required |
+   | Flash wait states | 5 | 7 | 5 @168 MHz / 7 @240 MHz |
+
+   Wait states are programmed in `SystemInit()` before the PLL is selected,
+   because the GD32 standard library raises the core clock without touching
+   `FMC_WS` (see the note below).
 
 2. **No filesystem**: `mp_import_stat` and `mp_lexer_new_from_file`
    are stubs returning "does not exist", so `import` of external files
@@ -313,11 +331,19 @@ os.stat('/boot.py')
 
 Notes:
 
-- The filesystem is mounted read-write; the block device caches one 16 KB
-  sector in RAM and flushes on `sync()`/`ioctl`.
-- If flash is blank, the first mount will fail silently and `/` stays empty.
-  Run `import vfs; vfs.VfsLfs2.mkfs(pyb_flash_get_block_device())` style
-  formatting (see `extmod/vfs_lfs.h`) or re-flash with the FS region erased.
+- **Partition**: Sector 6 + Sector 7 of internal flash, i.e.
+  `0x08040000 - 0x0807FFFF` (256 KB).  The firmware image must stay below
+  `0x08040000`; the current build ends around `0x0803DD00`, so there is a
+  little headroom.  GD32F4 sector sizes are 16 KB (0-3), 64 KB (4) and 128 KB
+  (5-7), so a smaller partition is not possible above the image.
+- **Block size equals the erase size** (128 KB).  littlefs erases before it
+  programs and never reads back a block it is writing, so the driver keeps no
+  read-modify-write buffer.  That is deliberate: caching a 128 KB sector would
+  not fit in the ~24 KB of free RAM on the GD32F407 build.
+- `writeblocks` with a non-zero offset raises `OSError(EINVAL)`, because a
+  partial write would need the rest of the sector (littlefs never does this).
+- To format, run `machine.Flash.mkfs()`.  This erases the whole 256 KB
+  partition, so it is explicit and never automatic.
 - File mtimes come from `mp_hal_time_ns()`, which reads the RTC when
   available and otherwise returns a fixed epoch offset by uptime.
 - **Flash wear**: writing to the FS erases 16 KB sectors. Do not use it as
