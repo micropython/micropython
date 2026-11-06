@@ -18,7 +18,7 @@ programs.  Ports that have this functionality provide the :func:`mount` and
 :func:`umount` functions, and possibly various filesystem implementations
 represented by VFS classes.
 
-.. function:: mount(fsobj, mount_point, *, readonly)
+.. function:: mount(fsobj, mount_point, /, *, readonly=False)
 
     Mount the filesystem object *fsobj* at the location in the VFS given by the
     *mount_point* string.  *fsobj* can be a a VFS object that has a ``mount()``
@@ -63,7 +63,7 @@ Filesystem Types
 
         Build a FAT filesystem on *block_dev*.
 
-.. class:: VfsLfs1(block_dev, readsize=32, progsize=32, lookahead=32)
+.. class:: VfsLfs1(block_dev, /, *, readsize=32, progsize=32, lookahead=32)
 
     Create a filesystem object that uses the `littlefs v1 filesystem format`_.
     Storage of the littlefs filesystem is provided by *block_dev*, which must
@@ -72,14 +72,14 @@ Filesystem Types
 
     See :ref:`filesystem` for more information.
 
-    .. staticmethod:: mkfs(block_dev, readsize=32, progsize=32, lookahead=32)
+    .. staticmethod:: mkfs(block_dev, /, *, readsize=32, progsize=32, lookahead=32)
 
         Build a Lfs1 filesystem on *block_dev*.
 
     .. note:: There are reports of littlefs v1 failing in certain situations,
               for details see `littlefs issue 347`_.
 
-.. class:: VfsLfs2(block_dev, readsize=32, progsize=32, lookahead=32, mtime=True)
+.. class:: VfsLfs2(block_dev, /, *, readsize=32, progsize=32, lookahead=32, mtime=True)
 
     Create a filesystem object that uses the `littlefs v2 filesystem format`_.
     Storage of the littlefs filesystem is provided by *block_dev*, which must
@@ -96,7 +96,7 @@ Filesystem Types
 
     See :ref:`filesystem` for more information.
 
-    .. staticmethod:: mkfs(block_dev, readsize=32, progsize=32, lookahead=32)
+    .. staticmethod:: mkfs(block_dev, /, *, readsize=32, progsize=32, lookahead=32)
 
         Build a Lfs2 filesystem on *block_dev*.
 
