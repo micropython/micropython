@@ -405,3 +405,4 @@ Classes
    machine.SD.rst
    machine.SDCard.rst
    machine.USBDevice.rst
+   machine.USBHost.rst

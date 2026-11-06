@@ -212,4 +212,24 @@ enum _USBD_EP {
 
 #endif // MICROPY_HW_ENABLE_USBDEV
 
+#if MICROPY_HW_USB_HOST
+
+#ifndef CFG_TUH_DEVICE_MAX
+#define CFG_TUH_DEVICE_MAX      (4)
+#endif
+
+#ifndef CFG_TUH_HUB
+#define CFG_TUH_HUB             (1)
+#endif
+
+// Must hold a device's whole configuration descriptor.
+#ifndef CFG_TUH_ENUMERATION_BUFSIZE
+#define CFG_TUH_ENUMERATION_BUFSIZE (512)
+#endif
+
+// The host task runs from the scheduler, so process all pending events each time.
+#define CFG_TUH_TASK_EVENTS_PER_RUN (0)
+
+#endif // MICROPY_HW_USB_HOST
+
 #endif // MICROPY_INCLUDED_SHARED_TINYUSB_TUSB_CONFIG_H
