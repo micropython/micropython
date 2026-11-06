@@ -209,6 +209,7 @@ pwmout_result_t common_hal_pwmio_pwmout_construct(pwmio_pwmout_obj_t *self,
     self->pin = pin;
 
     gpio_set_pin_function(pin->number, GPIO_PIN_FUNCTION_E + mux_position);
+    claim_pin(pin);
 
     common_hal_pwmio_pwmout_set_duty_cycle(self, duty);
     return PWMOUT_OK;

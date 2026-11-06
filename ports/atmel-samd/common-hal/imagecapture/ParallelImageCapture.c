@@ -81,24 +81,24 @@ void common_hal_imagecapture_parallelimagecapture_construct(imagecapture_paralle
     gpio_set_pin_direction(PIN_PCC_CLK, GPIO_DIRECTION_IN);
     gpio_set_pin_pull_mode(PIN_PCC_CLK, GPIO_PULL_OFF);
     gpio_set_pin_function(PIN_PCC_CLK, GPIO_PIN_FUNCTION_PCC);
-    // claim_pin_number(PIN_PCC_CLK);
+    claim_pin_number(PIN_PCC_CLK);
     if (vertical_sync) {
         gpio_set_pin_direction(PIN_PCC_DEN1, GPIO_DIRECTION_IN);
         gpio_set_pin_pull_mode(PIN_PCC_DEN1, GPIO_PULL_OFF);
         gpio_set_pin_function(PIN_PCC_DEN1, GPIO_PIN_FUNCTION_PCC); // VSYNC
-        // claim_pin_number(PIN_PCC_DEN1);
+        claim_pin_number(PIN_PCC_DEN1);
     }
     if (horizontal_reference) {
         gpio_set_pin_direction(PIN_PCC_DEN2, GPIO_DIRECTION_IN);
         gpio_set_pin_pull_mode(PIN_PCC_DEN2, GPIO_PULL_OFF);
         gpio_set_pin_function(PIN_PCC_DEN2, GPIO_PIN_FUNCTION_PCC); // HSYNC
-        // claim_pin_number(PIN_PCC_DEN2);
+        claim_pin_number(PIN_PCC_DEN2);
     }
     for (int i = 0; i < data_count; i++) {
         gpio_set_pin_direction(PIN_PCC_D0 + i, GPIO_DIRECTION_IN);
         gpio_set_pin_pull_mode(PIN_PCC_D0 + i, GPIO_PULL_OFF);
         gpio_set_pin_function(PIN_PCC_D0 + i, GPIO_PIN_FUNCTION_PCC);
-        // claim_pin_number(PIN_PCC_D0+i);
+        claim_pin_number(PIN_PCC_D0 + i);
     }
 }
 

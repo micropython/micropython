@@ -371,6 +371,7 @@ void common_hal_frequencyio_frequencyin_construct(frequencyio_frequencyin_obj_t*
     NVIC_EnableIRQ(self->TC_IRQ);
 
     gpio_set_pin_function(pin->number, GPIO_PIN_FUNCTION_A);
+    claim_pin(pin);
 
     tc_set_enable(tc, true);
 

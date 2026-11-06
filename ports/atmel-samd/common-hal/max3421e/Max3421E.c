@@ -44,7 +44,6 @@ void common_hal_max3421e_max3421e_deinit_irq(max3421e_max3421e_obj_t *self) {
     const mcu_pin_obj_t *pin = self->irq.pin;
     set_eic_handler(pin->extint_channel, EIC_HANDLER_NO_INTERRUPT);
     turn_off_eic_channel(pin->extint_channel);
-    reset_pin_number(pin->extint_channel);
 }
 
 // Enable or disable the irq interrupt.
