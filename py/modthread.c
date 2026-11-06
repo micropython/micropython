@@ -229,8 +229,8 @@ static mp_obj_t mod_thread_start_new_thread(size_t n_args, const mp_obj_t *args)
             mp_raise_TypeError(MP_ERROR_TEXT("expecting a dict for keyword args"));
         }
         mp_map_t *map = &((mp_obj_dict_t *)MP_OBJ_TO_PTR(args[2]))->map;
-        th_args = m_new_obj_var(thread_entry_args_t, args, mp_obj_t, pos_args_len + 2 * map->used);
-        th_args->n_kw = map->used;
+        th_args = m_new_obj_var(thread_entry_args_t, args, mp_obj_t, pos_args_len + 2 * mp_map_len(map));
+        th_args->n_kw = mp_map_len(map);
         // copy across the keyword arguments
         for (size_t i = 0, n = pos_args_len; i < map->alloc; ++i) {
             if (mp_map_slot_is_filled(map, i)) {
