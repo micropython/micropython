@@ -533,6 +533,52 @@ because `py.mk` appends `frozen_content.o` to `PY_O` only when the variable is
 already non-empty. This port's Makefile does that, and links `PY_O` rather
 than listing the core/extmod objects by hand.
 
+## TLS (mbedTLS)
+
+`import tls` (also reachable as `ssl`) provides TLS 1.2 through mbedTLS 3.6.6,
+which makes HTTPS possible on top of `socket`.
+
+```python
+import socket, tls
+
+# Verify the server certificate against the bundled CA bundle
+ctx = tls.SSLContext(tls.PROTOCOL_TLS_CLIENT)
+ctx.load_verify_locations(cafile="/certs/ca.pem")
+s = ctx.wrap_socket(socket.socket(), server_hostname="example.com")
+s.connect(socket.getaddrinfo("example.com", 443)[0][-1])
+s.write(b"GET / HTTP/1.0\r\nHost: example.com\r\n\r\n")
+print(s.read(1024))
+```
+
+### Trimming for this chip
+
+`mbedtls/mbedtls_config_port.h` starts from MicroPython's shared configuration
+and then cuts it down, because the GD32F407 only has 128 KB of SRAM of which
+about 90 KB is already committed:
+
+| Setting | Value | Why |
+|---------|-------|-----|
+| `MBEDTLS_SSL_IN_CONTENT_LEN` | 8192 (from 16384) | the default record buffer is most of the free RAM |
+| `MBEDTLS_SSL_PROTO_TLS1`, `TLS1_1` | disabled | no modern server accepts them |
+| ECP curves | secp256r1, secp384r1 only | the P-192/224/521 and Koblitz curves cost code for no practical gain |
+| `MBEDTLS_ECP_WINDOW_SIZE` | 4 | compact ECC multiplication |
+
+Measured cost of enabling TLS:
+
+| | before | after | delta |
+|---|---|---|---|
+| Flash | 253,788 B | 375,456 B | **+121 KB** |
+| RAM (bss) | 90,880 B | 90,888 B | +8 B |
+
+Flash is now at 95.5% of the 384 KB firmware budget (17.3 KB free), so there is
+very little room for further additions.  RAM is comfortable: 39 KB free on the
+GD32F407, 103 KB on the GD32F470.
+
+**Note:** TLS compiles and the module is present, but no handshake has been
+exercised on hardware.  The ECC/bignum paths are the ones most likely to need
+tuning (they are the slowest part of a handshake on a Cortex-M4 without a
+crypto accelerator).
+
 ## Machine module coverage
 
 Compared with `ports/stm32` for STM32F4:
@@ -552,6 +598,7 @@ Compared with `ports/stm32` for STM32F4:
 | `PWM` | ✅ | TIMER0/1/2/3/7/8/12, duty_u16 + duty_ns |
 | `Signal` / `PinBase` | ✅ | Pin implements the virtpin protocol |
 | `onewire` | ✅ | DS18B20 etc. over any GPIO (bit-banged) |
+| `tls` / `ssl` | ✅ | mbedTLS 3.6, TLS 1.2, certificate verification |
 | `SoftSPI` / `SoftI2C` | ✅ | extmod bit-bang on any GPIO |
 | `SDCard` | ✅ | SDIO driver, hot-plug, block device protocol |
 | `I2S` | ✅ | SPI1/SPI2 as I2S1/I2S2, DMA ping-pong, blocking/non-blocking/async |

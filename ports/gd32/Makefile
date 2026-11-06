@@ -43,6 +43,8 @@ CFLAGS += $(MCU_ARCH)
 
 # lwIP configuration (consumed by extmod.mk)
 MICROPY_PY_LWIP ?= 1
+MICROPY_PY_SSL ?= 1
+MICROPY_SSL_MBEDTLS ?= 1
 MICROPY_PY_LWIP_REPEAT_ARP ?= 1
 CFLAGS += -D$(CMSIS_MCU) -DUSE_STDPERIPH_DRIVER
 
@@ -107,6 +109,7 @@ SRC_C = \
 	machine_dac_port.c \
 	machine_rtc_port.c \
 	mphalport.c \
+	mbedtls_port.c \
 	shared/readline/readline.c \
 	shared/runtime/pyexec.c \
 	shared/runtime/stdout_helpers.c \

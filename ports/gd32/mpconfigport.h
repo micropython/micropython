@@ -113,6 +113,17 @@ extern const struct _mp_obj_type_t network_lan_type;
 // OneWire (DS18B20 and friends) is a pure bit-bang protocol on top of the
 // port's open-drain pin helpers, so it costs no extra hardware support.
 #define MICROPY_PY_ONEWIRE                 (1)
+
+// TLS via mbedTLS (see mbedtls/mbedtls_config_port.h for the trimmed profile).
+// MICROPY_PY_SSL and MICROPY_SSL_MBEDTLS are supplied by the Makefile CFLAGS,
+// so only the remaining options are set here.
+#ifndef MICROPY_PY_SSL_FINALISER
+#define MICROPY_PY_SSL_FINALISER           (1)
+#endif
+// mbedTLS allocates through MicroPython's tracked allocator on bare metal.
+#ifndef MICROPY_TRACKED_ALLOC
+#define MICROPY_TRACKED_ALLOC              (MICROPY_SSL_MBEDTLS)
+#endif
 #define MICROPY_PY_WEBSOCKET               (1)
 #define MICROPY_PY_WEBREPL                 (1)
 
