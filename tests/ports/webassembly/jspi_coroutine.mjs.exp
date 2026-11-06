@@ -1,0 +1,6 @@
+can_run_sync before await: True
+run_sync before await: 42
+awaited: 1
+can_run_sync after await: True
+run_sync after await: 42
+rejected: PythonError KeyboardInterrupt

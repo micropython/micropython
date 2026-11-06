@@ -53,6 +53,8 @@ bool mp_js_can_suspend(void);
 bool mp_js_suspension_active(void);
 void mp_js_suspension_begin(void);
 void mp_js_suspension_end(void);
+size_t mp_js_allow_suspend_begin(void);
+void mp_js_allow_suspend_end(size_t prev_depth);
 #endif
 
 // Wrap a JsProxy of a JS Error into a raisable JsException instance.

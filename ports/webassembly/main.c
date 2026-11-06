@@ -108,6 +108,20 @@ void mp_js_suspension_end(void) {
     suspension_active = false;
 }
 
+// Let jsffi.run_sync() suspend from the Python code about to run.
+// Only call this from a function listed in JSPI_EXPORTS, after
+// external_call_depth_inc().  Pass the returned value to
+// mp_js_allow_suspend_end() when that function returns.
+size_t mp_js_allow_suspend_begin(void) {
+    size_t prev_depth = suspendable_entry_depth;
+    suspendable_entry_depth = external_call_depth;
+    return prev_depth;
+}
+
+void mp_js_allow_suspend_end(size_t prev_depth) {
+    suspendable_entry_depth = prev_depth;
+}
+
 #endif // MICROPY_JSPI
 
 void mp_js_init(int pystack_size, int heap_size) {

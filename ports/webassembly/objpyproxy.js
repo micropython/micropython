@@ -225,16 +225,35 @@ class PyProxyThenable {
         this._ref = ref;
     }
 
+    // Resume the generator with a value to receive ("send") or an
+    // exception to raise ("throw_"); the unused one is null.  "resolve"
+    // and "reject" settle the promise waiting on the generator.  The
+    // four arguments go to C in "values", which also carries the result
+    // back.  On a jspi build the ccall returns a promise, hence the await.
+    // An error from the resume (for example the generator yielding
+    // something that is not a promise) rejects the waiting promise.  It
+    // cannot be thrown instead: this function is async, so a throw
+    // would only reject its own, unobserved promise.
+    async _resume(send, throw_, resolve, reject) {
+        try {
+            const values = Module._malloc(5 * 3 * 4);
+            proxy_convert_js_to_mp_obj_jsside(resolve, values + 1 * 3 * 4);
+            proxy_convert_js_to_mp_obj_jsside(reject, values + 2 * 3 * 4);
+            proxy_convert_js_to_mp_obj_jsside(send, values + 3 * 3 * 4);
+            proxy_convert_js_to_mp_obj_jsside(throw_, values + 4 * 3 * 4);
+            await Module.ccall(
+                "proxy_c_to_js_resume",
+                "null",
+                ["number", "pointer"],
+                [this._ref, values],
+            );
+            return proxy_convert_mp_to_js_obj_jsside_with_free(values);
+        } catch (error) {
+            reject(error);
+        }
+    }
+
     then(resolve, reject) {
-        const values = Module._malloc(3 * 3 * 4);
-        proxy_convert_js_to_mp_obj_jsside(resolve, values + 3 * 4);
-        proxy_convert_js_to_mp_obj_jsside(reject, values + 2 * 3 * 4);
-        Module.ccall(
-            "proxy_c_to_js_resume",
-            "null",
-            ["number", "pointer"],
-            [this._ref, values],
-        );
-        return proxy_convert_mp_to_js_obj_jsside_with_free(values);
+        return this._resume(null, null, resolve, reject);
     }
 }
