@@ -36,6 +36,9 @@
 // External SPI flash.
 #define MICROPY_HW_XSPIFLASH_SIZE_BITS_LOG2 (28) // 256Mbit
 
+// 64MB 16-bit PSRAM on XSPI1, added to the heap.
+#define MICROPY_HW_XSPI_PSRAM       (1)
+
 // ROMFS config
 #define MICROPY_HW_ROMFS_ENABLE_EXTERNAL_XSPI (1)
 #define MICROPY_HW_ROMFS_XSPI_SPIBDEV_OBJ (&spi_bdev)
