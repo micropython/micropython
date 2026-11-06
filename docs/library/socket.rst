@@ -340,13 +340,17 @@ Methods
    Return value: the line read.
 
 .. method:: socket.write(buf)
+            socket.write(buf, max_len)
+            socket.write(buf, offset, max_len)
 
    Write the buffer of bytes to the socket. This function will try to
    write all data to a socket (no "short writes"). This may be not possible
    with a non-blocking socket though, and returned value will be less than
-   the length of *buf*.
+   the length of *buf*. If *max_len* is given, write at most that many bytes.
+   If *offset* is also given, start writing from that position in *buf*.
 
-   Return value: number of bytes written.
+   Return value: number of bytes written, or ``None`` if a non-blocking socket
+   cannot accept data.
 
 .. exception:: socket.error
 
