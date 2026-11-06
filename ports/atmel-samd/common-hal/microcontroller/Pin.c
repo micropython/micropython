@@ -13,10 +13,6 @@
 
 #include "samd/pins.h"
 
-#ifdef SPEAKER_ENABLE_PIN
-bool speaker_enable_in_use;
-#endif
-
 #define PORT_COUNT (PORT_BITS / 32 + 1)
 
 #ifdef SAM_D5X_E5X
@@ -72,7 +68,6 @@ void reset_all_pins(void) {
 
     // After configuring SWD because it may be shared.
     #ifdef SPEAKER_ENABLE_PIN
-    speaker_enable_in_use = false;
     gpio_set_pin_function(SPEAKER_ENABLE_PIN->number, GPIO_PIN_FUNCTION_OFF);
     gpio_set_pin_direction(SPEAKER_ENABLE_PIN->number, GPIO_DIRECTION_OUT);
     gpio_set_pin_level(SPEAKER_ENABLE_PIN->number, false);
@@ -110,7 +105,6 @@ void reset_pin_number(uint8_t pin_number) {
 
     #ifdef SPEAKER_ENABLE_PIN
     if (pin_number == SPEAKER_ENABLE_PIN->number) {
-        speaker_enable_in_use = false;
         gpio_set_pin_function(pin_number, GPIO_PIN_FUNCTION_OFF);
         gpio_set_pin_direction(SPEAKER_ENABLE_PIN->number, GPIO_DIRECTION_OUT);
         gpio_set_pin_level(SPEAKER_ENABLE_PIN->number, false);
@@ -132,12 +126,6 @@ void claim_pin_number(uint8_t pin_number) {
 
 void claim_pin(const mcu_pin_obj_t* pin) {
     claim_pin_number(pin->number);
-
-    #ifdef SPEAKER_ENABLE_PIN
-    if (pin == SPEAKER_ENABLE_PIN) {
-        speaker_enable_in_use = true;
-    }
-    #endif
 }
 
 bool pin_number_is_free(uint8_t pin_number) {
@@ -154,12 +142,6 @@ bool pin_number_is_free(uint8_t pin_number) {
 }
 
 bool common_hal_mcu_pin_is_free(const mcu_pin_obj_t* pin) {
-    #ifdef SPEAKER_ENABLE_PIN
-    if (pin == SPEAKER_ENABLE_PIN) {
-        return !speaker_enable_in_use;
-    }
-    #endif
-
     return pin_number_is_free(pin->number);
 }
 
