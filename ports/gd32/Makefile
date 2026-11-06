@@ -17,6 +17,11 @@ include $(TOP)/py/mkenv.mk
 # qstr definitions (must come before including py.mk)
 QSTR_DEFS = qstrdefsport.h
 
+# Frozen bytecode: a manifest lists the Python modules compiled into Flash.
+# This must be set before py.mk so that it appends frozen_content.o to PY_O.
+# Pass FROZEN_MANIFEST= on the command line to disable freezing.
+FROZEN_MANIFEST ?= manifest.py
+
 include $(TOP)/py/py.mk
 
 CROSS_COMPILE ?= arm-none-eabi-
@@ -156,12 +161,9 @@ $(BUILD)/lib/tinyusb/%.o: CFLAGS += -Wno-error
 # TinyUSB objects must be added here (after TINYUSB_SRC_C is defined).
 OBJ += $(addprefix $(BUILD)/, $(TINYUSB_SRC_C:.c=.o))
 
-# Sources contributed by extmod.mk.  The lwIP/network modules are enabled
-# via MICROPY_PY_LWIP/NETWORK in mpconfigport.h, which makes extmod.mk list
-# them in SRC_EXTMOD_C; this port no longer enumerates them by hand.
-OBJ += $(addprefix $(BUILD)/, $(SRC_EXTMOD_C:.c=.o))
-OBJ += $(addprefix $(BUILD)/, $(SRC_THIRDPARTY_C:.c=.o))
-OBJ += $(PY_CORE_O)
+# PY_O covers the MicroPython core, the extmod.mk sources (lwIP, network,
+# netutils, ...) and frozen_content.o when FROZEN_MANIFEST is set.
+OBJ += $(PY_O)
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_S:.S=.o))
 

@@ -246,7 +246,7 @@ ports/gd32/
 | `machine.freq()`, `machine.reset()`, `machine.unique_id()` | ✅ |
 | `machine.PWM` — timer output compare, freq + duty_u16/duty_ns | ✅ working |
 
-| Frozen modules | ⬜ |
+| Frozen modules | ✅ | manifest.py, bytecode in Flash |
 
 The peripheral set is modelled on `ports/stm32` for STM32F4. Modules are
 implemented as either extmod `INCLUDEFILE` hooks or standalone files
@@ -441,6 +441,49 @@ NOTE: the driver compiles on both boards but has not been exercised against
 a real PHY. Auto-negotiation timing and the RMII clock setup should be
 verified on hardware before relying on it.
 
+## Frozen modules
+
+Python modules listed in `manifest.py` are compiled to bytecode at build time
+and linked into the firmware, so they cost Flash instead of RAM and import
+without any parsing.
+
+```bash
+# default: freezes modules/_boot.py and modules/gd32.py
+make BOARD=GD32F407
+
+# disable freezing for a build
+make BOARD=GD32F407 FROZEN_MANIFEST=
+
+# use a different module set
+make BOARD=GD32F407 FROZEN_MANIFEST=/path/to/other_manifest.py
+```
+
+`manifest.py` uses the standard MicroPython manifest API
+(`module()`, `package()`, `freeze()`, `include()`, `require()`), so
+`micropython-lib` packages can be pulled in as well:
+
+```python
+# manifest.py
+module("modules/_boot.py", opt=3)
+module("modules/gd32.py", opt=3)
+# include("$(MPY_LIB_DIR)/micropython/aiorepl/manifest.py")
+```
+
+Two modules are frozen by default:
+
+| Module | Purpose |
+|--------|---------|
+| `_boot.py` | runs at startup; currently collects GC and mounts littlefs |
+| `gd32.py` | small helper with `info()` and `blink()` for sanity checks |
+
+Measured effect on this port: findings Flash +1.4 KB, **RAM unchanged**
+(the bytecode lives in `.rodata`; only the lookup tables are added).
+
+NOTE: `FROZEN_MANIFEST` must be set *before* `include $(TOP)/py/py.mk`,
+because `py.mk` appends `frozen_content.o` to `PY_O` only when the variable is
+already non-empty. This port's Makefile does that, and links `PY_O` rather
+than listing the core/extmod objects by hand.
+
 ## Machine module coverage
 
 Compared with `ports/stm32` for STM32F4:
@@ -487,6 +530,6 @@ These are enabled and use no external dependencies:
 | `time` | `time`, `time_ns`, `sleep*`, `ticks_*` via RTC/uptime |
 | `os` | `listdir`, `stat`, `mkdir`, `rename`, `remove`, `mount`, `uname`, `urandom`, `sync` |
 
-Remaining gaps versus STM32F4: frozen modules, and the `pyb`-style legacy
-API (not applicable here).  Note the `re` module is MicroPython's cut-down
+The only remaining gap versus STM32F4 is the `pyb`-style legacy API, which is
+specific to ST boards and not applicable here.  Note the `re` module is MicroPython's cut-down
 implementation: only `compile`, `match`, `search` and `sub` are available.

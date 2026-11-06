@@ -23,6 +23,11 @@
 #define MICROPY_ENABLE_SCHEDULER          (1)
 #define MICROPY_SCHEDULER_STATIC_NODES    (1)
 #define MICROPY_ENABLE_COMPILER           (1)
+// Frozen modules: bytecode generated at build time and stored in Flash.
+// MICROPY_MODULE_FROZEN_MPY already comes from the configured ROM level.
+#ifndef MICROPY_QSTR_EXTRA_POOL
+#define MICROPY_QSTR_EXTRA_POOL           mp_qstr_frozen_const_pool
+#endif
 #define MICROPY_ENABLE_EXTERNAL_IMPORT    (1)
 #define MICROPY_HELPER_REPL               (1)
 #define MICROPY_ENABLE_PYSTACK            (1)
