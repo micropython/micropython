@@ -339,7 +339,6 @@ safe_mode_t port_init(void) {
     init_shared_dma();
 
     // Reset everything into a known state before board_init.
-    // Pins are reset in main() after this routine returns.
     reset_port();
 
     #ifdef SAMD21
