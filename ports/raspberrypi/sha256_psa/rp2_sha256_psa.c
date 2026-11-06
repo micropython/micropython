@@ -6,8 +6,8 @@
 
 // PSA transparent driver for SHA-256 on the RP2350 SHA-256 block. hashlib, hmac
 // and TLS reach it through psa_hash_*(); the dispatch tries it before the builtin
-// driver. It keeps an mbedtls_sha256_context in the builtin operation struct and
-// uses the builtin mbedtls_sha256_*() functions for anything done in software.
+// driver. Its context holds an mbedtls_sha256_context, and it uses the builtin
+// mbedtls_sha256_*() functions for anything done in software.
 //
 // The block holds one running hash and its state cannot be written, only read, so:
 //  - Only one context at a time owns the block. It takes the block when it first
@@ -146,62 +146,48 @@ static void ctx_finish(mbedtls_sha256_context *ctx, unsigned char *output) {
     mbedtls_sha256_finish(ctx, output);
 }
 
-psa_status_t rp2_sha256_psa_hash_setup(mbedtls_psa_hash_operation_t *op, psa_algorithm_t alg) {
+psa_status_t rp2_sha256_psa_hash_setup(rp2_sha256_psa_hash_operation_t *op, psa_algorithm_t alg) {
     if (alg != PSA_ALG_SHA_256) {
         return PSA_ERROR_NOT_SUPPORTED;
     }
-    mbedtls_sha256_context *ctx = &op->ctx.sha256;
+    mbedtls_sha256_context *ctx = &op->sha256;
     release_if_owner(ctx);
-    op->alg = alg;
     mbedtls_sha256_init(ctx);
     mbedtls_sha256_starts(ctx, 0);
     return PSA_SUCCESS;
 }
 
-psa_status_t rp2_sha256_psa_hash_update(mbedtls_psa_hash_operation_t *op,
+psa_status_t rp2_sha256_psa_hash_update(rp2_sha256_psa_hash_operation_t *op,
     const uint8_t *input, size_t input_length) {
-    if (op->alg != PSA_ALG_SHA_256) {
-        return PSA_ERROR_BAD_STATE;
-    }
-    ctx_update(&op->ctx.sha256, input, input_length);
+    ctx_update(&op->sha256, input, input_length);
     return PSA_SUCCESS;
 }
 
-psa_status_t rp2_sha256_psa_hash_finish(mbedtls_psa_hash_operation_t *op,
+psa_status_t rp2_sha256_psa_hash_finish(rp2_sha256_psa_hash_operation_t *op,
     uint8_t *hash, size_t hash_size, size_t *hash_length) {
     *hash_length = 0;
-    if (op->alg != PSA_ALG_SHA_256) {
-        return PSA_ERROR_BAD_STATE;
-    }
     if (hash_size < SHA256_DIGEST_SIZE) {
         return PSA_ERROR_BUFFER_TOO_SMALL;
     }
-    ctx_finish(&op->ctx.sha256, hash);
+    ctx_finish(&op->sha256, hash);
     *hash_length = SHA256_DIGEST_SIZE;
     return PSA_SUCCESS;
 }
 
-psa_status_t rp2_sha256_psa_hash_abort(mbedtls_psa_hash_operation_t *op) {
-    if (op->alg == PSA_ALG_SHA_256) {
-        release_if_owner(&op->ctx.sha256);
-        mbedtls_sha256_free(&op->ctx.sha256);
-    }
-    op->alg = 0;
+psa_status_t rp2_sha256_psa_hash_abort(rp2_sha256_psa_hash_operation_t *op) {
+    release_if_owner(&op->sha256);
+    mbedtls_sha256_free(&op->sha256);
     return PSA_SUCCESS;
 }
 
-psa_status_t rp2_sha256_psa_hash_clone(const mbedtls_psa_hash_operation_t *source,
-    mbedtls_psa_hash_operation_t *target) {
-    if (source->alg != PSA_ALG_SHA_256) {
-        return PSA_ERROR_BAD_STATE;
-    }
-    const mbedtls_sha256_context *src = &source->ctx.sha256;
-    mbedtls_sha256_context *dst = &target->ctx.sha256;
+psa_status_t rp2_sha256_psa_hash_clone(const rp2_sha256_psa_hash_operation_t *source,
+    rp2_sha256_psa_hash_operation_t *target) {
+    const mbedtls_sha256_context *src = &source->sha256;
+    mbedtls_sha256_context *dst = &target->sha256;
     if (dst == src) {
         return PSA_SUCCESS;
     }
     release_if_owner(dst);
-    target->alg = source->alg;
     mbedtls_sha256_clone(dst, src);
     if (is_owner(src)) {
         // The copy goes on in software from the block's current state.
@@ -217,7 +203,7 @@ psa_status_t rp2_sha256_psa_hash_compute(psa_algorithm_t alg,
     if (alg != PSA_ALG_SHA_256) {
         return PSA_ERROR_NOT_SUPPORTED;
     }
-    mbedtls_psa_hash_operation_t op;
+    rp2_sha256_psa_hash_operation_t op;
     memset(&op, 0, sizeof(op));
     rp2_sha256_psa_hash_setup(&op, alg);
     rp2_sha256_psa_hash_update(&op, input, input_length);

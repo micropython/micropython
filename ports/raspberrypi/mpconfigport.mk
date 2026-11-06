@@ -96,7 +96,7 @@ endif
 CIRCUITPY_RP2_SHA256_HW ?= 0
 # Adds the driver to mbedtls's hash dispatch. Expanded late: CIRCUITPY_SSL is not
 # final yet here.
-MBEDTLS_DRIVER_PATCH = $(if $(filter 1,$(CIRCUITPY_RP2_SHA256_HW)),$(TOP)/lib/mbedtls_config/psa_driver_wrappers.patch)
+MBEDTLS_DRIVER_PATCH = $(if $(filter 1,$(CIRCUITPY_RP2_SHA256_HW)),$(TOP)/lib/mbedtls_config/psa_dispatch.patch)
 
 INTERNAL_LIBM = 1
 

@@ -1,14 +1,16 @@
 SPDX-FileCopyrightText: Copyright (c) 2026 Mikey Sklar for Adafruit Industries
 SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 
-Adds port PSA drivers to the hash dispatch in mbedtls's driver wrapper template.
-mbedtls 4 has no hook for this: hash dispatch is hand-written in the template, and
-the _ALT options are gone. Ports that need it set MBEDTLS_DRIVER_PATCH to this file;
-py/circuitpy_defns.mk applies it with no fuzz, so an mbedtls update that moves this
-code stops the build. Upstream: https://github.com/Mbed-TLS/TF-PSA-Crypto/issues/833
+Adds port PSA drivers to mbedtls's dispatch layer: the hash dispatch in the driver
+wrapper template, and each driver's context in the PSA operation unions. mbedtls
+doesn't generate these from a driver description yet, so its driver guide says to
+edit the dispatch layer by hand (docs/psa-driver-example-and-guide.md). The layout
+follows mbedtls's dispatch directory (driver_templates/, include/psa/).
+Applied by py/circuitpy_defns.mk with no fuzz, so an mbedtls update that moves this
+code stops the build.
 
---- a/psa_crypto_driver_wrappers.h.jinja
-+++ b/psa_crypto_driver_wrappers.h.jinja
+--- a/driver_templates/psa_crypto_driver_wrappers.h.jinja
++++ b/driver_templates/psa_crypto_driver_wrappers.h.jinja
 @@ -57,2 +57,7 @@
  
 +#if defined(CIRCUITPY_PSA_RP2_SHA256)
@@ -35,7 +37,7 @@ code stops the build. Upstream: https://github.com/Mbed-TLS/TF-PSA-Crypto/issues
 +#if defined(CIRCUITPY_PSA_RP2_SHA256)
 +    if( alg == PSA_ALG_SHA_256 )
 +    {
-+        status = rp2_sha256_psa_hash_setup( &operation->ctx.mbedtls_ctx, alg );
++        status = rp2_sha256_psa_hash_setup( &operation->ctx.rp2_sha256_ctx, alg );
 +        if( status == PSA_SUCCESS )
 +            operation->id = CIRCUITPY_RP2_SHA256_DRIVER_ID;
 +
@@ -50,15 +52,15 @@ code stops the build. Upstream: https://github.com/Mbed-TLS/TF-PSA-Crypto/issues
 +#if defined(CIRCUITPY_PSA_RP2_SHA256)
 +        case CIRCUITPY_RP2_SHA256_DRIVER_ID:
 +            target_operation->id = CIRCUITPY_RP2_SHA256_DRIVER_ID;
-+            return( rp2_sha256_psa_hash_clone( &source_operation->ctx.mbedtls_ctx,
-+                                               &target_operation->ctx.mbedtls_ctx ) );
++            return( rp2_sha256_psa_hash_clone( &source_operation->ctx.rp2_sha256_ctx,
++                                               &target_operation->ctx.rp2_sha256_ctx ) );
 +#endif
  #if defined(MBEDTLS_PSA_BUILTIN_HASH)
 @@ -1938,2 +1971,7 @@
      {
 +#if defined(CIRCUITPY_PSA_RP2_SHA256)
 +        case CIRCUITPY_RP2_SHA256_DRIVER_ID:
-+            return( rp2_sha256_psa_hash_update( &operation->ctx.mbedtls_ctx,
++            return( rp2_sha256_psa_hash_update( &operation->ctx.rp2_sha256_ctx,
 +                                                input, input_length ) );
 +#endif
  #if defined(MBEDTLS_PSA_BUILTIN_HASH)
@@ -66,7 +68,7 @@ code stops the build. Upstream: https://github.com/Mbed-TLS/TF-PSA-Crypto/issues
      {
 +#if defined(CIRCUITPY_PSA_RP2_SHA256)
 +        case CIRCUITPY_RP2_SHA256_DRIVER_ID:
-+            return( rp2_sha256_psa_hash_finish( &operation->ctx.mbedtls_ctx,
++            return( rp2_sha256_psa_hash_finish( &operation->ctx.rp2_sha256_ctx,
 +                                                hash, hash_size, hash_length ) );
 +#endif
  #if defined(MBEDTLS_PSA_BUILTIN_HASH)
@@ -74,6 +76,21 @@ code stops the build. Upstream: https://github.com/Mbed-TLS/TF-PSA-Crypto/issues
      {
 +#if defined(CIRCUITPY_PSA_RP2_SHA256)
 +        case CIRCUITPY_RP2_SHA256_DRIVER_ID:
-+            return( rp2_sha256_psa_hash_abort( &operation->ctx.mbedtls_ctx ) );
++            return( rp2_sha256_psa_hash_abort( &operation->ctx.rp2_sha256_ctx ) );
 +#endif
  #if defined(MBEDTLS_PSA_BUILTIN_HASH)
+--- a/include/psa/crypto_driver_contexts_primitives.h
++++ b/include/psa/crypto_driver_contexts_primitives.h
+@@ -30,2 +30,6 @@
+ 
++#if defined(CIRCUITPY_PSA_RP2_SHA256)
++#include "rp2_sha256_psa_ctx.h"
++#endif
++
+ /* Include the context structure definitions for those drivers that were
+@@ -111,2 +115,5 @@
+     mbedtls_psa_hash_operation_t mbedtls_ctx;
++#if defined(CIRCUITPY_PSA_RP2_SHA256)
++    rp2_sha256_psa_hash_operation_t rp2_sha256_ctx;
++#endif
+ #if defined(PSA_CRYPTO_DRIVER_TEST)

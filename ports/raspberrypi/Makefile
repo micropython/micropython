@@ -740,7 +740,7 @@ MBEDTLS_WRAPPERS_C := $(MBEDTLS_GEN)/psa_crypto_driver_wrappers_no_static.c
 $(MBEDTLS_WRAPPERS_C): $(MBEDTLS_WRAPPERS_H)
 	@true
 
-$(MBEDTLS_WRAPPERS_H): $(TOP)/lib/mbedtls/tf-psa-crypto/scripts/generate_driver_wrappers.py $(MBEDTLS_TEMPLATES_STAMP)
+$(MBEDTLS_WRAPPERS_H): $(TOP)/lib/mbedtls/tf-psa-crypto/scripts/generate_driver_wrappers.py $(MBEDTLS_DISPATCH_STAMP)
 	$(STEPECHO) "GEN $@"
 	$(Q)mkdir -p $(MBEDTLS_GEN)
 	$(Q)PYTHONPATH=$(TOP)/lib/mbedtls/framework/scripts $(PYTHON) $< $(MBEDTLS_WRAPPERS_ARGS) $(MBEDTLS_GEN)
