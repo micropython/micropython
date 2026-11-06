@@ -549,6 +549,7 @@ Compared with `ports/stm32` for STM32F4:
 | `CAN` | ✅ | bxCAN CAN0/CAN1, classic CAN |
 | `PWM` | ✅ | TIMER0/1/2/3/7/8/12, duty_u16 + duty_ns |
 | `Signal` / `PinBase` | ✅ | Pin implements the virtpin protocol |
+| `onewire` | ✅ | DS18B20 etc. over any GPIO (bit-banged) |
 | `SoftSPI` / `SoftI2C` | ✅ | extmod bit-bang on any GPIO |
 | `SDCard` | ✅ | SDIO driver, hot-plug, block device protocol |
 | `I2S` | ✅ | SPI1/SPI2 as I2S1/I2S2, DMA ping-pong, blocking/non-blocking/async |

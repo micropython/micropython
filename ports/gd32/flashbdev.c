@@ -36,17 +36,19 @@
 
 #include "gd32f4xx.h"
 
-// Filesystem region: Sector 6 + Sector 7, i.e. 0x08040000 - 0x0807FFFF.
-// Sector 6 starts at 0x08040000 (not 0x08060000) - see the layout table above.
+// Filesystem region: Sector 7 only, i.e. 0x08060000 - 0x0807FFFF (128 KB).
+// Leaving Sector 6 to the firmware gives the image 384 KB, which is what lets
+// optional modules (TLS, extra protocols) fit.  Sector 7 starts at 0x08060000
+// - see the layout table above.
 #define FLASH_BDEV_BLOCK_SIZE    (128 * 1024)                    // == erase size
-#define FLASH_BDEV_BLOCK_COUNT   (2)
-#define FLASH_BDEV_START_ADDR    (0x08040000)                    // Sector 6
-#define FLASH_BDEV_FIRST_SECTOR  (6)                             // physical sector number
+#define FLASH_BDEV_BLOCK_COUNT   (1)
+#define FLASH_BDEV_START_ADDR    (0x08060000)                    // Sector 7
+#define FLASH_BDEV_FIRST_SECTOR  (7)                             // physical sector number
 
 // The two representations of the start address must agree, and the region must
 // end inside the 512 KB flash.
-_Static_assert(FLASH_BDEV_FIRST_SECTOR == 6 && FLASH_BDEV_START_ADDR == 0x08040000,
-               "start address must match physical sector 6");
+_Static_assert(FLASH_BDEV_FIRST_SECTOR == 7 && FLASH_BDEV_START_ADDR == 0x08060000,
+               "start address must match physical sector 7");
 _Static_assert(FLASH_BDEV_START_ADDR + FLASH_BDEV_BLOCK_SIZE * FLASH_BDEV_BLOCK_COUNT
                <= 0x08080000,
                "filesystem region must fit inside the 512 KB flash");

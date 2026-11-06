@@ -49,6 +49,12 @@ static inline void mp_hal_pin_low(const mp_obj_t pin) {
 extern ringbuf_t stdin_ringbuf;
 extern int mp_interrupt_char;
 
+// ---- timing-critical sections (OneWire, bit-banged protocols) ----
+// Mask interrupts for the duration so bit timings are not stretched by the
+// SysTick or peripheral handlers.  The caller passes the saved state back.
+#define mp_hal_quiet_timing_enter()  MICROPY_BEGIN_ATOMIC_SECTION()
+#define mp_hal_quiet_timing_exit(state)  MICROPY_END_ATOMIC_SECTION(state)
+
 // ---- scheduler wakeup used by the USB device stack ----
 // The port runs without a separate task; the main loop polls, so an ISR only
 // needs to request a scheduler pass.

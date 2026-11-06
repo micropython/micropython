@@ -110,6 +110,9 @@ extern const struct _mp_obj_type_t network_lan_type;
 #define MICROPY_PORT_NETWORK_INTERFACES \
     { MP_ROM_QSTR(MP_QSTR_LAN), MP_ROM_PTR(&network_lan_type) },
 #define MICROPY_PY_SOCKET                  (1)
+// OneWire (DS18B20 and friends) is a pure bit-bang protocol on top of the
+// port's open-drain pin helpers, so it costs no extra hardware support.
+#define MICROPY_PY_ONEWIRE                 (1)
 #define MICROPY_PY_WEBSOCKET               (1)
 #define MICROPY_PY_WEBREPL                 (1)
 
