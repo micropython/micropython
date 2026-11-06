@@ -86,8 +86,13 @@ static void mp_usbh_timer_callback(soft_timer_entry_t *self) {
 
 // Class drivers implemented by MicroPython, in addition to TinyUSB's own.
 usbh_class_driver_t const *usbh_app_driver_get_cb(uint8_t *driver_count) {
+    #if MICROPY_HW_USB_HOST_UVC
+    *driver_count = 1;
+    return &mp_usbh_uvc_driver;
+    #else
     *driver_count = 0;
     return NULL;
+    #endif
 }
 
 bool mp_usbh_init(void) {
@@ -114,6 +119,11 @@ bool mp_usbh_init(void) {
 }
 
 void mp_usbh_deinit(void) {
+    #if MICROPY_HW_USB_HOST_UVC
+    // Stops any video stream, so must come before the controller is stopped.
+    mp_usbh_uvc_deinit();
+    #endif
+
     if (!mp_usbh_active) {
         return;
     }

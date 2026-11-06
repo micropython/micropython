@@ -30,6 +30,11 @@
 
 #if MICROPY_HW_USB_HOST
 
+// Support for USB Video Class cameras (machine.USBHost.UVC).
+#ifndef MICROPY_HW_USB_HOST_UVC
+#define MICROPY_HW_USB_HOST_UVC (1)
+#endif
+
 #ifndef NO_QSTR
 #include "tusb.h"
 #include "host/usbh_pvt.h"
@@ -75,6 +80,11 @@ void mp_usbh_iso_in_stop(void);
 // Controller specific hooks, around TinyUSB's initialisation of the controller.
 void mp_usbh_hcd_pre_init(uint8_t rhport);
 void mp_usbh_hcd_post_init(uint8_t rhport);
+
+#if MICROPY_HW_USB_HOST_UVC
+extern const usbh_class_driver_t mp_usbh_uvc_driver;
+void mp_usbh_uvc_deinit(void);
+#endif
 
 #endif // MICROPY_HW_USB_HOST
 

@@ -214,6 +214,11 @@ enum _USBD_EP {
 
 #if MICROPY_HW_USB_HOST
 
+// Support for USB Video Class cameras (machine.USBHost.UVC), see also mp_usbh.h.
+#ifndef MICROPY_HW_USB_HOST_UVC
+#define MICROPY_HW_USB_HOST_UVC (1)
+#endif
+
 #ifndef CFG_TUH_DEVICE_MAX
 #define CFG_TUH_DEVICE_MAX      (4)
 #endif
@@ -222,9 +227,13 @@ enum _USBD_EP {
 #define CFG_TUH_HUB             (1)
 #endif
 
-// Must hold a device's whole configuration descriptor.
+// Must hold a device's whole configuration descriptor, and cameras have large ones.
 #ifndef CFG_TUH_ENUMERATION_BUFSIZE
+#if MICROPY_HW_USB_HOST_UVC
+#define CFG_TUH_ENUMERATION_BUFSIZE (8192)
+#else
 #define CFG_TUH_ENUMERATION_BUFSIZE (512)
+#endif
 #endif
 
 // The host task runs from the scheduler, so process all pending events each time.
