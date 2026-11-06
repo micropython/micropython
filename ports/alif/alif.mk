@@ -272,7 +272,7 @@ $(BUILD):
 
 $(BUILD)/ensemble.ld: $(LD_FILE)
 	$(ECHO) "Preprocess linker script $@"
-	$(Q)$(CPP) -P -E $(CFLAGS) $^ > $@
+	$(Q)$(CPP) -P -E $(filter-out -fplugin=%,$(CFLAGS)) $^ > $@
 
 $(BUILD)/firmware.elf: $(OBJ) $(BUILD)/ensemble.ld
 	$(ECHO) "Link $@"
