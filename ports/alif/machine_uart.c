@@ -231,7 +231,7 @@ static void mp_machine_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_
     if (self->cts != NULL) {
         mp_printf(print, "cts=%q, ", mp_hal_pin_name(self->cts));
     }
-    mp_printf(print, "flow=", self->rts);
+    mp_printf(print, "flow=");
     if (self->flow == 0) {
         mp_printf(print, "0");
     } else {
