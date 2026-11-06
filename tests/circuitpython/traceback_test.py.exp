@@ -4,13 +4,13 @@ Exception: test
 
 Default Trace:
 Traceback (most recent call last):
-  File "circuitpython/traceback_test.py", line 13, in <module>
-  File "circuitpython/traceback_test.py", line 9, in fun
+  File "\.\+traceback_test.py", line 13, in <module>
+  File "\.\+traceback_test.py", line 9, in fun
 Exception: test
 
 Limit=1 Trace:
 Traceback (most recent call last):
-  File "circuitpython/traceback_test.py", line 13, in <module>
+  File "\.\+traceback_test.py", line 13, in <module>
 Exception: test
 
 Limit=0 Trace:
@@ -18,11 +18,14 @@ Exception: test
 
 Limit=-1 Trace:
 Traceback (most recent call last):
-  File "circuitpython/traceback_test.py", line 9, in fun
+  File "\.\+traceback_test.py", line 9, in fun
 Exception: test
+
+ValueError for missing tb arg, as expected
+ValueError for missing value arg, as expected
 
 NonNative Trace:
 Traceback (most recent call last):
-  File "circuitpython/traceback_test.py", line 32, in <module>
+  File "\.\+traceback_test.py", line 48, in <module>
 NonNativeException: test
 

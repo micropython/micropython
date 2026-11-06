@@ -12,10 +12,10 @@ def stereo_filter():
         "channel_count": 2,
     }
     effect = Filter(
-        filter=[
+        filter=(
             Biquad(FilterMode.LOW_PASS, 400),
             Biquad(FilterMode.HIGH_PASS, 300, Q=8),
-        ],
+        ),
         **args,
     )
     mixer = Mixer(**args)
