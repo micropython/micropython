@@ -73,6 +73,7 @@ SRC_C = \
 	extmod/machine_uart.c \
 	extmod/machine_spi.c \
 	extmod/machine_i2c.c \
+	extmod/machine_i2c_target.c \
 	extmod/machine_adc.c \
 	extmod/machine_can.c \
 	extmod/machine_pwm.c \
@@ -141,7 +142,7 @@ SRC_S = gd32lib/GCC/$(STARTUP_FILE)
 SRC_QSTR += extmod/vfs.c extmod/vfs_blockdev.c extmod/vfs_lfs.c extmod/vfs_reader.c flashbdev.c
 SRC_QSTR += shared/readline/readline.c shared/runtime/pyexec.c machine_pin.c \
 	extmod/modmachine.c extmod/machine_timer.c extmod/machine_wdt.c \
-	extmod/machine_uart.c extmod/machine_spi.c extmod/machine_i2c.c machine_uart_port.c machine_spi_port.c machine_i2c_port.c machine_adc_port.c machine_dac_port.c machine_rtc_port.c machine_can_port.c machine_pwm_port.c extmod/machine_adc.c extmod/machine_can.c extmod/machine_pwm.c extmod/machine_signal.c extmod/machine_pinbase.c flashbdev.c sdcard.c machine_sdcard_port.c machine_wdt_port.c shared/runtime/mpirq.c
+	extmod/machine_uart.c extmod/machine_spi.c extmod/machine_i2c.c machine_i2c_target_port.c extmod/machine_i2c_target.c machine_uart_port.c machine_spi_port.c machine_i2c_port.c machine_adc_port.c machine_dac_port.c machine_rtc_port.c machine_can_port.c machine_pwm_port.c extmod/machine_adc.c extmod/machine_can.c extmod/machine_pwm.c extmod/machine_signal.c extmod/machine_pinbase.c flashbdev.c sdcard.c machine_sdcard_port.c machine_wdt_port.c shared/runtime/mpirq.c
 
 OBJ += $(PY_CORE_O)
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))

@@ -86,6 +86,9 @@ extern volatile uint32_t systick_ms;
 #define MICROPY_PY_MACHINE_UART_INCLUDEFILE "machine_uart_port.c"
 #define MICROPY_PY_MACHINE_SPI            (1)
 #define MICROPY_PY_MACHINE_I2C            (1)
+#define MICROPY_PY_MACHINE_I2C_TARGET     (1)
+#define MICROPY_PY_MACHINE_I2C_TARGET_INCLUDEFILE "machine_i2c_target_port.c"
+#define MICROPY_PY_MACHINE_I2C_TARGET_MAX (2)
 #define MICROPY_HW_NUM_CAN                (2)
 
 // GD32F4 bxCAN timing limits (tq counts, classic CAN only)

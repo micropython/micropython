@@ -384,7 +384,7 @@ Compared with `ports/stm32` for STM32F4:
 | `SoftSPI` / `SoftI2C` | ✅ | extmod bit-bang on any GPIO |
 | `SDCard` | ✅ | SDIO driver, hot-plug, block device protocol |
 | `I2S` | ⬜ | needs SPI/I2S audio driver |
-| `I2CTarget` | ⬜ | needs slave-mode I2C |
+| `I2CTarget` | ✅ | hardware I2C0-2 target, addr 7-bit, IRQ-driven |
 | `USBDevice` | ⬜ | needs USB device stack (CDC/MSC) |
 | `mem8/16/32` | ✅ | raw memory access |
 | `lightsleep` / `deepsleep` | ✅ | `lightsleep` = WFI; `deepsleep` = PMU standby |
