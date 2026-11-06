@@ -20,6 +20,13 @@ OBJ_EXTRA_ORDER_DEPS =
 # Generate header files.
 OBJ_EXTRA_ORDER_DEPS += $(HEADER_BUILD)/moduledefs.h $(HEADER_BUILD)/root_pointers.h
 
+MICROPY_USE_COMPILER_PLUGIN ?= auto
+ifeq ($(MICROPY_USE_COMPILER_PLUGIN),auto)
+ifneq ($(realpath $(shell $(CC) -print-file-name=plugin/include/gcc-plugin.h)),)
+override MICROPY_USE_COMPILER_PLUGIN = gcc
+endif
+endif
+
 ifeq ($(MICROPY_USE_COMPILER_PLUGIN),gcc)
 include $(TOP)/py/gccplugin.mk
 endif
