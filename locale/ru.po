@@ -1923,6 +1923,7 @@ msgid "Already scanning for wifi networks"
 msgstr "Поиск сетей wifi уже происходит"
 
 #: ports/espressif/common-hal/wifi/Radio.c
+#: ports/espressif/common-hal/wifi/__init__.c
 #: ports/raspberrypi/common-hal/wifi/Radio.c
 #: ports/zephyr-cp/common-hal/wifi/Radio.c
 msgid "WiFi is not enabled"
