@@ -201,6 +201,9 @@ static mp_obj_t mod_json_load(mp_obj_t stream_obj) {
                 break;
             case '"':
                 vstr_reset(&vstr);
+                #if MICROPY_PY_BUILTINS_STR_UNICODE
+                mp_uint_t high = 0;
+                #endif
                 for (; !S_END(s) && S_CUR(s) != '"';) {
                     byte c = S_CUR(s);
                     if (c == '\\') {
@@ -230,11 +233,24 @@ static mp_obj_t mod_json_load(mp_obj_t stream_obj) {
                                     }
                                     num = (num << 4) | c;
                                 }
+                                #if MICROPY_PY_BUILTINS_STR_UNICODE
+                                // Combine a low surrogate with the high surrogate escape just before it.
+                                if (high != 0 && (num & 0xfc00) == 0xdc00) {
+                                    vstr_cut_tail_bytes(&vstr, 3);
+                                    num = 0x10000 + ((high - 0xd800) << 10) + (num - 0xdc00);
+                                    high = 0;
+                                } else {
+                                    high = (num & 0xfc00) == 0xd800 ? num : 0;
+                                }
+                                #endif
                                 vstr_add_char(&vstr, num);
                                 goto str_cont;
                             }
                         }
                     }
+                    #if MICROPY_PY_BUILTINS_STR_UNICODE
+                    high = 0;
+                    #endif
                     vstr_add_byte(&vstr, c);
                 str_cont:
                     S_NEXT(s);
