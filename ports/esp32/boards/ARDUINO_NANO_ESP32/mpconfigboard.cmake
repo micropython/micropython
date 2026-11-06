@@ -8,6 +8,7 @@ list(APPEND SDKCONFIG_DEFAULTS
     boards/sdkconfig.240mhz
     boards/sdkconfig.spiram_oct
     boards/sdkconfig.flash_qio_80m
+    boards/sdkconfig.lwip_fast
     ${MICROPY_BOARD_DIR}/sdkconfig.board
 )
 
