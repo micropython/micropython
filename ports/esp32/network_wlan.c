@@ -810,8 +810,14 @@ static const mp_rom_map_elem_t wlan_if_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_SEC_WAPI), MP_ROM_INT(WIFI_AUTH_WAPI_PSK) },
     { MP_ROM_QSTR(MP_QSTR_SEC_OWE), MP_ROM_INT(WIFI_AUTH_OWE) },
     { MP_ROM_QSTR(MP_QSTR_SEC_WPA3_ENT_192), MP_ROM_INT(WIFI_AUTH_WPA3_ENT_192) },
+    // WIFI_AUTH_WPA3_EXT_PSK(_MIXED_MODE) were removed in IDF v6 (replaced by
+    // placeholder enum values).
+    #ifdef WIFI_AUTH_WPA3_EXT_PSK
     { MP_ROM_QSTR(MP_QSTR_SEC_WPA3_EXT_PSK), MP_ROM_INT(WIFI_AUTH_WPA3_EXT_PSK) },
+    #endif
+    #ifdef WIFI_AUTH_WPA3_EXT_PSK_MIXED_MODE
     { MP_ROM_QSTR(MP_QSTR_SEC_WPA3_EXT_PSK_MIXED_MODE), MP_ROM_INT(WIFI_AUTH_WPA3_EXT_PSK_MIXED_MODE) },
+    #endif
     { MP_ROM_QSTR(MP_QSTR_SEC_DPP), MP_ROM_INT(WIFI_AUTH_DPP) },
     #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 4, 0)
     { MP_ROM_QSTR(MP_QSTR_SEC_WPA3_ENT), MP_ROM_INT(WIFI_AUTH_WPA3_ENTERPRISE) },
@@ -838,7 +844,11 @@ static const mp_rom_map_elem_t wlan_if_locals_dict_table[] = {
 };
 static MP_DEFINE_CONST_DICT(wlan_if_locals_dict, wlan_if_locals_dict_table);
 
-#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 4, 3)
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(6, 0, 0)
+// IDF v6 removed WIFI_AUTH_WPA3_EXT_PSK(_MIXED_MODE) (their slots became
+// DUMMY placeholders, preserving values) and added WIFI_AUTH_WPA_ENTERPRISE.
+_Static_assert(WIFI_AUTH_MAX == 18, "Synchronize WIFI_AUTH_XXX constants with the ESP-IDF. Look at esp-idf/components/esp_wifi/include/esp_wifi_types_generic.h");
+#elif ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 4, 3)
 _Static_assert(WIFI_AUTH_MAX == 17, "Synchronize WIFI_AUTH_XXX constants with the ESP-IDF. Look at esp-idf/components/esp_wifi/include/esp_wifi_types_generic.h");
 #elif ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 4, 0)
 _Static_assert(WIFI_AUTH_MAX == 16, "Synchronize WIFI_AUTH_XXX constants with the ESP-IDF. Look at esp-idf/components/esp_wifi/include/esp_wifi_types_generic.h");

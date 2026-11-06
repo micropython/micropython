@@ -133,12 +133,8 @@ static const sdspi_device_config_t spi_dev_defaults[NUM_SD_SPI_BUS] = {
     #if NUM_SD_SPI_BUS > 1
     {
         // Primary SPI SD bus (slot 2): CS is board-configurable via
-        // machine_sdcard.h; host_id stays chip-specific.
-        #if CONFIG_IDF_TARGET_ESP32
-        .host_id = VSPI_HOST,
-        #else
+        // machine_sdcard.h.
         .host_id = SPI3_HOST,
-        #endif
         .gpio_cs = MICROPY_HW_SDCARD_SPI_CS,
         .gpio_cd = SDSPI_SLOT_NO_CD,
         .gpio_wp = SDSPI_SLOT_NO_WP,
