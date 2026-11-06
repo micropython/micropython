@@ -383,7 +383,7 @@ Compared with `ports/stm32` for STM32F4:
 | `Signal` / `PinBase` | ✅ | Pin implements the virtpin protocol |
 | `SoftSPI` / `SoftI2C` | ✅ | extmod bit-bang on any GPIO |
 | `SDCard` | ✅ | SDIO driver, hot-plug, block device protocol |
-| `I2S` | ⬜ | needs SPI/I2S audio driver |
+| `I2S` | ✅ | SPI1/SPI2 as I2S1/I2S2, DMA ping-pong, blocking/non-blocking/async |
 | `I2CTarget` | ✅ | hardware I2C0-2 target, addr 7-bit, IRQ-driven |
 | `USBDevice` | ⬜ | needs USB device stack (CDC/MSC) |
 | `mem8/16/32` | ✅ | raw memory access |
@@ -409,7 +409,7 @@ These are enabled and use no external dependencies:
 | `time` | `time`, `time_ns`, `sleep*`, `ticks_*` via RTC/uptime |
 | `os` | `listdir`, `stat`, `mkdir`, `rename`, `remove`, `mount`, `uname`, `urandom`, `sync` |
 
-Remaining gaps versus STM32F4: `network`/`lwIP`, USB device stack, I2S
+Remaining gaps versus STM32F4: `network`/`lwIP`, USB device stack
 audio, I2C target mode, frozen modules, and the `pyb`-style legacy API
 (not applicable here).  Note the `re` module is MicroPython's cut-down
 implementation: only `compile`, `match`, `search` and `sub` are available.

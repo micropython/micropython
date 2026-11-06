@@ -86,6 +86,12 @@ extern volatile uint32_t systick_ms;
 #define MICROPY_PY_MACHINE_UART_INCLUDEFILE "machine_uart_port.c"
 #define MICROPY_PY_MACHINE_SPI            (1)
 #define MICROPY_PY_MACHINE_I2C            (1)
+#define MICROPY_PY_MACHINE_I2S            (1)
+#define MICROPY_PY_MACHINE_I2S_INCLUDEFILE "machine_i2s_port.c"
+#define MICROPY_PY_MACHINE_I2S_RING_BUF   (1)
+// Bus constants exposed as I2S.RX / I2S.TX
+#define MICROPY_PY_MACHINE_I2S_CONSTANT_RX  (0)
+#define MICROPY_PY_MACHINE_I2S_CONSTANT_TX  (1)
 #define MICROPY_PY_MACHINE_I2C_TARGET     (1)
 #define MICROPY_PY_MACHINE_I2C_TARGET_INCLUDEFILE "machine_i2c_target_port.c"
 #define MICROPY_PY_MACHINE_I2C_TARGET_MAX (2)
