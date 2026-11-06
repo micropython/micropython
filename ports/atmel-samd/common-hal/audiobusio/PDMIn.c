@@ -22,6 +22,7 @@
 #include "hal/include/hal_gpio.h"
 #include "hal/utils/include/utils.h"
 
+#include "i2s_shared.h"
 #include "samd/clocks.h"
 #include "samd/events.h"
 #include "samd/i2s.h"
@@ -53,20 +54,6 @@ void pdmin_evsys_handler(void) {
     if (pdmin_event_channel < EVSYS_SYNCH_NUM && event_interrupt_active(pdmin_event_channel)) {
         pdmin_dma_block_done = true;
     }
-}
-
-void pdmin_reset(void) {
-    pdmin_dma_block_done = false;
-    pdmin_event_channel = EVSYS_SYNCH_NUM;
-
-    while (I2S->SYNCBUSY.reg & I2S_SYNCBUSY_ENABLE) {
-    }
-    I2S->INTENCLR.reg = I2S_INTENCLR_MASK;
-    I2S->INTFLAG.reg = I2S_INTFLAG_MASK;
-    I2S->CTRLA.reg &= ~I2S_SYNCBUSY_ENABLE;
-    while (I2S->SYNCBUSY.reg & I2S_SYNCBUSY_ENABLE) {
-    }
-    I2S->CTRLA.reg = I2S_CTRLA_SWRST;
 }
 
 // Caller validates that pins are free.
@@ -158,6 +145,7 @@ void common_hal_audiobusio_pdmin_construct(audiobusio_pdmin_obj_t *self,
         }
         #endif
     }
+    i2s_acquire();
     #ifdef SAM_D5X_E5X
     #define GPIO_I2S_FUNCTION GPIO_PIN_FUNCTION_J
     #endif
@@ -235,8 +223,6 @@ void common_hal_audiobusio_pdmin_deinit(audiobusio_pdmin_obj_t *self) {
     i2s_set_serializer_enable(self->serializer, false);
     i2s_set_clock_unit_enable(self->clock_unit, false);
 
-    i2s_set_enable(false);
-
     disconnect_gclk_from_peripheral(self->gclk, I2S_GCLK_ID_0 + self->clock_unit);
     disable_clock_generator(self->gclk);
 
@@ -244,6 +230,9 @@ void common_hal_audiobusio_pdmin_deinit(audiobusio_pdmin_obj_t *self) {
     reset_pin_number(self->data_pin->number);
     self->clock_pin = NULL;
     self->data_pin = NULL;
+
+    // Fully power the I2S peripheral down if we were its last user.
+    i2s_release();
 }
 
 uint8_t common_hal_audiobusio_pdmin_get_bit_depth(audiobusio_pdmin_obj_t *self) {

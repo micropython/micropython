@@ -44,22 +44,6 @@ static uint8_t osculp32k_gclk;
 
 #endif
 
-void frequencyin_reset(void) {
-    for (uint8_t i = 0; i < TC_INST_NUM; i++) {
-        active_frequencyins[i] = NULL;
-    }
-
-    reference_tc = 0xff;
-    #ifdef SAM_D5X_E5X
-    dpll_gclk = 0xff;
-
-    #if !BOARD_HAS_CRYSTAL
-    osculp32k_gclk = 0xff;
-    #endif
-
-    #endif
-}
-
 static void frequencyin_emergency_cancel_capture(uint8_t index) {
     frequencyio_frequencyin_obj_t* self = active_frequencyins[index];
 

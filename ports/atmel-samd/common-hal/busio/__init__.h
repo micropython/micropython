@@ -9,10 +9,6 @@
 #include "common-hal/microcontroller/Pin.h"
 #include "hal/include/hal_gpio.h"
 
-void reset_sercoms(void);
-void allow_reset_sercom(Sercom *sercom);
-void never_reset_sercom(Sercom *sercom);
-
 // Connect pin to its SERCOM with no pull, optionally with strong drive, and claim it.
 // Returns the pin number.
 uint8_t sercom_setup_pin(const mcu_pin_obj_t *pin, uint32_t pinmux, enum gpio_direction direction,

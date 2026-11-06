@@ -22,72 +22,13 @@
 #define SWD_MUX GPIO_PIN_FUNCTION_G
 #endif
 
-static uint32_t never_reset_pins[PORT_COUNT];
 static uint32_t claimed_pins[PORT_COUNT];
-
-void reset_all_pins(void) {
-    // Keep claims only on pins that keep their configuration.
-    for (uint32_t i = 0; i < PORT_COUNT; i++) {
-        claimed_pins[i] &= never_reset_pins[i];
-    }
-
-    uint32_t pin_mask[PORT_COUNT] = PORT_OUT_IMPLEMENTED;
-
-    // Do not full reset USB lines.
-    #if CIRCUITPY_USB_DEVICE
-    pin_mask[0] &= ~(PORT_PA24 | PORT_PA25);
-    #endif
-
-    // Do not reset SWD when a debugger is present.
-    if (DSU->STATUSB.bit.DBGPRES == 1) {
-        pin_mask[0] &= ~(PORT_PA30 | PORT_PA31);
-    }
-
-    for (uint32_t i = 0; i < PORT_COUNT; i++) {
-        pin_mask[i] &= ~never_reset_pins[i];
-    }
-
-    gpio_set_port_direction(GPIO_PORTA, pin_mask[0], GPIO_DIRECTION_OFF);
-    gpio_set_port_direction(GPIO_PORTB, pin_mask[1], GPIO_DIRECTION_OFF);
-    #if PORT_BITS > 64
-    gpio_set_port_direction(GPIO_PORTC, pin_mask[2], GPIO_DIRECTION_OFF);
-    #endif
-    #if PORT_BITS > 96
-    gpio_set_port_direction(GPIO_PORTD, pin_mask[3], GPIO_DIRECTION_OFF);
-    #endif
-
-    // Configure SWD. SWDIO will be automatically switched on PA31 when a signal is input on
-    // SWCLK.
-    #ifdef SAM_D5X_E5X
-    gpio_set_pin_function(PIN_PA30, MUX_PA30H_CM4_SWCLK);
-    #endif
-    #ifdef SAMD21
-    gpio_set_pin_function(PIN_PA30, GPIO_PIN_FUNCTION_G);
-    gpio_set_pin_function(PIN_PA31, GPIO_PIN_FUNCTION_G);
-    #endif
-
-    // After configuring SWD because it may be shared.
-    #ifdef SPEAKER_ENABLE_PIN
-    gpio_set_pin_function(SPEAKER_ENABLE_PIN->number, GPIO_PIN_FUNCTION_OFF);
-    gpio_set_pin_direction(SPEAKER_ENABLE_PIN->number, GPIO_DIRECTION_OUT);
-    gpio_set_pin_level(SPEAKER_ENABLE_PIN->number, false);
-    #endif
-}
-
-void never_reset_pin_number(uint8_t pin_number) {
-    if (pin_number >= PORT_BITS) {
-        return;
-    }
-
-    never_reset_pins[GPIO_PORT(pin_number)] |= 1 << GPIO_PIN(pin_number);
-}
 
 void reset_pin_number(uint8_t pin_number) {
     if (pin_number >= PORT_BITS) {
         return;
     }
 
-    never_reset_pins[GPIO_PORT(pin_number)] &= ~(1 << GPIO_PIN(pin_number));
     claimed_pins[GPIO_PORT(pin_number)] &= ~(1 << GPIO_PIN(pin_number));
 
     if (pin_number == PIN_PA30
@@ -112,9 +53,6 @@ void reset_pin_number(uint8_t pin_number) {
     #endif
 }
 
-void common_hal_never_reset_pin(const mcu_pin_obj_t* pin) {
-    never_reset_pin_number(pin->number);
-}
 
 void claim_pin_number(uint8_t pin_number) {
     if (pin_number >= PORT_BITS) {

@@ -118,9 +118,6 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
     self->scl_pin = scl->number;
     claim_pin(sda);
     claim_pin(scl);
-
-    // Prevent bulk sercom reset from resetting us. The finalizer will instead.
-    never_reset_sercom(self->i2c_desc.device.hw);
 }
 
 bool common_hal_busio_i2c_deinited(busio_i2c_obj_t *self) {
@@ -135,7 +132,6 @@ void common_hal_busio_i2c_deinit(busio_i2c_obj_t *self) {
     if (common_hal_busio_i2c_deinited(self)) {
         return;
     }
-    allow_reset_sercom(self->i2c_desc.device.hw);
 
     i2c_m_sync_disable(&self->i2c_desc);
     i2c_m_sync_deinit(&self->i2c_desc);
@@ -241,9 +237,4 @@ mp_negative_errno_t common_hal_busio_i2c_write_read(busio_i2c_obj_t *self, uint1
     }
 
     return common_hal_busio_i2c_read(self, addr, in_data, in_len);
-}
-
-void common_hal_busio_i2c_never_reset(busio_i2c_obj_t *self) {
-    never_reset_pin_number(self->scl_pin);
-    never_reset_pin_number(self->sda_pin);
 }

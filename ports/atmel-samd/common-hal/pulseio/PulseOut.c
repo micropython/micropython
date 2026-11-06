@@ -159,7 +159,19 @@ void common_hal_pulseio_pulseout_deinit(pulseio_pulseout_obj_t *self) {
 
     refcount--;
     if (refcount == 0) {
-        tc_reset(tc_insts[pulseout_tc_index]);
+        Tc *tc = tc_insts[pulseout_tc_index];
+        tc->COUNT16.INTENCLR.reg = TC_INTENCLR_MC0;
+        tc_disable_interrupts(pulseout_tc_index);
+        tc_reset(tc);
+        set_timer_handler(true, pulseout_tc_index, TC_HANDLER_NO_INTERRUPT);
+        // We use GCLK0 for SAMD21 and GCLK1 for SAMD51 because they both run at 48mhz making our
+        // math the same across the boards.
+        #ifdef SAMD21
+        turn_off_clocks(true, pulseout_tc_index, 0);
+        #endif
+        #ifdef SAM_D5X_E5X
+        turn_off_clocks(true, pulseout_tc_index, 1);
+        #endif
         pulseout_tc_index = 0xff;
     }
     self->pin = NO_PIN;

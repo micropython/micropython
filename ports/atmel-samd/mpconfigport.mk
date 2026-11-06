@@ -147,3 +147,6 @@ endif # samx5x
 ######################################################################
 
 CIRCUITPY_BUILD_EXTENSIONS ?= uf2
+
+# Cleanup is performed by GC finalizers (__del__ -> deinit) instead of a bulk pin reset.
+CIRCUITPY_BULK_RESET = 0

@@ -10,11 +10,9 @@
 
 #include "peripherals/samd/pins.h"
 
-void reset_all_pins(void);
 // reset_pin_number takes the pin number instead of the pointer so that objects don't
 // need to store a full pointer.
 void reset_pin_number(uint8_t pin_number);
-void never_reset_pin_number(uint8_t pin_number);
 // Pins are claimed in a table, not detected from their hardware configuration, so code
 // that configures a pin directly must claim it.
 void claim_pin(const mcu_pin_obj_t *pin);

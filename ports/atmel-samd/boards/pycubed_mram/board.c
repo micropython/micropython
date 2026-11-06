@@ -13,7 +13,6 @@
 void board_init(void) {
     pwmio_pwmout_obj_t pwm;
     common_hal_pwmio_pwmout_construct(&pwm, &pin_PA23, 4096, 2, false);
-    common_hal_pwmio_pwmout_never_reset(&pwm);
 }
 
 // Use the MP_WEAK supervisor/shared/board.c versions of routines not defined here.

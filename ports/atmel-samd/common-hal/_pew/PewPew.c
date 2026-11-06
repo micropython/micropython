@@ -97,12 +97,24 @@ void pew_init(void) {
     }
 }
 
-void pew_reset(void) {
-    if (pewpew_tc_index != 0xff) {
-        tc_reset(tc_insts[pewpew_tc_index]);
-        pewpew_tc_index = 0xff;
+void pew_deinit(void) {
+    if (pewpew_tc_index == 0xff) {
+        return;
     }
-    MP_STATE_VM(pew_singleton) = NULL;
+    Tc *tc = tc_insts[pewpew_tc_index];
+    tc->COUNT16.INTENCLR.reg = TC_INTENCLR_MC0;
+    tc_disable_interrupts(pewpew_tc_index);
+    tc_reset(tc);
+    set_timer_handler(true, pewpew_tc_index, TC_HANDLER_NO_INTERRUPT);
+    // We use GCLK0 for SAMD21 and GCLK1 for SAMD51 because they both run
+    // at 48mhz making our math the same across the boards.
+    #ifdef SAMD21
+    turn_off_clocks(true, pewpew_tc_index, 0);
+    #endif
+    #ifdef SAM_D5X_E5X
+    turn_off_clocks(true, pewpew_tc_index, 1);
+    #endif
+    pewpew_tc_index = 0xff;
 }
 
 uint16_t pew_get_ticks(void) {

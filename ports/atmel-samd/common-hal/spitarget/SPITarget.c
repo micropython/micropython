@@ -168,8 +168,6 @@ void common_hal_spitarget_spi_target_deinit(spitarget_spi_target_obj_t *self) {
     if (common_hal_spitarget_spi_target_deinited(self)) {
         return;
     }
-    allow_reset_sercom(self->spi_desc.dev.prvt);
-
     spi_m_sync_disable(&self->spi_desc);
     spi_m_sync_deinit(&self->spi_desc);
     reset_pin_number(self->clock_pin);

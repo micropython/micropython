@@ -15,6 +15,8 @@
 #include "shared-bindings/digitalio/Pull.h"
 #include "shared-bindings/touchio/TouchIn.h"
 
+#include "common-hal/touchio/TouchIn.h"
+
 // Native touchio only exists for SAMD21
 #ifdef SAMD21
 
@@ -25,7 +27,13 @@
 
 #include "adafruit_ptc.h"
 
-bool touch_enabled = false;
+// The PTC is shared by all TouchIn objects, so it is refcounted. The first
+// object turns on the PTC and its clocks; the last one to deinit turns them
+// all off again.
+static uint8_t touchin_refcount = 0;
+static uint8_t touchin_gclk = 0xff;
+
+static void touchin_reset(void);
 
 static uint16_t get_raw_reading(touchio_touchin_obj_t *self) {
     adafruit_ptc_start_conversion(PTC, &self->config);
@@ -45,13 +53,15 @@ void common_hal_touchio_touchin_construct(touchio_touchin_obj_t *self,
     }
     claim_pin(pin);
 
-    // Turn on the PTC if its not in use. We won't turn it off until reset.
+    // Turn on the PTC if its not in use. We won't turn it off until the last
+    // TouchIn object is deinited.
     if (((Ptc *)PTC)->CTRLA.bit.ENABLE == 0) {
         // We run the PTC at 8mhz so divide the 48mhz clock by 6.
         uint8_t gclk = find_free_gclk(6);
         if (gclk > GCLK_GEN_NUM) {
             mp_raise_RuntimeError(MP_ERROR_TEXT("No free GCLKs"));
         }
+        touchin_gclk = gclk;
         enable_clock_generator(gclk, CLOCK_48MHZ, 6);
 
         /* Setup and enable generic clock source for PTC module. */
@@ -65,6 +75,8 @@ void common_hal_touchio_touchin_construct(touchio_touchin_obj_t *self,
     self->config.yline = pin->touch_y_line;
 
     adafruit_ptc_init(PTC, &self->config);
+
+    touchin_refcount++;
 
     // Initial values for pins will vary, depending on what peripherals the pins
     // share on-chip.
@@ -81,17 +93,32 @@ bool common_hal_touchio_touchin_deinited(touchio_touchin_obj_t *self) {
 }
 
 void common_hal_touchio_touchin_deinit(touchio_touchin_obj_t *self) {
-    // TODO(tannewt): Reset the PTC.
     if (common_hal_touchio_touchin_deinited(self)) {
         return;
     }
-    // We leave the clocks running because they may be in use by others.
 
     reset_pin_number(self->config.pin);
     self->config.pin = NO_PIN;
+
+    touchin_refcount--;
+    if (touchin_refcount > 0) {
+        // Other TouchIn objects still use the PTC and its clock.
+        return;
+    }
+
+    touchin_reset();
+
+    if (touchin_gclk != 0xff) {
+        disconnect_gclk_from_peripheral(touchin_gclk, PTC_GCLK_ID);
+        disable_clock_generator(touchin_gclk);
+        touchin_gclk = 0xff;
+    }
+    _pm_disable_bus_clock(PM_BUS_APBC, PTC);
 }
 
-void touchin_reset(void) {
+// Reset and power down the PTC entirely. The caller must ensure no other
+// TouchIn objects are still using it.
+static void touchin_reset(void) {
     Ptc *ptc = ((Ptc *)PTC);
     if (ptc->CTRLA.bit.ENABLE == 1) {
         ptc->CTRLA.bit.ENABLE = 0;

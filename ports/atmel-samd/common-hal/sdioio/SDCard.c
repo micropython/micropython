@@ -62,6 +62,7 @@ CLK PA21 PCC_D? (D32)  BROWN
     mcu_pin_function_t *functions[6] = {};
     functions[0] = mcu_find_pin_function(sdio_cmd, command, -1, MP_QSTR_command);
     int instance = functions[0]->instance;
+    self->instance = instance;
     functions[1] = mcu_find_pin_function(sdio_ck, clock, instance, MP_QSTR_clock);
     functions[2] = mcu_find_pin_function(sdio_dat0, data[0], instance, MP_QSTR_data0);
     if (num_data == 4) {
@@ -261,6 +262,13 @@ bool common_hal_sdioio_sdcard_deinited(sdioio_sdcard_obj_t *self) {
 }
 
 void common_hal_sdioio_sdcard_deinit(sdioio_sdcard_obj_t *self) {
+    if (common_hal_sdioio_sdcard_deinited(self)) {
+        return;
+    }
+
+    wait_write_complete(self);
+    mci_sync_deinit(&self->IO_BUS);
+
     reset_pin_number(self->command_pin);
     reset_pin_number(self->clock_pin);
     reset_pin_number(self->data_pins[0]);
@@ -268,13 +276,23 @@ void common_hal_sdioio_sdcard_deinit(sdioio_sdcard_obj_t *self) {
     reset_pin_number(self->data_pins[2]);
     reset_pin_number(self->data_pins[3]);
 
+    // Power down the SDHC peripheral.
+    if (self->instance == 0) {
+        hri_gclk_write_PCHCTRL_reg(GCLK, SDHC0_GCLK_ID, 0);
+        hri_gclk_write_PCHCTRL_reg(GCLK, SDHC0_GCLK_ID_SLOW, 0);
+        hri_mclk_clear_AHBMASK_SDHC0_bit(MCLK);
+    #ifdef SDHC1_GCLK_ID
+    } else {
+        hri_gclk_write_PCHCTRL_reg(GCLK, SDHC1_GCLK_ID, 0);
+        hri_gclk_write_PCHCTRL_reg(GCLK, SDHC1_GCLK_ID_SLOW, 0);
+        hri_mclk_clear_AHBMASK_SDHC1_bit(MCLK);
+    #endif
+    }
+
     self->command_pin = COMMON_HAL_MCU_NO_PIN;
     self->clock_pin = COMMON_HAL_MCU_NO_PIN;
     self->data_pins[0] = COMMON_HAL_MCU_NO_PIN;
     self->data_pins[1] = COMMON_HAL_MCU_NO_PIN;
     self->data_pins[2] = COMMON_HAL_MCU_NO_PIN;
     self->data_pins[3] = COMMON_HAL_MCU_NO_PIN;
-}
-
-void common_hal_sdioio_sdcard_never_reset(sdioio_sdcard_obj_t *self) {
 }

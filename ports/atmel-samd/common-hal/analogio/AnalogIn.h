@@ -16,5 +16,3 @@ typedef struct {
     Adc *instance;
     uint8_t channel;
 } analogio_analogin_obj_t;
-
-void analogin_reset(void);

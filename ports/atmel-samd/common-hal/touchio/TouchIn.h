@@ -22,6 +22,4 @@ typedef struct {
     uint16_t threshold;
 } touchio_touchin_obj_t;
 
-void touchin_reset(void);
-
 #endif // SAMD21

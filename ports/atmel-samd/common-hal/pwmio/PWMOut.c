@@ -39,9 +39,6 @@ uint8_t tcc_channels[5];   // Set by pwmout_reset() to {0xc0, 0xf0, 0xf8, 0xfc, 
 #endif
 
 
-void common_hal_pwmio_pwmout_never_reset(pwmio_pwmout_obj_t *self) {
-    never_reset_pin_number(self->pin->number);
-}
 
 static uint8_t tcc_channel(const pin_timer_t *t) {
     // For the SAMD51 this hardcodes the use of OTMX == 0x0, the output matrix mapping, which uses
@@ -229,6 +226,7 @@ void common_hal_pwmio_pwmout_deinit(pwmio_pwmout_obj_t *self) {
         tc_set_enable(tc, false);
         tc->COUNT16.CTRLA.bit.SWRST = true;
         tc_wait_for_sync(tc);
+        turn_off_clocks(true, t->index, 0);
     } else {
         tcc_refcount[t->index]--;
         tcc_channels[t->index] &= ~(1 << tcc_channel(t));
@@ -240,6 +238,7 @@ void common_hal_pwmio_pwmout_deinit(pwmio_pwmout_obj_t *self) {
             while (tcc->SYNCBUSY.bit.SWRST != 0) {
                 /* Wait for sync */
             }
+            turn_off_clocks(false, t->index, 0);
         }
     }
     reset_pin_number(self->pin->number);

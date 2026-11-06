@@ -16,6 +16,7 @@
 
 #include "atmel_start_pins.h"
 #include "hal/include/hal_dac_sync.h"
+#include "samd/clocks.h"
 #include "hpl/gclk/hpl_gclk_base.h"
 #include "peripheral_clk_config.h"
 
@@ -117,11 +118,16 @@ void common_hal_analogio_analogout_deinit(analogio_analogout_obj_t *self) {
     if (common_hal_mcu_pin_is_free(&pin_PA02) && common_hal_mcu_pin_is_free(&pin_PA05)) {
     #endif
     dac_sync_deinit(&self->descriptor);
+    // Turn off the DAC clocks to save power.
+    disconnect_gclk_from_peripheral(CONF_GCLK_DAC_SRC, DAC_GCLK_ID);
+    #ifdef SAMD21
+    _pm_disable_bus_clock(PM_BUS_APBC, DAC);
+    #endif
     #ifdef SAM_D5X_E5X
+    hri_mclk_clear_APBDMASK_DAC_bit(MCLK);
 }
     #endif
     self->deinited = true;
-    // TODO(tannewt): Turn off the DAC clocks to save power.
     #endif
 }
 
@@ -131,19 +137,5 @@ void common_hal_analogio_analogout_set_value(analogio_analogout_obj_t *self,
     // Input is 16 bit so make sure and set LEFTADJ to 1 so it takes the top
     // bits. This is currently done in asf4_conf/*/hpl_dac_config.h.
     dac_sync_write(&self->descriptor, self->channel, &value, 1);
-    #endif
-}
-
-void analogout_reset(void) {
-    #if HAVE_ANALOGOUT
-    #ifdef SAMD21
-    while (DAC->STATUS.reg & DAC_STATUS_SYNCBUSY) {
-    }
-    #endif
-    #ifdef SAM_D5X_E5X
-    while (DAC->SYNCBUSY.reg & DAC_SYNCBUSY_SWRST) {
-    }
-    #endif
-    DAC->CTRLA.reg |= DAC_CTRLA_SWRST;
     #endif
 }

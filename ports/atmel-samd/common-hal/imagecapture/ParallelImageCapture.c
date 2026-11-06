@@ -112,6 +112,14 @@ void common_hal_imagecapture_parallelimagecapture_deinit(imagecapture_parallelim
     for (int i = 0; i < self->data_count; i++) {
         reset_pin_number(PIN_PCC_D0 + i);
     }
+    self->vertical_sync = NO_PIN;
+    self->horizontal_reference = NO_PIN;
+
+    // Disable and power down the PCC peripheral.
+    PCC->MR.bit.PCEN = 0;
+    PCC->IDR.reg = 0b1111;
+    MCLK->APBDMASK.bit.PCC_ = 0;
+
     self->data_count = 0;
 }
 

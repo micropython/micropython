@@ -14,3 +14,7 @@
 
 void set_timer_handler(bool is_tc, uint8_t index, uint8_t timer_handler);
 void shared_timer_handler(bool is_tc, uint8_t index);
+
+// Mirror of turn_on_clocks() from peripherals/samd. Used by deinit paths that
+// release a timer so the generic clock channel and APB clock are freed.
+void turn_off_clocks(bool is_tc, uint8_t index, uint32_t gclk_index);

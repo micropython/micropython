@@ -21,6 +21,6 @@ typedef struct {
 } pew_obj_t;
 
 void pew_init(void);
+void pew_deinit(void);
 void pewpew_interrupt_handler(uint8_t index);
-void pew_reset(void);
 uint16_t pew_get_ticks(void);

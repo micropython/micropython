@@ -361,45 +361,12 @@ safe_mode_t port_init(void) {
 }
 
 void reset_port(void) {
-    #if CIRCUITPY_BUSIO
-    reset_sercoms();
-    #endif
-
-    #if CIRCUITPY_AUDIOIO
-    audio_dma_reset();
-    #endif
-
-    #if CIRCUITPY_AUDIOBUSIO
-    pdmin_reset();
-    #endif
-
-    #if CIRCUITPY_AUDIOBUSIO_I2SOUT
-    i2sout_reset();
-    #endif
-
-    #if CIRCUITPY_FREQUENCYIO
-    frequencyin_reset();
-    #endif
-
-    #if CIRCUITPY_TOUCHIO && CIRCUITPY_TOUCHIO_USE_NATIVE
-    touchin_reset();
-    #endif
-
-    eic_reset();
-
-    #if CIRCUITPY_ANALOGIO
-    analogin_reset();
-    analogout_reset();
-    #endif
+    // Peripherals are torn down by the deinit() of their Python objects, which
+    // runs via __del__ when the VM's heap is collected. There is no port-level
+    // bulk reset.
 
     #if CIRCUITPY_WATCHDOG
     watchdog_reset();
-    #endif
-
-    reset_gclks();
-
-    #if CIRCUITPY_PEW
-    pew_reset();
     #endif
 
     #ifdef SAMD21

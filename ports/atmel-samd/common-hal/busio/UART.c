@@ -302,22 +302,6 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     usart_async_enable(usart_desc_p);
 }
 
-void common_hal_busio_uart_never_reset(busio_uart_obj_t *self) {
-    for (size_t i = 0; i < MP_ARRAY_SIZE(sercom_insts); i++) {
-        const Sercom *sercom = sercom_insts[i];
-        Sercom *hw = (Sercom *)(self->usart_desc.device.hw);
-
-        // Reserve pins for active UART only
-        if (sercom == hw) {
-            never_reset_sercom(hw);
-            never_reset_pin_number(self->rx_pin);
-            never_reset_pin_number(self->tx_pin);
-            never_reset_pin_number(self->rts_pin);
-            never_reset_pin_number(self->cts_pin);
-        }
-    }
-    return;
-}
 
 bool common_hal_busio_uart_deinited(busio_uart_obj_t *self) {
     return self->rx_pin == NO_PIN && self->tx_pin == NO_PIN;

@@ -49,12 +49,10 @@ void common_hal_canio_can_construct(canio_can_obj_t *self, const mcu_pin_obj_t *
     gpio_set_pin_direction(tx_function->pin, GPIO_DIRECTION_OUT);
     gpio_set_pin_function(tx_function->pin, tx_function->function);
     claim_pin(tx_function->obj);
-    common_hal_never_reset_pin(tx_function->obj);
 
     gpio_set_pin_direction(rx_function->pin, GPIO_DIRECTION_IN);
     gpio_set_pin_function(rx_function->pin, rx_function->function);
     claim_pin(rx_function->obj);
-    common_hal_never_reset_pin(rx_function->obj);
 
     self->tx_pin_number = tx ? common_hal_mcu_pin_number(tx) : COMMON_HAL_MCU_NO_PIN;
     self->rx_pin_number = rx ? common_hal_mcu_pin_number(rx) : COMMON_HAL_MCU_NO_PIN;
@@ -345,7 +343,35 @@ void common_hal_canio_can_check_for_deinit(canio_can_obj_t *self) {
 void common_hal_canio_can_deinit(canio_can_obj_t *self) {
     if (self->hw) {
         hri_can_set_CCCR_INIT_bit(self->hw);
-        self->hw = 0;
+        while (hri_can_get_CCCR_INIT_bit(self->hw) == 0) {
+        }
+
+        // Find which hardware instance we are so we can release its clocks
+        // and IRQ.
+        size_t instance = MP_ARRAY_SIZE(can_insts);
+        for (size_t i = 0; i < MP_ARRAY_SIZE(can_insts); i++) {
+            if (can_insts[i] == self->hw) {
+                instance = i;
+                break;
+            }
+        }
+        if (instance < MP_ARRAY_SIZE(can_insts)) {
+            if (instance == 0) {
+                NVIC_DisableIRQ(CAN0_IRQn);
+                NVIC_ClearPendingIRQ(CAN0_IRQn);
+                hri_gclk_write_PCHCTRL_reg(GCLK, CAN0_GCLK_ID, 0);
+                hri_mclk_clear_AHBMASK_CAN0_bit(MCLK);
+            #ifdef CAN1_GCLK_ID
+            } else if (instance == 1) {
+                NVIC_DisableIRQ(CAN1_IRQn);
+                NVIC_ClearPendingIRQ(CAN1_IRQn);
+                hri_gclk_write_PCHCTRL_reg(GCLK, CAN1_GCLK_ID, 0);
+                hri_mclk_clear_AHBMASK_CAN1_bit(MCLK);
+            #endif
+            }
+            can_objs[instance] = NULL;
+        }
+        self->hw = NULL;
     }
     if (self->rx_pin_number != COMMON_HAL_MCU_NO_PIN) {
         reset_pin_number(self->rx_pin_number);
@@ -356,22 +382,6 @@ void common_hal_canio_can_deinit(canio_can_obj_t *self) {
         self->tx_pin_number = COMMON_HAL_MCU_NO_PIN;
     }
 }
-
-void common_hal_canio_reset(void) {
-    memset(can_state, 0, sizeof(can_state));
-
-    for (size_t i = 0; i < MP_ARRAY_SIZE(can_insts); i++) {
-        hri_can_set_CCCR_INIT_bit(can_insts[i]);
-    }
-
-    for (size_t i = 0; i < MP_ARRAY_SIZE(can_objs); i++) {
-        if (can_objs[i]) {
-            common_hal_canio_can_deinit(can_objs[i]);
-            can_objs[i] = NULL;
-        }
-    }
-}
-
 
 static void can_handler(int i) {
     canio_can_obj_t *self = can_objs[i];

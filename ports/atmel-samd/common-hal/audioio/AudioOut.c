@@ -32,6 +32,7 @@
 #include "samd/events.h"
 #include "samd/pins.h"
 #include "samd/timers.h"
+#include "samd/clocks.h"
 
 #ifdef SAMD21
 static void ramp_value(uint16_t start, uint16_t end) {
@@ -119,6 +120,11 @@ void common_hal_audioio_audioout_construct(audioio_audioout_obj_t *self,
     #endif
     self->left_channel = left_channel;
     audio_dma_init(&self->left_dma);
+
+    // Initialized to an invalid value so deinit() can tell whether the timer
+    // (and its event channel) were ever allocated.
+    self->tc_index = 0xff;
+    self->tc_to_dac_event_channel = 0xff;
 
     #ifdef SAM_D5X_E5X
     hri_mclk_set_APBDMASK_DAC_bit(MCLK);
@@ -289,13 +295,40 @@ void common_hal_audioio_audioout_deinit(audioio_audioout_obj_t *self) {
 
     DAC->CTRLA.reg |= DAC_CTRLA_SWRST;
 
-    // TODO(tannewt): Turn off the DAC clocks to save power.
-
     DAC->CTRLA.bit.ENABLE = 0;
 
-    disable_event_channel(self->tc_to_dac_event_channel);
+    if (self->tc_to_dac_event_channel != 0xff) {
+        disable_event_channel(self->tc_to_dac_event_channel);
+        disable_event_user(EVSYS_ID_USER_DAC_START);
+        #ifdef SAM_D5X_E5X
+        disable_event_user(EVSYS_ID_USER_DAC_START_1);
+        #endif
+        self->tc_to_dac_event_channel = 0xff;
+    }
 
-    tc_set_enable(tc_insts[self->tc_index], false);
+    if (self->tc_index != 0xff) {
+        Tc *t = tc_insts[self->tc_index];
+        tc_set_enable(t, false);
+        tc_reset(t);
+        set_timer_handler(true, self->tc_index, TC_HANDLER_NO_INTERRUPT);
+        // Use the 48MHz clocks on both the SAMD21 and 51 because we will be going much slower.
+        #ifdef SAMD21
+        turn_off_clocks(true, self->tc_index, 0);
+        #endif
+        #ifdef SAM_D5X_E5X
+        turn_off_clocks(true, self->tc_index, 1);
+        #endif
+        self->tc_index = 0xff;
+    }
+
+    // Turn off the DAC clocks to save power. The construct re-enables them.
+    disconnect_gclk_from_peripheral(CONF_GCLK_DAC_SRC, DAC_GCLK_ID);
+    #ifdef SAMD21
+    _pm_disable_bus_clock(PM_BUS_APBC, DAC);
+    #endif
+    #ifdef SAM_D5X_E5X
+    hri_mclk_clear_APBDMASK_DAC_bit(MCLK);
+    #endif
 
     reset_pin_number(self->left_channel->number);
     self->left_channel = NULL;

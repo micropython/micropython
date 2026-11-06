@@ -234,7 +234,20 @@ void common_hal_pulseio_pulsein_deinit(pulseio_pulsein_obj_t *self) {
 
     refcount--;
     if (refcount == 0) {
-        tc_reset(tc_insts[pulsein_tc_index]);
+        Tc *tc = tc_insts[pulsein_tc_index];
+        tc->COUNT16.INTENCLR.reg = TC_INTENCLR_OVF;
+        tc_disable_interrupts(pulsein_tc_index);
+        tc_reset(tc);
+        set_timer_handler(true, pulsein_tc_index, TC_HANDLER_NO_INTERRUPT);
+        #ifdef SAMD21
+        // We use GCLK0 for SAMD21 which is 48MHz. We prescale it to 3MHz.
+        turn_off_clocks(true, pulsein_tc_index, 0);
+        #endif
+        #ifdef SAM_D5X_E5X
+        // We use GCLK5 for SAMD51 because it runs at 2MHz and we can use it for a 1MHz clock,
+        // 1us per tick.
+        turn_off_clocks(true, pulsein_tc_index, 5);
+        #endif
         pulsein_tc_index = 0xff;
     }
     self->pin = NO_PIN;

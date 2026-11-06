@@ -53,4 +53,6 @@ void common_hal_rgbmatrix_timer_free(void *ptr) {
     }
     tc_set_enable(ptr, false);
     tc_reset(ptr);
+    // Matches the generator used in common_hal_rgbmatrix_timer_enable().
+    turn_off_clocks(true, timer_index, 1);
 }
