@@ -28,6 +28,7 @@ SRC_EXTMOD_C += \
 	extmod/moddeflate.c \
 	extmod/modframebuf.c \
 	extmod/modhashlib.c \
+	extmod/modjpeg.c \
 	extmod/modheapq.c \
 	extmod/modjson.c \
 	extmod/modlwip.c \
