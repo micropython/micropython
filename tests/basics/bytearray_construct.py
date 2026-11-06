@@ -11,3 +11,10 @@ try:
     print(bytearray('1234'))
 except TypeError:
     print("TypeError")
+
+# int subclass as the length
+class MyInt(int):
+    pass
+
+print(bytearray(MyInt(0)))
+print(bytearray(MyInt(2)))
