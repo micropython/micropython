@@ -63,6 +63,3 @@ typedef struct {
 
 // Called from port_background_task(): refills buffers the ISR has drained.
 void audiopwmout_background(void);
-
-// Called from reset_port(): stops any playback left running by the VM.
-void audiopwmout_reset(void);

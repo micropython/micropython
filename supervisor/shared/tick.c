@@ -35,6 +35,10 @@
 #include "shared-module/_airlift/socketpool.h"
 #endif
 
+#if CIRCUITPY_VIDEOGIF
+#include "shared-module/videogif/GifDecoder.h"
+#endif
+
 #if CIRCUITPY_WEB_WORKFLOW
 #include "supervisor/shared/web_workflow/display_stream.h"
 #endif
@@ -73,6 +77,10 @@ static void supervisor_background_tick(void *unused) {
 
     #if CIRCUITPY_AUDIOFILEWRITER
     audiofilewriter_background();
+    #endif
+
+    #if CIRCUITPY_VIDEOGIF
+    videogif_background();
     #endif
 
     port_background_tick();

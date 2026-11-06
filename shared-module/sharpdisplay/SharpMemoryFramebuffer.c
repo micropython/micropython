@@ -55,8 +55,11 @@ static bool common_hal_sharpdisplay_framebuffer_get_pixels_in_byte_share_row(sha
 
 void common_hal_sharpdisplay_framebuffer_reset(sharpdisplay_framebuffer_obj_t *self) {
     if (self->bus != &self->inline_bus && gc_ptr_on_heap(self->bus)) {
-        memcpy(&self->inline_bus, self->bus, sizeof(busio_spi_obj_t));
+        busio_spi_obj_t *original_spi = self->bus;
+        memcpy(&self->inline_bus, original_spi, sizeof(busio_spi_obj_t));
         self->bus = &self->inline_bus;
+        // Mark the old SPI object so it is considered deinit.
+        common_hal_busio_spi_mark_deinit(original_spi);
     }
 }
 

@@ -39,8 +39,6 @@ static void display_init(void) {
         false           // Not half-duplex
         );
 
-    common_hal_busio_spi_never_reset(spi);
-
     bus->base.type = &fourwire_fourwire_type;
 
     common_hal_fourwire_fourwire_construct(
@@ -123,6 +121,9 @@ static void backlight_init(void) {
 */
 
 void board_init(void) {
+    // MOTOR_PIN drives the vibration motor. Default to low (off).
+    espressif_board_reset_pin_number(MOTOR_PIN);
+
     // Display
     display_init();
     // backlight_init();

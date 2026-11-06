@@ -31,16 +31,23 @@ void common_hal_mipidsi_display_construct(mipidsi_display_obj_t *self,
     mp_uint_t vsync_pulse_width,
     mp_uint_t vsync_back_porch,
     mp_uint_t vsync_front_porch,
-    mp_uint_t pixel_clock_frequency);
+    mp_uint_t pixel_clock_frequency,
+    bool low_power_blanking);
 void common_hal_mipidsi_display_deinit(mipidsi_display_obj_t *self);
 bool common_hal_mipidsi_display_deinited(mipidsi_display_obj_t *self);
 void common_hal_mipidsi_display_refresh(mipidsi_display_obj_t *self);
+// Make the rows marked in dirty_row_bitmap (one bit per row, LSB first) visible to the
+// display. NULL refreshes every row. This backs the framebuffer protocol's swapbuffers
+// callback (mipidsi_display_swapbuffers in Display.c), which FramebufferDisplay calls
+// during refresh with the rows it just redrew.
+void common_hal_mipidsi_display_refresh_rows(mipidsi_display_obj_t *self, const uint8_t *dirty_row_bitmap);
 mp_float_t common_hal_mipidsi_display_get_brightness(mipidsi_display_obj_t *self);
 bool common_hal_mipidsi_display_set_brightness(mipidsi_display_obj_t *self, mp_float_t brightness);
 int common_hal_mipidsi_display_get_width(mipidsi_display_obj_t *self);
 int common_hal_mipidsi_display_get_height(mipidsi_display_obj_t *self);
 int common_hal_mipidsi_display_get_row_stride(mipidsi_display_obj_t *self);
 int common_hal_mipidsi_display_get_color_depth(mipidsi_display_obj_t *self);
+mp_uint_t common_hal_mipidsi_display_get_pixel_clock_frequency(mipidsi_display_obj_t *self);
 int common_hal_mipidsi_display_get_native_frames_per_second(mipidsi_display_obj_t *self);
 bool common_hal_mipidsi_display_get_grayscale(mipidsi_display_obj_t *self);
 mp_int_t common_hal_mipidsi_display_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, mp_uint_t flags);

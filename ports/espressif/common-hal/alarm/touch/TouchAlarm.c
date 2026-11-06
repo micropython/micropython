@@ -9,6 +9,7 @@
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/microcontroller/Pin.h"
 
+#include "bindings/espidf/__init__.h"
 #include "esp_sleep.h"
 #include "peripherals/touch.h"
 #include "supervisor/port.h"
@@ -75,8 +76,6 @@ void alarm_touch_touchalarm_set_alarm(const bool deep_sleep, const size_t n_alar
             }
             touch_alarm = MP_OBJ_TO_PTR(alarms[i]);
             touch_channel_mask |= 1 << touch_alarm->pin->touch_channel;
-            // Resetting the pin will set a pull-up, which we don't want.
-            skip_reset_once_pin_number(touch_alarm->pin->number);
             touch_alarm_set = true;
         }
     }
@@ -85,14 +84,13 @@ void alarm_touch_touchalarm_set_alarm(const bool deep_sleep, const size_t n_alar
         return;
     }
 
-    // Reset touch peripheral and keep it from being reset again
+    // Reset touch peripheral
     peripherals_touch_reset();
-    peripherals_touch_never_reset(true);
 
     // Initialize all touch channels used for alarms
     for (uint8_t i = TOUCH_MIN_CHAN_ID; i <= TOUCH_MAX_CHAN_ID; i++) {
         if ((touch_channel_mask & (1 << i)) != 0) {
-            peripherals_touch_init(i);
+            CHECK_ESP_RESULT(peripherals_touch_init(i));
         }
     }
 
@@ -225,6 +223,5 @@ void alarm_touch_touchalarm_reset(void) {
 
     // Tear down the channel(s) this alarm configured. Without this, a TouchIn built after
     // wake would reuse this alarm's sleep-tuned threshold instead of getting a fresh one.
-    peripherals_touch_never_reset(false);
     peripherals_touch_reset();
 }

@@ -19,7 +19,10 @@
 //| See https://msgpack.org for details. The module implements a subset of the cpython
 //| module msgpack-python.
 //|
-//| Not implemented: 64-bit int, uint, float.
+//| Ints are packed in the smallest format that holds them, using the unsigned formats for
+//| values >= 0. An int that does not fit in 64 bits is passed to ``default``.
+//|
+//| Floats are always packed in the 32-bit format.
 //|
 //| For more information about working with msgpack,
 //| see `the CPython Library Documentation <https://msgpack-python.readthedocs.io/en/latest/?badge=latest>`_.

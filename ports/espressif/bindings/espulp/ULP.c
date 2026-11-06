@@ -20,6 +20,10 @@
 //|         Raises an exception if another ULP has been instantiated. This
 //|         ensures that is is only used by one piece of code at a time.
 //|
+//|         A program started with `run()` keeps running after the VM ends,
+//|         including during deep sleep, so that it can wake the board with a
+//|         `ULPAlarm`. Call `halt()` or `deinit()` to stop it.
+//|
 //|         :param Architecture arch: The ulp arch.
 //|         """
 //|         ...
@@ -185,6 +189,8 @@ MP_PROPERTY_GETTER(espulp_ulp_arch_obj,
 
 static const mp_rom_map_elem_t espulp_ulp_locals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_deinit),              MP_ROM_PTR(&espulp_ulp_deinit_obj) },
+    // No __del__, and the object has no finaliser: a running ULP program must
+    // outlive the VM, for example to wake from deep sleep with a ULPAlarm.
     { MP_ROM_QSTR(MP_QSTR___enter__),           MP_ROM_PTR(&default___enter___obj) },
     { MP_ROM_QSTR(MP_QSTR___exit__),            MP_ROM_PTR(&default___exit___obj) },
     { MP_ROM_QSTR(MP_QSTR_set_wakeup_period),   MP_ROM_PTR(&espulp_ulp_set_wakeup_period_obj) },

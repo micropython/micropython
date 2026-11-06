@@ -58,6 +58,9 @@ bool common_hal_analogio_analogout_deinited(analogio_analogout_obj_t *self) {
 
 void common_hal_analogio_analogout_deinit(analogio_analogout_obj_t *self) {
     #ifdef SOC_DAC_SUPPORTED
+    if (common_hal_analogio_analogout_deinited(self)) {
+        return;
+    }
     dac_oneshot_del_channel(self->handle);
     self->handle = NULL;
     _active_handles[self->channel] = NULL;
@@ -69,16 +72,5 @@ void common_hal_analogio_analogout_set_value(analogio_analogout_obj_t *self,
     #ifdef SOC_DAC_SUPPORTED
     uint8_t dac_value = (value * 255) / 65535;
     dac_oneshot_output_voltage(self->handle, dac_value);
-    #endif
-}
-
-void analogout_reset(void) {
-    #ifdef SOC_DAC_SUPPORTED
-    for (uint8_t c = 0; c < SOC_DAC_CHAN_NUM; c++) {
-        if (_active_handles[c] != NULL) {
-            dac_oneshot_del_channel(_active_handles[c]);
-        }
-        _active_handles[c] = NULL;
-    }
     #endif
 }

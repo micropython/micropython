@@ -15,9 +15,10 @@
 //| This module provides the video pipeline shared between video sources and
 //| video outputs. It is the video equivalent of the `audiocore` module.
 //|
-//| Video sources, such as `mipicsi.Camera`, implement the internal videosource
-//| protocol. A `VideoBuffer` tells a video source where to put its frames in a
-//| framebuffer, such as `mipidsi.Display`, and can move it as needed.
+//| A video source, such as `mipicsi.Camera` or `videogif.GifDecoder`, makes
+//| video frames. A `VideoBuffer` plays a video source and tells it where to
+//| put each frame: in a display's memory, such as `mipidsi.Display`, or in a
+//| ``bytearray`` that a displayio Group shows.
 //|
 //| Stream a MIPI CSI camera live into the board's display (a MIPI DSI panel
 //| on ESP32-P4-Function-EV, for example):

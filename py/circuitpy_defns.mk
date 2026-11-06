@@ -510,6 +510,9 @@ endif
 ifeq ($(CIRCUITPY_VIDEOCORE),1)
 SRC_PATTERNS += videocore/%
 endif
+ifeq ($(CIRCUITPY_VIDEOGIF),1)
+SRC_PATTERNS += videogif/%
+endif
 ifeq ($(CIRCUITPY_WARNINGS),1)
 SRC_PATTERNS += warnings/%
 endif
@@ -719,6 +722,7 @@ $(filter $(SRC_PATTERNS), \
 	supervisor/RunReason.c \
 	supervisor/Runtime.c \
 	supervisor/StatusBar.c \
+	videogif/__init__.c \
 	wifi/AuthMode.c \
 	wifi/Packet.c \
 	wifi/PowerManagement.c \
@@ -926,6 +930,7 @@ SRC_SHARED_MODULE_ALL = \
 	vectorio/__init__.c \
 	videocore/VideoBuffer.c \
 	videocore/__init__.c \
+	videogif/GifDecoder.c \
 	warnings/__init__.c \
 	watchdog/__init__.c \
 	zlib/__init__.c \

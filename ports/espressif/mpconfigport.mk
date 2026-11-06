@@ -585,3 +585,6 @@ CIRCUITPY_MESSAGE_COMPRESSION_LEVEL ?= 1
 
 # The CIRCUITPY partition is mapped into the data address space on first use
 CIRCUITPY_STORAGE_MAP_FILE ?= 1
+
+# Cleanup is performed by GC finalizers (__del__ -> deinit) instead of a bulk pin reset.
+CIRCUITPY_BULK_RESET = 0

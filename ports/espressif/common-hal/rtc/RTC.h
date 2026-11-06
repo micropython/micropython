@@ -7,5 +7,4 @@
 #pragma once
 
 extern void rtc_init(void);
-extern void rtc_reset(void);
 extern void common_hal_rtc_init(void);

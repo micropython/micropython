@@ -21,6 +21,7 @@
 #endif
 
 #include "shared-bindings/mipicsi/__init__.h"
+#include "shared-module/videocore/__init__.h"
 
 typedef struct mipicsi_camera_obj mipicsi_camera_obj_t;
 
@@ -56,10 +57,10 @@ struct mipicsi_camera_obj {
     // Streaming destination, set by videocore.VideoBuffer. The CSI controller
     // only runs while dest_base is set. Frames are DMA'd contiguously into
     // dest_base, which must be cache-line aligned. dest_on_frame(dest_ctx,
-    // frame) is called from the ISR with where each frame landed; a frame in
-    // flight when the destination changes lands at the previous one.
+    // frame, NULL) is called from the ISR with where each frame landed; a
+    // frame in flight when the destination changes lands at the previous one.
     volatile void *dest_base;
-    void (*dest_on_frame)(void *ctx, const void *frame);
+    videocore_on_frame_fun dest_on_frame;
     void *dest_ctx;
     bool ctlr_started;
     // True between pause and resume: only the CSI controller is stopped.

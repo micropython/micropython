@@ -297,6 +297,49 @@ def test_displayio_color_gradient_pixel_format(pixel_format, request, circuitpyt
     _golden_compare_or_update(request, circuitpython.display_capture_paths(), golden)
 
 
+DISPLAYIO_ONDISKBITMAP_LIFETIME_CODE = """\
+import board
+import displayio
+
+with open("/gradient.bmp", "rb") as f:
+    try:
+        displayio.OnDiskBitmap(f)
+    except TypeError:
+        print("open file rejected")
+
+with displayio.OnDiskBitmap("/gradient.bmp") as odb:
+    print("width", odb.width)
+try:
+    odb.width
+except ValueError:
+    print("with block deinited")
+
+odb = displayio.OnDiskBitmap("/gradient.bmp")
+g = displayio.Group()
+g.append(displayio.TileGrid(odb, pixel_shader=odb.pixel_shader))
+board.DISPLAY.root_group = g
+odb.deinit()
+odb.deinit()
+board.DISPLAY.refresh()
+print("drawn after deinit")
+"""
+
+
+@pytest.mark.circuitpy_drive(
+    {"code.py": DISPLAYIO_ONDISKBITMAP_LIFETIME_CODE, "gradient.bmp": _GRADIENT_BMP}
+)
+@pytest.mark.display
+@pytest.mark.duration(8)
+def test_ondiskbitmap_lifetime(circuitpython):
+    circuitpython.wait_until_done()
+
+    output = circuitpython.serial.all_output
+    assert "open file rejected" in output
+    assert "width 320" in output
+    assert "with block deinited" in output
+    assert "drawn after deinit" in output
+
+
 DISPLAYIO_GOLDEN_STRIPES_CODE = """\
 import board
 import displayio

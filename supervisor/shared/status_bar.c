@@ -5,6 +5,7 @@
 // SPDX-License-Identifier: MIT
 
 #include <stdbool.h>
+#include <string.h>
 #include "genhdr/mpversion.h"
 #include "py/mpconfig.h"
 #include "shared-bindings/supervisor/__init__.h"
@@ -15,6 +16,7 @@
 
 #if CIRCUITPY_TERMINALIO
 #include "shared-module/terminalio/Terminal.h"
+#include "supervisor/shared/display.h"
 #endif
 
 #if CIRCUITPY_WEB_WORKFLOW
@@ -41,37 +43,8 @@ void supervisor_status_bar_clear(void) {
     }
 }
 
-void supervisor_status_bar_update(void) {
-    if (_suspended) {
-        supervisor_status_bar_request_update(true);
-        return;
-    }
-    _forced_dirty = false;
-
-    shared_module_supervisor_status_bar_updated(&shared_module_supervisor_status_bar_obj);
-
-    // Disable status bar console writes if supervisor.status_bar.console is False.
-    // Also disable if there is no serial connection now. This avoids sending part
-    // of the status bar update if the serial connection comes up during the update.
-    bool disable_console_writes =
-        !shared_module_supervisor_status_bar_get_console(&shared_module_supervisor_status_bar_obj) ||
-        !serial_connected();
-
-    // Disable status bar display writes if supervisor.status_bar.display is False.
-    bool disable_display_writes =
-        !shared_module_supervisor_status_bar_get_display(&shared_module_supervisor_status_bar_obj);
-
-    // Suppress writes to console and/or display if status bar is not enabled for either or both.
-    bool prev_console_disable = false;
-    bool prev_display_disable = false;
-
-    if (disable_console_writes) {
-        prev_console_disable = serial_console_write_disable(true);
-    }
-    if (disable_display_writes) {
-        prev_display_disable = serial_display_write_disable(true);
-    }
-
+// Write the title up to the version, with single spaces between segments.
+static void write_title(void) {
     // Neighboring "..." "..." are concatenated by the compiler. Without this separation, the hex code
     // doesn't get terminated after two following characters and the value is invalid.
     // This is the OSC command to set the title and the icon text. It can be up to 255 characters
@@ -85,28 +58,63 @@ void supervisor_status_bar_update(void) {
 
     #if CIRCUITPY_WEB_WORKFLOW
     supervisor_web_workflow_status();
-    serial_write(" | ");
+    serial_write(" ");
     #endif
 
     #if CIRCUITPY_BLE_FILE_SERVICE || CIRCUITPY_BLE_SERIAL_SERVICE
     supervisor_bluetooth_status();
-    serial_write(" | ");
+    serial_write(" ");
     #endif
 
     supervisor_execution_status();
-    serial_write(" | ");
-    serial_write(MICROPY_GIT_TAG);
-    // Send string terminator
-    serial_write("\x1b" "\\");
+    serial_write(" ");
+}
 
-    // Restore writes to console and/or display.
-    if (disable_console_writes) {
-        serial_console_write_disable(prev_console_disable);
+void supervisor_status_bar_update(void) {
+    if (_suspended) {
+        supervisor_status_bar_request_update(true);
+        return;
     }
-    if (disable_display_writes) {
-        serial_display_write_disable(prev_display_disable);
+    _forced_dirty = false;
+
+    shared_module_supervisor_status_bar_updated(&shared_module_supervisor_status_bar_obj);
+
+    // Skip the console if supervisor.status_bar.console is False or there is no serial connection.
+    // This avoids sending part of the status bar update if the connection comes up during it.
+    if (shared_module_supervisor_status_bar_get_console(&shared_module_supervisor_status_bar_obj) &&
+        serial_connected()) {
+        bool prev_display = serial_display_write_disable(true);
+        write_title();
+        serial_write(MICROPY_GIT_TAG);
+        serial_write("\x1b" "\\");
+        serial_display_write_disable(prev_display);
     }
 
+    #if CIRCUITPY_TERMINALIO
+    // Skip the display if supervisor.status_bar.display is False. A version that does not fit
+    // is cut so ".." is on the last two tiles.
+    displayio_tilegrid_t *bar = supervisor_terminal.status_bar;
+    if (bar != NULL &&
+        shared_module_supervisor_status_bar_get_display(&shared_module_supervisor_status_bar_obj)) {
+        bool prev_console = serial_console_write_disable(true);
+        write_title();
+        size_t room = bar->width_in_tiles - supervisor_terminal.status_x;
+        // The terminal moves status_y past the bar once the title reaches its last tile.
+        if (supervisor_terminal.status_y >= bar->height_in_tiles || room < 2) {
+            supervisor_terminal.status_x = bar->width_in_tiles - 2;
+            supervisor_terminal.status_y = 0;
+            room = 2;
+        }
+        if (room >= strlen(MICROPY_GIT_TAG)) {
+            serial_write(MICROPY_GIT_TAG);
+        } else {
+            serial_write_substring(MICROPY_GIT_TAG, room - 2);
+            serial_write("..");
+        }
+        serial_write("\x1b" "\\");
+        serial_console_write_disable(prev_console);
+    }
+    #endif
 }
 
 static void status_bar_background(void *data) {

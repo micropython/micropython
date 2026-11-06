@@ -39,11 +39,9 @@ void common_hal_mii_rmii_construct(mii_rmii_obj_t *self,
     const mcu_pin_obj_t *pins[] = { rxd0, rxd1, rx_dv, txd0, txd1, tx_en, refclk };
     for (size_t i = 0; i < MP_ARRAY_SIZE(pins); i++) {
         claim_pin(pins[i]);
-        never_reset_pin_number(pins[i]->number);
     }
     if (reset != NULL) {
         claim_pin(reset);
-        never_reset_pin_number(reset->number);
     }
     #endif
 }

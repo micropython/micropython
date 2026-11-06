@@ -42,13 +42,11 @@ void board_init(void) {
     vext_pin_obj.base.type = &digitalio_digitalinout_type;
     common_hal_digitalio_digitalinout_construct(&vext_pin_obj, &pin_GPIO18);
     common_hal_digitalio_digitalinout_switch_to_output(&vext_pin_obj, true, DRIVE_MODE_PUSH_PULL);
-    common_hal_digitalio_digitalinout_never_reset(&vext_pin_obj);
 
     // Set up the SPI object used to control the display
     fourwire_fourwire_obj_t *bus = &allocate_display_bus()->fourwire_bus;
     busio_spi_obj_t *spi = &bus->inline_bus;
     common_hal_busio_spi_construct(spi, &pin_GPIO2, &pin_GPIO1, NULL, false);
-    common_hal_busio_spi_never_reset(spi);
 
     // Set up the DisplayIO pin object
     bus->base.type = &fourwire_fourwire_type;

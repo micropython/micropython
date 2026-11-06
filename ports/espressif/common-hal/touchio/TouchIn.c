@@ -7,6 +7,7 @@
 #include "shared-bindings/touchio/TouchIn.h"
 
 #include "py/runtime.h"
+#include "bindings/espidf/__init__.h"
 #include "peripherals/touch.h"
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/digitalio/Pull.h"
@@ -16,17 +17,19 @@ void common_hal_touchio_touchin_construct(touchio_touchin_obj_t *self,
     if (pin->touch_channel == NO_TOUCH_CHANNEL) {
         raise_ValueError_invalid_pin();
     }
-    claim_pin(pin);
-
     // initialize touchpad
-    peripherals_touch_init(pin->touch_channel);
+    CHECK_ESP_RESULT(peripherals_touch_init(pin->touch_channel));
+    claim_pin(pin);
 
     // Set a "touched" threshold not too far above the initial value.
     // For simple finger touch, the values may vary as much as a factor of two,
     // but for touches using fruit or other objects, the difference is much less.
 
     self->pin = pin;
-    self->threshold = common_hal_touchio_touchin_get_raw_value(self) + 100;
+    // Clamp to avoid uint16_t wraparound: a reading near UINT16_MAX would otherwise
+    // give a small threshold, and value would always be True.
+    uint32_t threshold = common_hal_touchio_touchin_get_raw_value(self) + 100;
+    self->threshold = MIN(threshold, UINT16_MAX);
 }
 
 bool common_hal_touchio_touchin_deinited(touchio_touchin_obj_t *self) {
@@ -37,7 +40,8 @@ void common_hal_touchio_touchin_deinit(touchio_touchin_obj_t *self) {
     if (common_hal_touchio_touchin_deinited(self)) {
         return;
     }
-    reset_pin_number(self->pin->touch_channel);
+    peripherals_touch_deinit(self->pin->touch_channel);
+    reset_pin_number(self->pin->number);
     self->pin = NULL;
 }
 
