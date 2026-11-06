@@ -1,0 +1,11 @@
+--- instance0 ---
+readinto: 4 b'\x01\x02\x03\x04'
+write: 4
+readinto after write: 4 b'\x05\x06\x07\x08'
+write_readinto: 4 b'\xde\xad\xbe\xef'
+long readinto: 1037 True
+overflow: SPITarget RX overflow
+readinto after overflow: 4 b'\t\n\x0b\x0c'
+--- instance1 ---
+readinto: b'\xaa\xbb\xcc\xdd'
+write_readinto: b'\x11"3D'
