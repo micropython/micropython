@@ -1928,6 +1928,7 @@ msgid "Already scanning for wifi networks"
 msgstr "이미 wifi 네트워크를 찾고 있습니다"
 
 #: ports/espressif/common-hal/wifi/Radio.c
+#: ports/espressif/common-hal/wifi/__init__.c
 #: ports/raspberrypi/common-hal/wifi/Radio.c
 #: ports/zephyr-cp/common-hal/wifi/Radio.c
 msgid "WiFi is not enabled"

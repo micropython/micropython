@@ -1915,6 +1915,7 @@ msgid "Already scanning for wifi networks"
 msgstr "Ήδη γίνεται σάρωση για δίκτυα wifi"
 
 #: ports/espressif/common-hal/wifi/Radio.c
+#: ports/espressif/common-hal/wifi/__init__.c
 #: ports/raspberrypi/common-hal/wifi/Radio.c
 #: ports/zephyr-cp/common-hal/wifi/Radio.c
 msgid "WiFi is not enabled"
