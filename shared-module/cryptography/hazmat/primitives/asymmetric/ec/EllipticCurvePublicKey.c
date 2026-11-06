@@ -20,9 +20,9 @@
 void common_hal_cryptography_hazmat_primitives_asymmetric_ec_ellipticcurvepublickey_construct(
     cryptography_hazmat_primitives_asymmetric_ec_ellipticcurvepublickey_obj_t *self,
     mp_obj_t curve, const uint8_t *point, size_t point_len) {
-    if (point_len != P256_POINT_LEN || point[0] != 0x04) {
-        mp_raise_ValueError(MP_ERROR_TEXT(
-            "data must be a 65-byte uncompressed SEC1 point (0x04 prefix)"));
+    mp_arg_validate_length(point_len, P256_POINT_LEN, MP_QSTR_data);
+    if (point[0] != 0x04) {
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("Invalid %q"), MP_QSTR_data);
     }
 
     // PSA is already initialized by ssl / hashlib / hardwarekey, but
@@ -42,7 +42,7 @@ void common_hal_cryptography_hazmat_primitives_asymmetric_ec_ellipticcurvepublic
     psa_key_id_t key_id = 0;
     psa_status_t status = psa_import_key(&attr, point, point_len, &key_id);
     if (status != PSA_SUCCESS) {
-        mp_raise_ValueError(MP_ERROR_TEXT("data is not a valid point on this curve"));
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("Invalid %q"), MP_QSTR_data);
     }
 
     self->curve = curve;
@@ -53,9 +53,7 @@ void common_hal_cryptography_hazmat_primitives_asymmetric_ec_ellipticcurvepublic
 void common_hal_cryptography_hazmat_primitives_asymmetric_ec_ellipticcurvepublickey_verify(
     cryptography_hazmat_primitives_asymmetric_ec_ellipticcurvepublickey_obj_t *self,
     const uint8_t *signature, size_t signature_len, const uint8_t *digest, size_t digest_len) {
-    if (digest_len != 32) {
-        mp_raise_ValueError(MP_ERROR_TEXT("digest must be 32 bytes (SHA-256)"));
-    }
+    mp_arg_validate_length(digest_len, 32, MP_QSTR_digest);
 
     // PSA's own ECDSA signature format is raw r||s, not the ASN.1 DER real
     // PyCA's verify() takes -- mbedtls_ecdsa_der_to_raw() is the same,
@@ -66,12 +64,12 @@ void common_hal_cryptography_hazmat_primitives_asymmetric_ec_ellipticcurvepublic
     int ret = mbedtls_ecdsa_der_to_raw(P256_KEY_BITS, signature, signature_len,
         raw_sig, sizeof(raw_sig), &raw_sig_len);
     if (ret != 0) {
-        mp_raise_cryptography_InvalidSignature(MP_ERROR_TEXT("Signature is malformed"));
+        mp_raise_cryptography_InvalidSignature(MP_ERROR_TEXT("Invalid %q"), MP_QSTR_signature);
     }
 
     psa_status_t status = psa_verify_hash(self->key_id, PSA_ALG_ECDSA(PSA_ALG_SHA_256),
         digest, digest_len, raw_sig, raw_sig_len);
     if (status != PSA_SUCCESS) {
-        mp_raise_cryptography_InvalidSignature(MP_ERROR_TEXT("Signature does not verify"));
+        mp_raise_cryptography_InvalidSignature(MP_ERROR_TEXT("Invalid %q"), MP_QSTR_signature);
     }
 }

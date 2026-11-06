@@ -919,11 +919,13 @@ msgstr ""
 #: ports/raspberrypi/common-hal/picodvi/AudioOut.c
 #: ports/raspberrypi/common-hal/picodvi/Framebuffer_RP2040.c
 #: ports/raspberrypi/common-hal/usb_host_bulk/InStream.c py/argcheck.c
+#: shared-bindings/cryptography/hazmat/primitives/asymmetric/utils/__init__.c
 #: shared-bindings/digitalio/DigitalInOut.c
 #: shared-bindings/epaperdisplay/EPaperDisplay.c
 #: shared-bindings/i2cioexpander/IOPin.c shared-bindings/mipidsi/Display.c
 #: shared-bindings/pwmio/PWMOut.c shared-bindings/supervisor/__init__.c
 #: shared-module/aurora_epaper/aurora_framebuffer.c
+#: shared-module/cryptography/hazmat/primitives/asymmetric/ec/EllipticCurvePublicKey.c
 #: shared-module/jpegio/JpegDecoder.c shared-module/lvfontio/OnDiskFont.c
 msgid "Invalid %q"
 msgstr ""
@@ -4208,14 +4210,6 @@ msgstr ""
 msgid "key does not have the expected %q purpose"
 msgstr ""
 
-#: shared-bindings/cryptography/hazmat/primitives/asymmetric/utils/__init__.c
-msgid "r or s is out of range for this curve"
-msgstr ""
-
-#: shared-bindings/cryptography/hazmat/primitives/asymmetric/utils/__init__.c
-msgid "signature is not a well-formed DER ECDSA signature"
-msgstr ""
-
 #: shared-bindings/digitalio/DigitalInOut.c
 #: shared-bindings/i2cioexpander/IOPin.c
 msgid "Cannot set value when direction is input."
@@ -4584,26 +4578,6 @@ msgstr ""
 
 #: shared-module/bitmapfilter/__init__.c
 msgid "unsupported bitmap depth"
-msgstr ""
-
-#: shared-module/cryptography/hazmat/primitives/asymmetric/ec/EllipticCurvePublicKey.c
-msgid "data must be a 65-byte uncompressed SEC1 point (0x04 prefix)"
-msgstr ""
-
-#: shared-module/cryptography/hazmat/primitives/asymmetric/ec/EllipticCurvePublicKey.c
-msgid "data is not a valid point on this curve"
-msgstr ""
-
-#: shared-module/cryptography/hazmat/primitives/asymmetric/ec/EllipticCurvePublicKey.c
-msgid "digest must be 32 bytes (SHA-256)"
-msgstr ""
-
-#: shared-module/cryptography/hazmat/primitives/asymmetric/ec/EllipticCurvePublicKey.c
-msgid "Signature is malformed"
-msgstr ""
-
-#: shared-module/cryptography/hazmat/primitives/asymmetric/ec/EllipticCurvePublicKey.c
-msgid "Signature does not verify"
 msgstr ""
 
 #: shared-module/cryptography/hazmat/primitives/asymmetric/rsa/DigitalSignatureKey.c

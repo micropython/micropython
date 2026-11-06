@@ -103,7 +103,7 @@ static mp_obj_t cryptography_hazmat_primitives_asymmetric_utils_encode_dss_signa
     size_t der_len = 0;
     int ret = mbedtls_ecdsa_raw_to_der(P256_KEY_BITS, raw_sig, sizeof(raw_sig), der_sig, sizeof(der_sig), &der_len);
     if (ret != 0) {
-        mp_raise_ValueError(MP_ERROR_TEXT("r or s is out of range for this curve"));
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("Invalid %q"), MP_QSTR_signature);
     }
     return mp_obj_new_bytes(der_sig, der_len);
 }
@@ -127,7 +127,7 @@ static mp_obj_t cryptography_hazmat_primitives_asymmetric_utils_decode_dss_signa
     size_t raw_len = 0;
     int ret = mbedtls_ecdsa_der_to_raw(P256_KEY_BITS, bufinfo.buf, bufinfo.len, raw_sig, sizeof(raw_sig), &raw_len);
     if (ret != 0 || raw_len != P256_RAW_SIG_LEN) {
-        mp_raise_ValueError(MP_ERROR_TEXT("signature is not a well-formed DER ECDSA signature"));
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("Invalid %q"), MP_QSTR_signature);
     }
 
     mp_obj_t items[2] = {
