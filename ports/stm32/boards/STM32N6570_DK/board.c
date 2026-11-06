@@ -28,10 +28,11 @@
 #include "boardctrl.h"
 #include "xspi.h"
 
-// Values for OTP fuses for VDDIO3, to select low voltage mode (<2.5V).
+// Values for OTP fuses for VDDIO3/5, to select low voltage mode (<2.5V).
 // See RM0486, Section 5, Table 18.
 #define BSEC_HW_CONFIG_ID       (124U)
 #define BSEC_HWS_HSLV_VDDIO3    (1U << 15)
+#define BSEC_HWS_HSLV_VDDIO5    (1U << 13)
 
 static void board_config_vdd(void) {
     // TODO: move some of the below code to a common location for all N6 boards?
@@ -44,7 +45,7 @@ static void board_config_vdd(void) {
     // Program high speed IO optimization fuses if they aren't already set.
     uint32_t fuse;
     BSEC_HandleTypeDef hbsec = { .Instance = BSEC };
-    const uint32_t mask = BSEC_HWS_HSLV_VDDIO3;
+    const uint32_t mask = BSEC_HWS_HSLV_VDDIO3 | BSEC_HWS_HSLV_VDDIO5;
     if (HAL_BSEC_OTP_Read(&hbsec, BSEC_HW_CONFIG_ID, &fuse) != HAL_OK) {
         fuse = 0;
     } else if ((fuse & mask) != mask) {
@@ -75,6 +76,12 @@ static void board_config_vdd(void) {
     LL_PWR_EnableVddIO4();
     LL_PWR_SetVddIO4VoltageRange(LL_PWR_VDDIO_VOLTAGE_RANGE_3V3);
     SYSCFG->VDDIO4CCCR |= SYSCFG_VDDIO4CCCR_EN; // enable IO compensation
+
+    // Configure VDDIO5, which supplies the SD card.  It starts at 3.3V (the SD driver
+    // selects 1.8V for UHS-I cards, which needs the fuse).
+    LL_PWR_EnableVddIO5();
+    LL_PWR_SetVddIO5VoltageRange(LL_PWR_VDDIO_VOLTAGE_RANGE_3V3);
+    SYSCFG->VDDIO5CCCR |= SYSCFG_VDDIO5CCCR_EN; // enable IO compensation
 
     // Enable VDD for ADC and USB.
     LL_PWR_EnableVddADC();
@@ -115,6 +122,11 @@ void board_leave_standby(void) {
     LL_PWR_EnableVddIO4();
     LL_PWR_SetVddIO4VoltageRange(LL_PWR_VDDIO_VOLTAGE_RANGE_3V3);
     SYSCFG->VDDIO4CCCR |= SYSCFG_VDDIO4CCCR_EN; // enable IO compensation
+
+    // Configure VDDIO5, which supplies the SD card.
+    LL_PWR_EnableVddIO5();
+    LL_PWR_SetVddIO5VoltageRange(LL_PWR_VDDIO_VOLTAGE_RANGE_3V3);
+    SYSCFG->VDDIO5CCCR |= SYSCFG_VDDIO5CCCR_EN; // enable IO compensation
 
     // Enable VDD for ADC and USB.
     LL_PWR_EnableVddADC();
