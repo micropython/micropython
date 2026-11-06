@@ -3,6 +3,18 @@
 General information about the WiPy
 ==================================
 
+.. _cc3200-not-actively-maintained:
+
+Not Actively Maintained
+-----------------------
+
+.. warning::
+
+    The WiPy uses MicroPython's CC3200 port, which is a :doc:`Tier 3 MicroPython
+    port </develop/support_tiers>`. This tier is **not actively maintained**. It
+    uses an outdated version of the CC3200 SDK which contains known security
+    vulnerabilities.
+
 No floating point support
 -------------------------
 

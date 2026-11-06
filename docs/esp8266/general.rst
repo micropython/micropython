@@ -3,7 +3,28 @@
 General information about the ESP8266 port
 ==========================================
 
-ESP8266 is a popular WiFi-enabled System-on-Chip (SoC) by Espressif Systems.
+ESP8266 is a WiFi-enabled System-on-Chip (SoC) released by Espressif Systems
+in 2014.
+
+.. _esp8266-not-actively-maintained:
+
+Not Actively Maintained
+-----------------------
+
+The ESP8266 port is a :doc:`Tier 3 MicroPython port </develop/support_tiers>`.
+This tier is **not actively maintained**. The particular version of the vendor
+SDK this port uses, as well as the TLS library it uses, have not been supported
+since before 2020.
+
+.. warning::
+
+   Among other issues this means MicroPython on ESP8266 has **known security
+   vulnerabilities** in the Wi-Fi and TLS libraries that can be exploited by
+   attackers.
+
+The :doc:`ESP32 port </esp32/general>` is a Tier 1 MicroPython port, and we
+strongly recommend choosing an Espressif ESP32 family SoC instead of ESP8266 if
+possible.
 
 Multitude of boards
 -------------------

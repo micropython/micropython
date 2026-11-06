@@ -3,6 +3,11 @@
 Quick reference for the ESP8266
 ===============================
 
+.. warning::
+
+   The ESP8266 port is :ref:`not actively maintained and contains security
+   vulnerabilities <esp8266-not-actively-maintained>`.
+
 .. image:: img/adafruit_products_pinoutstop.jpg
     :alt: Adafruit Feather HUZZAH board
     :width: 640px
