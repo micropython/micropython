@@ -44,37 +44,75 @@ typedef struct {
 } pwm_pin_map_t;
 
 static const pwm_pin_map_t pwm_pin_map[] = {
-    // TIMER0 (advanced) - AF1
-    { 0x00, 0, 0, 1 },   // PA0  CH0
-    { 0x01, 0, 1, 1 },   // PA1  CH1
-    { 0x02, 0, 2, 1 },   // PA2  CH2
-    { 0x03, 0, 3, 1 },   // PA3  CH3
-    { 0x08, 0, 0, 1 },   // PA8  CH0
-    { 0x09, 0, 1, 1 },   // PA9  CH1
-    { 0x0a, 0, 2, 1 },   // PA10 CH2
-    { 0x0b, 0, 3, 1 },   // PA11 CH3
-    // TIMER1 - AF1
-    { 0x04, 1, 0, 1 },   // PA4  CH0
-    { 0x05, 1, 1, 1 },   // PA5  CH1
-    { 0x06, 1, 2, 1 },   // PA6  CH2
-    { 0x07, 1, 3, 1 },   // PA7  CH3
-    { 0x18, 1, 0, 1 },   // PB8  CH0
-    { 0x19, 1, 1, 1 },   // PB9  CH1
-    // TIMER2 - AF2
-    { 0x16, 2, 0, 2 },   // PB6  CH0
-    { 0x17, 2, 1, 2 },   // PB7  CH1
-    { 0x1a, 2, 2, 2 },   // PB10 CH2
-    { 0x1b, 2, 3, 2 },   // PB11 CH3
-    // TIMER3 - AF2
-    { 0x16 + 0, 3, 0, 2 },  // PB6 (shared, prefer TIMER2)
-    { 0x10, 3, 0, 2 },   // PB0  CH0 (varies by package)
-    // TIMER7 (advanced) - AF3 on PB
-    { 0x1c, 5, 0, 3 },   // PB12 CH0
-    // TIMER8 - AF3
-    { 0x28, 6, 0, 3 },   // PC8  (varies)
-    // TIMER12 - AF2 on PB14/PB15
-    { 0x1e, 9, 0, 2 },   // PB14 CH0
-    { 0x1f, 9, 1, 2 },   // PB15 CH1
+    // Pin encodings are (port << 4) | pin_num, so 0x00 = PA0, 0x18 = PB8, etc.
+    // Alternate functions and channels below follow the GD32F4xx datasheet
+    // "Alternate function mapping" table (AF1/AF2/AF3/AF9 per peripheral).
+
+    // ---- TIMER0 (advanced) - AF1 ----
+    { 0x00, 0, 0, 1 },   // PA0  TIMER0_CH0
+    { 0x01, 0, 1, 1 },   // PA1  TIMER0_CH1
+    { 0x02, 0, 2, 1 },   // PA2  TIMER0_CH2
+    { 0x03, 0, 3, 1 },   // PA3  TIMER0_CH3
+    { 0x08, 0, 0, 1 },   // PA8  TIMER0_CH0
+    { 0x09, 0, 1, 1 },   // PA9  TIMER0_CH1
+    { 0x0a, 0, 2, 1 },   // PA10 TIMER0_CH2
+    { 0x0b, 0, 3, 1 },   // PA11 TIMER0_CH3
+
+    // ---- TIMER1 - AF1 ----
+    { 0x05, 1, 0, 1 },   // PA5  TIMER1_CH0
+    { 0x0f, 1, 0, 1 },   // PA15 TIMER1_CH0
+    { 0x18, 1, 0, 1 },   // PB8  TIMER1_CH0
+    { 0x13, 1, 1, 1 },   // PB3  TIMER1_CH1
+    { 0x19, 1, 1, 1 },   // PB9  TIMER1_CH1
+    { 0x1a, 1, 2, 1 },   // PB10 TIMER1_CH2
+    { 0x12, 1, 3, 1 },   // PB2  TIMER1_CH3
+    { 0x1b, 1, 3, 1 },   // PB11 TIMER1_CH3
+
+    // ---- TIMER2 - AF2 ----
+    { 0x06, 2, 0, 2 },   // PA6  TIMER2_CH0
+    { 0x14, 2, 0, 2 },   // PB4  TIMER2_CH0
+    { 0x26, 2, 0, 2 },   // PC6  TIMER2_CH0
+    { 0x07, 2, 1, 2 },   // PA7  TIMER2_CH1
+    { 0x15, 2, 1, 2 },   // PB5  TIMER2_CH1
+    { 0x27, 2, 1, 2 },   // PC7  TIMER2_CH1
+    { 0x10, 2, 2, 2 },   // PB0  TIMER2_CH2
+    { 0x28, 2, 2, 2 },   // PC8  TIMER2_CH2
+    { 0x11, 2, 3, 2 },   // PB1  TIMER2_CH3
+    { 0x29, 2, 3, 2 },   // PC9  TIMER2_CH3
+
+    // ---- TIMER3 - AF2 ----
+    { 0x16, 3, 0, 2 },   // PB6  TIMER3_CH0
+    { 0x3c, 3, 0, 2 },   // PD12 TIMER3_CH0
+    { 0x17, 3, 1, 2 },   // PB7  TIMER3_CH1
+    { 0x3d, 3, 1, 2 },   // PD13 TIMER3_CH1
+    { 0x3e, 3, 2, 2 },   // PD14 TIMER3_CH2
+    { 0x3f, 3, 3, 2 },   // PD15 TIMER3_CH3
+
+    // ---- TIMER7 (advanced) - AF3 ----
+    { 0x26, 5, 0, 3 },   // PC6  TIMER7_CH0
+    { 0x27, 5, 1, 3 },   // PC7  TIMER7_CH1
+    { 0x28, 5, 2, 3 },   // PC8  TIMER7_CH2
+    { 0x29, 5, 3, 3 },   // PC9  TIMER7_CH3
+
+    // ---- TIMER8 - AF3 ----
+    { 0x02, 6, 0, 3 },   // PA2  TIMER8_CH0
+    { 0x03, 6, 1, 3 },   // PA3  TIMER8_CH1
+
+    // ---- TIMER9 - AF3 ----
+    { 0x18, 7, 0, 3 },   // PB8  TIMER9_CH0
+
+    // ---- TIMER10 - AF3 ----
+    { 0x19, 8, 0, 3 },   // PB9  TIMER10_CH0
+
+    // ---- TIMER11 - AF9 ----
+    { 0x1e, 9, 0, 9 },   // PB14 TIMER11_CH0
+    { 0x1f, 9, 1, 9 },   // PB15 TIMER11_CH1
+
+    // ---- TIMER12 - AF9 ----
+    { 0x06, 10, 0, 9 },  // PA6  TIMER12_CH0
+
+    // ---- TIMER13 - AF9 ----
+    { 0x07, 11, 0, 9 },  // PA7  TIMER13_CH0
 };
 
 #define NUM_PWM_PINS MP_ARRAY_SIZE(pwm_pin_map)

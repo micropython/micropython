@@ -18,6 +18,10 @@
 #define SD_CD_RCU       RCU_GPIOD
 #define SD_CD_PIN       GPIO_PIN_13      // card detect, active low
 
+// SDIO CMD is on PD2 (GPIOD), while CLK/D0-D3 are on GPIOC.
+#define SD_CMD_PORT     GPIOD
+#define SD_CMD_PIN      GPIO_PIN_2
+
 #define SD_AF           GPIO_AF_12
 
 // SDIO clock divider: 48 MHz / (div+2) -> 400 kHz for init
@@ -77,15 +81,18 @@ static void sd_gpio_init(void) {
     rcu_periph_clock_enable(RCU_GPIOD);
     rcu_periph_clock_enable(RCU_SDIO);
 
-    // CLK (PC12), CMD (PD2), D0-D3 (PC8, PC9, PC10, PC11)
+    // SDIO pinout per the GD32F4xx datasheet (all AF12):
+    //   CLK = PC12, D0 = PC8, D1 = PC9, D2 = PC10, D3 = PC11  -> GPIOC
+    //   CMD = PD2                                              -> GPIOD
     uint32_t pins_c = GPIO_PIN_8 | GPIO_PIN_9 | GPIO_PIN_10 | GPIO_PIN_11 | GPIO_PIN_12;
     gpio_af_set(SD_GPIO_PORT, SD_AF, pins_c);
     gpio_mode_set(SD_GPIO_PORT, GPIO_MODE_AF, GPIO_PUPD_PULLUP, pins_c);
     gpio_output_options_set(SD_GPIO_PORT, GPIO_OTYPE_PP, GPIO_OSPEED_50MHZ, pins_c);
 
-    gpio_af_set(SD_GPIO_PORT, SD_AF, GPIO_PIN_2);
-    gpio_mode_set(SD_GPIO_PORT, GPIO_MODE_AF, GPIO_PUPD_PULLUP, GPIO_PIN_2);
-    gpio_output_options_set(SD_GPIO_PORT, GPIO_OTYPE_PP, GPIO_OSPEED_50MHZ, GPIO_PIN_2);
+    // CMD lives on GPIOD, not GPIOC.
+    gpio_af_set(SD_CMD_PORT, SD_AF, SD_CMD_PIN);
+    gpio_mode_set(SD_CMD_PORT, GPIO_MODE_AF, GPIO_PUPD_PULLUP, SD_CMD_PIN);
+    gpio_output_options_set(SD_CMD_PORT, GPIO_OTYPE_PP, GPIO_OSPEED_50MHZ, SD_CMD_PIN);
 
     // card detect input
     gpio_mode_set(SD_CD_PORT, GPIO_MODE_INPUT, GPIO_PUPD_PULLUP, SD_CD_PIN);

@@ -75,6 +75,11 @@ int main(void) {
     int stack_dummy;
     stack_top = (char *)&stack_dummy;
 
+    // Program Flash wait states FIRST: SystemInit() has already switched the
+    // core to its final frequency, so WSCNT must match it before any further
+    // code executes from Flash.
+    board_flash_ws_init();
+
     // enable DWT cycle counter for microsecond delays
     CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
     DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;

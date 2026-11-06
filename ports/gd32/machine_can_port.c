@@ -97,7 +97,24 @@ static void machine_can_port_init(machine_can_obj_t *self) {
     uint32_t can = can_periph(idx);
 
     rcu_periph_clock_enable(can_rcu(idx));
-    rcu_periph_clock_enable(RCU_GPIOB);   // CAN pins usually on PB8/PB9 or PD0/PD1
+
+    // Configure the CAN pins for AF9 as required by the GD32F4xx datasheet:
+    //   CAN0: PB8 = RX, PB9  = TX
+    //   CAN1: PB12 = RX, PB13 = TX
+    rcu_periph_clock_enable(RCU_GPIOB);
+    if (idx == 0) {
+        gpio_af_set(GPIOB, GPIO_AF_9, GPIO_PIN_8 | GPIO_PIN_9);
+        gpio_mode_set(GPIOB, GPIO_MODE_AF, GPIO_PUPD_PULLUP, GPIO_PIN_8);
+        gpio_mode_set(GPIOB, GPIO_MODE_AF, GPIO_PUPD_NONE, GPIO_PIN_9);
+        gpio_output_options_set(GPIOB, GPIO_OTYPE_PP, GPIO_OSPEED_50MHZ,
+                                GPIO_PIN_8 | GPIO_PIN_9);
+    } else {
+        gpio_af_set(GPIOB, GPIO_AF_9, GPIO_PIN_12 | GPIO_PIN_13);
+        gpio_mode_set(GPIOB, GPIO_MODE_AF, GPIO_PUPD_PULLUP, GPIO_PIN_12);
+        gpio_mode_set(GPIOB, GPIO_MODE_AF, GPIO_PUPD_NONE, GPIO_PIN_13);
+        gpio_output_options_set(GPIOB, GPIO_OTYPE_PP, GPIO_OSPEED_50MHZ,
+                                GPIO_PIN_12 | GPIO_PIN_13);
+    }
 
     can_deinit(can);
 

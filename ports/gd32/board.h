@@ -8,6 +8,8 @@
 #include "mpconfigboard.h"
 
 void board_early_init(void);
+// Programs FMC wait states for the configured core clock.
+void board_flash_ws_init(void);
 void board_init(void);
 
 #endif

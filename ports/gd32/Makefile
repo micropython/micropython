@@ -36,6 +36,16 @@ MCU_ARCH = -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16
 
 CFLAGS += $(MCU_ARCH)
 CFLAGS += -D$(CMSIS_MCU) -DUSE_STDPERIPH_DRIVER
+
+# Flash wait states for the target core frequency (GD32F4xx datasheet).
+# Must be visible to system_gd32f4xx.c, which does not include the board header.
+ifeq ($(BOARD),GD32F407)
+CFLAGS += -DMICROPY_HW_FLASH_WS=5
+else ifeq ($(BOARD),GD32F470)
+CFLAGS += -DMICROPY_HW_FLASH_WS=7
+else
+CFLAGS += -DMICROPY_HW_FLASH_WS=7
+endif
 CFLAGS += -Os -g -std=gnu99 -Wall -Werror
 CFLAGS += -ffunction-sections -fdata-sections
 CFLAGS += -fno-common -fno-strict-aliasing
@@ -89,6 +99,7 @@ SRC_C = \
 	lib/littlefs/lfs2_util.c \
 	flashbdev.c \
 	sdcard.c \
+	flash_ws.c \
 	machine_sdcard_port.c \
 	drivers/bus/softspi.c \
 	shared/runtime/softtimer.c \

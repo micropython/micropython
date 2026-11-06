@@ -33,6 +33,21 @@ static const struct {
 
 static machine_i2c_obj_t machine_i2c_obj[NUM_I2C];
 
+
+// Look up the alternate function for an I2C pin. Most I2C pins use AF4,
+// but a few (notably PB3 as I2C1_SDA) are mapped to AF9 on GD32F4.
+static uint32_t i2c_pin_af(uint8_t pin_enc) {
+    const uint8_t port = PIN_PORT(pin_enc);
+    const uint8_t num = PIN_NUM(pin_enc);
+
+    // PB3 -> I2C1_SDA via AF9
+    if (port == 1 && num == 3) {
+        return GPIO_AF_9;
+    }
+    // Everything else (PB6/PB7, PB8/PB9, PB10/PB11, PA8, PC9) is AF4.
+    return GPIO_AF_4;
+}
+
 static void i2c_cfg_pin(int16_t enc_pin) {
     if (enc_pin < 0) {
         return;
@@ -43,7 +58,7 @@ static void i2c_cfg_pin(int16_t enc_pin) {
     uint32_t mask = pin_hal_mask(num);
 
     rcu_periph_clock_enable(pin_port_rcu(port));
-    gpio_af_set(base, GPIO_AF_4, mask);
+    gpio_af_set(base, i2c_pin_af((uint8_t)enc_pin), mask);
     gpio_mode_set(base, GPIO_MODE_AF, GPIO_PUPD_PULLUP, mask);
     gpio_output_options_set(base, GPIO_OTYPE_OD, GPIO_OSPEED_50MHZ, mask);
 }

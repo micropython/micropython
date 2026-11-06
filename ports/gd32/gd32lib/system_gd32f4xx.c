@@ -35,6 +35,7 @@
 /* This file refers the CMSIS standard, some adjustments are made according to GigaDevice chips */
 
 #include "gd32f4xx.h"
+#include "gd32f4xx_fmc.h"
 
 /* system frequency define */
 #define __IRC16M          (IRC16M_VALUE)            /* internal 16 MHz RC oscillator frequency */
@@ -217,6 +218,13 @@ void SystemInit (void)
          
     /* Configure the System clock source, PLL Multiplier and Divider factors, 
         AHB/APBx prescalers and Flash settings */
+    /* Program Flash wait states BEFORE raising the core clock.
+       The GD32 standard library never touches FMC_WS, which would otherwise
+       stay at its reset value of 0 and make Flash access fail at >30 MHz. */
+    fmc_unlock();
+    fmc_wscnt_set(MICROPY_HW_FLASH_WS);
+    fmc_lock();
+
     system_clock_config();
 
 #ifdef VECT_TAB_SRAM
