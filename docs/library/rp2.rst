@@ -245,5 +245,6 @@ Classes
 
     rp2.DMA.rst
     rp2.Flash.rst
+    rp2.HSTX.rst
     rp2.PIO.rst
     rp2.StateMachine.rst
