@@ -148,6 +148,9 @@ static const mp_rom_map_elem_t machine_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_mem8), MP_ROM_PTR(&machine_mem8_obj) },
     { MP_ROM_QSTR(MP_QSTR_mem16), MP_ROM_PTR(&machine_mem16_obj) },
     { MP_ROM_QSTR(MP_QSTR_mem32), MP_ROM_PTR(&machine_mem32_obj) },
+    #if MICROPY_PY_MACHINE_MEM64
+    { MP_ROM_QSTR(MP_QSTR_mem64), MP_ROM_PTR(&machine_mem64_obj) },
+    #endif
     #endif
     #if MICROPY_PY_MACHINE_MEM_BACKUP
     { MP_ROM_QSTR(MP_QSTR_mem_backup), MP_ROM_PTR(&machine_mem_backup_fun_obj) },
