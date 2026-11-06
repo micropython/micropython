@@ -26,5 +26,9 @@
     "product": "ProS3",
     "thumbnail": "",
     "url": "https://pros3.io",
+    "variants": {
+        "PROS3": "ProS3",
+        "PROS3D": "ProS3[D]"
+    },
     "vendor": "Unexpected Maker"
 }

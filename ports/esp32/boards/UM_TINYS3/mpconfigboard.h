@@ -1,4 +1,6 @@
+#ifndef MICROPY_HW_BOARD_NAME
 #define MICROPY_HW_BOARD_NAME               "TinyS3"
+#endif
 #define MICROPY_HW_MCU_NAME                 "ESP32-S3-FN8"
 #define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT "TinyS3"
 

@@ -25,5 +25,9 @@
     "product": "TinyPICO",
     "thumbnail": "",
     "url": "https://www.tinypico.com/",
+    "variants": {
+        "TINYPICO": "TinyPICO",
+        "TINYPICOD": "TinyPICO[D]"
+    },
     "vendor": "Unexpected Maker"
 }
