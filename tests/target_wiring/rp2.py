@@ -9,3 +9,7 @@ uart_loopback_kwargs = {"tx": "GPIO0", "rx": "GPIO1"}
 spi_standalone_args_list = [(0,), (1,)]
 
 pwm_loopback_pins = [("GPIO0", "GPIO1")]
+
+i2c_loopback_controller_kwargs = {"scl": 5, "sda": 4}
+i2c_loopback_target_args = (1,)
+i2c_loopback_target_kwargs = {}
