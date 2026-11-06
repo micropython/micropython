@@ -1,0 +1,7 @@
+number
+sync: False
+async: 42
+slow: 7
+after: 1
+KeyboardInterrupt
+alive: 1

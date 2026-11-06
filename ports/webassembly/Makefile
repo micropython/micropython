@@ -84,6 +84,7 @@ JSFLAGS += -s EXPORTED_FUNCTIONS="\
 	_mp_js_init,\
 	_mp_js_repl_init,\
 	_mp_js_repl_process_char,\
+	_mp_js_repl_process_char_async,\
 	_mp_hal_get_interrupt_char,\
 	_mp_sched_keyboard_interrupt$(EXPORTED_FUNCTIONS_EXTRA)"
 JSFLAGS += -s EXPORTED_RUNTIME_METHODS="\
