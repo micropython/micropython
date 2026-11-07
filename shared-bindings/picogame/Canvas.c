@@ -96,6 +96,8 @@ static picogame_canvas_obj_t *cv_self(mp_obj_t o) {
 // "self + N ints -> void", and the inlined per-wrapper mp_obj_get_int runs cost ~70-120 B
 // each at -Os. One loop here + a tiny per-wrapper stub keeps the flash cost per method at
 // ~2 calls. n comes from the VAR_BETWEEN exact arity, so v[] is always fully written.
+// Call it in its own statement: the order a call's arguments are evaluated in is unspecified,
+// so v[] read beside cv_args() in one argument list may be read before it is written.
 static picogame_canvas_obj_t *cv_args(const mp_obj_t *a, size_t n, int *v) {
     for (size_t i = 1; i < n; i++) {
         v[i - 1] = mp_obj_get_int(a[i]);
@@ -120,7 +122,8 @@ static MP_DEFINE_CONST_FUN_OBJ_2(canvas_clear_obj, canvas_clear);
 //|
 static mp_obj_t canvas_pixel(size_t n, const mp_obj_t *a) {
     int v[3];
-    picogame_canvas_pixel(cv_args(a, n, v), v[0], v[1], v[2]);
+    picogame_canvas_obj_t *cv = cv_args(a, n, v);
+    picogame_canvas_pixel(cv, v[0], v[1], v[2]);
     return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(canvas_pixel_obj, 4, 4, canvas_pixel);
@@ -132,7 +135,8 @@ static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(canvas_pixel_obj, 4, 4, canvas_pixel)
 //|
 static mp_obj_t canvas_fill_rect(size_t n, const mp_obj_t *a) {
     int v[5];
-    picogame_canvas_fill_rect(cv_args(a, n, v), v[0], v[1], v[2], v[3], v[4]);
+    picogame_canvas_obj_t *cv = cv_args(a, n, v);
+    picogame_canvas_fill_rect(cv, v[0], v[1], v[2], v[3], v[4]);
     return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(canvas_fill_rect_obj, 6, 6, canvas_fill_rect);
@@ -374,7 +378,8 @@ static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(canvas_road_obj, 8, 8, canvas_road);
 //|
 static mp_obj_t canvas_rect(size_t n, const mp_obj_t *a) {
     int v[5];
-    picogame_canvas_rect(cv_args(a, n, v), v[0], v[1], v[2], v[3], v[4]);
+    picogame_canvas_obj_t *cv = cv_args(a, n, v);
+    picogame_canvas_rect(cv, v[0], v[1], v[2], v[3], v[4]);
     return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(canvas_rect_obj, 6, 6, canvas_rect);
@@ -386,7 +391,8 @@ static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(canvas_rect_obj, 6, 6, canvas_rect);
 //|
 static mp_obj_t canvas_line(size_t n, const mp_obj_t *a) {
     int v[5];
-    picogame_canvas_line(cv_args(a, n, v), v[0], v[1], v[2], v[3], v[4]);
+    picogame_canvas_obj_t *cv = cv_args(a, n, v);
+    picogame_canvas_line(cv, v[0], v[1], v[2], v[3], v[4]);
     return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(canvas_line_obj, 6, 6, canvas_line);
@@ -398,7 +404,8 @@ static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(canvas_line_obj, 6, 6, canvas_line);
 //|
 static mp_obj_t canvas_fill_circle(size_t n, const mp_obj_t *a) {
     int v[4];
-    picogame_canvas_fill_circle(cv_args(a, n, v), v[0], v[1], v[2], v[3]);
+    picogame_canvas_obj_t *cv = cv_args(a, n, v);
+    picogame_canvas_fill_circle(cv, v[0], v[1], v[2], v[3]);
     return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(canvas_fill_circle_obj, 5, 5, canvas_fill_circle);
@@ -410,7 +417,8 @@ static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(canvas_fill_circle_obj, 5, 5, canvas_
 //|
 static mp_obj_t canvas_circle(size_t n, const mp_obj_t *a) {
     int v[4];
-    picogame_canvas_circle(cv_args(a, n, v), v[0], v[1], v[2], v[3]);
+    picogame_canvas_obj_t *cv = cv_args(a, n, v);
+    picogame_canvas_circle(cv, v[0], v[1], v[2], v[3]);
     return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(canvas_circle_obj, 5, 5, canvas_circle);
@@ -422,7 +430,8 @@ static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(canvas_circle_obj, 5, 5, canvas_circl
 //|
 static mp_obj_t canvas_ring(size_t n, const mp_obj_t *a) {
     int v[5];
-    picogame_canvas_ring(cv_args(a, n, v), v[0], v[1], v[2], v[3], v[4]);
+    picogame_canvas_obj_t *cv = cv_args(a, n, v);
+    picogame_canvas_ring(cv, v[0], v[1], v[2], v[3], v[4]);
     return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(canvas_ring_obj, 6, 6, canvas_ring);
@@ -436,7 +445,8 @@ static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(canvas_ring_obj, 6, 6, canvas_ring);
 //|
 static mp_obj_t canvas_triangle(size_t n, const mp_obj_t *a) {
     int v[7];
-    picogame_canvas_triangle(cv_args(a, n, v), v[0], v[1], v[2], v[3], v[4], v[5], v[6]);
+    picogame_canvas_obj_t *cv = cv_args(a, n, v);
+    picogame_canvas_triangle(cv, v[0], v[1], v[2], v[3], v[4], v[5], v[6]);
     return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(canvas_triangle_obj, 8, 8, canvas_triangle);
@@ -451,7 +461,8 @@ static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(canvas_triangle_obj, 8, 8, canvas_tri
 //|
 static mp_obj_t canvas_fill_triangle(size_t n, const mp_obj_t *a) {
     int v[7];
-    picogame_canvas_fill_triangle(cv_args(a, n, v), v[0], v[1], v[2], v[3], v[4], v[5], v[6]);
+    picogame_canvas_obj_t *cv = cv_args(a, n, v);
+    picogame_canvas_fill_triangle(cv, v[0], v[1], v[2], v[3], v[4], v[5], v[6]);
     return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(canvas_fill_triangle_obj, 8, 8, canvas_fill_triangle);
@@ -463,7 +474,8 @@ static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(canvas_fill_triangle_obj, 8, 8, canva
 //|
 static mp_obj_t canvas_ellipse(size_t n, const mp_obj_t *a) {
     int v[5];
-    picogame_canvas_ellipse(cv_args(a, n, v), v[0], v[1], v[2], v[3], v[4]);
+    picogame_canvas_obj_t *cv = cv_args(a, n, v);
+    picogame_canvas_ellipse(cv, v[0], v[1], v[2], v[3], v[4]);
     return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(canvas_ellipse_obj, 6, 6, canvas_ellipse);
@@ -475,7 +487,8 @@ static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(canvas_ellipse_obj, 6, 6, canvas_elli
 //|
 static mp_obj_t canvas_fill_ellipse(size_t n, const mp_obj_t *a) {
     int v[5];
-    picogame_canvas_fill_ellipse(cv_args(a, n, v), v[0], v[1], v[2], v[3], v[4]);
+    picogame_canvas_obj_t *cv = cv_args(a, n, v);
+    picogame_canvas_fill_ellipse(cv, v[0], v[1], v[2], v[3], v[4]);
     return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(canvas_fill_ellipse_obj, 6, 6, canvas_fill_ellipse);
@@ -487,7 +500,8 @@ static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(canvas_fill_ellipse_obj, 6, 6, canvas
 //|
 static mp_obj_t canvas_fill_round_rect(size_t n, const mp_obj_t *a) {
     int v[6];
-    picogame_canvas_fill_round_rect(cv_args(a, n, v), v[0], v[1], v[2], v[3], v[4], v[5]);
+    picogame_canvas_obj_t *cv = cv_args(a, n, v);
+    picogame_canvas_fill_round_rect(cv, v[0], v[1], v[2], v[3], v[4], v[5]);
     return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(canvas_fill_round_rect_obj, 7, 7, canvas_fill_round_rect);
@@ -500,7 +514,8 @@ static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(canvas_fill_round_rect_obj, 7, 7, can
 //|
 static mp_obj_t canvas_frame3d(size_t n, const mp_obj_t *a) {
     int v[6];
-    picogame_canvas_frame3d(cv_args(a, n, v), v[0], v[1], v[2], v[3], v[4], v[5]);
+    picogame_canvas_obj_t *cv = cv_args(a, n, v);
+    picogame_canvas_frame3d(cv, v[0], v[1], v[2], v[3], v[4], v[5]);
     return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(canvas_frame3d_obj, 7, 7, canvas_frame3d);
