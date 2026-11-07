@@ -1,6 +1,8 @@
 import time
 from binascii import unhexlify
 
+import esp32
+import machine
 from machine import I2C, Pin, SDCard
 from micropython import const
 
@@ -25,10 +27,11 @@ _BUTTON_PINS = (
 )
 
 for _pin in _BUTTON_PINS:
-    _pin.init(Pin.IN, Pin.PULL_UP)
+    _pin.init(Pin.IN, Pin.PULL_UP, hold=False)
 del _pin
 
 _charge_stat = Pin(_pins.CHARGE_STAT, Pin.IN)
+_power_latch = Pin(_pins.POWER_LATCH)
 _sd_power = Pin(_pins.SD_POWER)
 
 _CW2017_ADDRESS = const(0x63)
@@ -108,7 +111,7 @@ def is_charging() -> bool:
 
 
 def sd_power(on: bool) -> None:
-    _sd_power.init(Pin.OUT, value=1)
+    _sd_power.init(Pin.OUT, value=1, hold=False)
     if on:
         time.sleep_ms(80)
         _sd_power.value(0)
@@ -118,6 +121,18 @@ def sd_power(on: bool) -> None:
 def sdcard(**kwargs) -> SDCard:
     sd_power(True)
     return SDCard(**kwargs)
+
+
+def deepsleep(time_ms: int = None) -> None:
+    _power_latch.init(Pin.OUT, value=1, hold=True)
+    _sd_power.init(Pin.OUT, value=1, hold=True)
+    power = _BUTTON_PINS[POWER]
+    power.init(Pin.IN, Pin.PULL_UP, hold=True)
+    esp32.wake_on_ext0(pin=power, level=esp32.WAKEUP_ALL_LOW)
+    if time_ms is None:
+        machine.deepsleep()
+    else:
+        machine.deepsleep(time_ms)
 
 
 class buttons:

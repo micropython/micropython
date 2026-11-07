@@ -32,3 +32,7 @@ The microSD card uses SDMMC 1-bit on GPIO40-42 with an active-low power rail
 on GPIO6. `board.sdcard()` powers the card and returns a `machine.SDCard`,
 e.g. `vfs.mount(board.sdcard(), "/sd")`. `board.sd_power(False)` turns the
 rail off again after `SDCard.deinit()`.
+
+`board.deepsleep(time_ms=None)` holds the power latch on and the SD rail off,
+then deep sleeps until the power button is pressed or `time_ms` elapses. Without
+the latch held the board powers off instead.
