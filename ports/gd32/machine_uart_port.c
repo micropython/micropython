@@ -10,6 +10,10 @@
 
 #include "gd32f4xx.h"
 
+#if MICROPY_PY_MACHINE_UART_IRQ
+#include "shared/runtime/mpirq.h"
+#endif
+
 #define UART_RX_BUFFER_SIZE  (256)
 
 // ---- simple SPSC ring buffer ----
@@ -64,6 +68,9 @@ typedef struct _machine_uart_obj_t {
     uint16_t timeout;          // ms; 0 = block forever
     uart_ringbuf_t read_buffer;
     uint8_t  read_buffer_data[UART_RX_BUFFER_SIZE];
+    #if MICROPY_PY_MACHINE_UART_IRQ
+    mp_irq_obj_t *irq_obj;               // NULL until UART.irq() is called
+    #endif
 } machine_uart_obj_t;
 
 // ---- instances ----
@@ -106,7 +113,122 @@ static void machine_uart_irq_handler(uint8_t idx) {
         uint8_t data = (uint8_t)usart_data_receive(self->usart);
         uart_ringbuf_put(&self->read_buffer, data);
     }
+    #if MICROPY_PY_MACHINE_UART_IRQ
+    // Wake any Python-level handler installed with UART.irq().
+    if (self->irq_obj != NULL) {
+        mp_irq_handler(self->irq_obj);
+    }
+    #endif
 }
+
+// ---- extmod hooks: sendbreak / readchar / writechar / irq ----
+
+#if MICROPY_PY_MACHINE_UART_SENDBREAK
+// Hold TX low for longer than one character frame; the receiver sees a break.
+static void mp_machine_uart_sendbreak(machine_uart_obj_t *self) {
+    // Estimate one frame: start + data + parity + stop bits at the current baud.
+    uint32_t bits_per_frame = 1 + self->bits
+        + ((self->parity == USART_PM_NONE) ? 0 : 1)
+        + ((self->stop == USART_STB_2BIT) ? 2 : 1);
+    uint32_t frame_us = (uint32_t)((uint64_t)bits_per_frame * 1000000u / self->baudrate);
+    // Twelve bit-times is comfortably longer than any single frame.
+    uint32_t break_us = frame_us * 12u;
+
+    usart_data_transmit(self->usart, 0x00);
+    while (usart_flag_get(self->usart, USART_FLAG_TBE) == RESET) {
+        ;
+    }
+    mp_hal_delay_us(break_us);
+}
+#endif
+
+#if MICROPY_PY_MACHINE_UART_READCHAR_WRITECHAR
+// Read one character, blocking honouring the instance timeout.  Returns -1 on
+// timeout, matching the extmod convention.
+static mp_int_t mp_machine_uart_readchar(machine_uart_obj_t *self) {
+    if (self->timeout == 0) {
+        int c;
+        while ((c = uart_ringbuf_get(&self->read_buffer)) < 0) {
+            ;
+        }
+        return c;
+    }
+    uint32_t start = mp_hal_ticks_ms();
+    for (;;) {
+        int c = uart_ringbuf_get(&self->read_buffer);
+        if (c >= 0) {
+            return c;
+        }
+        if ((uint32_t)(mp_hal_ticks_ms() - start) >= self->timeout) {
+            return -1;
+        }
+    }
+}
+
+static void mp_machine_uart_writechar(machine_uart_obj_t *self, uint16_t data) {
+    while (usart_flag_get(self->usart, USART_FLAG_TBE) == RESET) {
+        ;
+    }
+    usart_data_transmit(self->usart, (uint8_t)data);
+}
+#endif
+
+#if MICROPY_PY_MACHINE_UART_IRQ
+
+// Triggers the user may request.  RX-any is handled by the RXNE interrupt;
+// the others have no hardware support on this port, so they are masked out and
+// UART.irq() rejects them with a ValueError rather than silently ignoring.
+#define UART_IRQ_ALLOWED_TRIGGERS (1u << 0)   // RX data available
+
+static mp_uint_t uart_irq_trigger(mp_obj_t self_in, mp_uint_t trigger) {
+    machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_uint_t enabled = 0;
+    if (trigger & UART_IRQ_ALLOWED_TRIGGERS) {
+        usart_interrupt_enable(self->usart, USART_INT_RBNE);
+        enabled |= UART_IRQ_ALLOWED_TRIGGERS;
+    } else {
+        usart_interrupt_disable(self->usart, USART_INT_RBNE);
+    }
+    return enabled;
+}
+
+static mp_uint_t uart_irq_info(mp_obj_t self_in, mp_uint_t info_type) {
+    (void)self_in;
+    if (info_type == MP_IRQ_INFO_FLAGS) {
+        return UART_IRQ_ALLOWED_TRIGGERS;
+    } else if (info_type == MP_IRQ_INFO_TRIGGERS) {
+        return UART_IRQ_ALLOWED_TRIGGERS;
+    }
+    return 0;
+}
+
+static const mp_irq_methods_t uart_irq_methods = {
+    .trigger = uart_irq_trigger,
+    .info = uart_irq_info,
+};
+
+static mp_irq_obj_t *mp_machine_uart_irq(machine_uart_obj_t *self, bool any_args,
+                                          mp_arg_val_t *args) {
+    if (self->irq_obj == NULL) {
+        self->irq_obj = mp_irq_new(&uart_irq_methods, MP_OBJ_FROM_PTR(self));
+    }
+    if (any_args) {
+        mp_obj_t handler = args[MP_IRQ_ARG_INIT_handler].u_obj;
+        if (handler != mp_const_none && !mp_obj_is_callable(handler)) {
+            mp_raise_ValueError(MP_ERROR_TEXT("handler must be None or callable"));
+        }
+        mp_uint_t trigger = (mp_uint_t)args[MP_IRQ_ARG_INIT_trigger].u_int;
+        if (trigger & ~UART_IRQ_ALLOWED_TRIGGERS) {
+            mp_raise_ValueError(MP_ERROR_TEXT("unsupported trigger"));
+        }
+        mp_irq_init(self->irq_obj, &uart_irq_methods, MP_OBJ_FROM_PTR(self));
+        self->irq_obj->handler = handler;
+        self->irq_obj->ishard = false;
+        uart_irq_trigger(MP_OBJ_FROM_PTR(self), trigger);
+    }
+    return self->irq_obj;
+}
+#endif
 
 // ---- type methods ----
 static void mp_machine_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {

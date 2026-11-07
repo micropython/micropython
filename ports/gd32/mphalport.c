@@ -5,6 +5,9 @@
 #include "py/mphal.h"
 #include "gd32f4xx.h"
 #include "mphalport.h"
+#if MICROPY_PY_OS_DUPTERM
+#include "extmod/misc.h"
+#endif
 #if MICROPY_HW_ENABLE_USBDEV
 #include "shared/tinyusb/mp_usbd.h"
 #endif
@@ -61,6 +64,13 @@ int mp_hal_stdin_rx_chr(void) {
         #if MICROPY_HW_ENABLE_USBDEV
         mp_usbd_task();
         #endif
+        #if MICROPY_PY_OS_DUPTERM
+        // A stream attached with os.dupterm() gets first refusal.
+        int dupterm_c = mp_os_dupterm_rx_chr();
+        if (dupterm_c >= 0) {
+            return dupterm_c;
+        }
+        #endif
         // Fall back to the UART REPL.
         uart_repl_init();
         if (usart_flag_get(REPL_UART, USART_FLAG_RBNE) != RESET) {
@@ -70,6 +80,11 @@ int mp_hal_stdin_rx_chr(void) {
 }
 
 mp_uint_t mp_hal_stdout_tx_strn(const char *str, size_t len) {
+    #if MICROPY_PY_OS_DUPTERM
+    // Mirror to any stream attached with os.dupterm() (e.g. a second UART).
+    int dupterm_res = mp_os_dupterm_tx_strn(str, len);
+    (void)dupterm_res;
+    #endif
     uart_repl_init();
     for (size_t i = 0; i < len; i++) {
         while (RESET == usart_flag_get(REPL_UART, USART_FLAG_TBE)) {

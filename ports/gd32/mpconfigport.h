@@ -42,6 +42,29 @@
 #define MICROPY_OPT_MAP_LOOKUP_CACHE      (1)
 #endif
 
+// ---- Native code generation (stage 2) ----
+// Enables @micropython.native and @micropython.viper, which compile Python to
+// Thumb-2 machine code at runtime.  The GD32F4 is a Cortex-M4 so the ARMV7M
+// instruction set is available (py/asmthumb.c picks it up from __ARM_ARCH_ISA_THUMB).
+#ifndef MICROPY_EMIT_THUMB
+#define MICROPY_EMIT_THUMB                (1)
+#endif
+#ifndef MICROPY_EMIT_INLINE_THUMB
+#define MICROPY_EMIT_INLINE_THUMB         (1)
+#endif
+
+// ---- Small feature switches (stage 1) ----
+// SPI bit-order constants, so SPI(firstbit=SPI.LSB) works instead of the raw int.
+#define MICROPY_PY_MACHINE_SPI_MSB        (0)
+#define MICROPY_PY_MACHINE_SPI_LSB        (1)
+
+// Allows raising exceptions from interrupt context at low cost.
+#define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF (1)
+#define MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE   (0)   // dynamic allocation
+
+// Lets the REPL print heap/stack usage, handy on a memory-tight port.
+#define MICROPY_REPL_INFO                 (1)
+
 #define MICROPY_LONGINT_IMPL              (MICROPY_LONGINT_IMPL_MPZ)
 // newlib (bare-metal) does not provide SSIZE_MAX
 #ifndef SSIZE_MAX
@@ -97,6 +120,9 @@ typedef long mp_off_t;
 #define MICROPY_PY_OS_SYNC                (1)
 #define MICROPY_PY_OS_UNAME               (1)
 #define MICROPY_PY_OS_URANDOM             (1)
+// os.dupterm(): one extra stream can be attached to the REPL.
+#define MICROPY_PY_OS_DUPTERM             (1)
+#define MICROPY_PY_OS_DUPTERM_BUILTIN_STREAM (0)
 #define MICROPY_PY_UCTYPES                (1)
 #define MICROPY_PY_UZLIB                  (0)
 #define MICROPY_PY_UHASHLIB               (0)
@@ -113,10 +139,15 @@ typedef long mp_off_t;
 #define MICROPY_PY_MACHINE_PIN_BASE         (1)
 #define MICROPY_PY_MACHINE_SIGNAL           (1)
 #define MICROPY_PY_MACHINE_PULSE            (1)
+// DHT temperature/humidity sensors, built on machine.time_pulse_us().
+#define MICROPY_PY_MACHINE_DHT_READINTO     (1)
 #define MICROPY_PY_MACHINE_BITSTREAM        (1)
 #define MICROPY_PY_MACHINE_BARE_METAL_FUNCS (1)
 #define MICROPY_PY_MACHINE_MEMX           (1)
-#define MICROPY_PY_MACHINE_MEM_BACKUP     (0)
+// machine.mem_backup(): the 20 RTC backup registers (80 bytes), retained across
+// reset and deep sleep as long as VBAT/main supply is present.
+#define MICROPY_PY_MACHINE_MEM_BACKUP     (1)
+#define MICROPY_PY_MACHINE_MEM_BACKUP_INCLUDEFILE "machine_mem_backup_port.c"
 #define MICROPY_PY_MACHINE_DISABLE_IRQ_ENABLE_IRQ (1)
 #define MICROPY_PY_MACHINE_RESET            (1)
 #define MICROPY_PY_MACHINE_BOOTLOADER       (0)
@@ -132,6 +163,12 @@ extern volatile uint32_t systick_ms;
 #define MICROPY_PY_MACHINE_WDT_TIMEOUT_MS (1)
 #define MICROPY_PY_MACHINE_UART           (1)
 #define MICROPY_PY_MACHINE_UART_INCLUDEFILE "machine_uart_port.c"
+
+// UART extras backed by machine_uart_port.c: break generation, single-char
+// read/write, and an RX interrupt handler.
+#define MICROPY_PY_MACHINE_UART_SENDBREAK       (1)
+#define MICROPY_PY_MACHINE_UART_READCHAR_WRITECHAR (1)
+#define MICROPY_PY_MACHINE_UART_IRQ             (1)
 #define MICROPY_PY_MACHINE_SPI            (1)
 #define MICROPY_PY_MACHINE_I2C            (1)
 // Networking: lwIP over the GD32 ENET MAC

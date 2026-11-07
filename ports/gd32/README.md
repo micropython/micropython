@@ -669,6 +669,14 @@ Compared with `ports/stm32` for STM32F4:
 | `freq` | ✅ | returns `SystemCoreClock` |
 | `disable_irq` / `enable_irq` | ✅ | PRIMASK based |
 | `time_pulse_us` | ✅ | IRQ-timed pulse measurement |
+| `dht_readinto` | ✅ | DHT11/DHT22 temperature & humidity sensors |
+| `mem_backup` | ✅ | 20 RTC backup registers (80 B), retained across reset |
+| `UART.sendbreak` | ✅ | drive a break condition on TX |
+| `UART.readchar` / `writechar` | ✅ | single-byte read/write |
+| `UART.irq` | ✅ | RX interrupt handler via `mpirq` |
+| `SPI.LSB` / `SPI.MSB` | ✅ | bit-order constants for `firstbit=` |
+| `@micropython.native` / `viper` | ✅ | Thumb-2 runtime code generation |
+| `os.dupterm` | ✅ | attach a stream (e.g. a UART) to the REPL |
 
 ### Python standard-library modules
 
@@ -683,7 +691,7 @@ These are enabled and use no external dependencies:
 | `heapq` | `heappush`, `heappop`, `heapify` |
 | `random` | seeded from the TRNG; `getrandbits`, `choice`, `randint` |
 | `time` | `time`, `time_ns`, `sleep*`, `ticks_*` via RTC/uptime |
-| `os` | `listdir`, `stat`, `mkdir`, `rename`, `remove`, `mount`, `uname`, `urandom`, `sync` |
+| `os` | `listdir`, `stat`, `mkdir`, `rename`, `remove`, `mount`, `uname`, `urandom`, `sync`, `dupterm` |
 
 ### Deliberately omitted versus STM32F4
 
@@ -692,6 +700,10 @@ These are enabled and use no external dependencies:
 | `framebuf` | no display driver in this port (the TLI controller is not wrapped) |
 | `machine.ADCBlock` | the simpler single-channel `ADC` covers the GD32F4 use case |
 | `pyb` legacy API | specific to ST boards, not applicable to GD32 |
+| `_thread` | needs a PendSV-based context switcher; not implemented yet |
+| `os.VfsRom` | needs a ROMFS image to mount; no ROM data source here |
+| `stm` module | exposes STM32 register names, meaningless on GD32 |
+| `bluetooth` | the GD32F4 has no on-chip BLE radio |
 
 Everything else the STM32F4 port exposes is present: 20 `machine` types,
 `network.LAN` on lwIP, littlefs, USB CDC, frozen modules, `asyncio`,

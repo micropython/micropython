@@ -100,6 +100,7 @@ SRC_C = \
 	usbd.c \
 	machine_sdcard_port.c \
 	drivers/bus/softspi.c \
+	drivers/dht/dht.c \
 	shared/runtime/softtimer.c \
 	shared/runtime/mpirq.c \
 	shared/tinyusb/mp_usbd.c \

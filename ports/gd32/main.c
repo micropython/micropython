@@ -19,6 +19,8 @@
 
 #include "gd32f4xx.h"
 #include "board.h"
+
+void machine_mem_backup_init(void);
 #include "mphalport.h"
 
 // memory
@@ -103,6 +105,9 @@ int main(void) {
     #endif
 
     board_init();
+
+    // Enable write access to the RTC backup domain for machine.mem_backup().
+    machine_mem_backup_init();
 
     #if MICROPY_REPL_EVENT_DRIVEN
     pyexec_event_repl_init();
