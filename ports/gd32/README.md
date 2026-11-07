@@ -3,6 +3,13 @@
 Based on the MicroPython v1.30.0 core with the official
 [GD32F4xx standard peripheral library](https://github.com/GigaDevice-GD32-MCU/GD32F4xx_Firmware_Library) (V3.3.2).
 
+> **Before changing the partition layout, enabling a new module, or
+> upgrading a board that already has a filesystem:** see
+> [CONSTRAINTS.md](CONSTRAINTS.md).  It records the measured flash/RAM
+> budget, what has already been traded away and why, and the
+> upgrade/migration caveats.
+
+
 ## Supported boards
 
 | Board      | MCU         | Flash | RAM   | Core clock | REPL UART        |

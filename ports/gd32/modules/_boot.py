@@ -14,6 +14,6 @@ try:
     import os
 
     if not os.listdir("/"):
-        print("littlefs: root is empty (run machine.Flash.mkfs() to format)")
+        print("littlefs: empty; format with os.umount('/'); machine.Flash().mkfs()")
 except OSError:
-    print("littlefs: root not mounted")
+    print("littlefs: not mounted (format with os.umount('/'); machine.Flash().mkfs())")
