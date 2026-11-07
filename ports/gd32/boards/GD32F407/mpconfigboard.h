@@ -6,8 +6,8 @@
 #define MICROPY_HW_BOARD_NAME "GD32F407"
 #define MICROPY_HW_MCU_NAME "GD32F407VE"
 
-// HXTAL 25MHz crystal (GD32F4 standard) -> 168MHz
-#define MICROPY_HW_CLK_HXTAL      (25000000)
+// HXTAL 8MHz crystal -> 168MHz  (PLL: 8M/8*336/2)
+#define MICROPY_HW_CLK_HXTAL      (8000000)
 #define MICROPY_HW_MCU_FREQ       (168000000)
 
 

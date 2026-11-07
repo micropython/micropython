@@ -338,15 +338,21 @@ Adding further peripherals follows the same pattern:
 
 1. **Clock setup**: `system_gd32f4xx.c` picks the clock through a `#define`
    near the top of the file. The vendored copy enables
-   `__SYSTEM_CLOCK_168M_PLL_25M_HXTAL` for the GD32F405/407 branch and
-   `__SYSTEM_CLOCK_240M_PLL_25M_HXTAL` for GD32F470. Both assume a 25 MHz
-   crystal; 8 MHz and 16 MHz IRC variants exist if your board differs.
+   `__SYSTEM_CLOCK_168M_PLL_8M_HXTAL` for the GD32F405/407 branch and
+   `__SYSTEM_CLOCK_240M_PLL_8M_HXTAL` for GD32F470, i.e. both assume an
+   **8 MHz** crystal.
+
+   `HXTAL_VALUE` in `gd32lib/CMSIS_include/gd32f4xx.h` must match the crystal
+   actually fitted, because `rcu_clock_freq_get()` divides that constant to
+   derive the bus frequencies - get it wrong and every UART baud rate is off by
+   the same ratio (a 25 MHz build on an 8 MHz board prints at 36864 baud
+   instead of 115200, which shows up as garbage in a terminal).
 
    The resulting configuration, checked against the GD32F4xx datasheet:
 
    | | GD32F407 | GD32F470 | Datasheet limit |
    |---|---|---|---|
-   | PLL input | 25 MHz / 25 = 1 MHz | 25 MHz / 25 = 1 MHz | 1-2 MHz recommended |
+   | PLL input | 8 MHz / 8 = 1 MHz | 8 MHz / 8 = 1 MHz | 1-2 MHz recommended |
    | VCO | 336 MHz | 480 MHz | 100-500 MHz |
    | CK_SYS | 168 MHz | 240 MHz | 168 / 240 MHz |
    | AHB | 168 MHz | 240 MHz | 168 / 240 MHz |
