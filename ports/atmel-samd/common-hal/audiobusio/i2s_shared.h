@@ -3,8 +3,9 @@
 // SPDX-License-Identifier: MIT
 
 // Shared reference counting for the single I2S peripheral, used by both
-// audiobusio I2SOut and PDMIn. The implementations live in I2SOut.c because
-// that file is always compiled when the audiobusio module is enabled.
+// audiobusio I2SOut and PDMIn. The implementations are in I2SOut.c, outside
+// its CIRCUITPY_AUDIOBUSIO_I2SOUT guard, so they exist on boards with PDMIn
+// but no I2SOut.
 
 #pragma once
 

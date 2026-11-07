@@ -9,6 +9,34 @@
 
 #include "mpconfigport.h"
 
+#include "i2s_shared.h"
+#include "samd/clocks.h"
+
+#ifdef SAMD21
+#include "hpl/pm/hpl_pm_base.h"
+#endif
+
+// Shared I2S reference count. See i2s_shared.h.
+static uint8_t i2s_user_count = 0;
+
+void i2s_acquire(void) {
+    i2s_user_count++;
+}
+
+void i2s_release(void) {
+    i2s_user_count--;
+    if (i2s_user_count == 0) {
+        // Fully power the I2S peripheral down; undo what turn_on_i2s() did.
+        #ifdef SAM_D5X_E5X
+        disconnect_gclk_from_peripheral(5, I2S_GCLK_ID_0);
+        disconnect_gclk_from_peripheral(5, I2S_GCLK_ID_1);
+        MCLK->APBDMASK.reg &= ~MCLK_APBDMASK_I2S;
+        #else
+        _pm_disable_bus_clock(PM_BUS_APBC, I2S);
+        #endif
+    }
+}
+
 // Some boards don't implement I2SOut, so suppress any routines from here.
 #if CIRCUITPY_AUDIOBUSIO_I2SOUT
 
@@ -47,27 +75,6 @@
 #ifdef SAM_D5X_E5X
 #define SERCTRL(name) I2S_TXCTRL_##name
 #endif
-
-// Shared I2S reference count. See i2s_shared.h.
-static uint8_t i2s_user_count = 0;
-
-void i2s_acquire(void) {
-    i2s_user_count++;
-}
-
-void i2s_release(void) {
-    i2s_user_count--;
-    if (i2s_user_count == 0) {
-        // Fully power the I2S peripheral down; undo what turn_on_i2s() did.
-        #ifdef SAM_D5X_E5X
-        disconnect_gclk_from_peripheral(5, I2S_GCLK_ID_0);
-        disconnect_gclk_from_peripheral(5, I2S_GCLK_ID_1);
-        MCLK->APBDMASK.reg &= ~MCLK_APBDMASK_I2S;
-        #else
-        _pm_disable_bus_clock(PM_BUS_APBC, I2S);
-        #endif
-    }
-}
 
 // Caller validates that pins are free.
 void common_hal_audiobusio_i2sout_construct(audiobusio_i2sout_obj_t *self,
