@@ -435,7 +435,7 @@ function ci_psoc_edge_build {
 
 function ci_qemu_setup_arm {
     ci_gcc_arm_setup
-    _ci_apt_install qemu-system
+    _ci_apt_install qemu-system-arm
     _ci_pip_install pyelftools
     _ci_pip_install ar
     _ci_pip_install pyserial
@@ -444,7 +444,7 @@ function ci_qemu_setup_arm {
 
 function ci_qemu_setup_rv32 {
     ci_gcc_riscv_setup
-    _ci_apt_install qemu-system
+    _ci_apt_install qemu-system-riscv
     _ci_pip_install pyelftools
     _ci_pip_install ar
     _ci_pip_install pyserial
@@ -453,7 +453,7 @@ function ci_qemu_setup_rv32 {
 
 function ci_qemu_setup_rv64 {
     ci_gcc_riscv_setup
-    _ci_apt_install qemu-system
+    _ci_apt_install qemu-system-riscv
     _ci_pip_install pyelftools
     _ci_pip_install ar
     _ci_pip_install pyserial
@@ -462,7 +462,7 @@ function ci_qemu_setup_rv64 {
 
 function ci_qemu_setup_ppc64 {
     ci_gcc_ppc64_setup
-    _ci_apt_install qemu-system
+    _ci_apt_install qemu-system-ppc
     _ci_pip_install pyserial
     qemu-system-ppc64 --version
 }
