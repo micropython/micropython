@@ -492,7 +492,7 @@ function ci_qemu_build_arm_thumb_hardfp {
 function ci_qemu_build_rv32 {
     make ${MAKEOPTS} -C mpy-cross
     make ${MAKEOPTS} -C ports/qemu BOARD=VIRT_RV32 submodules
-    make ${MAKEOPTS} -C ports/qemu BOARD=VIRT_RV32 test_full
+    make ${MAKEOPTS} -C ports/qemu BOARD=VIRT_RV32 USER_C_MODULES=../../examples/usercmodule test_full
 
     # Test building and running native .mpy with rv32imc architecture.
     ci_native_mpy_modules_build rv32imc
@@ -502,7 +502,7 @@ function ci_qemu_build_rv32 {
 function ci_qemu_build_rv64 {
     make ${MAKEOPTS} -C mpy-cross
     make ${MAKEOPTS} -C ports/qemu BOARD=VIRT_RV64 submodules
-    make ${MAKEOPTS} -C ports/qemu BOARD=VIRT_RV64 test
+    make ${MAKEOPTS} -C ports/qemu BOARD=VIRT_RV64 USER_C_MODULES=../../examples/usercmodule test
 
     # Test building and running native .mpy with rv64imc architecture.
     ci_native_mpy_modules_build rv64imc
@@ -512,7 +512,7 @@ function ci_qemu_build_rv64 {
 function ci_qemu_build_ppc64 {
     make ${MAKEOPTS} -C mpy-cross
     make ${MAKEOPTS} -C ports/qemu BOARD=POWERNV9 submodules
-    make ${MAKEOPTS} -C ports/qemu BOARD=POWERNV9 test
+    make ${MAKEOPTS} -C ports/qemu BOARD=POWERNV9 USER_C_MODULES=../../examples/usercmodule test
 }
 
 ########################################################################################
