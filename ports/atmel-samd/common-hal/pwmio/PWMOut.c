@@ -31,12 +31,8 @@ uint32_t target_tcc_frequencies[TCC_INST_NUM];
 uint8_t tcc_refcount[TCC_INST_NUM];
 
 // This bitmask keeps track of which channels of a TCC are currently claimed.
-#ifdef SAMD21
-uint8_t tcc_channels[3];   // Set by pwmout_reset() to {0xf0, 0xfc, 0xfc} initially.
-#endif
-#ifdef SAM_D5X_E5X
-uint8_t tcc_channels[5];   // Set by pwmout_reset() to {0xc0, 0xf0, 0xf8, 0xfc, 0xfc} initially.
-#endif
+// A variable-frequency PWMOut claims all of them (0xff).
+uint8_t tcc_channels[TCC_INST_NUM];
 
 
 
@@ -230,6 +226,8 @@ void common_hal_pwmio_pwmout_deinit(pwmio_pwmout_obj_t *self) {
         tcc_refcount[t->index]--;
         tcc_channels[t->index] &= ~(1 << tcc_channel(t));
         if (tcc_refcount[t->index] == 0) {
+            // A variable-frequency PWMOut claimed every channel, not just its own.
+            tcc_channels[t->index] = 0;
             target_tcc_frequencies[t->index] = 0;
             Tcc *tcc = tcc_insts[t->index];
             tcc_set_enable(tcc, false);
