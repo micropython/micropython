@@ -85,8 +85,14 @@ MP_DECLARE_CONST_FUN_OBJ_KW(esp_network_ipconfig_obj);
 MP_DECLARE_CONST_FUN_OBJ_KW(esp_nic_ipconfig_obj);
 MP_DECLARE_CONST_FUN_OBJ_KW(esp_network_config_obj);
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(esp_network_phy_mode_obj);
+MP_DECLARE_CONST_FUN_OBJ_3(esp_mdns_service_obj);
 
 mp_obj_t esp_ifname(esp_netif_t *netif);
+
+#if MICROPY_HW_ENABLE_MDNS_QUERIES || MICROPY_HW_ENABLE_MDNS_RESPONDER
+void esp_mdns_init(bool raise_exceptions);
+void esp_mdns_deinit(void);
+#endif
 
 MP_NORETURN void esp_exceptions_helper(esp_err_t e);
 
