@@ -106,8 +106,11 @@ typedef long mp_off_t;
 #define MICROPY_PY_SYS_PLATFORM           "gd32"
 #define MICROPY_PY_SYS_EXIT               (1)
 
-// disable modules whose sources are not included in this port
-#define MICROPY_PY_SYS_STDFILES           (0)
+// sys.stdin / sys.stdout / sys.stderr.  These come from py/modsys.c, which is
+// always compiled, so this costs no extra source files.  Without them print()
+// loses its file= keyword and sys.std* do not exist, which breaks Thonny (and
+// any other tool that talks to the REPL through the standard streams).
+#define MICROPY_PY_SYS_STDFILES           (1)
 
 // filesystem: littlefs2 on internal flash
 #define MICROPY_VFS                       (1)

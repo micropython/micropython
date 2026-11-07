@@ -118,6 +118,7 @@ SRC_C = \
 	shared/readline/readline.c \
 	shared/runtime/pyexec.c \
 	shared/runtime/stdout_helpers.c \
+	shared/runtime/sys_stdio_mphal.c \
 	shared/timeutils/timeutils.c \
 	gd32lib/system_gd32f4xx.c \
 	gd32lib/peripheral_source/gd32f4xx_gpio.c \

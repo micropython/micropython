@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include "py/mpconfig.h"
 #include "py/runtime.h"
+#include "py/stream.h"
 #include "py/mphal.h"
 #include "gd32f4xx.h"
 #include "mphalport.h"
@@ -52,6 +53,42 @@ void uart_repl_init(void) {
     usart_transmit_config(REPL_UART, USART_TRANSMIT_ENABLE);
     usart_enable(REPL_UART);
     uart_ready = 1;
+}
+
+// Which stdio events are ready; used by sys.std*.ioctl(MP_STREAM_POLL).
+uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags) {
+    uintptr_t ret = 0;
+
+    #if MICROPY_PY_OS_DUPTERM
+    ret |= mp_os_dupterm_poll(poll_flags);
+    #endif
+
+    if (poll_flags & MP_STREAM_POLL_WR) {
+        // The UART transmit path drains synchronously, so it is always writable.
+        ret |= MP_STREAM_POLL_WR;
+    }
+
+    if (poll_flags & MP_STREAM_POLL_RD) {
+        // Check without consuming: ringbuf_get() would eat the byte.
+        if (stdin_ringbuf.iget != stdin_ringbuf.iput) {
+            ret |= MP_STREAM_POLL_RD;
+        } else {
+            #if MICROPY_HW_ENABLE_USBDEV
+            mp_usbd_task();
+            if (stdin_ringbuf.iget != stdin_ringbuf.iput) {
+                ret |= MP_STREAM_POLL_RD;
+            }
+            #endif
+            if (!(ret & MP_STREAM_POLL_RD)) {
+                uart_repl_init();
+                if (usart_flag_get(REPL_UART, USART_FLAG_RBNE) != RESET) {
+                    ret |= MP_STREAM_POLL_RD;
+                }
+            }
+        }
+    }
+
+    return ret;
 }
 
 int mp_hal_stdin_rx_chr(void) {

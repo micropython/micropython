@@ -229,18 +229,30 @@ static mp_obj_t flash_bdev_writeblocks(size_t n_args, const mp_obj_t *args) {
         offset = mp_obj_get_int(args[3]);
     }
 
-    if (offset != 0) {
-        // A partial write would need the rest of the sector, which we do not
-        // keep in RAM.  littlefs never does this, so treat it as an error.
+    // A non-zero offset is normal: littlefs caches a window of the block and
+    // flushes it with lfs2_bd_flush(), which passes the window offset through
+    // to prog().  NOR flash lets us program an already-erased sector at any
+    // offset, and littlefs erases the block before programming it, so there is
+    // no read-modify-write to do here.  (Rejecting offset != 0, as an earlier
+    // version did, made every file write fail with EINVAL.)
+    uint32_t bsize = flash_bdev_block_size(block);
+    if (offset > bsize) {
         mp_raise_OSError(MP_EINVAL);
     }
-    uint32_t bsize = flash_bdev_block_size(block);
-    if (len > bsize) {
-        len = bsize;
+    if (len > bsize - offset) {
+        len = bsize - offset;
+    }
+    // FMCL word programming needs word alignment only for the address; the
+    // length may be arbitrary because flash_bdev_program pads the tail.
+    if ((offset % 4) != 0 || (len % 4) != 0) {
+        // littlefs always programs in prog_size units, which are word
+        // multiples, so this should not happen; be explicit rather than
+        // silently mis-programming.
+        mp_raise_OSError(MP_EINVAL);
     }
 
     const flash_sector_t *s = flash_bdev_block_info(block);
-    if (!flash_bdev_program(s->addr, bufinfo.buf, len)) {
+    if (!flash_bdev_program(s->addr + offset, bufinfo.buf, len)) {
         mp_raise_OSError(MP_EIO);
     }
     return mp_const_none;
