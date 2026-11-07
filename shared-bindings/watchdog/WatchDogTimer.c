@@ -48,9 +48,18 @@ static mp_obj_t watchdog_watchdogtimer_feed(mp_obj_t self_in) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(watchdog_watchdogtimer_feed_obj, watchdog_watchdogtimer_feed);
 
+static void validate_timeout(mp_float_t timeout) {
+    // Ports work in whole milliseconds, so anything under 1 ms becomes 0.
+    // Written as !(... >= 1) so that NaN is rejected too.
+    if (!(timeout * 1000 >= 1)) {
+        mp_arg_error_invalid(MP_QSTR_timeout);
+    }
+}
+
 //|     timeout: float
 //|     """The maximum number of seconds that can elapse between calls
-//|     to `feed()`. Setting the timeout will also feed the watchdog."""
+//|     to `feed()`. Must be at least 0.001 (1 ms). Setting the timeout will also
+//|     feed the watchdog."""
 static mp_obj_t watchdog_watchdogtimer_obj_get_timeout(mp_obj_t self_in) {
     watchdog_watchdogtimer_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return mp_obj_new_float(common_hal_watchdog_get_timeout(self));
@@ -61,7 +70,7 @@ static mp_obj_t watchdog_watchdogtimer_obj_set_timeout(mp_obj_t self_in, mp_obj_
     watchdog_watchdogtimer_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_float_t timeout = mp_obj_get_float(timeout_obj);
 
-    mp_arg_validate_int_min(timeout, 0, MP_QSTR_timeout);
+    validate_timeout(timeout);
 
     common_hal_watchdog_set_timeout(self, timeout);
     return mp_const_none;
@@ -85,7 +94,8 @@ MP_PROPERTY_GETSET(watchdog_watchdogtimer_timeout_obj,
 //|       watchdog.mode = WatchDogMode.RESET
 //|
 //|
-//|     Once set, the `WatchDogTimer` will perform the specified action if the timer expires."""
+//|     Once set, the `WatchDogTimer` will perform the specified action if the timer expires.
+//|     Set `timeout` first: setting a `WatchDogMode` while `timeout` is less than 0.001 raises `ValueError`."""
 //|
 //|
 static mp_obj_t watchdog_watchdogtimer_obj_get_mode(mp_obj_t self_in) {
@@ -97,6 +107,9 @@ MP_DEFINE_CONST_FUN_OBJ_1(watchdog_watchdogtimer_get_mode_obj, watchdog_watchdog
 static mp_obj_t watchdog_watchdogtimer_obj_set_mode(mp_obj_t self_in, mp_obj_t obj) {
     watchdog_watchdogtimer_obj_t *self = MP_OBJ_TO_PTR(self_in);
     watchdog_watchdogmode_t mode = (obj == mp_const_none) ? WATCHDOGMODE_NONE : cp_enum_value(&watchdog_watchdogmode_type, obj, MP_QSTR_mode);
+    if (mode != WATCHDOGMODE_NONE) {
+        validate_timeout(common_hal_watchdog_get_timeout(self));
+    }
     common_hal_watchdog_set_mode(self, mode);
     return mp_const_none;
 }
