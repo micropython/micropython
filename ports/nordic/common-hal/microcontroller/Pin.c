@@ -12,16 +12,11 @@
 
 #include "nrf/pins.h"
 
-#ifdef SPEAKER_ENABLE_PIN
-bool speaker_enable_in_use;
-#endif
-
 // Bit mask of claimed pins on each of up to two ports. nrf52832 has one port; nrf52840 has two.
 static uint32_t claimed_pins[GPIO_COUNT];
 
 #ifdef SPEAKER_ENABLE_PIN
 static void reset_speaker_enable_pin(void) {
-    speaker_enable_in_use = false;
     nrf_gpio_cfg(SPEAKER_ENABLE_PIN->number,
         NRF_GPIO_PIN_DIR_OUTPUT,
         NRF_GPIO_PIN_INPUT_DISCONNECT,
@@ -70,12 +65,6 @@ void claim_pin_number(uint8_t pin_number) {
 
 void claim_pin(const mcu_pin_obj_t *pin) {
     claim_pin_number(pin->number);
-
-    #ifdef SPEAKER_ENABLE_PIN
-    if (pin == SPEAKER_ENABLE_PIN) {
-        speaker_enable_in_use = true;
-    }
-    #endif
 }
 
 
@@ -84,12 +73,6 @@ bool pin_number_is_free(uint8_t pin_number) {
 }
 
 bool common_hal_mcu_pin_is_free(const mcu_pin_obj_t *pin) {
-    #ifdef SPEAKER_ENABLE_PIN
-    if (pin == SPEAKER_ENABLE_PIN) {
-        return !speaker_enable_in_use;
-    }
-    #endif
-
     #ifdef NRF52840
     // If NFC pins are enabled for NFC, don't allow them to be used for GPIO.
     if (((NRF_UICR->NFCPINS & UICR_NFCPINS_PROTECT_Msk) ==
