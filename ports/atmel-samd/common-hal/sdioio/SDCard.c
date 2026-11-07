@@ -138,14 +138,9 @@ CLK PA21 PCC_D? (D32)  BROWN
     }
 
     if (result != SD_MMC_OK) {
-        for (size_t i = 0; i < MP_ARRAY_SIZE(functions); i++) {
-            if (!functions[i]->obj) {
-                break;
-            }
-            reset_pin_number(functions[i]->obj->number);
-        }
-        // The pins are released, so the finaliser has nothing to undo.
-        mark_deinit(self);
+        // Everything deinit() undoes is set up by now: it powers the SDHC down,
+        // releases the pins and marks the object deinited.
+        common_hal_sdioio_sdcard_deinit(self);
         mp_raise_OSError_msg_varg(MP_ERROR_TEXT("%q failure: %d"), MP_QSTR_sd_mmc_check, (int)result);
     }
     // sd_mmc_get_capacity() is in KiB, but our "capacity" is in 512-byte blocks

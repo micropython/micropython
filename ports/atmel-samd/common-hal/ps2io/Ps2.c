@@ -240,12 +240,12 @@ void common_hal_ps2io_ps2_construct(ps2io_ps2_obj_t *self,
         mp_raise_RuntimeError(MP_ERROR_TEXT("Internal resource(s) in use"));
     }
 
-    clk_hi(self);
-    data_hi(self);
-
     self->channel = clock_pin->extint_channel;
     self->clock_pin = clock_pin->number;
     self->data_pin = data_pin->number;
+    // These configure the pins in self, so call them only once they're set.
+    clk_hi(self);
+    data_hi(self);
     self->state = STATE_IDLE;
     self->bufcount = 0;
     self->bufposr = 0;

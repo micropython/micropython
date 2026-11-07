@@ -372,6 +372,10 @@ void common_hal_canio_can_deinit(canio_can_obj_t *self) {
             }
         }
         if (instance < MP_ARRAY_SIZE(can_insts)) {
+            // Clear this instance's message RAM, including its RX filters, so
+            // the next CAN on it doesn't inherit them. common_hal_canio_reset()
+            // used to clear all of it at VM end.
+            memset(&can_state[instance], 0, sizeof(can_state[instance]));
             if (instance == 0) {
                 NVIC_DisableIRQ(CAN0_IRQn);
                 NVIC_ClearPendingIRQ(CAN0_IRQn);

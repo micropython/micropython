@@ -107,8 +107,12 @@ static mp_obj_t pewpew_make_new(const mp_obj_type_t *type, size_t n_args, size_t
 }
 
 static mp_obj_t pewpew_deinit(mp_obj_t self_in) {
-    pew_deinit();
-    MP_STATE_VM(pew_singleton) = NULL;
+    // Only the current PewPew owns the timer. An older one that was already
+    // deinited must not stop its replacement.
+    if (MP_STATE_VM(pew_singleton) == self_in) {
+        pew_deinit();
+        MP_STATE_VM(pew_singleton) = NULL;
+    }
     return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(pewpew_deinit_obj, pewpew_deinit);
