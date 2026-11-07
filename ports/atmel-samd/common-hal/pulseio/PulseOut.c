@@ -95,6 +95,9 @@ void common_hal_pulseio_pulseout_construct(pulseio_pulseout_obj_t *self,
             }
         }
         if (tc == NULL) {
+            // deinited() checks the PWMOut, so release it before raising.
+            // Otherwise the finaliser would run deinit() on this half-built object.
+            common_hal_pwmio_pwmout_deinit(&self->pwmout);
             mp_raise_RuntimeError(MP_ERROR_TEXT("All timers in use"));
         }
 
