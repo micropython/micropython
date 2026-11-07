@@ -54,7 +54,6 @@ void common_hal_touchio_touchin_construct(touchio_touchin_obj_t *self,
     if (!pin->has_touch) {
         raise_ValueError_invalid_pin();
     }
-    claim_pin(pin);
 
     // Turn on the PTC if its not in use. We won't turn it off until the last
     // TouchIn object is deinited.
@@ -72,6 +71,9 @@ void common_hal_touchio_touchin_construct(touchio_touchin_obj_t *self,
 
         _pm_enable_bus_clock(PM_BUS_APBC, PTC);
     }
+
+    // Claim the pin only after the last raise, so a failed construct doesn't leak it.
+    claim_pin(pin);
 
     adafruit_ptc_get_config_default(&self->config);
     self->config.pin = pin->number;
