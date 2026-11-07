@@ -244,11 +244,11 @@ The plugin can be explicltly enabled (builds will fail if the plugin can't be bu
 
 The plugin doesn't work:
  * With non-gcc compilers (including clang, which is sometimes installed on Macs with the name "gcc")
- * On Windows systems, where the steps for building a plugin are more complicated
  * With MicroPython builds that use cmake rather than traditional make, such as esp32 & rp2
  * If the necessary files for plugin development are not installed.
-   In Debian bookworm, for instance, the files to build plugins for ``gcc`` are in ``gcc-12-plugin-dev``,
-   and the files to build plugins for ``riscv64-unknown-elf-gcc`` are in ``gcc-12-plugin-dev-riscv64-linux-gnu``.
+   In Debian trixie, for instance, the files to build plugins for ``gcc`` are in ``gcc-14-plugin-dev``,
+   and the files to build plugins for ``riscv64-unknown-elf-gcc`` are in ``gcc-14-plugin-dev-riscv64-linux-gnu``.
+   In msys, the package ``mingw-w64-x86_64-gcc-plugin`` enables the plugin for 64-bit builds.
 
 Building the documentation
 --------------------------
