@@ -1,0 +1,186 @@
+diff --git a/src/common/tusb_mcu.h b/src/common/tusb_mcu.h
+index 35de47030..a5cba043f 100644
+--- a/src/common/tusb_mcu.h
++++ b/src/common/tusb_mcu.h
+@@ -548,6 +548,9 @@
+ //--------------------------------------------------------------------+
+ // GigaDevice
+ //--------------------------------------------------------------------+
++#elif TU_CHECK_MCU(OPT_MCU_GD32F4)
++  #define TUP_USBIP_DWC2
++  #define TUP_DCD_ENDPOINT_MAX 4
+ #elif TU_CHECK_MCU(OPT_MCU_GD32VF103)
+   #define TUP_USBIP_DWC2
+   #define TUP_DCD_ENDPOINT_MAX 4
+diff --git a/src/portable/synopsys/dwc2/dwc2_common.h b/src/portable/synopsys/dwc2/dwc2_common.h
+index 5c4798d21..17cf73077 100644
+--- a/src/portable/synopsys/dwc2/dwc2_common.h
++++ b/src/portable/synopsys/dwc2/dwc2_common.h
+@@ -52,6 +52,8 @@
+   #include "dwc2_stm32.h"
+ #elif defined(TUP_USBIP_DWC2_ESP32)
+   #include "dwc2_esp32.h"
++#elif TU_CHECK_MCU(OPT_MCU_GD32F4)
++  #include "dwc2_gd32f4.h"
+ #elif TU_CHECK_MCU(OPT_MCU_GD32VF103)
+   #include "dwc2_gd32.h"
+ #elif TU_CHECK_MCU(OPT_MCU_BCM2711, OPT_MCU_BCM2835, OPT_MCU_BCM2837)
+diff --git a/src/portable/synopsys/dwc2/dwc2_gd32f4.h b/src/portable/synopsys/dwc2/dwc2_gd32f4.h
+new file mode 100644
+index 000000000..077ad3d1e
+--- /dev/null
++++ b/src/portable/synopsys/dwc2/dwc2_gd32f4.h
+@@ -0,0 +1,141 @@
++/*
++ * The MIT License (MIT)
++ *
++ * Copyright (c) 2021, Ha Thach (tinyusb.org)
++ *
++ * Permission is hereby granted, free of charge, to any person obtaining a copy
++ * of this software and associated documentation files (the "Software"), to deal
++ * in the Software without restriction, including without limitation the rights
++ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
++ * copies of the Software, and to permit persons to whom the Software is
++ * furnished to do so, subject to the following conditions:
++ *
++ * The above copyright notice and this permission notice shall be included in
++ * all copies or substantial portions of the Software.
++ *
++ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
++ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
++ * THE SOFTWARE.
++ *
++ * This file is part of the TinyUSB stack.
++ */
++
++#ifndef DWC2_GD32F4_H_
++#define DWC2_GD32F4_H_
++
++#ifdef __cplusplus
++ extern "C" {
++#endif
++
++// GD32F4 (Cortex-M4) USBFS controller.
++// This is a Synopsys DWC2 core at 0x5000_0000 with 4 IN/OUT endpoints and a
++// dedicated 320-word data FIFO.  Unlike the GD32VF103 port this is an ARM
++// target, so interrupts use the NVIC rather than the RISC-V ECLIC.
++//
++// The GD32 CMSIS device header is required here for IRQn_Type, NVIC_EnableIRQ
++// and the USBFS_IRQn enumerator.
++#include "gd32f4xx.h"
++
++#define DWC2_REG_BASE       0x50000000UL
++#define DWC2_EP_MAX         4
++#define DWC2_DFIFO_DEPTH    320
++
++// IRQ number from the GD32F4 vector table (gd32f4xx.h: USBFS_IRQn = 67).
++#define DWC2_USBFS_IRQn     ((IRQn_Type) USBFS_IRQn)
++
++static const dwc2_controller_t _dwc2_controller[] =
++{
++  { .reg_base = DWC2_REG_BASE, .irqnum = (int) DWC2_USBFS_IRQn,
++    .ep_count = DWC2_EP_MAX, .otg_dfifo_depth = DWC2_DFIFO_DEPTH }
++};
++
++/* -------------------------------------------------------------------------
++ * Hooks required by dwc2_common.h.  The GD32 USBFS core has only the on-chip
++ * full-speed PHY: there is no UTMI/ULPI transceiver and no separate PHY power
++ * or LDO control, so several of these reduce to no-ops.
++ * ------------------------------------------------------------------------- */
++
++// Clock and pin muxing are done by the port before tusb_init(), so nothing to
++// do here.
++TU_ATTR_ALWAYS_INLINE static inline void dwc2_clock_init(uint8_t rhport, tusb_role_t role) {
++  (void) rhport;
++  (void) role;
++}
++
++// Bring the on-chip FS PHY out of suspend.  GD32 gates the transceiver through
++// the USB global control register's power-down bit, which DWC2 exposes as
++// GCCFG.PWRDWN on this core.
++static inline void dwc2_phy_init(dwc2_regs_t* dwc2, uint8_t hs_phy_type) {
++  (void) hs_phy_type;
++  // This controller only implements the full-speed PHY.
++  dwc2->stm32_gccfg |= STM32_GCCFG_PWRDWN;
++}
++
++// Turnaround time for the FS PHY, derived from the AHB clock as required by
++// the GD32F4 user manual (same table as the STM32 FS core uses).
++static inline void dwc2_phy_update(dwc2_regs_t* dwc2, uint8_t hs_phy_type) {
++  if (hs_phy_type == GHWCFG2_HSPHY_NOT_SUPPORTED) {
++    uint32_t turnaround;
++
++    if (SystemCoreClock >= 32000000u) {
++      turnaround = 0x6u;
++    } else if (SystemCoreClock >= 27500000u) {
++      turnaround = 0x7u;
++    } else if (SystemCoreClock >= 24000000u) {
++      turnaround = 0x8u;
++    } else if (SystemCoreClock >= 21800000u) {
++      turnaround = 0x9u;
++    } else if (SystemCoreClock >= 20000000u) {
++      turnaround = 0xAu;
++    } else if (SystemCoreClock >= 18500000u) {
++      turnaround = 0xBu;
++    } else if (SystemCoreClock >= 17200000u) {
++      turnaround = 0xCu;
++    } else if (SystemCoreClock >= 16000000u) {
++      turnaround = 0xDu;
++    } else if (SystemCoreClock >= 15000000u) {
++      turnaround = 0xEu;
++    } else {
++      turnaround = 0xFu;
++    }
++
++    dwc2->gusbcfg = (dwc2->gusbcfg & ~GUSBCFG_TRDT_Msk) | (turnaround << GUSBCFG_TRDT_Pos);
++  }
++}
++
++// Power down the PHY when the core is stopped.
++static inline void dwc2_phy_deinit(dwc2_regs_t* dwc2, uint8_t hs_phy_type) {
++  (void) hs_phy_type;
++  dwc2->stm32_gccfg &= ~STM32_GCCFG_PWRDWN;
++}
++
++// ARM target: route the controller interrupt through the NVIC.
++static inline void dwc2_dcd_int_enable(uint8_t rhport) {
++  (void) rhport;
++  NVIC_SetPriority(DWC2_USBFS_IRQn, 2);
++  NVIC_EnableIRQ(DWC2_USBFS_IRQn);
++}
++
++static inline void dwc2_dcd_int_disable(uint8_t rhport) {
++  (void) rhport;
++  NVIC_DisableIRQ(DWC2_USBFS_IRQn);
++}
++
++static inline void dwc2_remote_wakeup_delay(void) {
++  // Not required for this controller.
++}
++
++// The MCU itself is brought up by the port (clock + pin muxing) before
++// tusb_init() runs, so there is nothing to do here.
++static inline void dwc2_mcu_init(void) {
++}
++
++#ifdef __cplusplus
++}
++#endif
++
++#endif
+diff --git a/src/tusb_option.h b/src/tusb_option.h
+index b23b37467..a84a776a4 100644
+--- a/src/tusb_option.h
++++ b/src/tusb_option.h
+@@ -165,6 +165,7 @@
+ #define OPT_MCU_MM32F327X        1500 ///< Mind Motion MM32F327
+ 
+ // GigaDevice
++#define OPT_MCU_GD32F4           1601 ///< GigaDevice GD32F4 (Cortex-M4, USBFS DWC2)
+ #define OPT_MCU_GD32VF103        1600 ///< GigaDevice GD32VF103
+ 
+ // Broadcom
