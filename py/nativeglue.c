@@ -199,10 +199,11 @@ static bool mp_native_yield_from(mp_obj_t gen, mp_obj_t send_value, mp_obj_t *re
     nlr_buf_t nlr_buf;
     mp_obj_t throw_value = *ret_value;
     if (nlr_push(&nlr_buf) == 0) {
+        mp_obj_t to_send = send_value;
         if (throw_value != MP_OBJ_NULL) {
-            send_value = MP_OBJ_NULL;
+            to_send = MP_OBJ_NULL;
         }
-        ret_kind = mp_resume(gen, send_value, throw_value, ret_value);
+        ret_kind = mp_resume(gen, to_send, throw_value, ret_value);
         nlr_pop();
     } else {
         ret_kind = MP_VM_RETURN_EXCEPTION;
