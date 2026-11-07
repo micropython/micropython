@@ -34,12 +34,14 @@
 #endif
 
 static frequencyio_frequencyin_obj_t *active_frequencyins[TC_INST_NUM];
-volatile uint8_t reference_tc;
+// 0xff means none. frequencyin_reset() used to set these at every VM start;
+// now they start that way, and deinit() resets them when the last FrequencyIn is freed.
+volatile uint8_t reference_tc = 0xff;
 #ifdef SAM_D5X_E5X
-static uint8_t dpll_gclk;
+static uint8_t dpll_gclk = 0xff;
 
 #if !BOARD_HAS_CRYSTAL
-static uint8_t osculp32k_gclk;
+static uint8_t osculp32k_gclk = 0xff;
 #endif
 
 #endif

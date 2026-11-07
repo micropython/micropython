@@ -27,7 +27,17 @@ static canio_can_obj_t *can_objs[MP_ARRAY_SIZE(can_insts)];
 // This must be placed in the first 64kB of RAM
 static COMPILER_SECTION(".canram") canio_can_state_t can_state[MP_ARRAY_SIZE(can_insts)];
 
+// Mark the object deinited: deinited() is true and deinit() does nothing.
+static void mark_deinit(canio_can_obj_t *self) {
+    self->hw = NULL;
+    self->tx_pin_number = COMMON_HAL_MCU_NO_PIN;
+    self->rx_pin_number = COMMON_HAL_MCU_NO_PIN;
+}
+
 void common_hal_canio_can_construct(canio_can_obj_t *self, const mcu_pin_obj_t *tx, const mcu_pin_obj_t *rx, int baudrate, bool loopback, bool silent) {
+    // Ensure the object starts in its deinit state.
+    mark_deinit(self);
+
     mcu_pin_function_t *tx_function = mcu_find_pin_function(can_tx, tx, -1, MP_QSTR_tx);
     int instance = tx_function->instance;
 
@@ -62,6 +72,18 @@ void common_hal_canio_can_construct(canio_can_obj_t *self, const mcu_pin_obj_t *
     self->loopback = loopback;
     self->silent = silent;
 
+    // Turn the CAN clocks on before touching its registers. deinit() turns
+    // them off, so CCCR.INIT would never read back as set without them.
+    if (instance == 0) {
+        hri_mclk_set_AHBMASK_CAN0_bit(MCLK);
+        hri_gclk_write_PCHCTRL_reg(GCLK, CAN0_GCLK_ID, CONF_GCLK_CAN0_SRC | (1 << GCLK_PCHCTRL_CHEN_Pos));
+    #ifdef CAN1_GCLK_ID
+    } else if (instance == 1) {
+        hri_mclk_set_AHBMASK_CAN1_bit(MCLK);
+        hri_gclk_write_PCHCTRL_reg(GCLK, CAN1_GCLK_ID, CONF_GCLK_CAN1_SRC | (1 << GCLK_PCHCTRL_CHEN_Pos));
+    #endif
+    }
+
     // Allow configuration change
     hri_can_set_CCCR_INIT_bit(self->hw);
     while (hri_can_get_CCCR_INIT_bit(self->hw) == 0) {
@@ -69,18 +91,12 @@ void common_hal_canio_can_construct(canio_can_obj_t *self, const mcu_pin_obj_t *
     hri_can_set_CCCR_CCE_bit(self->hw);
 
     if (instance == 0) {
-        hri_mclk_set_AHBMASK_CAN0_bit(MCLK);
-        hri_gclk_write_PCHCTRL_reg(GCLK, CAN0_GCLK_ID, CONF_GCLK_CAN0_SRC | (1 << GCLK_PCHCTRL_CHEN_Pos));
-
         NVIC_DisableIRQ(CAN0_IRQn);
         NVIC_ClearPendingIRQ(CAN0_IRQn);
         NVIC_EnableIRQ(CAN0_IRQn);
         hri_can_write_ILE_reg(self->hw, CAN_ILE_EINT0);
     #ifdef CAN1_GCLK_ID
     } else if (instance == 1) {
-        hri_mclk_set_AHBMASK_CAN1_bit(MCLK);
-        hri_gclk_write_PCHCTRL_reg(GCLK, CAN1_GCLK_ID, CONF_GCLK_CAN1_SRC | (1 << GCLK_PCHCTRL_CHEN_Pos));
-
         NVIC_DisableIRQ(CAN1_IRQn);
         NVIC_ClearPendingIRQ(CAN1_IRQn);
         NVIC_EnableIRQ(CAN1_IRQn);

@@ -48,7 +48,8 @@
 // Set by interrupt handler when DMA block has finished transferring.
 static volatile bool pdmin_dma_block_done;
 // Event channel used to trigger interrupt. Set to invalid value EVSYS_SYNCH_NUM when not in use.
-static uint8_t pdmin_event_channel;
+// EVSYS_SYNCH_NUM means none. pdmin_reset() used to set this at every VM start.
+static uint8_t pdmin_event_channel = EVSYS_SYNCH_NUM;
 
 void pdmin_evsys_handler(void) {
     if (pdmin_event_channel < EVSYS_SYNCH_NUM && event_interrupt_active(pdmin_event_channel)) {
@@ -367,8 +368,14 @@ static uint16_t filter_sample(uint32_t pdm_samples[4]) {
 // output_buffer_length is the number of slots, not the number of bytes.
 uint32_t common_hal_audiobusio_pdmin_record_to_buffer(audiobusio_pdmin_obj_t *self,
     uint16_t *output_buffer, uint32_t output_buffer_length) {
+    // Find the event channel first: it raises if there isn't one, and the DMA
+    // channel would leak if it were already allocated.
+    uint8_t event_channel = find_sync_event_channel_raise();
     uint8_t dma_channel = dma_allocate_audio_channel();
-    pdmin_event_channel = find_sync_event_channel_raise();
+    if (dma_channel == NO_DMA_CHANNEL) {
+        mp_raise_RuntimeError(MP_ERROR_TEXT("No DMA channel found"));
+    }
+    pdmin_event_channel = event_channel;
     pdmin_dma_block_done = false;
 
     // We allocate two buffers on the stack to use for double buffering.

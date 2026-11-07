@@ -29,11 +29,20 @@
     (defined(SAM_D5X_E5X) && defined(PIN_PA05) && !defined(IGNORE_PIN_PA05)) \
     )
 
+#if HAVE_ANALOGOUT
+// Mark the object deinited: deinited() is true and deinit() does nothing.
+static void mark_deinit(analogio_analogout_obj_t *self) {
+    self->pin = NULL;
+}
+#endif
+
 void common_hal_analogio_analogout_construct(analogio_analogout_obj_t *self,
     const mcu_pin_obj_t *pin) {
     #if !HAVE_ANALOGOUT
     mp_raise_NotImplementedError(MP_ERROR_TEXT("No DAC on chip"));
     #else
+    // Ensure the object starts in its deinit state.
+    mark_deinit(self);
 
     uint8_t channel;
     switch (pin->number) {
@@ -55,7 +64,6 @@ void common_hal_analogio_analogout_construct(analogio_analogout_obj_t *self,
     }
 
     self->channel = channel;
-    self->pin = pin;
 
     #ifdef SAM_D5X_E5X
     hri_mclk_set_APBDMASK_DAC_bit(MCLK);
@@ -88,6 +96,9 @@ void common_hal_analogio_analogout_construct(analogio_analogout_obj_t *self,
         mp_raise_OSError(MP_EIO);
         return;
     }
+    // Set the pin only after the last raise: until then the object reads as
+    // deinited, so its finaliser does nothing.
+    self->pin = pin;
     claim_pin(pin);
 
     gpio_set_pin_function(pin->number, GPIO_PIN_FUNCTION_B);
@@ -100,7 +111,7 @@ bool common_hal_analogio_analogout_deinited(analogio_analogout_obj_t *self) {
     #if !HAVE_ANALOGOUT
     return false;
     #else
-    return self->deinited;
+    return self->pin == NULL;
     #endif
 }
 
@@ -111,7 +122,7 @@ void common_hal_analogio_analogout_deinit(analogio_analogout_obj_t *self) {
     }
     dac_sync_disable_channel(&self->descriptor, self->channel);
     reset_pin_number(self->pin->number);
-    self->pin = NULL;
+    mark_deinit(self);
 
     // Only deinit the DAC on the SAMD51 if both outputs are free.
     #ifdef SAM_D5X_E5X
@@ -127,7 +138,6 @@ void common_hal_analogio_analogout_deinit(analogio_analogout_obj_t *self) {
     hri_mclk_clear_APBDMASK_DAC_bit(MCLK);
 }
     #endif
-    self->deinited = true;
     #endif
 }
 

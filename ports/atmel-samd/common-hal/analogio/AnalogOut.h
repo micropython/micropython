@@ -17,5 +17,4 @@ typedef struct {
     const mcu_pin_obj_t *pin;
     struct dac_sync_descriptor descriptor;
     uint8_t channel;
-    bool deinited;
 } analogio_analogout_obj_t;

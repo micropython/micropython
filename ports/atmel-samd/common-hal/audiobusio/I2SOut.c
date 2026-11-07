@@ -247,7 +247,9 @@ void common_hal_audiobusio_i2sout_deinit(audiobusio_i2sout_obj_t *self) {
 
 void common_hal_audiobusio_i2sout_play(audiobusio_i2sout_obj_t *self,
     mp_obj_t sample, bool loop) {
-    if (common_hal_audiobusio_i2sout_get_playing(self)) {
+    // Stop if playing, or if a GCLK is still held from a play() that raised
+    // after taking it. Otherwise this play() would overwrite self->gclk and leak it.
+    if (common_hal_audiobusio_i2sout_get_playing(self) || self->gclk != 0xff) {
         common_hal_audiobusio_i2sout_stop(self);
     }
 
