@@ -22,6 +22,10 @@ def test():
     global r1, r2  # needed for webassembly port to retain references to them
 
     print("test having multiple ref and finalize objects referencing the same thing")
+    # Move the GC head forwards so `a` gets never-before-used blocks, which a
+    # stale pointer left on the stack can't keep alive.
+    for i in range(1024):
+        []
     a = A()
     r1 = weakref.ref(a, lambda r: print("ref1", r()))
     f1 = weakref.finalize(a, lambda: print("finalize1"))
