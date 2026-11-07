@@ -109,7 +109,7 @@ static void clear_filters(canio_listener_obj_t *self) {
         }
     }
     for (size_t i = 0; i < MP_ARRAY_SIZE(can->state->standard_rx_filter); i++) {
-        int val = CAN_SIDFE_0_SFEC_STF1M_Val + fifo;
+        int val = CAN_SIDFE_0_SFEC_STF0M_Val + fifo;
         if (can->state->standard_rx_filter[i].SIDFE_0.bit.SFEC == val) {
             can->state->standard_rx_filter[i].SIDFE_0.bit.SFEC = CAN_SIDFE_0_SFEC_DISABLE_Val;
         }
