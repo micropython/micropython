@@ -1049,7 +1049,11 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
             pool.map(run_one_test, tests)
         else:
             for test in tests:
-                run_one_test(test)
+                try:
+                    run_one_test(test)
+                except Exception as e:
+                    e.add_note(f"While running {test}")
+                    raise e
                 if raw_repl_failure_count.value > TEST_MAXIMUM_RAW_REPL_FAILURES:
                     print("Too many raw REPL failures, aborting test run")
                     break
