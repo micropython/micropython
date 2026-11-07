@@ -526,6 +526,10 @@ SRC_C += common-hal/picogame/interp.c
 CFLAGS += -DPICOGAME_HAS_INTERP=1
 endif
 
+ifeq ($(CIRCUITPY_BITMAPTOOLS),1)
+SRC_C += common-hal/bitmaptools/__init__.c
+endif
+
 SRC_SDK := \
 	src/common/hardware_claim/claim.c \
 	src/common/pico_sync/critical_section.c \
