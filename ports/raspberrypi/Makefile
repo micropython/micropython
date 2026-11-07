@@ -526,7 +526,7 @@ SRC_C += common-hal/picogame/interp.c
 CFLAGS += -DPICOGAME_HAS_INTERP=1
 endif
 
-ifeq ($(CIRCUITPY_BITMAPTOOLS),1)
+ifeq ($(CIRCUITPY_BITMAPTOOLS_FAST_ROTOZOOM),1)
 SRC_C += common-hal/bitmaptools/__init__.c
 endif
 

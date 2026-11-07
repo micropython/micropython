@@ -9,7 +9,6 @@
 #include "shared-bindings/displayio/Bitmap.h"
 #include "shared-bindings/displayio/Palette.h"
 #include "shared-bindings/displayio/ColorConverter.h"
-#include "shared-module/bitmaptools/__init__.h"
 #include "shared-module/displayio/Bitmap.h"
 
 #include "py/mperrno.h"
@@ -24,6 +23,9 @@
 #define BITMAP_DEBUG(...) (void)0
 // #define BITMAP_DEBUG(...) mp_printf(&mp_plat_print, __VA_ARGS__)
 
+#if CIRCUITPY_BITMAPTOOLS_FAST_ROTOZOOM
+#include "shared-module/bitmaptools/__init__.h"
+
 // Fixed-point path for rotozoom.
 //
 // The generic loop walks the source in mp_float_t and truncates to pick each source
@@ -33,10 +35,9 @@
 
 #define ROTOZOOM_FRACTION_BITS 16
 
-// Store f * 2^16 in *fixed if that is an integer with |value| < 2^31, and the number of
-// fraction bits f needs (0..16) in *fraction_bits. Returns false otherwise (NaN and inf
-// included).
-static bool rotozoom_to_fixed(mp_float_t f, int32_t *fixed, int *fraction_bits) {
+// Store f * 2^16 in *fixed if that is an integer with |value| < 2^31. Returns false
+// otherwise (NaN and inf included).
+static bool rotozoom_to_fixed(mp_float_t f, int32_t *fixed) {
     // Exact: scaling by a power of two.
     mp_float_t scaled = f * MICROPY_FLOAT_CONST(65536.0);
     if (!(scaled > MICROPY_FLOAT_CONST(-2147483648.0) && scaled < MICROPY_FLOAT_CONST(2147483648.0))) {
@@ -47,15 +48,7 @@ static bool rotozoom_to_fixed(mp_float_t f, int32_t *fixed, int *fraction_bits) 
         return false;
     }
     *fixed = value;
-    *fraction_bits = 0;
-    if (value != 0) {
-        *fraction_bits = MAX(0, ROTOZOOM_FRACTION_BITS - __builtin_ctz((uint32_t)value));
-    }
     return true;
-}
-
-static bool rotozoom_fits_within(int64_t value, int64_t limit) {
-    return value > -limit && value < limit;
 }
 
 MP_WEAK void bitmaptools_rotozoom_row(void *dest_pixels, const void *source_row,
@@ -108,9 +101,8 @@ static bool rotozoom_fixed_point(displayio_bitmap_t *dest,
     }
 
     int32_t u_step, v_step, u_start, v_start;
-    int u_step_bits, v_step_bits, u_start_bits, v_start_bits;
-    if (!rotozoom_to_fixed(duRow, &u_step, &u_step_bits) || !rotozoom_to_fixed(dvCol, &v_step, &v_step_bits)
-        || !rotozoom_to_fixed(startu, &u_start, &u_start_bits) || !rotozoom_to_fixed(startv, &v_start, &v_start_bits)) {
+    if (!rotozoom_to_fixed(duRow, &u_step) || !rotozoom_to_fixed(dvCol, &v_step)
+        || !rotozoom_to_fixed(startu, &u_start) || !rotozoom_to_fixed(startv, &v_start)) {
         return false;
     }
 
@@ -118,16 +110,19 @@ static bool rotozoom_fixed_point(displayio_bitmap_t *dest,
     // exact while below 2^(24 - fraction_bits), which is 2^(40 - fraction_bits) in 16.16
     // units. u and v are linear in x and y, so the end points bound them. The generic
     // loop computes u = startu + minx * duRow, then adds duRow up to maxx + 1; v likewise
-    // down the rows.
-    int fraction_bits = MAX(MAX(u_step_bits, v_step_bits), MAX(u_start_bits, v_start_bits));
+    // down the rows. The lowest set bit of the four values sets fraction_bits, and
+    // u_step > 0, so the OR is not zero.
+    uint32_t all_bits = (uint32_t)(u_step | v_step | u_start | v_start);
+    int fraction_bits = MAX(0, ROTOZOOM_FRACTION_BITS - __builtin_ctz(all_bits));
     int64_t limit = (int64_t)1 << (40 - fraction_bits);
-    if (!rotozoom_fits_within((int64_t)minx * u_step, limit)
-        || !rotozoom_fits_within(u_start + (int64_t)minx * u_step, limit)
-        || !rotozoom_fits_within(u_start + ((int64_t)maxx + 1) * u_step, limit)
-        || !rotozoom_fits_within((int64_t)miny * v_step, limit)
-        || !rotozoom_fits_within(v_start + (int64_t)miny * v_step, limit)
-        || !rotozoom_fits_within(v_start + ((int64_t)maxy + 1) * v_step, limit)) {
-        return false;
+    int64_t ends[] = {
+        (int64_t)minx * u_step, u_start + (int64_t)minx * u_step, u_start + ((int64_t)maxx + 1) * u_step,
+        (int64_t)miny * v_step, v_start + (int64_t)miny * v_step, v_start + ((int64_t)maxy + 1) * v_step,
+    };
+    for (size_t i = 0; i < MP_ARRAY_SIZE(ends); i++) {
+        if (ends[i] <= -limit || ends[i] >= limit) {
+            return false;
+        }
     }
 
     // u rises with x, so the columns that sample inside the source clip are one run, the
@@ -165,6 +160,7 @@ static bool rotozoom_fixed_point(displayio_bitmap_t *dest,
     }
     return true;
 }
+#endif
 
 void common_hal_bitmaptools_rotozoom(displayio_bitmap_t *self, int16_t ox, int16_t oy,
     int16_t dest_clip0_x, int16_t dest_clip0_y,
@@ -329,11 +325,13 @@ void common_hal_bitmaptools_rotozoom(displayio_bitmap_t *self, int16_t ox, int16
     displayio_area_t dirty_area = {minx, miny, maxx + 1, maxy + 1, NULL};
     displayio_bitmap_set_dirty_area(self, &dirty_area);
 
+    #if CIRCUITPY_BITMAPTOOLS_FAST_ROTOZOOM
     if (rotozoom_fixed_point(self, minx, miny, maxx, maxy, source,
         source_clip0_x, source_clip0_y, source_clip1_x, source_clip1_y,
         duRow, dvRow, duCol, dvCol, startu, startv, skip_index, skip_index_none)) {
         return;
     }
+    #endif
 
     for (y = miny; y <= maxy; y++) {
         mp_float_t u = rowu + minx * duRow;
