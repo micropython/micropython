@@ -613,14 +613,16 @@ soft_reset:
     for (gc_blocks_table_t const *block = &_gc_blocks_table_start; block < &_gc_blocks_table_end; block++) {
         uint8_t *start = block->addr;
         uint8_t *end = block->addr + block->size;
+        unsigned int area_flags = 0;
         #if MICROPY_HW_XSPI_PSRAM
         if (start >= (uint8_t *)XSPI_PSRAM_BASE && start < (uint8_t *)XSPI_PSRAM_END) {
             // Only use the PSRAM that was found (none if psram_size is 0).
             end = MIN(end, (uint8_t *)XSPI_PSRAM_BASE + psram_size);
+            area_flags = GC_AREA_FLAG_EXTERNAL;
         }
         #endif
         if (end > start) {
-            gc_add(start, end);
+            gc_add_ex(start, end, area_flags);
         }
     }
     #endif
