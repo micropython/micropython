@@ -314,6 +314,10 @@ mp_obj_t mp_unary_op(mp_unary_op_t op, mp_obj_t arg) {
             case MP_UNARY_OP_POSITIVE:
             case MP_UNARY_OP_INT_MAYBE:
                 return arg;
+            #if MICROPY_PY_BUILTINS_FLOAT
+            case MP_UNARY_OP_FLOAT_MAYBE:
+                return mp_obj_new_float((mp_float_t)val);
+            #endif
             case MP_UNARY_OP_NEGATIVE:
                 // check for overflow
                 if (val == MP_SMALL_INT_MIN) {
