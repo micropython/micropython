@@ -17,21 +17,53 @@ fi
 ########################################################################################
 # general helper functions
 
+if [ $(id -u) -eq 0 ]; then
+    function _ci_as_root {
+        "$@"
+    }
+else
+    function _ci_as_root {
+        sudo "$@"
+    }
+fi
+
+function _ci_enter_venv {
+    [ -d .venv_ci ] || python3 -mvenv .venv_ci
+    . .venv_ci/bin/activate
+}
+
+function _ci_leave_venv {
+    if type deactivate >/dev/null 2>&1; then
+        deactivate
+    fi
+}
+
+function _ci_apt_update_once {
+    function _ci_apt_update_once { true; }
+    _ci_as_root apt-get update
+}
+
+function _ci_apt_install {
+    _ci_apt_update_once
+    _ci_as_root apt-get install -y --no-install-recommends "$@"
+}
+
+function _ci_pip_install {
+    python3 -m pip install "$@"
+}
+
 function ci_gcc_arm_setup {
-    sudo apt-get update
-    sudo apt-get install gcc-arm-none-eabi libnewlib-arm-none-eabi
+    _ci_apt_install gcc-arm-none-eabi libnewlib-arm-none-eabi libstdc++-arm-none-eabi-dev libstdc++-arm-none-eabi-newlib
     arm-none-eabi-gcc --version
 }
 
 function ci_gcc_riscv_setup {
-    sudo apt-get update
-    sudo apt-get install gcc-riscv64-unknown-elf picolibc-riscv64-unknown-elf
+    _ci_apt_install gcc-riscv64-unknown-elf picolibc-riscv64-unknown-elf libstdc++-riscv64-unknown-elf-dev
     riscv64-unknown-elf-gcc --version
 }
 
 function ci_gcc_ppc64_setup {
-    sudo apt-get update
-    sudo apt-get install gcc-powerpc64le-linux-gnu libc6-dev-ppc64el-cross
+    _ci_apt_install gcc-powerpc64le-linux-gnu g++-powerpc64le-linux-gnu libc6-dev-ppc64el-cross
     powerpc64le-linux-gnu-gcc --version
 }
 
@@ -40,7 +72,7 @@ function ci_picotool_setup {
     git clone https://github.com/raspberrypi/pico-sdk.git
     (cd pico-sdk && git submodule update --init lib/mbedtls)
     git clone https://github.com/raspberrypi/picotool.git
-    (cd picotool && mkdir build && cd build && cmake -DPICO_SDK_PATH=../../pico-sdk .. && make && sudo make install)
+    (cd picotool && mkdir build && cd build && cmake -DPICO_SDK_PATH=../../pico-sdk .. && make && _ci_as_root make install)
     picotool version
 }
 
@@ -79,8 +111,7 @@ function ci_commit_formatting_run {
 # code size
 
 function ci_code_size_setup {
-    sudo apt-get update
-    sudo apt-get install gcc-multilib
+    _ci_apt_install gcc-multilib g++-multilib
     gcc --version
     ci_gcc_arm_setup
     ci_gcc_riscv_setup
@@ -157,8 +188,7 @@ function ci_code_size_report {
 # .mpy file format
 
 function ci_mpy_format_setup {
-    sudo apt-get update
-    sudo pip3 install pyelftools
+    _ci_pip_install pyelftools
     python3 --version
 }
 
@@ -195,6 +225,7 @@ function ci_mpy_cross_debug_emitter {
 
 function ci_alif_setup {
     ci_gcc_arm_setup
+    _ci_pip_install cryptography
 }
 
 function ci_alif_ae3_build {
@@ -230,6 +261,8 @@ function ci_embedding_build {
 # ports/esp32
 
 function ci_esp32_idf_setup {
+    (
+    _ci_leave_venv
     if [ -z "$IDF_VER" ]; then
         echo "IDF_VER environment variable must be set before running"
         return 1
@@ -242,18 +275,21 @@ function ci_esp32_idf_setup {
     ./esp-idf/install.sh
     # Install additional packages for mpy_ld into the IDF env
     source esp-idf/export.sh
-    pip3 install pyelftools
-    pip3 install ar
+    _ci_pip_install pyelftools
+    _ci_pip_install ar
+    )
 }
 
-function ci_esp32_build_common {
+function _ci_esp32_build_common {
+    _ci_leave_venv
     source esp-idf/export.sh
     make ${MAKEOPTS} -C mpy-cross
     make ${MAKEOPTS} -C ports/esp32 submodules
 }
 
 function ci_esp32_build_cmod_spiram_d2wd {
-    ci_esp32_build_common
+    (
+    _ci_esp32_build_common
 
     # Combined USER_C_MODULES + freeze manifest test on ESP32_GENERIC.
     make ${MAKEOPTS} -C ports/esp32 \
@@ -269,37 +305,41 @@ function ci_esp32_build_cmod_spiram_d2wd {
 
     # D2WD is the variant with smallest application partition in flash
     make ${MAKEOPTS} -C ports/esp32 BOARD=ESP32_GENERIC BOARD_VARIANT=D2WD
+    )
 }
 
 function ci_esp32_build_s2_s3_c3 {
-    ci_esp32_build_common
-
+    (
+    _ci_esp32_build_common
     make ${MAKEOPTS} -C ports/esp32 BOARD=ESP32_GENERIC_S2
     make ${MAKEOPTS} -C ports/esp32 BOARD=ESP32_GENERIC_S3
     make ${MAKEOPTS} -C ports/esp32 BOARD=ESP32_GENERIC_C3
+    )
 }
 
 function ci_esp32_build_c2_c5_c6 {
-    ci_esp32_build_common
-
+    (
+    _ci_esp32_build_common
     make ${MAKEOPTS} -C ports/esp32 BOARD=ESP32_GENERIC_C2
     make ${MAKEOPTS} -C ports/esp32 BOARD=ESP32_GENERIC_C5
     make ${MAKEOPTS} -C ports/esp32 BOARD=ESP32_GENERIC_C6
+    )
 }
 
 function ci_esp32_build_h2_p4 {
-    ci_esp32_build_common
-
+    (
+    _ci_esp32_build_common
     make ${MAKEOPTS} -C ports/esp32 BOARD=ESP32_GENERIC_H2
     make ${MAKEOPTS} -C ports/esp32 BOARD=ESP32_GENERIC_P4
     make ${MAKEOPTS} -C ports/esp32 BOARD=ESP32_GENERIC_P4 BOARD_VARIANT=C6_WIFI
+    )
 }
 
 ########################################################################################
 # ports/esp8266
 
 function ci_esp8266_setup {
-    sudo pip3 install pyserial esptool==3.3.1 pyelftools ar
+    _ci_pip_install pyserial esptool==3.3.1 pyelftools ar
     wget https://micropython.org/resources/xtensa-lx106-elf-standalone.tar.gz
     (set -o pipefail; zcat xtensa-lx106-elf-standalone.tar.gz | tar x)
     # Remove this esptool.py so pip version is used instead
@@ -360,12 +400,7 @@ function ci_nrf_build {
 
 function ci_psoc_edge_setup {
     ci_gcc_arm_setup
-    # installing edgeprotecttools requires uninstalling some default Python packages
-    # from the system, but then we need to reinstall pip so the binary is available
-    # (as on recent Ubuntu it's uninstalled with python3-packaging.)
-    sudo apt remove python3-packaging python3-jsonschema python3-cryptography
-    sudo apt install python3-pip
-    sudo pip3 install edgeprotecttools
+    _ci_pip_install edgeprotecttools
 
 }
 
@@ -380,35 +415,35 @@ function ci_psoc_edge_build {
 
 function ci_qemu_setup_arm {
     ci_gcc_arm_setup
-    sudo apt-get update
-    sudo apt-get install qemu-system
-    sudo pip3 install pyelftools
-    sudo pip3 install ar
+    _ci_apt_install qemu-system-arm
+    _ci_pip_install pyelftools
+    _ci_pip_install ar
+    _ci_pip_install pyserial
     qemu-system-arm --version
 }
 
 function ci_qemu_setup_rv32 {
     ci_gcc_riscv_setup
-    sudo apt-get update
-    sudo apt-get install qemu-system
-    sudo pip3 install pyelftools
-    sudo pip3 install ar
+    _ci_apt_install qemu-system-riscv
+    _ci_pip_install pyelftools
+    _ci_pip_install ar
+    _ci_pip_install pyserial
     qemu-system-riscv32 --version
 }
 
 function ci_qemu_setup_rv64 {
     ci_gcc_riscv_setup
-    sudo apt-get update
-    sudo apt-get install qemu-system
-    sudo pip3 install pyelftools
-    sudo pip3 install ar
+    _ci_apt_install qemu-system-riscv
+    _ci_pip_install pyelftools
+    _ci_pip_install ar
+    _ci_pip_install pyserial
     qemu-system-riscv64 --version
 }
 
 function ci_qemu_setup_ppc64 {
     ci_gcc_ppc64_setup
-    sudo apt-get update
-    sudo apt-get install qemu-system
+    _ci_apt_install qemu-system-ppc
+    _ci_pip_install pyserial
     qemu-system-ppc64 --version
 }
 
@@ -457,7 +492,7 @@ function ci_qemu_build_arm_thumb_hardfp {
 function ci_qemu_build_rv32 {
     make ${MAKEOPTS} -C mpy-cross
     make ${MAKEOPTS} -C ports/qemu BOARD=VIRT_RV32 submodules
-    make ${MAKEOPTS} -C ports/qemu BOARD=VIRT_RV32 test_full
+    make ${MAKEOPTS} -C ports/qemu BOARD=VIRT_RV32 USER_C_MODULES=../../examples/usercmodule test_full
 
     # Test building and running native .mpy with rv32imc architecture.
     ci_native_mpy_modules_build rv32imc
@@ -467,7 +502,7 @@ function ci_qemu_build_rv32 {
 function ci_qemu_build_rv64 {
     make ${MAKEOPTS} -C mpy-cross
     make ${MAKEOPTS} -C ports/qemu BOARD=VIRT_RV64 submodules
-    make ${MAKEOPTS} -C ports/qemu BOARD=VIRT_RV64 test
+    make ${MAKEOPTS} -C ports/qemu BOARD=VIRT_RV64 USER_C_MODULES=../../examples/usercmodule test
 
     # Test building and running native .mpy with rv64imc architecture.
     ci_native_mpy_modules_build rv64imc
@@ -477,7 +512,7 @@ function ci_qemu_build_rv64 {
 function ci_qemu_build_ppc64 {
     make ${MAKEOPTS} -C mpy-cross
     make ${MAKEOPTS} -C ports/qemu BOARD=POWERNV9 submodules
-    make ${MAKEOPTS} -C ports/qemu BOARD=POWERNV9 test
+    make ${MAKEOPTS} -C ports/qemu BOARD=POWERNV9 USER_C_MODULES=../../examples/usercmodule test
 }
 
 ########################################################################################
@@ -485,7 +520,7 @@ function ci_qemu_build_ppc64 {
 
 function ci_renesas_ra_setup {
     ci_gcc_arm_setup
-    sudo apt-get install protobuf-c-compiler
+    _ci_apt_install protobuf-c-compiler
 }
 
 function ci_renesas_ra_board_build {
@@ -550,9 +585,9 @@ function ci_stm32_setup {
     wget https://developer.arm.com/-/media/Files/downloads/gnu/14.3.rel1/binrel/arm-gnu-toolchain-14.3.rel1-x86_64-arm-none-eabi.tar.xz
     xzcat arm-gnu-toolchain-14.3.rel1-x86_64-arm-none-eabi.tar.xz | tar x
 
-    pip3 install pyelftools
-    pip3 install ar
-    pip3 install pyhy
+    _ci_pip_install pyelftools
+    _ci_pip_install ar
+    _ci_pip_install pyhy
 }
 
 function ci_stm32_path {
@@ -810,9 +845,9 @@ function ci_unix_standard_error_none_run_tests {
 }
 
 function ci_unix_coverage_setup {
-    pip3 install setuptools
-    pip3 install pyelftools
-    pip3 install ar
+    _ci_pip_install setuptools
+    _ci_pip_install pyelftools
+    _ci_pip_install ar
     gcc --version
     python3 --version
 }
@@ -863,10 +898,9 @@ function ci_unix_coverage_run_native_mpy_tests {
 
 function ci_unix_32bit_setup {
     sudo dpkg --add-architecture i386
-    sudo apt-get update
-    sudo apt-get install gcc-i686-linux-gnu g++-i686-linux-gnu patchelf libffi-dev:i386
-    python -m pip install pyelftools
-    python -m pip install ar
+    _ci_apt_install gcc-i686-linux-gnu g++-i686-linux-gnu patchelf libffi-dev:i386
+    _ci_pip_install pyelftools
+    _ci_pip_install ar
     i686-linux-gnu-gcc --version
     python3 --version
 }
@@ -922,9 +956,8 @@ function ci_unix_gil_enabled_run_tests {
 }
 
 function ci_unix_clang_setup {
-    sudo apt-get update
-    sudo apt-get install clang
-    pip3 install ar pyelftools
+    _ci_apt_install clang
+    _ci_pip_install ar pyelftools
     clang --version
 }
 
@@ -1001,8 +1034,7 @@ function ci_unix_macos_run_tests {
 MIPS_TOOLCHAIN=mips32--glibc--stable-2025.08-1
 
 function ci_unix_qemu_mips_setup {
-    sudo apt-get update
-    sudo apt-get install libltdl-dev qemu-user-binfmt
+    _ci_apt_install libltdl-dev qemu-user-binfmt
     MIPS_TARBALL=${MIPS_TOOLCHAIN}.tar.xz
     # cache action is used to keep a copy of this tarball, save on download traffic
     [ -e ${MIPS_TARBALL} ] || wget --no-verbose https://toolchains.bootlin.com/downloads/releases/toolchains/mips32/tarballs/${MIPS_TARBALL}
@@ -1031,9 +1063,8 @@ function ci_unix_qemu_mips_run_tests {
 }
 
 function ci_unix_qemu_arm_setup {
-    sudo apt-get update
-    sudo apt-get install gcc-arm-linux-gnueabi g++-arm-linux-gnueabi libltdl-dev
-    sudo apt-get install qemu-user-binfmt
+    _ci_apt_install gcc-arm-linux-gnueabi g++-arm-linux-gnueabi libltdl-dev
+    _ci_apt_install qemu-user-binfmt
     qemu-arm --version
     sudo mkdir -p /usr/gnemul
     sudo ln -s /usr/arm-linux-gnueabi /usr/gnemul/qemu-arm
@@ -1053,11 +1084,10 @@ function ci_unix_qemu_arm_run_tests {
 
 function ci_unix_qemu_riscv64_setup {
     ci_gcc_riscv_setup
-    sudo apt-get update
-    sudo apt-get install gcc-riscv64-linux-gnu g++-riscv64-linux-gnu libltdl-dev
-    python3 -m pip install pyelftools
-    python3 -m pip install ar
-    sudo apt-get install qemu-user-binfmt
+    _ci_apt_install gcc-riscv64-linux-gnu g++-riscv64-linux-gnu libltdl-dev
+    _ci_pip_install pyelftools
+    _ci_pip_install ar
+    _ci_apt_install qemu-user-binfmt
     qemu-riscv64 --version
     sudo mkdir -p /usr/gnemul
     sudo ln -s /usr/riscv64-linux-gnu /usr/gnemul/qemu-riscv64
@@ -1080,9 +1110,8 @@ function ci_unix_qemu_riscv64_run_tests {
 }
 
 function ci_unix_qemu_loong64_setup {
-    sudo apt-get update
-    sudo apt-get install gcc-14-loongarch64-linux-gnu g++-14-loongarch64-linux-gnu libc6-loong64-cross libltdl-dev
-    sudo apt-get install qemu-user-binfmt
+    _ci_apt_install gcc-14-loongarch64-linux-gnu g++-14-loongarch64-linux-gnu libc6-loong64-cross libltdl-dev
+    _ci_apt_install qemu-user-binfmt
     qemu-loongarch64 --version
     sudo mkdir -p /usr/gnemul
     sudo ln -s /usr/loongarch64-linux-gnu /usr/gnemul/qemu-loongarch64
@@ -1103,11 +1132,10 @@ function ci_unix_qemu_loong64_run_tests {
 }
 
 function ci_unix_qemu_x64_setup {
-    sudo apt-get update
-    sudo apt-get install gcc-x86-64-linux-gnu g++-x86-64-linux-gnu libc6-amd64-cross libltdl-dev
-    sudo apt-get install qemu-user-binfmt
-    python3 -m pip install pyelftools
-    python3 -m pip install ar
+    _ci_apt_install gcc-x86-64-linux-gnu g++-x86-64-linux-gnu libc6-amd64-cross libltdl-dev
+    _ci_apt_install qemu-user-binfmt
+    _ci_pip_install pyelftools
+    _ci_pip_install ar
     qemu-x86_64 --version
     sudo mkdir -p /usr/gnemul
     sudo ln -s /usr/x86_64-linux-gnu /usr/gnemul/qemu-x86_64
@@ -1166,8 +1194,7 @@ function ci_webassembly_run_tests {
 # ports/windows
 
 function ci_windows_setup {
-    sudo apt-get update
-    sudo apt-get install gcc-mingw-w64 g++-mingw-w64
+    _ci_apt_install gcc-mingw-w64 g++-mingw-w64
 }
 
 function ci_windows_build {
@@ -1209,8 +1236,8 @@ function ci_zephyr_setup {
     docker ps -a
 
     # qemu-system-arm is needed to run the test suite.
-    sudo apt-get update
-    sudo apt-get install qemu-system-arm
+    _ci_apt_install qemu-system-arm
+    _ci_pip_install pyserial
     qemu-system-arm --version
 }
 
@@ -1290,6 +1317,7 @@ function _ci_main {
         (*)
             set -e
             cd $(dirname "$0")/..
+            _ci_enter_venv
             while [ $# -ne 0 ]; do
                 ci_$1
                 shift
@@ -1317,4 +1345,7 @@ if [ $sourced -eq 0 ]; then
         set -- --help
     fi
     _ci_main "$@"
+else
+    # sourced
+    _ci_enter_venv
 fi
