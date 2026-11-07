@@ -1,0 +1,32 @@
+f inf inf
+f -inf -inf
+f nan nan
+f nan nan
+d inf inf
+d -inf -inf
+d nan nan
+d nan nan
+>f inf inf
+>f -inf -inf
+>f nan nan
+>f nan nan
+>d inf inf
+>d -inf -inf
+>d nan nan
+>d nan nan
+<f inf inf
+<f -inf -inf
+<f nan nan
+<f nan nan
+<d inf inf
+<d -inf -inf
+<d nan nan
+<d nan nan
+inf
+-inf
+nan
+nan
+nan
+inf
+nan
+nan
