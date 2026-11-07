@@ -8,10 +8,9 @@ concurrency:
 
 jobs:
   code-formatting:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-slim
     steps:
     - uses: actions/checkout@v7
-    - uses: actions/setup-python@v7
     - name: Install packages
       run: tools/ci.sh c_code_formatting_setup
     - name: Run code formatting

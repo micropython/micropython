@@ -9,14 +9,13 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     steps:
     - uses: actions/checkout@v7
       with:
         # Setting this to zero means fetch all history and tags,
         # which hatch-vcs can use to discover the version tag.
         fetch-depth: 0
-    - uses: actions/setup-python@v7
     - name: Install build tools
       run: pip install build
     - name: Build mpremote wheel
