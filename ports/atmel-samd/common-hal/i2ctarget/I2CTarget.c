@@ -19,6 +19,9 @@
 void common_hal_i2ctarget_i2c_target_construct(i2ctarget_i2c_target_obj_t *self,
     const mcu_pin_obj_t *scl, const mcu_pin_obj_t *sda,
     uint8_t *addresses, unsigned int num_addresses, bool smbus) {
+    // Ensure the object starts in its deinit state.
+    self->sda_pin = NO_PIN;
+
     uint8_t sercom_index;
     uint32_t sda_pinmux, scl_pinmux;
     Sercom *sercom = samd_i2c_get_sercom(scl, sda, &sercom_index, &sda_pinmux, &scl_pinmux);

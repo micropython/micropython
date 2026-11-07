@@ -17,6 +17,9 @@
 
 void common_hal_countio_counter_construct(countio_counter_obj_t *self,
     const mcu_pin_obj_t *pin, countio_edge_t edge, digitalio_pull_t pull) {
+    // Ensure the object starts in its deinit state.
+    self->pin = NO_PIN;
+
     if (!pin->has_extint) {
         raise_ValueError_invalid_pin();
     }

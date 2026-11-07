@@ -48,6 +48,9 @@ static uint16_t get_raw_reading(touchio_touchin_obj_t *self) {
 
 void common_hal_touchio_touchin_construct(touchio_touchin_obj_t *self,
     const mcu_pin_obj_t *pin, const digitalio_pull_t pull) {
+    // Ensure the object starts in its deinit state.
+    self->config.pin = NO_PIN;
+
     if (!pin->has_touch) {
         raise_ValueError_invalid_pin();
     }

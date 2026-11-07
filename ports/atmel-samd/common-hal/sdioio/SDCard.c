@@ -40,6 +40,9 @@ static Sdhc *sdhc_insts[] = SDHC_INSTS;
 void common_hal_sdioio_sdcard_construct(sdioio_sdcard_obj_t *self,
     const mcu_pin_obj_t *clock, const mcu_pin_obj_t *command,
     uint8_t num_data, const mcu_pin_obj_t **data, uint32_t frequency) {
+    // Ensure the object starts in its deinit state.
+    self->command_pin = COMMON_HAL_MCU_NO_PIN;
+
     /*
 SD breakout as assembled  ("*" = minimum viable set)
 

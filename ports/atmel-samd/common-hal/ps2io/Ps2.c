@@ -224,6 +224,9 @@ void ps2_interrupt_handler(uint8_t channel) {
 
 void common_hal_ps2io_ps2_construct(ps2io_ps2_obj_t *self,
     const mcu_pin_obj_t *data_pin, const mcu_pin_obj_t *clock_pin) {
+    // Ensure the object starts in its deinit state.
+    self->clock_pin = NO_PIN;
+
     if (!clock_pin->has_extint) {
         mp_arg_error_invalid(MP_QSTR_clock_pin);
     }

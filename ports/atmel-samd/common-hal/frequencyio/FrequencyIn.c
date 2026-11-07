@@ -244,6 +244,8 @@ static void frequencyin_samd51_stop_dpll(void) {
 #endif
 
 void common_hal_frequencyio_frequencyin_construct(frequencyio_frequencyin_obj_t* self, const mcu_pin_obj_t* pin, const uint16_t capture_period) {
+    // Ensure the object starts in its deinit state.
+    self->pin = NO_PIN;
 
     if (!pin->has_extint) {
         raise_ValueError_invalid_pin();
