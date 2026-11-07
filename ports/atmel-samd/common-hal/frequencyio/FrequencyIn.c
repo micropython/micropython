@@ -305,11 +305,11 @@ void common_hal_frequencyio_frequencyin_construct(frequencyio_frequencyin_obj_t*
     // SAMD21: We use GCLK0 generated from DFLL running at 48mhz
     // SAMD51: We use a GCLK generated from DPLL1 running at <100mhz
     #ifdef SAMD21
-    set_timer_handler(timer_index, 0, TC_HANDLER_NO_INTERRUPT);
+    set_timer_handler(true, timer_index, TC_HANDLER_NO_INTERRUPT);
     turn_on_clocks(true, timer_index, 0);
     #endif
     #ifdef SAM_D5X_E5X
-    set_timer_handler(timer_index, dpll_gclk, TC_HANDLER_NO_INTERRUPT);
+    set_timer_handler(true, timer_index, TC_HANDLER_NO_INTERRUPT);
     turn_on_clocks(true, timer_index, dpll_gclk);
     #endif
 
