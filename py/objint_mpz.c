@@ -161,6 +161,10 @@ mp_obj_t mp_obj_int_unary_op(mp_unary_op_t op, mp_obj_t o_in) {
         }
         case MP_UNARY_OP_INT_MAYBE:
             return o_in;
+        #if MICROPY_PY_BUILTINS_FLOAT
+        case MP_UNARY_OP_FLOAT_MAYBE:
+            return mp_obj_new_float(mp_obj_int_as_float_impl(o_in));
+        #endif
         default:
             return MP_OBJ_NULL;      // op not supported
     }
