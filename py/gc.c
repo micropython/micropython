@@ -29,12 +29,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "py/gc.h"
-#include "py/runtime.h"
-
-#if MICROPY_DEBUG_VALGRIND
-#include <valgrind/memcheck.h>
-#endif
+#include "py/gc_impl.h"
 
 #if MICROPY_ENABLE_GC
 
@@ -128,20 +123,7 @@
 #define STB_CLEAR(area, block) do { area->gc_scan_table_start[(block) / BLOCKS_PER_STB] &= (~(1 << ((block) & 7))); } while (0)
 #endif
 
-#if MICROPY_PY_THREAD && !MICROPY_PY_THREAD_GIL
-#define GC_MUTEX_INIT() mp_thread_recursive_mutex_init(&MP_STATE_MEM(gc_mutex))
-#define GC_ENTER() mp_thread_recursive_mutex_lock(&MP_STATE_MEM(gc_mutex), 1)
-#define GC_EXIT() mp_thread_recursive_mutex_unlock(&MP_STATE_MEM(gc_mutex))
-#else
-// Either no threading, or assume callers to gc_collect() hold the GIL
-#define GC_MUTEX_INIT()
-#define GC_ENTER()
-#define GC_EXIT()
-#endif
-
 // Static functions for individual steps of the GC mark/sweep sequence
-static void gc_collect_start_common(void);
-static void *gc_get_ptr(void **ptrs, int i);
 #if MICROPY_GC_SPLIT_HEAP
 static void gc_mark_subtree(mp_state_mem_area_t *area, size_t block);
 #else
@@ -425,23 +407,6 @@ static bool gc_try_add_heap(size_t failed_alloc) {
 
 #endif
 
-void gc_lock(void) {
-    // This does not need to be atomic or have the GC mutex because:
-    // - each thread has its own gc_lock_depth so there are no races between threads;
-    // - a hard interrupt will only change gc_lock_depth during its execution, and
-    //   upon return will restore the value of gc_lock_depth.
-    MP_STATE_THREAD(gc_lock_depth) += (1 << GC_LOCK_DEPTH_SHIFT);
-}
-
-void gc_unlock(void) {
-    // This does not need to be atomic, See comment above in gc_lock.
-    MP_STATE_THREAD(gc_lock_depth) -= (1 << GC_LOCK_DEPTH_SHIFT);
-}
-
-bool gc_is_locked(void) {
-    return MP_STATE_THREAD(gc_lock_depth) != 0;
-}
-
 #if MICROPY_GC_SPLIT_HEAP
 static mp_state_mem_area_t *gc_get_ptr_area(const void *ptr);
 
@@ -499,28 +464,8 @@ static mp_state_mem_area_t *gc_get_ptr_area(const void *ptr) {
 #endif
 #endif
 
-void gc_collect_start(void) {
-    gc_collect_start_common();
-    #if MICROPY_GC_ALLOC_THRESHOLD
-    MP_STATE_MEM(gc_alloc_amount) = 0;
-    #endif
-
-    // Trace root pointers.  This relies on the root pointers being organised
-    // correctly in the mp_state_ctx structure.  We scan nlr_top, dict_locals,
-    // dict_globals, then the root pointer section of mp_state_vm.
-    void **ptrs = (void **)(void *)&mp_state_ctx;
-    size_t root_start = offsetof(mp_state_ctx_t, thread.dict_locals);
-    size_t root_end = offsetof(mp_state_ctx_t, vm.qstr_last_chunk);
-    gc_collect_root(ptrs + root_start / sizeof(void *), (root_end - root_start) / sizeof(void *));
-
-    #if MICROPY_ENABLE_PYSTACK
-    // Trace root pointers from the Python stack.
-    ptrs = (void **)(void *)MP_STATE_THREAD(pystack_start);
-    gc_collect_root(ptrs, (MP_STATE_THREAD(pystack_cur) - MP_STATE_THREAD(pystack_start)) / sizeof(void *));
-    #endif
-}
-
-static void gc_collect_start_common(void) {
+void gc_impl_collect_start(bool will_mark) {
+    (void)will_mark;
     GC_ENTER();
     assert((MP_STATE_THREAD(gc_lock_depth) & GC_COLLECT_FLAG) == 0);
     MP_STATE_THREAD(gc_lock_depth) |= GC_COLLECT_FLAG;
@@ -639,11 +584,6 @@ static void gc_mark_subtree(size_t block)
         area = MP_STATE_MEM(gc_area_stack)[sp];
         #endif
     }
-}
-
-void gc_sweep_all(void) {
-    gc_collect_start_common();
-    gc_collect_end();
 }
 
 void gc_collect_end(void) {
@@ -807,21 +747,6 @@ static void gc_sweep_free_blocks(void) {
         prev_area = area;
         #endif
     }
-}
-
-// Address sanitizer needs to know that the access to ptrs[i] must always be
-// considered OK, even if it's a load from an address that would normally be
-// prohibited (due to being undefined, in a red zone, etc).
-#if defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 8))
-__attribute__((no_sanitize_address))
-#endif
-static void *gc_get_ptr(void **ptrs, int i) {
-    #if MICROPY_DEBUG_VALGRIND
-    if (!VALGRIND_CHECK_MEM_IS_ADDRESSABLE(&ptrs[i], sizeof(*ptrs))) {
-        return NULL;
-    }
-    #endif
-    return ptrs[i];
 }
 
 void gc_info(gc_info_t *info) {
@@ -1432,18 +1357,6 @@ void *gc_realloc(void *ptr_in, size_t n_bytes, bool allow_move) {
     memcpy(ptr_out, ptr_in, n_blocks * BYTES_PER_BLOCK);
     gc_free(ptr_in);
     return ptr_out;
-}
-
-void gc_dump_info(const mp_print_t *print) {
-    gc_info_t info;
-    gc_info(&info);
-    mp_printf(print, "GC: total: %u, used: %u, free: %u",
-        (uint)info.total, (uint)info.used, (uint)info.free);
-    #if MICROPY_GC_SPLIT_HEAP_AUTO
-    mp_printf(print, ", max new split: %u", (uint)info.max_new_split);
-    #endif
-    mp_printf(print, "\n No. of 1-blocks: %u, 2-blocks: %u, max blk sz: %u, max free sz: %u\n",
-        (uint)info.num_1block, (uint)info.num_2block, (uint)info.max_block, (uint)info.max_free);
 }
 
 void gc_dump_alloc_table(const mp_print_t *print) {

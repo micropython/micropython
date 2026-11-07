@@ -119,6 +119,7 @@ PY_CORE_O_BASENAME = $(addprefix py/,\
 	nlrsetjmp.o \
 	malloc.o \
 	gc.o \
+	gc_common.o \
 	pystack.o \
 	qstr.o \
 	vstr.o \
@@ -300,6 +301,7 @@ $(PY_BUILD)/nlr%.o: CFLAGS += -Os
 
 # optimising gc for speed; 5ms down to 4ms on pybv2
 $(PY_BUILD)/gc.o: CFLAGS += $(CSUPEROPT)
+$(PY_BUILD)/gc_common.o: CFLAGS += $(CSUPEROPT)
 
 # optimising vm for speed, adds only a small amount to code size but makes a huge difference to speed (20% faster)
 $(PY_BUILD)/vm.o: CFLAGS += $(CSUPEROPT)
