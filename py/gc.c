@@ -31,7 +31,7 @@
 
 #include "py/gc_impl.h"
 
-#if MICROPY_ENABLE_GC
+#if MICROPY_ENABLE_GC && MICROPY_GC_IMPL == MICROPY_GC_IMPL_CLASSIC
 
 #if MICROPY_DEBUG_VERBOSE // print debugging info
 #define DEBUG_PRINT (1)
@@ -307,6 +307,12 @@ void gc_add(void *start, void *end) {
 
     // Add this area to the linked list
     prev_area->next = area;
+}
+
+void gc_add_ex(void *start, void *end, unsigned int area_flags) {
+    // This GC doesn't do placement, so area attributes are ignored.
+    (void)area_flags;
+    gc_add(start, end);
 }
 
 #if MICROPY_GC_SPLIT_HEAP_AUTO
@@ -1489,4 +1495,4 @@ void gc_dump_alloc_table(const mp_print_t *print) {
     GC_EXIT();
 }
 
-#endif // MICROPY_ENABLE_GC
+#endif // MICROPY_ENABLE_GC && MICROPY_GC_IMPL == MICROPY_GC_IMPL_CLASSIC

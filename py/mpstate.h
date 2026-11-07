@@ -98,6 +98,10 @@ typedef struct _mp_sched_item_t {
 #define GC_LOCK_DEPTH_SHIFT 0
 #endif
 
+#if MICROPY_GC_IMPL == MICROPY_GC_IMPL_BITMAP
+#define MP_GC_BITMAP_N_SIZE_CLASSES (8)
+#endif
+
 // This structure holds information about a single contiguous area of
 // memory reserved for the memory manager.
 typedef struct _mp_state_mem_area_t {
@@ -105,6 +109,17 @@ typedef struct _mp_state_mem_area_t {
     struct _mp_state_mem_area_t *next;
     #endif
 
+    #if MICROPY_GC_IMPL == MICROPY_GC_IMPL_BITMAP
+    // Per-block bit tables (see py/gc_bitmap.c for the layout).
+    void *gc_bitmap;
+    size_t gc_n_blocks;
+    size_t gc_first_free_block; // No free blocks below this block
+    // For size class c >= 1, no free run of 2**c or more blocks starts below
+    // gc_class_hint[c].
+    size_t gc_class_hint[MP_GC_BITMAP_N_SIZE_CLASSES];
+    size_t gc_n_groups_used; // Groups above this have nothing allocated
+    unsigned int gc_area_flags; // GC_AREA_FLAG_xxx
+    #else
     byte *gc_alloc_table_start;
     size_t gc_alloc_table_byte_len;
     #if MICROPY_ENABLE_FINALISER
@@ -116,11 +131,14 @@ typedef struct _mp_state_mem_area_t {
     #if MICROPY_GC_ENABLE_CONTAINS_NO_GC_POINTERS
     byte *gc_scan_table_start;
     #endif
+    #endif
     byte *gc_pool_start;
     byte *gc_pool_end;
 
+    #if MICROPY_GC_IMPL != MICROPY_GC_IMPL_BITMAP
     size_t gc_last_free_atb_index;
     size_t gc_last_used_block; // The block ID of the highest block allocated in the area
+    #endif
 } mp_state_mem_area_t;
 
 // This structure hold information about the memory allocation system.
@@ -138,10 +156,19 @@ typedef struct _mp_state_mem_t {
     #endif
 
     int gc_stack_overflow;
+    #if MICROPY_GC_IMPL == MICROPY_GC_IMPL_BITMAP
+    // The mark stack holds pointers to heads.  It's the static array below,
+    // or a run of free heap blocks borrowed for the duration of the mark phase.
+    void *gc_mark_stack_static[MICROPY_ALLOC_GC_STACK_SIZE];
+    void **gc_mark_stack;
+    size_t gc_mark_stack_len;
+    size_t gc_mark_stack_max_sp;
+    #else
     MICROPY_GC_STACK_ENTRY_TYPE gc_block_stack[MICROPY_ALLOC_GC_STACK_SIZE];
     #if MICROPY_GC_SPLIT_HEAP
     // Array that tracks the area for each block on gc_block_stack.
     mp_state_mem_area_t *gc_area_stack[MICROPY_ALLOC_GC_STACK_SIZE];
+    #endif
     #endif
 
     // This variable controls auto garbage collection.  If set to 0 then the
@@ -154,8 +181,15 @@ typedef struct _mp_state_mem_t {
     size_t gc_alloc_threshold;
     #endif
 
-    #if MICROPY_GC_SPLIT_HEAP
+    #if MICROPY_GC_SPLIT_HEAP && MICROPY_GC_IMPL != MICROPY_GC_IMPL_BITMAP
     mp_state_mem_area_t *gc_last_free_area;
+    #endif
+
+    #if MICROPY_GC_SPLIT_HEAP && MICROPY_GC_IMPL == MICROPY_GC_IMPL_BITMAP
+    // The area that last satisfied an allocation, for allocations that prefer
+    // other areas ([0]) and that prefer external areas ([1]).  Reset when
+    // anything is freed, so earlier areas are tried again.
+    mp_state_mem_area_t *gc_alloc_area[2];
     #endif
 
     #if MICROPY_PY_GC_COLLECT_RETVAL

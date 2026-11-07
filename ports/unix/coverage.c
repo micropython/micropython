@@ -379,7 +379,11 @@ static mp_obj_t extra_coverage(void) {
             ++n;
         }
         mp_printf(&mp_plat_print, "%d\n", n == n_blocks);
+        #if MICROPY_GC_IMPL == MICROPY_GC_IMPL_BITMAP
+        mp_printf(&mp_plat_print, "%d\n", gc_nbytes(p) == n_blocks * MICROPY_BYTES_PER_GC_BLOCK);
+        #else
         mp_printf(&mp_plat_print, "%d\n", area->gc_last_used_block < n_blocks);
+        #endif
         free(heap);
 
         // restore the GC state (the original heap)
