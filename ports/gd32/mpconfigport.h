@@ -125,10 +125,9 @@ typedef long mp_off_t;
 #define MICROPY_PY_OS_DUPTERM_BUILTIN_STREAM (0)
 #define MICROPY_PY_UCTYPES                (1)
 #define MICROPY_PY_UZLIB                  (0)
-#define MICROPY_PY_UHASHLIB               (0)
 #define MICROPY_PY_URE                    (1)
 #define MICROPY_PY_UJSON                  (1)
-#define MICROPY_PY_FRAMEBUF               (0)
+#define MICROPY_PY_FRAMEBUF               (1)
 #define MICROPY_PY_UBINASCII              (1)
 #define MICROPY_PY_HEAPQ                  (1)
 #define MICROPY_PY_MACHINE                (1)
@@ -268,7 +267,7 @@ extern const struct _mp_obj_type_t network_lan_type;
 #define MICROPY_PY_TIME                     (1)
 #define MICROPY_PY_TIME_INCLUDEFILE         "modtime_port.c"
 #define MICROPY_PY_TIME_TIME_TIME_NS        (1)
-#define MICROPY_PY_TIME_GMTIME_LOCALTIME_MKTIME (0)
+#define MICROPY_PY_TIME_GMTIME_LOCALTIME_MKTIME (1)
 
 // random: seed from the GD32 hardware true random number generator
 uint32_t mp_hal_get_hw_random_u32(void);

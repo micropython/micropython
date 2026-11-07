@@ -677,6 +677,7 @@ Compared with `ports/stm32` for STM32F4:
 | `SPI.LSB` / `SPI.MSB` | ✅ | bit-order constants for `firstbit=` |
 | `@micropython.native` / `viper` | ✅ | Thumb-2 runtime code generation |
 | `os.dupterm` | ✅ | attach a stream (e.g. a UART) to the REPL |
+| `framebuf` | ✅ | `FrameBuffer` for drawing into a bytearray |
 
 ### Python standard-library modules
 
@@ -689,15 +690,15 @@ These are enabled and use no external dependencies:
 | `re` | `compile`, `match`, `search`, `sub` (MicroPython subset) |
 | `uctypes` | struct/pointer access to raw memory |
 | `heapq` | `heappush`, `heappop`, `heapify` |
+| `hashlib` | `sha256` via mbedTLS |
 | `random` | seeded from the TRNG; `getrandbits`, `choice`, `randint` |
-| `time` | `time`, `time_ns`, `sleep*`, `ticks_*` via RTC/uptime |
+| `time` | `time`, `time_ns`, `sleep*`, `ticks_*`, `gmtime`, `localtime`, `mktime` |
 | `os` | `listdir`, `stat`, `mkdir`, `rename`, `remove`, `mount`, `uname`, `urandom`, `sync`, `dupterm` |
 
 ### Deliberately omitted versus STM32F4
 
 | Item | Why |
 |------|-----|
-| `framebuf` | no display driver in this port (the TLI controller is not wrapped) |
 | `machine.ADCBlock` | the simpler single-channel `ADC` covers the GD32F4 use case |
 | `pyb` legacy API | specific to ST boards, not applicable to GD32 |
 | `_thread` | needs a PendSV-based context switcher; not implemented yet |
