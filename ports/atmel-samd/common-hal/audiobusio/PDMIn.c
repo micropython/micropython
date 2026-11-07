@@ -57,6 +57,12 @@ void pdmin_evsys_handler(void) {
 }
 
 // Caller validates that pins are free.
+// Mark the object deinited: deinited() is true and deinit() does nothing.
+static void mark_deinit(audiobusio_pdmin_obj_t *self) {
+    self->clock_pin = NULL;
+    self->data_pin = NULL;
+}
+
 void common_hal_audiobusio_pdmin_construct(audiobusio_pdmin_obj_t *self,
     const mcu_pin_obj_t *clock_pin,
     const mcu_pin_obj_t *data_pin,
@@ -64,7 +70,10 @@ void common_hal_audiobusio_pdmin_construct(audiobusio_pdmin_obj_t *self,
     uint8_t bit_depth,
     bool mono,
     uint8_t oversample) {
-    self->clock_pin = clock_pin; // PA10, PA20 -> SCK0, PB11 -> SCK1
+    // Ensure the object starts in its deinit state.
+    mark_deinit(self);
+
+    // PA10, PA20 -> SCK0, PB11 -> SCK1
     #ifdef SAMD21
     if (clock_pin == &pin_PA10
         #if defined(PIN_PA20) && !defined(IGNORE_PIN_PA20)
@@ -92,7 +101,7 @@ void common_hal_audiobusio_pdmin_construct(audiobusio_pdmin_obj_t *self,
         raise_ValueError_invalid_pin_name(MP_QSTR_clock);
     }
 
-    self->data_pin = data_pin; // PA07, PA19 -> SD0, PA08, PB16 -> SD1
+    // PA07, PA19 -> SD0, PA08, PB16 -> SD1
 
     #ifdef SAMD21
     if (false
@@ -127,6 +136,19 @@ void common_hal_audiobusio_pdmin_construct(audiobusio_pdmin_obj_t *self,
         mp_raise_NotImplementedError_varg(MP_ERROR_TEXT("Only 8 or 16 bit mono with %dx oversampling supported."), OVERSAMPLING);
     }
 
+    uint32_t clock_divisor = (uint32_t)roundf(48000000.0f / sample_rate / oversample);
+    float mic_clock_freq = 48000000.0f / clock_divisor;
+    self->sample_rate = mic_clock_freq / oversample;
+    if (mic_clock_freq < MIN_MIC_CLOCK || clock_divisor == 0) {
+        mp_raise_ValueError(MP_ERROR_TEXT("sampling rate out of range"));
+    }
+    // Find a free GCLK to generate the MCLK signal.
+    uint8_t gclk = find_free_gclk(clock_divisor);
+    if (gclk > GCLK_GEN_NUM) {
+        mp_raise_RuntimeError(MP_ERROR_TEXT("No free GCLKs"));
+    }
+    self->gclk = gclk;
+
     turn_on_i2s();
 
     if (I2S->CTRLA.bit.ENABLE == 0) {
@@ -153,18 +175,6 @@ void common_hal_audiobusio_pdmin_construct(audiobusio_pdmin_obj_t *self,
     #define GPIO_I2S_FUNCTION GPIO_PIN_FUNCTION_G
     #endif
 
-    uint32_t clock_divisor = (uint32_t)roundf(48000000.0f / sample_rate / oversample);
-    float mic_clock_freq = 48000000.0f / clock_divisor;
-    self->sample_rate = mic_clock_freq / oversample;
-    if (mic_clock_freq < MIN_MIC_CLOCK || clock_divisor == 0) {
-        mp_raise_ValueError(MP_ERROR_TEXT("sampling rate out of range"));
-    }
-    // Find a free GCLK to generate the MCLK signal.
-    uint8_t gclk = find_free_gclk(clock_divisor);
-    if (gclk > GCLK_GEN_NUM) {
-        mp_raise_RuntimeError(MP_ERROR_TEXT("No free GCLKs"));
-    }
-    self->gclk = gclk;
 
     enable_clock_generator(self->gclk, CLOCK_48MHZ, clock_divisor);
     connect_gclk_to_peripheral(self->gclk, I2S_GCLK_ID_0 + self->clock_unit);
@@ -204,8 +214,13 @@ void common_hal_audiobusio_pdmin_construct(audiobusio_pdmin_obj_t *self,
     claim_pin(clock_pin);
     claim_pin(data_pin);
 
-    gpio_set_pin_function(self->clock_pin->number, GPIO_I2S_FUNCTION);
-    gpio_set_pin_function(self->data_pin->number, GPIO_I2S_FUNCTION);
+    gpio_set_pin_function(clock_pin->number, GPIO_I2S_FUNCTION);
+    gpio_set_pin_function(data_pin->number, GPIO_I2S_FUNCTION);
+
+    // Set the pins last: until then the object reads as deinited, so its
+    // finaliser does nothing if the constructor raised.
+    self->clock_pin = clock_pin;
+    self->data_pin = data_pin;
 
     self->bytes_per_sample = oversample >> 3;
     self->bit_depth = bit_depth;
@@ -228,8 +243,7 @@ void common_hal_audiobusio_pdmin_deinit(audiobusio_pdmin_obj_t *self) {
 
     reset_pin_number(self->clock_pin->number);
     reset_pin_number(self->data_pin->number);
-    self->clock_pin = NULL;
-    self->data_pin = NULL;
+    mark_deinit(self);
 
     // Fully power the I2S peripheral down if we were its last user.
     i2s_release();

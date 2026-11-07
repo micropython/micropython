@@ -144,6 +144,8 @@ CLK PA21 PCC_D? (D32)  BROWN
             }
             reset_pin_number(functions[i]->obj->number);
         }
+        // The pins are released, so the finaliser has nothing to undo.
+        mark_deinit(self);
         mp_raise_OSError_msg_varg(MP_ERROR_TEXT("%q failure: %d"), MP_QSTR_sd_mmc_check, (int)result);
     }
     // sd_mmc_get_capacity() is in KiB, but our "capacity" is in 512-byte blocks

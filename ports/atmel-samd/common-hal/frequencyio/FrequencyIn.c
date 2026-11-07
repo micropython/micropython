@@ -275,6 +275,16 @@ void common_hal_frequencyio_frequencyin_construct(frequencyio_frequencyin_obj_t*
     }
     Tc *tc = tc_insts[timer_index];
 
+    #ifdef SAM_D5X_E5X
+    // Start the DPLL before setting any state, so this raise leaves the
+    // object deinited. deinit() can't undo a partial setup: it would disable
+    // event channel 0 and toggle this channel's EXTINTEO bit on.
+    frequencyin_samd51_start_dpll();
+    if (dpll_gclk == 0xff && !clock_get_enabled(0, GCLK_SOURCE_DPLL1)) {
+        mp_raise_RuntimeError(MP_ERROR_TEXT("Internal resource(s) in use"));
+    }
+    #endif
+
     self->tc_index = timer_index;
     self->pin = pin->number;
     self->channel = pin->extint_channel;
@@ -297,11 +307,6 @@ void common_hal_frequencyio_frequencyin_construct(frequencyio_frequencyin_obj_t*
     turn_on_clocks(true, timer_index, 0);
     #endif
     #ifdef SAM_D5X_E5X
-    frequencyin_samd51_start_dpll();
-    if (dpll_gclk == 0xff && !clock_get_enabled(0, GCLK_SOURCE_DPLL1)) {
-        common_hal_frequencyio_frequencyin_deinit(self);
-        mp_raise_RuntimeError(MP_ERROR_TEXT("Internal resource(s) in use"));
-    }
     set_timer_handler(timer_index, dpll_gclk, TC_HANDLER_NO_INTERRUPT);
     turn_on_clocks(true, timer_index, dpll_gclk);
     #endif

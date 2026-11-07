@@ -143,7 +143,6 @@ void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t *self,
         m_malloc_fail(maxlen * sizeof(uint16_t));
     }
     self->channel = pin->extint_channel;
-    self->pin = pin->number;
     self->maxlen = maxlen;
     self->idle_state = idle_state;
     self->start = 0;
@@ -202,6 +201,9 @@ void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t *self,
         overflow_count = 0;
     }
     refcount++;
+    // Set the pin only after the last raise: until then the object reads as
+    // deinited, so its finaliser doesn't drop a refcount it never took.
+    self->pin = pin->number;
     self->last_overflow = overflow_count;
     self->last_count = 0;
 
