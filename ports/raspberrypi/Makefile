@@ -767,8 +767,8 @@ endif
 # calls before its builtin code. The default and MBEDTLS_DRIVER_PATCH, which adds
 # the driver to the dispatch, are set in mpconfigport.mk.
 ifeq ($(CIRCUITPY_RP2_SHA256_HW),1)
-SRC_C += sha256_psa/rp2_sha256_psa.c sha256_psa/rp2_sha256_block_rp2350.c
-CFLAGS += -DCIRCUITPY_PSA_RP2_SHA256 -Isha256_psa
+SRC_C += sha256_psa/rp2_sha256_psa.c
+CFLAGS += -Isha256_psa -isystem sdk/src/rp2_common/hardware_sha256/include/
 endif
 CFLAGS += -DCIRCUITPY_RP2_SHA256_HW=$(CIRCUITPY_RP2_SHA256_HW)
 

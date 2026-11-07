@@ -11,86 +11,78 @@ code stops the build.
 
 --- a/driver_templates/psa_crypto_driver_wrappers.h.jinja
 +++ b/driver_templates/psa_crypto_driver_wrappers.h.jinja
-@@ -57,2 +57,7 @@
+@@ -56,4 +56,7 @@
+ /* END-driver id */
  
-+#if defined(CIRCUITPY_PSA_RP2_SHA256)
 +#include "rp2_sha256_psa.h"
 +#define CIRCUITPY_RP2_SHA256_DRIVER_ID (0x43505348u) /* "CPSH", clear of generated IDs */
-+#endif
 +
  /* BEGIN-Common Macro definitions */
-@@ -1856,2 +1861,12 @@
+ {% macro entry_point_name(capability, entry_point, driver) -%}
+@@ -1853,4 +1856,8 @@
+         return( status );
+ #endif
++    status = rp2_sha256_psa_hash_compute( alg, input, input_length,
++                                          hash, hash_size, hash_length );
++    if( status != PSA_ERROR_NOT_SUPPORTED )
++        return( status );
+ 
      /* If software fallback is compiled in, try fallback */
-+#if defined(CIRCUITPY_PSA_RP2_SHA256)
-+    if( alg == PSA_ALG_SHA_256 )
-+    {
-+        status = rp2_sha256_psa_hash_compute( alg, input, input_length,
-+                                              hash, hash_size, hash_length );
-+        if( status != PSA_ERROR_NOT_SUPPORTED )
-+            return( status );
-+    }
-+#endif
+@@ -1888,5 +1895,11 @@
+         return( status );
+ #endif
++    status = rp2_sha256_psa_hash_setup( &operation->ctx.rp2_sha256_ctx, alg );
++    if( status == PSA_SUCCESS )
++        operation->id = CIRCUITPY_RP2_SHA256_DRIVER_ID;
+ 
++    if( status != PSA_ERROR_NOT_SUPPORTED )
++        return( status );
 +
- #if defined(MBEDTLS_PSA_BUILTIN_HASH)
-@@ -1891,2 +1906,14 @@
      /* If software fallback is compiled in, try fallback */
-+#if defined(CIRCUITPY_PSA_RP2_SHA256)
-+    if( alg == PSA_ALG_SHA_256 )
-+    {
-+        status = rp2_sha256_psa_hash_setup( &operation->ctx.rp2_sha256_ctx, alg );
-+        if( status == PSA_SUCCESS )
-+            operation->id = CIRCUITPY_RP2_SHA256_DRIVER_ID;
-+
-+        if( status != PSA_ERROR_NOT_SUPPORTED )
-+            return( status );
-+    }
-+#endif
-+
  #if defined(MBEDTLS_PSA_BUILTIN_HASH)
-@@ -1912,2 +1939,8 @@
+@@ -1911,4 +1924,8 @@
+     switch( source_operation->id )
      {
-+#if defined(CIRCUITPY_PSA_RP2_SHA256)
 +        case CIRCUITPY_RP2_SHA256_DRIVER_ID:
 +            target_operation->id = CIRCUITPY_RP2_SHA256_DRIVER_ID;
 +            return( rp2_sha256_psa_hash_clone( &source_operation->ctx.rp2_sha256_ctx,
 +                                               &target_operation->ctx.rp2_sha256_ctx ) );
-+#endif
  #if defined(MBEDTLS_PSA_BUILTIN_HASH)
-@@ -1938,2 +1971,7 @@
+         case PSA_CRYPTO_MBED_TLS_DRIVER_ID:
+@@ -1937,4 +1954,7 @@
+     switch( operation->id )
      {
-+#if defined(CIRCUITPY_PSA_RP2_SHA256)
 +        case CIRCUITPY_RP2_SHA256_DRIVER_ID:
 +            return( rp2_sha256_psa_hash_update( &operation->ctx.rp2_sha256_ctx,
 +                                                input, input_length ) );
-+#endif
  #if defined(MBEDTLS_PSA_BUILTIN_HASH)
-@@ -1964,2 +2002,7 @@
+         case PSA_CRYPTO_MBED_TLS_DRIVER_ID:
+@@ -1963,4 +1983,7 @@
+     switch( operation->id )
      {
-+#if defined(CIRCUITPY_PSA_RP2_SHA256)
 +        case CIRCUITPY_RP2_SHA256_DRIVER_ID:
 +            return( rp2_sha256_psa_hash_finish( &operation->ctx.rp2_sha256_ctx,
 +                                                hash, hash_size, hash_length ) );
-+#endif
  #if defined(MBEDTLS_PSA_BUILTIN_HASH)
-@@ -1988,2 +2031,6 @@
+         case PSA_CRYPTO_MBED_TLS_DRIVER_ID:
+@@ -1987,4 +2010,6 @@
+     switch( operation->id )
      {
-+#if defined(CIRCUITPY_PSA_RP2_SHA256)
 +        case CIRCUITPY_RP2_SHA256_DRIVER_ID:
 +            return( rp2_sha256_psa_hash_abort( &operation->ctx.rp2_sha256_ctx ) );
-+#endif
  #if defined(MBEDTLS_PSA_BUILTIN_HASH)
+         case PSA_CRYPTO_MBED_TLS_DRIVER_ID:
 --- a/include/psa/crypto_driver_contexts_primitives.h
 +++ b/include/psa/crypto_driver_contexts_primitives.h
-@@ -30,2 +30,6 @@
- 
-+#if defined(CIRCUITPY_PSA_RP2_SHA256)
+@@ -28,4 +28,5 @@
+ /* Include the context structure definitions for the Mbed TLS software drivers */
+ #include "mbedtls/private/crypto_builtin_primitives.h"
 +#include "rp2_sha256_psa_ctx.h"
-+#endif
-+
+ 
  /* Include the context structure definitions for those drivers that were
-@@ -111,2 +115,5 @@
+@@ -110,4 +111,5 @@
+     unsigned dummy; /* Make sure this union is always non-empty */
      mbedtls_psa_hash_operation_t mbedtls_ctx;
-+#if defined(CIRCUITPY_PSA_RP2_SHA256)
 +    rp2_sha256_psa_hash_operation_t rp2_sha256_ctx;
-+#endif
  #if defined(PSA_CRYPTO_DRIVER_TEST)
+     mbedtls_transparent_test_driver_hash_operation_t test_driver_ctx;

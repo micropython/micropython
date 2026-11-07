@@ -1059,12 +1059,15 @@ MBEDTLS_WRAPPERS_ARGS := --template-dir $(MBEDTLS_DISPATCH)/driver_templates
 CFLAGS += -I$(MBEDTLS_DISPATCH)/include
 QSTR_GLOBAL_REQUIREMENTS += $(MBEDTLS_DISPATCH_STAMP)
 
-$(MBEDTLS_DISPATCH_STAMP): $(MBEDTLS_DRIVER_PATCH)
+MBEDTLS_DISPATCH_TEMPLATES := $(wildcard $(TOP)/lib/mbedtls/tf-psa-crypto/scripts/data_files/driver_templates/*)
+MBEDTLS_DISPATCH_CONTEXTS := $(TOP)/lib/mbedtls/tf-psa-crypto/include/psa/crypto_driver_contexts_primitives.h
+
+$(MBEDTLS_DISPATCH_STAMP): $(MBEDTLS_DRIVER_PATCH) $(MBEDTLS_DISPATCH_TEMPLATES) $(MBEDTLS_DISPATCH_CONTEXTS)
 	$(STEPECHO) "PATCH $<"
 	$(Q)rm -rf $(MBEDTLS_DISPATCH)
 	$(Q)mkdir -p $(MBEDTLS_DISPATCH)/driver_templates $(MBEDTLS_DISPATCH)/include/psa
-	$(Q)cp $(TOP)/lib/mbedtls/tf-psa-crypto/scripts/data_files/driver_templates/* $(MBEDTLS_DISPATCH)/driver_templates/
-	$(Q)cp $(TOP)/lib/mbedtls/tf-psa-crypto/include/psa/crypto_driver_contexts_primitives.h $(MBEDTLS_DISPATCH)/include/psa/
+	$(Q)cp $(MBEDTLS_DISPATCH_TEMPLATES) $(MBEDTLS_DISPATCH)/driver_templates/
+	$(Q)cp $(MBEDTLS_DISPATCH_CONTEXTS) $(MBEDTLS_DISPATCH)/include/psa/
 	$(Q)patch -s -F0 -p1 -d $(MBEDTLS_DISPATCH) < $<
 	$(Q)touch $@
 endif

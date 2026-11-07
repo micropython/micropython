@@ -92,10 +92,9 @@ CIRCUITPY_AUDIOEFFECTS ?= 1
 # is built for ssl or hashlib-only mbedtls.
 CIRCUITPY_RP2_SHA256_HW ?= $(call enable-if-any,$(CIRCUITPY_SSL) $(CIRCUITPY_HASHLIB_MBEDTLS_ONLY))
 endif
-# After the chip branches, so the RP2350 default above wins. RP2040 has no SHA-256 block.
+# RP2040 has no SHA-256 block.
 CIRCUITPY_RP2_SHA256_HW ?= 0
-# Adds the driver to mbedtls's hash dispatch. Expanded late: CIRCUITPY_SSL is not
-# final yet here.
+# Adds the driver to mbedtls's hash dispatch.
 MBEDTLS_DRIVER_PATCH = $(if $(filter 1,$(CIRCUITPY_RP2_SHA256_HW)),$(TOP)/lib/mbedtls_config/psa_dispatch.patch)
 
 INTERNAL_LIBM = 1
