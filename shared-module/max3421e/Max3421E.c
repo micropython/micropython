@@ -46,7 +46,18 @@ void common_hal_max3421e_max3421e_construct(max3421e_max3421e_obj_t *self,
 
     common_hal_digitalio_digitalinout_construct(&self->irq, irq);
 
-    common_hal_max3421e_max3421e_init_irq(self);
+    // init_irq() can raise, for example on an irq pin without an external
+    // interrupt. bus is still NULL, so the object reads as deinited and its
+    // finaliser won't release the pins: release them here.
+    nlr_buf_t nlr;
+    if (nlr_push(&nlr) == 0) {
+        common_hal_max3421e_max3421e_init_irq(self);
+        nlr_pop();
+    } else {
+        common_hal_digitalio_digitalinout_deinit(&self->chip_select);
+        common_hal_digitalio_digitalinout_deinit(&self->irq);
+        nlr_jump(nlr.ret_val);
+    }
 
     self->bus = spi;
     self->baudrate = baudrate;
