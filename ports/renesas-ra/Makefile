@@ -6,7 +6,7 @@ BOARD ?= $(notdir $(BOARD_DIR:/=))
 else
 # If not given on the command line, then default to RA6M2_EK.
 BOARD ?= EK_RA6M2
-BOARD_DIR ?= boards/$(BOARD)
+BOARD_DIR ?= ./boards/$(BOARD)
 endif
 
 ifeq ($(wildcard $(BOARD_DIR)/.),)
@@ -59,7 +59,7 @@ CROSS_COMPILE ?= arm-none-eabi-
 
 INC += -imacros boards/compiler_barrier.h
 INC += -I.
-INC += -Ifsp_cfg
+INC += -I./fsp_cfg
 INC += -I$(TOP)
 INC += -I$(BUILD)
 INC += -I$(TOP)/$(CMSIS_DIR)
@@ -71,15 +71,15 @@ INC += -I$(TOP)/$(HAL_DIR)/ra/fsp/src/bsp/cmsis/Device/RENESAS/Include
 INC += -I$(TOP)/lib/tinyusb/hw
 INC += -I$(TOP)/lib/tinyusb/src
 INC += -I$(TOP)/shared/tinyusb
-INC += -Ilwip_inc
+INC += -I./lwip_inc
 ifeq ($(CMSIS_MCU),$(filter $(CMSIS_MCU),RA4M1 RA4W1 RA6M1 RA6M2 RA6M5))
-INC += -Ira
+INC += -I./ra
 endif
 INC += -I$(BOARD_DIR)/ra_gen
 INC += -I$(BOARD_DIR)/ra_cfg/driver
 INC += -I$(BOARD_DIR)/ra_cfg/fsp_cfg
 INC += -I$(BOARD_DIR)/ra_cfg/fsp_cfg/bsp
-INC += -Idebug
+INC += -I./debug
 
 CFLAGS += -D$(CMSIS_MCU)
 CFLAGS += -DRA_HAL_H='<$(CMSIS_MCU)_hal.h>'
@@ -128,13 +128,13 @@ CFLAGS += -fsingle-precision-constant
 endif
 endif
 
-LDFLAGS += -nostdlib -L $(LD_DIR) $(addprefix -T,$(LD_FILES)) -Map=$(@:.elf=.map) --cref
-LDFLAGS += --defsym=_estack_reserve=8
+LDFLAGS += -nostdlib -L -Wl,$(LD_DIR) $(addprefix -T,$(LD_FILES)) -Wl,-Map=$(@:.elf=.map) -Wl,--cref
+LDFLAGS += -Wl,--defsym=_estack_reserve=8
 LIBS += "$(shell $(CC) $(CFLAGS) -print-libgcc-file-name)"
 
 # Remove uncalled code from the final image.
 CFLAGS += -fdata-sections -ffunction-sections
-LDFLAGS += --gc-sections
+LDFLAGS += -Wl,--gc-sections
 
 # Debugging/Optimization
 CFLAGS += -g  # always include debug info in the ELF
@@ -417,7 +417,7 @@ $(TOP)/lib/fsp/README.md:
 
 define GENERATE_ELF
 	$(ECHO) "LINK $(1)"
-	$(Q)$(LD) $(LDFLAGS) -o $(1) $(2) $(LDFLAGS_MOD) $(LIBS)
+	$(Q)$(CC) $(LDFLAGS) -o $(1) $(2) $(LDFLAGS_MOD) $(LIBS)
 	$(Q)$(SIZE) $(1)
 endef
 
@@ -440,7 +440,7 @@ $(BUILD)/firmware.bin: $(BUILD)/firmware.elf
 $(BUILD)/firmware.hex: $(BUILD)/firmware.elf
 	$(call GENERATE_HEX,$@,$^)
 
-$(BUILD)/firmware.elf: $(OBJ)
+$(BUILD)/firmware.elf: $(OBJ) $(LIBS_THIRDPARTY)
 	$(call GENERATE_ELF,$@,$^)
 
 MAKE_PINS = boards/make-pins.py

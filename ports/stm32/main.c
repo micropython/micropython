@@ -57,6 +57,11 @@
 #endif
 #endif
 
+#if MICROPY_PY_SSL && MICROPY_SSL_MBEDTLS
+#include <psa/crypto.h>
+#include "psa/crypto_extra.h"
+#endif
+
 #if MICROPY_PY_BLUETOOTH
 #include "extmod/modbluetooth.h"
 #endif
@@ -815,6 +820,9 @@ soft_reset_exit:
     #endif
     #if MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE && MICROPY_HW_TINYUSB_STACK
     mp_usbd_deinit();
+    #endif
+    #if MICROPY_PY_SSL && MICROPY_SSL_MBEDTLS
+    mbedtls_psa_crypto_free();
     #endif
 
     MICROPY_BOARD_END_SOFT_RESET(&state);

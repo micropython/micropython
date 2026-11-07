@@ -27,13 +27,22 @@
 // Options controlling how MicroPython is built, overriding defaults in py/mpconfig.h
 
 #include <stdint.h>
+
+#if __has_include("hardware/flash.h")
+// These __has_include guards are necessary because when we build MbedTLS we
+// need to access the build config, and this is less complex than making MbedTLS
+// depend on all of the pico-sdk modules
 #include "hardware/flash.h"
 #include "hardware/spi.h"
 #include "hardware/sync.h"
 #include "pico/binary_info.h"
 #include "pico/multicore.h"
+#include "pico/rand.h"
+#endif
+
 #include "mpconfigboard.h"
 
+#if __has_include("hardware/flash.h")
 // Board and hardware specific configuration
 #if PICO_RP2040
 #define MICROPY_HW_MCU_NAME                     "RP2040"
@@ -43,6 +52,7 @@
 #define MICROPY_HW_MCU_NAME                     "RP2350-RISCV"
 #else
 #error Unknown MCU
+#endif
 #endif
 
 #ifndef MICROPY_HW_ENABLE_UART_REPL
@@ -304,7 +314,6 @@ typedef intptr_t mp_off_t;
 #define BINARY_INFO_ID_MP_FROZEN 0x4a99d719
 #define MICROPY_FROZEN_LIST_ITEM(name, file) bi_decl(bi_string(BINARY_INFO_TAG_MICROPYTHON, BINARY_INFO_ID_MP_FROZEN, name))
 
-#include "pico/rand.h"
 extern void lwip_lock_acquire(void);
 extern void lwip_lock_release(void);
 extern void lwip_poll_hook(void);

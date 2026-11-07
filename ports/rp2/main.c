@@ -59,6 +59,10 @@
 #if MICROPY_PY_NETWORK_CYW43
 #include "lib/cyw43-driver/src/cyw43.h"
 #endif
+#if MICROPY_PY_SSL && MICROPY_SSL_MBEDTLS
+#include <psa/crypto.h>
+#include "psa/crypto_extra.h"
+#endif
 #if PICO_RP2040
 #include "RP2040.h" // cmsis, for PendSV_IRQn and SCB/SCB_SCR_SEVONPEND_Msk
 #elif PICO_RP2350 && PICO_ARM
@@ -297,6 +301,9 @@ int main(int argc, char **argv) {
         soft_timer_deinit();
         #if MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
         mp_usbd_deinit();
+        #endif
+        #if MICROPY_PY_SSL && MICROPY_SSL_MBEDTLS
+        mbedtls_psa_crypto_free();
         #endif
 
         // Hook for resetting anything right at the end of a soft reset command.

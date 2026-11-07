@@ -48,6 +48,10 @@
 #include "lib/cyw43-driver/src/cyw43.h"
 #endif
 #endif
+#if MICROPY_PY_SSL && MICROPY_SSL_MBEDTLS
+#include <psa/crypto.h>
+#include "psa/crypto_extra.h"
+#endif
 
 #if MICROPY_PY_BLUETOOTH
 #include "mpbthciport.h"
@@ -213,6 +217,10 @@ int main(void) {
         #if MICROPY_PY_MACHINE_QECNT
         machine_encoder_deinit_all();
         #endif
+        #if MICROPY_PY_SSL && MICROPY_SSL_MBEDTLS
+        mbedtls_psa_crypto_free();
+        #endif
+
         machine_set_soft_reset();
         gc_sweep_all();
         mp_deinit();

@@ -33,28 +33,11 @@
 // #define MBEDTLS_DEBUG_C
 
 // Set mbedtls configuration.
-#define MBEDTLS_HAVE_TIME
-#define MBEDTLS_HAVE_TIME_DATE
-#define MBEDTLS_DEPRECATED_REMOVED
-#define MBEDTLS_AES_ROM_TABLES
-#define MBEDTLS_CIPHER_MODE_CBC
-#define MBEDTLS_ECP_DP_SECP192R1_ENABLED
-#define MBEDTLS_ECP_DP_SECP224R1_ENABLED
-#define MBEDTLS_ECP_DP_SECP256R1_ENABLED
-#define MBEDTLS_ECP_DP_SECP384R1_ENABLED
-#define MBEDTLS_ECP_DP_SECP521R1_ENABLED
-#define MBEDTLS_ECP_DP_SECP192K1_ENABLED
-#define MBEDTLS_ECP_DP_SECP224K1_ENABLED
-#define MBEDTLS_ECP_DP_SECP256K1_ENABLED
-#define MBEDTLS_ECP_DP_CURVE25519_ENABLED
-#define MBEDTLS_KEY_EXCHANGE_RSA_ENABLED
 #define MBEDTLS_KEY_EXCHANGE_ECDHE_ECDSA_ENABLED
 #define MBEDTLS_KEY_EXCHANGE_ECDHE_RSA_ENABLED
 #define MBEDTLS_KEY_EXCHANGE_PSK_ENABLED
 #define MBEDTLS_CAN_ECDH
 #define MBEDTLS_PK_CAN_ECDSA_SIGN
-#define MBEDTLS_PKCS1_V15
-#define MBEDTLS_SHA256_SMALLER
 #define MBEDTLS_SSL_PROTO_TLS1
 #define MBEDTLS_SSL_PROTO_TLS1_1
 #define MBEDTLS_SSL_PROTO_TLS1_2
@@ -66,34 +49,8 @@
 #define MBEDTLS_SSL_OUT_CONTENT_LEN (4096)
 
 // Enable mbedtls modules.
-#define MBEDTLS_AES_C
 #define MBEDTLS_ASN1_PARSE_C
 #define MBEDTLS_ASN1_WRITE_C
-#define MBEDTLS_BASE64_C
-#define MBEDTLS_BIGNUM_C
-#define MBEDTLS_CIPHER_C
-#define MBEDTLS_CTR_DRBG_C
-#define MBEDTLS_ECDH_C
-#define MBEDTLS_ECDSA_C
-#define MBEDTLS_ECP_C
-#define MBEDTLS_ENTROPY_C
-#define MBEDTLS_ERROR_C
-#define MBEDTLS_GCM_C
-#define MBEDTLS_MD_C
-#define MBEDTLS_MD5_C
-#define MBEDTLS_OID_C
-#define MBEDTLS_PEM_PARSE_C
-#define MBEDTLS_PKCS5_C
-#define MBEDTLS_PK_C
-#define MBEDTLS_PK_HAVE_ECC_KEYS
-#define MBEDTLS_PK_PARSE_C
-#define MBEDTLS_PLATFORM_C
-#define MBEDTLS_RSA_C
-#define MBEDTLS_SHA1_C
-#define MBEDTLS_SHA224_C
-#define MBEDTLS_SHA256_C
-#define MBEDTLS_SHA384_C
-#define MBEDTLS_SHA512_C
 #define MBEDTLS_SSL_CLI_C
 #define MBEDTLS_SSL_SRV_C
 #define MBEDTLS_SSL_TLS_C
@@ -106,31 +63,5 @@
 #define MBEDTLS_SSL_DTLS_HELLO_VERIFY
 #define MBEDTLS_SSL_COOKIE_C
 #endif
-
-// A port may enable this option to select additional bare-metal configuration.
-#if MICROPY_MBEDTLS_CONFIG_BARE_METAL
-
-// Bare-metal mbedtls configuration.
-#define MBEDTLS_HAVE_ASM
-#define MBEDTLS_ECP_NIST_OPTIM
-#define MBEDTLS_PLATFORM_MEMORY
-#define MBEDTLS_PLATFORM_NO_STD_FUNCTIONS
-#define MBEDTLS_ENTROPY_HARDWARE_ALT
-#define MBEDTLS_NO_PLATFORM_ENTROPY
-
-// Bare-metal memory allocation hooks.
-#include <stdlib.h>
-#include <stdio.h>
-void *m_tracked_calloc(size_t nmemb, size_t size);
-void m_tracked_free(void *ptr);
-#define MBEDTLS_PLATFORM_STD_CALLOC m_tracked_calloc
-#define MBEDTLS_PLATFORM_STD_FREE m_tracked_free
-#define MBEDTLS_PLATFORM_SNPRINTF_MACRO snprintf
-
-#endif
-
-// Workaround for a mimxrt platform driver header that defines ARRAY_SIZE,
-// which is also defined in some mbedtls source files.
-#undef ARRAY_SIZE
 
 #endif // MICROPY_INCLUDED_MBEDTLS_CONFIG_COMMON_H

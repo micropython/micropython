@@ -6,7 +6,7 @@ VARIANT ?= $(notdir $(VARIANT_DIR:/=))
 else
 # If not given on the command line, then default to standard.
 VARIANT ?= standard
-VARIANT_DIR ?= variants/$(VARIANT)
+VARIANT_DIR ?= ./variants/$(VARIANT)
 endif
 
 ifeq ($(wildcard $(VARIANT_DIR)/.),)
@@ -292,7 +292,7 @@ else
 CROSS_COMPILE_HOST =
 endif
 
-deplibs: $(DEPLIBS)
+deplibs: $(DEPLIBS) $(LIBS_THIRDPARTY)
 
 libffi: $(BUILD)/lib/libffi/include/ffi.h
 

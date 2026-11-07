@@ -30,6 +30,8 @@
 #ifdef MICROPY_SSL_MBEDTLS
 
 #include "mbedtls_config_port.h"
+#include "crypto_config_port.h"
+
 #if defined(MBEDTLS_HAVE_TIME) || defined(MBEDTLS_HAVE_TIME_DATE)
 #include "shared/timeutils/timeutils.h"
 #include "modmachine.h"

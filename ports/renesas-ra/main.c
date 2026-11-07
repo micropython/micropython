@@ -71,6 +71,10 @@
 #include "mpbthciport.h"
 #include "extmod/modbluetooth.h"
 #endif
+#if MICROPY_PY_SSL && MICROPY_SSL_MBEDTLS
+#include <psa/crypto.h>
+#include "psa/crypto_extra.h"
+#endif
 #include "extmod/modnetwork.h"
 
 #define RA_EARLY_PRINT  1       /* for enabling mp_print in boardctrl. */
@@ -429,6 +433,10 @@ soft_reset_exit:
 
     #if MICROPY_PY_THREAD
     pyb_thread_deinit();
+    #endif
+
+    #if MICROPY_PY_SSL && MICROPY_SSL_MBEDTLS
+    mbedtls_psa_crypto_free();
     #endif
 
     MICROPY_BOARD_END_SOFT_RESET(&state);
