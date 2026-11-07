@@ -10,3 +10,7 @@
 
 #define MICROPY_BOARD_STARTUP               xteink_x4c_board_startup
 void xteink_x4c_board_startup(void);
+
+#define MICROPY_HW_SDMMC_CLK                (41)
+#define MICROPY_HW_SDMMC_CMD                (42)
+#define MICROPY_HW_SDMMC_D0                 (40)

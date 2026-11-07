@@ -27,3 +27,8 @@ CW2017 gauge on I2C 0x63. If the gauge has lost its battery profile (the
 battery was disconnected), the first percentage read uploads the stock X4C
 profile, which takes up to 3 seconds. `board.is_charging()` reads the charger
 status on GPIO21.
+
+The microSD card uses SDMMC 1-bit on GPIO40-42 with an active-low power rail
+on GPIO6. `board.sdcard()` powers the card and returns a `machine.SDCard`,
+e.g. `vfs.mount(board.sdcard(), "/sd")`. `board.sd_power(False)` turns the
+rail off again after `SDCard.deinit()`.

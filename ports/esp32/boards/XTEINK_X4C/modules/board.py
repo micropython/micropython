@@ -1,7 +1,7 @@
 import time
 from binascii import unhexlify
 
-from machine import I2C, Pin
+from machine import I2C, Pin, SDCard
 from micropython import const
 
 _pins = Pin.board
@@ -29,6 +29,7 @@ for _pin in _BUTTON_PINS:
 del _pin
 
 _charge_stat = Pin(_pins.CHARGE_STAT, Pin.IN)
+_sd_power = Pin(_pins.SD_POWER)
 
 _CW2017_ADDRESS = const(0x63)
 _CW2017_REG_VERSION = const(0x00)
@@ -104,6 +105,19 @@ def get_battery_percentage() -> int:
 
 def is_charging() -> bool:
     return bool(_charge_stat.value())
+
+
+def sd_power(on: bool) -> None:
+    _sd_power.init(Pin.OUT, value=1)
+    if on:
+        time.sleep_ms(80)
+        _sd_power.value(0)
+        time.sleep_ms(120)
+
+
+def sdcard(**kwargs) -> SDCard:
+    sd_power(True)
+    return SDCard(**kwargs)
 
 
 class buttons:
