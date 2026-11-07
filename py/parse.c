@@ -1090,6 +1090,8 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
 
     for (;;) {
     next_rule:
+        mp_event_handle_nowait();
+
         if (parser.rule_stack_top == 0) {
             break;
         }
