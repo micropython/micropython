@@ -21,3 +21,9 @@ The seven buttons are active-low GPIOs, see `pins.csv`. `board.buttons` wraps
 them so `board.buttons.Up().value()` reads 1 while pressed, and
 `board.buttons.Up().irq(handler)` fires on press. Up is GPIO0, so holding it
 during reset enters the ROM bootloader.
+
+`board.get_battery_voltage()` and `board.get_battery_percentage()` read the
+CW2017 gauge on I2C 0x63. If the gauge has lost its battery profile (the
+battery was disconnected), the first percentage read uploads the stock X4C
+profile, which takes up to 3 seconds. `board.is_charging()` reads the charger
+status on GPIO21.
