@@ -19,6 +19,9 @@
 #include "ssa-iterators.h"
 
 // The MIT license is GPL compatible
+#ifdef _WIN32
+__declspec(dllexport)
+#endif
 int plugin_is_GPL_compatible;
 
 static struct plugin_info micropython_gcc_plugin_info = {
@@ -321,6 +324,9 @@ struct micropython_checks : gimple_opt_pass {
 };
 } // namespace
 
+#ifdef _WIN32
+__declspec(dllexport)
+#endif
 int plugin_init(struct plugin_name_args *plugin_info,
                 struct plugin_gcc_version *version) {
     // Plugin headers must match running gcc exactly
