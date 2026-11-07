@@ -9,5 +9,10 @@
 # Use `make BOARD=... FROZEN_MANIFEST=...` to point at a different manifest.
 
 # Default frozen modules for this port.
-module("modules/_boot.py", opt=3)
-module("modules/gd32.py", opt=3)
+#
+# freeze("modules") registers each file by its bare name, so _boot.py becomes
+# `_boot` (which is what main.c looks for) and gd32.py becomes `gd32` (which is
+# what `import gd32` expects).  Listing the files with module() instead would
+# register them as "modules/_boot" / "modules/gd32", and neither lookup would
+# ever match.
+freeze("modules")
