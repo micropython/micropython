@@ -481,31 +481,19 @@ int mp_vprintf(const mp_print_t *print, const char *fmt, va_list args) {
             }
         }
 
-        // parse long and long long specifiers (only where they make a difference)
-        #if (MP_INT_MAX > INT_MAX && MP_INT_MAX == LONG_MAX) || defined(MICROPY_UNIX_COVERAGE)
-        #define SUPPORT_L_FORMAT (1)
-        #else
-        #define SUPPORT_L_FORMAT (0)
-        #endif
-        #if SUPPORT_L_FORMAT
+        #if MICOPY_PRINTF_L_FORMAT
         bool long_arg = false;
         #endif
-
-        #if (MP_INT_MAX > LONG_MAX) || defined(MICROPY_UNIX_COVERAGE)
-        #define SUPPORT_LL_FORMAT (1)
-        #else
-        #define SUPPORT_LL_FORMAT (0)
-        #endif
-        #if SUPPORT_LL_FORMAT
+        #if MICOPY_PRINTF_LL_FORMAT
         bool long_long_arg = false;
         #endif
 
         if (*fmt == 'l') {
             ++fmt;
-            #if SUPPORT_L_FORMAT
+            #if MICOPY_PRINTF_L_FORMAT
             long_arg = true;
             #endif
-            #if SUPPORT_LL_FORMAT
+            #if MICOPY_PRINTF_LL_FORMAT
             if (*fmt == 'l') {
                 ++fmt;
                 long_long_arg = true;
@@ -567,12 +555,12 @@ int mp_vprintf(const mp_print_t *print, const char *fmt, va_list args) {
                 if (fmt_chr == 'p' || fmt_chr == 'P') {
                     val = va_arg(args, uintptr_t);
                 }
-                #if SUPPORT_LL_FORMAT
+                #if MICOPY_PRINTF_LL_FORMAT
                 else if (long_long_arg) {
                     val = va_arg(args, unsigned long long);
                 }
                 #endif
-                #if SUPPORT_L_FORMAT
+                #if MICOPY_PRINTF_L_FORMAT
                 else if (long_arg) {
                     if (sizeof(long) != sizeof(mp_uint_t) && fmt_chr == 'd') {
                         val = va_arg(args, long);

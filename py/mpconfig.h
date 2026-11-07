@@ -2507,4 +2507,26 @@ typedef time_t mp_timestamp_t;
 #endif
 #endif
 
+// Whether mp_printf handles the "l" length modifier
+#ifndef MICOPY_PRINTF_L_FORMAT
+#if (MP_INT_MAX > INT_MAX && MP_INT_MAX == LONG_MAX) || defined(MICROPY_UNIX_COVERAGE)
+#define MICOPY_PRINTF_L_FORMAT (1)
+#else
+#define MICOPY_PRINTF_L_FORMAT (0)
+#endif
+#endif
+
+// Whether mp_printf handles the "ll" length modifier
+#ifndef MICOPY_PRINTF_LL_FORMAT
+#if (MP_INT_MAX > LONG_MAX) || defined(MICROPY_UNIX_COVERAGE)
+#define MICOPY_PRINTF_LL_FORMAT (1)
+#else
+#define MICOPY_PRINTF_LL_FORMAT (0)
+#endif
+#endif
+
+#if __GNUC__ >= 12 && MICOPY_PRINTF_LL_FORMAT
+#pragma MPCHECKS mpprint_support_ll
+#endif
+
 #endif // MICROPY_INCLUDED_PY_MPCONFIG_H

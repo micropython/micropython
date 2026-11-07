@@ -17,6 +17,7 @@
 #include "tree-phinodes.h"
 #include "gimple-iterator.h"
 #include "ssa-iterators.h"
+#include "c-family/c-pragma.h"
 
 // The MIT license is GPL compatible
 #ifdef _WIN32
@@ -36,6 +37,18 @@ const pass_data micropython_checks_data = {
     TV_NONE,              /* tv_id */
     PROP_gimple_any,      /* properties_required */
 };
+
+static bool mpprint_support_ll = false;
+
+static void handle_supportll(struct cpp_reader *unused) {
+    mpprint_support_ll = true;
+}
+
+static void
+register_pragma (void *event_data, void *data) {
+    c_register_pragma_with_expansion("MPCHECKS", "mpprint_support_ll", handle_supportll);
+}
+
 
 struct micropython_checks : gimple_opt_pass {
     micropython_checks(gcc::context *ctx)
@@ -180,9 +193,18 @@ struct micropython_checks : gimple_opt_pass {
                         require_sized_int(argno, long_integer_type_node,
                                           long_unsigned_type_node);
                     };
-                    auto require_long_long = [&require_sized_int](unsigned argno) {
-                        require_sized_int(argno, long_long_integer_type_node,
-                                          long_long_unsigned_type_node);
+                    auto require_long_long = [&](unsigned argno) {
+                        if (mpprint_support_ll) {
+                            require_sized_int(argno, long_long_integer_type_node,
+                                              long_long_unsigned_type_node);
+                        } else {
+                            location_t loc = gimple_location(stmt);
+                            warning_at(
+                                loc, OPT_Wformat_,
+                                "argument %d: Format %q.*s not supported in this configuration",
+                                argno + 1, (int)(fmt - fmt_start + 1),
+                                fmt_start);
+                        }
                     };
                     auto require_qstr = [&require_sized_int](unsigned argno) {
                         require_sized_int(argno, size_type_node,
@@ -340,6 +362,9 @@ int plugin_init(struct plugin_name_args *plugin_info,
     register_callback(plugin_info->base_name,
                       /* event */ PLUGIN_INFO,
                       /* callback */ NULL, /* user_data */ &micropython_gcc_plugin_info);
+    register_callback(plugin_info->base_name,
+                      /* event */ PLUGIN_PRAGMAS,
+                      /* callback */ register_pragma, /* user_data */ NULL);
 
     struct register_pass_info pass_info;
 
