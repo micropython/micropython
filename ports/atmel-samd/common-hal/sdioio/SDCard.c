@@ -98,7 +98,8 @@ CLK PA21 PCC_D? (D32)  BROWN
     }
 
     for (size_t i = 0; i < MP_ARRAY_SIZE(functions); i++) {
-        if (!functions[i]->obj) {
+        // With one data pin, functions[3] to functions[5] are NULL.
+        if (!functions[i]) {
             break;
         }
 
