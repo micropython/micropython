@@ -182,7 +182,10 @@ LDFLAGS += $(MCU_ARCH)
 LDFLAGS += -T $(LD_FILES)
 LDFLAGS += -Wl,-Map=$@.map,--cref -Wl,--gc-sections
 LDFLAGS += -Wl,--print-memory-usage
-LDFLAGS += -Wl,--defsym=__stack_size=0x2000
+# 16 KB of C stack (was 8 KB).  The compiler recurses parser -> compiler ->
+# emitter, and viper/native add another layer; 8 KB overflowed and the
+# symptom was a hang on the first line typed at the REPL.
+LDFLAGS += -Wl,--defsym=__stack_size=0x4000
 LIBS += --specs=nano.specs --specs=nosys.specs -lm -lc -lgcc
 
 # ---- targets ----

@@ -32,6 +32,10 @@
 #define MICROPY_FLOAT_IMPL                (MICROPY_FLOAT_IMPL_FLOAT)
 #endif
 
+// Guard band below the end of the C stack.  With this set, running out
+// of stack raises a Python exception instead of hanging.
+#define MICROPY_STACK_CHECK_MARGIN        (2048)
+
 // ---- Interpreter performance ----
 // Threaded dispatch and a small dictionary lookup cache, the same pair
 // ports/stm32 enables for Cortex-M.  Costs about 1.1 KB.
@@ -76,7 +80,14 @@
 #define MICROPY_SCHEDULER_STATIC_NODES    (1)
 #define MICROPY_ENABLE_COMPILER           (1)
 // Frozen modules: bytecode generated at build time and stored in Flash.
-// MICROPY_MODULE_FROZEN_MPY already comes from the configured ROM level.
+//
+// py/mpconfig.h defaults MICROPY_MODULE_FROZEN_MPY to 0 and the ROM level does
+// not touch it, so it has to be set here.  Without this the manifest is still
+// compiled into flash but nothing can look the modules up, and _boot.py never
+// runs (the REPL reports "could not find module '_boot.py'").
+#ifndef MICROPY_MODULE_FROZEN_MPY
+#define MICROPY_MODULE_FROZEN_MPY        (1)
+#endif
 #ifndef MICROPY_QSTR_EXTRA_POOL
 #define MICROPY_QSTR_EXTRA_POOL           mp_qstr_frozen_const_pool
 #endif

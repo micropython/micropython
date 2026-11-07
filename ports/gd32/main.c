@@ -8,6 +8,8 @@
 #include "py/builtin.h"
 #include "py/compile.h"
 #include "py/runtime.h"
+#include "py/cstack.h"
+#include "py/pystack.h"
 #include "py/repl.h"
 #include "py/gc.h"
 #include "py/mperrno.h"
@@ -27,7 +29,19 @@ void machine_mem_backup_init(void);
 static char *stack_top;
 static char heap[MICROPY_HEAP_SIZE];
 
+// Buffer for MicroPython's Python-level stack (push/pop of VM frames).
+// mp_state_ctx is in .bss, so without mp_pystack_init() the start/end
+// pointers are NULL and the first allocation reports "pystack exhausted".
+#if MICROPY_ENABLE_PYSTACK
+static uint8_t pystack[MICROPY_PYSTACK_SIZE];
+#endif
+
 extern uint32_t SystemCoreClock;
+
+// Provided by the linker script / Makefile:  _sp is the top of the
+// C stack, __stack_size its size (see LDFLAGS --defsym).
+extern uint8_t _sp;
+extern uint8_t __stack_size;
 extern void uart_repl_init(void);
 
 // board init hooks (weak defaults)
@@ -92,6 +106,19 @@ int main(void) {
     mp_hal_stdout_tx_str(" with ");
     mp_hal_stdout_tx_str(MICROPY_HW_MCU_NAME);
     mp_hal_stdout_tx_str("\r\n");
+
+    // Tell MicroPython where the C stack is and how big, so that
+    // mp_cstack_check() can convert an imminent overflow into a Python
+    // RecursionError instead of a hard fault.  Without this the stack limit
+    // stays 0 (BSS) and every stack check fires immediately.
+    mp_cstack_init_with_top(&_sp, (size_t)&__stack_size);
+
+    // Give MicroPython a real Python stack.  Without this the start/end
+    // pointers stay NULL (they live in .bss) and the first allocation
+    // raises "pystack exhausted".
+    #if MICROPY_ENABLE_PYSTACK
+    mp_pystack_init(pystack, pystack + sizeof(pystack));
+    #endif
 
     gc_init(heap, heap + sizeof(heap));
     mp_init();
