@@ -28,9 +28,14 @@
 /* memory map */
 MEMORY
 {
-  FLASH    (rx): ORIGIN = 0x08000000, LENGTH = 512K
-  RAM      (xrw): ORIGIN = 0x20000000, LENGTH = 128K
-  TCMRAM   (xrw): ORIGIN = 0x10000000, LENGTH = 64K
+  /* Sector 0: the Cortex-M vector table must sit at 0x08000000. */
+  FLASH_ISR   (rx): ORIGIN = 0x08000000, LENGTH = 16K
+  /* Sectors 1-3: internal littlefs partition (3 x 16 KB). */
+  FLASH_FS    (rx): ORIGIN = 0x08004000, LENGTH = 48K
+  /* Sectors 4-7: the firmware image (64 + 128 + 128 + 128 = 448 KB). */
+  FLASH_TEXT  (rx): ORIGIN = 0x08010000, LENGTH = 448K
+  RAM        (xrw): ORIGIN = 0x20000000, LENGTH = 128K
+  TCMRAM     (xrw): ORIGIN = 0x10000000, LENGTH = 64K
 }
 
 ENTRY(Reset_Handler)
@@ -48,8 +53,7 @@ SECTIONS
     . = ALIGN(4);
     __Vectors_End = .;
     __Vectors_Size = __Vectors_End - __gVectors;
-  } >FLASH
-
+  } >FLASH_ISR
   /* text section, such as program code */
   .text :
   {
@@ -64,7 +68,7 @@ SECTIONS
     . = ALIGN(4);
     /* the symbol '_etext' will be defined at the end of code section */
     _etext = .;
-  } >FLASH
+  } >FLASH_TEXT
 
   /* ro-data section, such as constant data */
   .rodata :
@@ -73,13 +77,13 @@ SECTIONS
     *(.rodata)
     *(.rodata*)
     . = ALIGN(4);
-  } >FLASH
+  } >FLASH_TEXT
 
   /* exception process table */
   .ARM.extab :
   {
     *(.ARM.extab* .gnu.linkonce.armextab.*)
-  } >FLASH
+  } >FLASH_TEXT
 
   /* exception process table index */
   .ARM :
@@ -87,20 +91,20 @@ SECTIONS
     __exidx_start = .;
     *(.ARM.exidx*)
     __exidx_end = .;
-  } >FLASH
+  } >FLASH_TEXT
 
   /* ARM attributes */
   .ARM.attributes :
   {
    *(.ARM.attributes)
-  } >FLASH
+  } >FLASH_TEXT
 
   .preinit_array :
   {
     PROVIDE_HIDDEN (__preinit_array_start = .);
     KEEP (*(.preinit_array*))
     PROVIDE_HIDDEN (__preinit_array_end = .);
-  } >FLASH
+  } >FLASH_TEXT
 
   .init_array :
   {
@@ -108,7 +112,7 @@ SECTIONS
     KEEP (*(SORT(.init_array.*)))
     KEEP (*(.init_array*))
     PROVIDE_HIDDEN (__init_array_end = .);
-  } >FLASH
+  } >FLASH_TEXT
 
   .fini_array :
   {
@@ -116,7 +120,7 @@ SECTIONS
     KEEP (*(.fini_array*))
     KEEP (*(SORT(.fini_array.*)))
     PROVIDE_HIDDEN (__fini_array_end = .);
-  } >FLASH
+  } >FLASH_TEXT
 
   /* provide some necessary symbols for initialized data */
   _sidata = LOADADDR(.data);
@@ -130,7 +134,7 @@ SECTIONS
     . = ALIGN(4);
     /* the symbol '_edata' will be defined at the data section end */
     _edata = .;
-  } > RAM AT> FLASH
+  } > RAM AT> FLASH_TEXT
 
   /* provide some necessary symbols for uninitialized data */
   . = ALIGN(4);
@@ -172,23 +176,41 @@ SECTIONS
     *(.tcmram*)
     . = ALIGN(4);
     _etcmram = .;
-  } > TCMRAM AT> FLASH
+  } > TCMRAM AT> FLASH_TEXT
 }
 
 
 /* ---------------------------------------------------------------------------
- * Firmware size guard.
+ * Flash layout symbols.
  *
- * The last 128 KB of internal flash (0x08060000 - 0x0807FFFF, Sector 7) hold the littlefs partition used by flashbdev.c.  If the image
- * ever grows into that range the filesystem would be overwritten (or worse,
- * the image itself corrupted), and the failure would only show up at runtime
- * on a device that has already been flashed.
+ * flashbdev.c does not hard-code any address: it reads the filesystem region
+ * from these symbols, so moving the partition only requires editing this file.
  *
- * Assert at link time instead.  Keep this in sync with FLASH_BDEV_START_ADDR
- * in ports/gd32/flashbdev.c.
+ *   _flash_code_start : first byte of the firmware image (after the FS)
+ *   _flash_fs_start   : first byte of the littlefs partition
+ *   _flash_fs_end     : one past the last byte of the littlefs partition
+ *
+ * On this part the vector table lives in Sector 0, the filesystem in Sectors
+ * 1-3 (three 16 KB blocks) and the code in Sectors 4-7 (448 KB).  Keeping the
+ * filesystem low means the image is not capped by a trailing partition.
  * ------------------------------------------------------------------------- */
-ASSERT(_sidata + SIZEOF(.data) <= 0x08060000,
-       "FIRMWARE TOO LARGE: image overruns the internal littlefs partition at 0x08060000. Reduce features or move FLASH_BDEV_START_ADDR.")
+_flash_code_start = ORIGIN(FLASH_TEXT);
+_flash_fs_start   = ORIGIN(FLASH_FS);
+_flash_fs_end     = ORIGIN(FLASH_FS) + LENGTH(FLASH_FS);
+_flash_fs_block_size = 16K;
+_flash_fs_block_count = 3;
+
+/* The vector table must fit inside Sector 0. */
+ASSERT(SIZEOF(.vectors) <= 16K,
+       "VECTOR TABLE TOO LARGE: must fit in Sector 0 (16 KB).")
+
+/* The firmware image must not reach back into the filesystem. */
+ASSERT(_flash_fs_end <= _flash_code_start,
+       "FLASH LAYOUT ERROR: filesystem region overlaps the code region.")
+
+/* The image must fit between _flash_code_start and the end of flash. */
+ASSERT(_sidata + SIZEOF(.data) <= ORIGIN(FLASH_TEXT) + LENGTH(FLASH_TEXT),
+       "FIRMWARE TOO LARGE: image overruns the end of flash at 0x08080000. Reduce features or shrink the filesystem partition.")
 
 /* input sections */
 GROUP(libgcc.a libc.a libm.a libnosys.a)

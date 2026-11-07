@@ -185,16 +185,25 @@ LDFLAGS += -Wl,--defsym=__stack_size=0x2000
 LIBS += --specs=nano.specs --specs=nosys.specs -lm -lc -lgcc
 
 # ---- targets ----
-all: $(BUILD)/firmware.elf $(BUILD)/firmware.bin $(BUILD)/firmware.hex
+all: $(BUILD)/firmware.elf $(BUILD)/firmware.bin $(BUILD)/firmware-isr.bin $(BUILD)/firmware.hex
 
 $(BUILD)/firmware.elf: $(OBJ)
 	$(ECHO) "LINK $@"
 	$(Q)$(CC) $(LDFLAGS) -o $@ $(OBJ) $(LIBS)
 	$(Q)$(SIZE) $@
 
+# The vector table lives in Sector 0 and the code starts after the filesystem
+# partition, so a plain `objcopy -O binary` would pad the 48 KB filesystem hole
+# with 0xFF and produce an image that must not be flashed as one piece.
+# Emit the two halves separately and keep a HEX for anything that can handle
+# gaps (OpenOCD/st-flash both honour the addresses in it).
 $(BUILD)/firmware.bin: $(BUILD)/firmware.elf
-	$(ECHO) "BIN $@"
-	$(Q)$(OBJCOPY) -O binary $< $@
+	$(ECHO) "BIN $@ (code, flash at 0x08010000)"
+	$(Q)$(OBJCOPY) -O binary -j .text -j .rodata -j .ARM.extab -j .ARM -j .ARM.attributes -j .preinit_array -j .init_array -j .fini_array -j .data $< $@
+
+$(BUILD)/firmware-isr.bin: $(BUILD)/firmware.elf
+	$(ECHO) "BIN $@ (vectors, flash at 0x08000000)"
+	$(Q)$(OBJCOPY) -O binary -j .vectors $< $@
 
 $(BUILD)/firmware.hex: $(BUILD)/firmware.elf
 	$(ECHO) "HEX $@"
@@ -222,7 +231,7 @@ DIST_DIR = dist/$(BOARD)
 dist: all
 	$(ECHO) "Export $@ artifacts"
 	$(Q)mkdir -p $(DIST_DIR)
-	$(Q)cp $(BUILD)/firmware.elf $(BUILD)/firmware.bin $(BUILD)/firmware.hex $(DIST_DIR)/ 2>/dev/null || true
+	$(Q)cp $(BUILD)/firmware.elf $(BUILD)/firmware.bin $(BUILD)/firmware-isr.bin $(BUILD)/firmware.hex $(DIST_DIR)/ 2>/dev/null || true
 	$(Q)ls -lh $(DIST_DIR)
 
 .PHONY: dist

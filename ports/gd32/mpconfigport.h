@@ -13,27 +13,28 @@
 // Use the "extra features" ROM level as a base and tune below.
 #define MICROPY_CONFIG_ROM_LEVEL (MICROPY_CONFIG_ROM_LEVEL_EXTRA_FEATURES)
 
-// Floating point: the GD32F4 is a Cortex-M4F with a single-precision FPU, and
-// MCU_ARCH already builds with -mfloat-abi=hard -mfpu=fpv4-sp-d16, so enable
-// the float type.  Without this the port silently falls back to
-// MICROPY_FLOAT_IMPL_NONE and no float support is compiled in at all.
-#ifndef MICROPY_FLOAT_IMPL// Floating point is deliberately DISABLED.
+// ---- Flash budget and floating point ----
 //
-// The GD32F4 is a Cortex-M4F and MCU_ARCH builds with -mfloat-abi=hard, so the
-// hardware is present, but enabling MICROPY_FLOAT_IMPL_FLOAT costs about
-// 32.7 KB of code.  The internal littlefs partition starts at 0x08060000
-// (Sector 7), which caps the image at 384 KB, and the image is already
-// ~373 KB.  FLOAT grows it to ~406 KB and the linker asserts with
-// "FIRMWARE TOO LARGE".
+// The port splits internal flash into three regions (see ld/*.ld):
 //
-// To enable float, first free space: move or shrink the filesystem region in
-// flashbdev.c plus the matching ASSERT in ld/*.ld, or drop a large feature
-// (TLS, lwIP, TinyUSB).
-#define MICROPY_FLOAT_IMPL                (MICROPY_FLOAT_IMPL_NONE)
+//   Sector 0        .vectors          16 KB
+//   Sectors 1-3     littlefs          48 KB
+//   Sectors 4-7     firmware image   448 KB
+//
+// Keeping the filesystem low and the code high (the same layout idea as
+// ports/stm32 FLASH_START / FLASH_FS / FLASH_TEXT) gives the image 448 KB
+// instead of the 384 KB a trailing filesystem allows.  Floating point costs
+// about 32.7 KB, which did not fit in 384 KB but does fit in 448 KB.
+//
+// The GD32F4 is a Cortex-M4F and MCU_ARCH already builds with -mfloat-abi=hard
+// -mfpu=fpv4-sp-d16, so the hardware is there; this only has to be turned on.
+#ifndef MICROPY_FLOAT_IMPL
+#define MICROPY_FLOAT_IMPL                (MICROPY_FLOAT_IMPL_FLOAT)
 #endif
 
-// Interpreter performance: threaded dispatch and a small dictionary lookup
-// cache, both matching what ports/stm32 enables for Cortex-M.
+// ---- Interpreter performance ----
+// Threaded dispatch and a small dictionary lookup cache, the same pair
+// ports/stm32 enables for Cortex-M.  Costs about 1.1 KB.
 #ifndef MICROPY_OPT_COMPUTED_GOTO
 #define MICROPY_OPT_COMPUTED_GOTO         (1)
 #endif

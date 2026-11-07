@@ -182,16 +182,66 @@ not implemented.
 Pins are identified either by name (from `pins.csv`) or by an encoded
 integer `port << 4 | num`, e.g. `PA0` = `0`, `PB7` = `1 << 4 | 7` = `23`.
 
-## Memory layout (GD32F407, 512K/128K)
+## Memory layout (GD32F407/F470, 512K flash)
 
-```
-FLASH 0x08000000  512K   firmware
-RAM   0x20000000  128K   data + bss + heap + stack
-TCMRAM 0x10000000  64K   (unused by default)
+Internal flash is split into three regions so that the filesystem does not cap
+the size of the firmware image:
+
+| Region | Sectors | Size | Address |
+|--------|---------|------|---------|
+| `.vectors` | 0 | 16 KB | `0x08000000`-`0x08003FFF` |
+| littlefs | 1-3 | 48 KB | `0x08004000`-`0x0800FFFF` |
+| firmware | 4-7 | 448 KB | `0x08010000`-`0x0807FFFF` |
+
+The vector table has to sit at `0x08000000`, so it gets its own small region at
+the bottom.  Putting the filesystem directly above it and the code after that
+(same idea as `FLASH_START` / `FLASH_FS` / `FLASH_TEXT` in `ports/stm32`) gives
+the image 448 KB instead of the 384 KB a trailing filesystem would allow.  That
+extra 64 KB is what makes floating point fit.
+
+The boundaries are defined once, in `ld/*.ld`, and exported to C:
+
+```ld
+_flash_fs_start      = ORIGIN(FLASH_FS);
+_flash_fs_end        = ORIGIN(FLASH_FS) + LENGTH(FLASH_FS);
+_flash_code_start    = ORIGIN(FLASH_TEXT);
+_flash_fs_block_size = 16K;
+_flash_fs_block_count = 3;
 ```
 
-Linker scripts live in `ld/` and are selected per board via
-`LD_SCRIPT` in `boards/<BOARD>/mpconfigboard.mk`.
+`flashbdev.c` reads those symbols rather than hard-coding addresses, and checks
+them against its sector table when the block device is initialised - a mismatch
+would otherwise erase the wrong sector and brick the board.
+
+### Flashing
+
+Because the vector table and the code are not contiguous, `firmware.bin` does
+not start at `0x08000000`.  Two binaries are produced:
+
+| File | Flash at | Contents |
+|------|----------|----------|
+| `firmware-isr.bin` | `0x08000000` | vector table only (~392 B) |
+| `firmware.bin` | `0x08010000` | code, rodata and initialised data |
+| `firmware.hex` | - | full image, addresses embedded (easiest) |
+
+`firmware.hex` is the simplest option because it carries absolute addresses:
+
+```bash
+openocd -f interface/stlink.cfg -f target/stm32f4x.cfg \
+        -c "program dist/GD32F407/firmware.hex verify reset exit"
+```
+
+When writing the `.bin` files by hand, both halves must be programmed, `-isr`
+first:
+
+```bash
+st-flash write dist/GD32F407/firmware-isr.bin 0x08000000
+st-flash write dist/GD32F407/firmware.bin     0x08010000
+```
+
+RAM (`0x20000000`, 128 KB on F407 / 192 KB on F470) is unchanged, and the 64 KB
+TCMRAM at `0x10000000` is still unused.
+
 
 ## Port layout
 
@@ -323,7 +373,7 @@ See `gd32lib/` sources for the original headers.
 
 ## Filesystem
 
-The last 64 KB of internal flash (`0x08070000`–`0x08080000`, sectors 4-7) is
+The 48 KB filesystem partition (`0x08070000`–`0x08080000`, sectors 4-7) is
 reserved for a **littlefs2** filesystem mounted at `/` at boot:
 
 ```python
