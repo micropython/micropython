@@ -14,3 +14,9 @@
 
 void set_timer_handler(bool is_tc, uint8_t index, uint8_t timer_handler);
 void shared_timer_handler(bool is_tc, uint8_t index);
+
+// Undo turn_on_clocks() from peripherals/samd for a timer that is no longer in use. Always turns
+// off the timer's APB clock. Turns off its GCLK peripheral channel only if no other timer sharing
+// that channel still has its APB clock on. Call it after the timer's software reset has synced,
+// which needs the GCLK.
+void turn_off_clocks(bool is_tc, uint8_t index);

@@ -311,6 +311,7 @@ void common_hal_audioio_audioout_deinit(audioio_audioout_obj_t *self) {
         tc_set_enable(t, false);
         tc_reset(t);
         set_timer_handler(true, self->tc_index, TC_HANDLER_NO_INTERRUPT);
+        turn_off_clocks(true, self->tc_index);
         self->tc_index = 0xff;
     }
 

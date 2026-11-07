@@ -9,6 +9,9 @@
 
 #include "timer_handler.h"
 
+#include "samd/clocks.h"
+#include "samd/timers.h"
+
 #include "common-hal/pulseio/PulseIn.h"
 #include "common-hal/pulseio/PulseOut.h"
 #include "common-hal/_pew/PewPew.h"
@@ -17,6 +20,86 @@
 extern void _PM_IRQ_HANDLER(void);
 
 static uint8_t tc_handler[TC_INST_NUM];
+
+// Find the APB mask register and bit that clock a timer. turn_on_clocks() sets this bit.
+static volatile uint32_t *apb_mask(bool is_tc, uint8_t index, uint32_t *bit) {
+    #ifdef SAM_D5X_E5X
+    if (is_tc) {
+        switch (index) {
+            case 0:
+                *bit = MCLK_APBAMASK_TC0;
+                return &MCLK->APBAMASK.reg;
+            case 1:
+                *bit = MCLK_APBAMASK_TC1;
+                return &MCLK->APBAMASK.reg;
+            case 2:
+                *bit = MCLK_APBBMASK_TC2;
+                return &MCLK->APBBMASK.reg;
+            case 3:
+                *bit = MCLK_APBBMASK_TC3;
+                return &MCLK->APBBMASK.reg;
+            case 4:
+                *bit = MCLK_APBCMASK_TC4;
+                return &MCLK->APBCMASK.reg;
+            case 5:
+                *bit = MCLK_APBCMASK_TC5;
+                return &MCLK->APBCMASK.reg;
+            case 6:
+                *bit = MCLK_APBDMASK_TC6;
+                return &MCLK->APBDMASK.reg;
+            default:
+                *bit = MCLK_APBDMASK_TC7;
+                return &MCLK->APBDMASK.reg;
+        }
+    }
+    switch (index) {
+        case 0:
+            *bit = MCLK_APBBMASK_TCC0;
+            return &MCLK->APBBMASK.reg;
+        case 1:
+            *bit = MCLK_APBBMASK_TCC1;
+            return &MCLK->APBBMASK.reg;
+        case 2:
+            *bit = MCLK_APBCMASK_TCC2;
+            return &MCLK->APBCMASK.reg;
+        case 3:
+            *bit = MCLK_APBCMASK_TCC3;
+            return &MCLK->APBCMASK.reg;
+        default:
+            *bit = MCLK_APBDMASK_TCC4;
+            return &MCLK->APBDMASK.reg;
+    }
+    #else
+    // TCC0 is APBC slot 8. TC3, which is TC index 0, is slot 11.
+    *bit = 1 << (8 + index + (is_tc ? 3 : 0));
+    return &PM->APBCMASK.reg;
+    #endif
+}
+
+static bool apb_clock_enabled(bool is_tc, uint8_t index) {
+    uint32_t bit;
+    return (*apb_mask(is_tc, index, &bit) & bit) != 0;
+}
+
+void turn_off_clocks(bool is_tc, uint8_t index) {
+    uint32_t bit;
+    *apb_mask(is_tc, index, &bit) &= ~bit;
+
+    // Most timers share a GCLK peripheral channel with one other timer. Leave the channel on while
+    // any timer on it still has its APB clock.
+    uint8_t gclk_id = is_tc ? tc_gclk_ids[index] : tcc_gclk_ids[index];
+    for (uint8_t i = 0; i < TC_INST_NUM; i++) {
+        if (tc_gclk_ids[i] == gclk_id && apb_clock_enabled(true, i)) {
+            return;
+        }
+    }
+    for (uint8_t i = 0; i < TCC_INST_NUM; i++) {
+        if (tcc_gclk_ids[i] == gclk_id && apb_clock_enabled(false, i)) {
+            return;
+        }
+    }
+    disconnect_gclk_from_peripheral(0, gclk_id);
+}
 
 void set_timer_handler(bool is_tc, uint8_t index, uint8_t timer_handler) {
     if (is_tc) {

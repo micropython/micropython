@@ -106,6 +106,7 @@ void pew_deinit(void) {
     tc_disable_interrupts(pewpew_tc_index);
     tc_reset(tc);
     set_timer_handler(true, pewpew_tc_index, TC_HANDLER_NO_INTERRUPT);
+    turn_off_clocks(true, pewpew_tc_index);
     pewpew_tc_index = 0xff;
 }
 
