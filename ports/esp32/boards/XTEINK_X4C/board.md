@@ -16,3 +16,8 @@ The partition table matches the two 6.25MiB OTA slots used by CrossPoint,
 so MicroPython runs from `ota_0` and `ota_1` is free for another firmware.
 Back up the stock firmware with `esptool.py read_flash 0 0x1000000 backup.bin`
 before erasing the flash.
+
+The seven buttons are active-low GPIOs, see `pins.csv`. `board.buttons` wraps
+them so `board.buttons.Up().value()` reads 1 while pressed, and
+`board.buttons.Up().irq(handler)` fires on press. Up is GPIO0, so holding it
+during reset enters the ROM bootloader.
