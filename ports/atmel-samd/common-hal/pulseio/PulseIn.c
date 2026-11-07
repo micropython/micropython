@@ -121,10 +121,15 @@ void pulsein_interrupt_handler(uint8_t channel) {
     common_hal_mcu_enable_interrupts();
 }
 
+// Mark the object deinited: deinited() is true and deinit() does nothing.
+static void mark_deinit(pulseio_pulsein_obj_t *self) {
+    self->pin = NO_PIN;
+}
+
 void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t *self,
     const mcu_pin_obj_t *pin, uint16_t maxlen, bool idle_state) {
     // Ensure the object starts in its deinit state.
-    self->pin = NO_PIN;
+    mark_deinit(self);
 
     if (!pin->has_extint) {
         raise_ValueError_invalid_pin();
@@ -244,7 +249,7 @@ void common_hal_pulseio_pulsein_deinit(pulseio_pulsein_obj_t *self) {
         set_timer_handler(true, pulsein_tc_index, TC_HANDLER_NO_INTERRUPT);
         pulsein_tc_index = 0xff;
     }
-    self->pin = NO_PIN;
+    mark_deinit(self);
 }
 
 void common_hal_pulseio_pulsein_pause(pulseio_pulsein_obj_t *self) {

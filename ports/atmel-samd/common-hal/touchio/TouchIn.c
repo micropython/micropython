@@ -46,10 +46,15 @@ static uint16_t get_raw_reading(touchio_touchin_obj_t *self) {
     return adafruit_ptc_get_conversion_result(PTC);
 }
 
+// Mark the object deinited: deinited() is true and deinit() does nothing.
+static void mark_deinit(touchio_touchin_obj_t *self) {
+    self->config.pin = NO_PIN;
+}
+
 void common_hal_touchio_touchin_construct(touchio_touchin_obj_t *self,
     const mcu_pin_obj_t *pin, const digitalio_pull_t pull) {
     // Ensure the object starts in its deinit state.
-    self->config.pin = NO_PIN;
+    mark_deinit(self);
 
     if (!pin->has_touch) {
         raise_ValueError_invalid_pin();
@@ -103,7 +108,7 @@ void common_hal_touchio_touchin_deinit(touchio_touchin_obj_t *self) {
     }
 
     reset_pin_number(self->config.pin);
-    self->config.pin = NO_PIN;
+    mark_deinit(self);
 
     touchin_refcount--;
     if (touchin_refcount > 0) {

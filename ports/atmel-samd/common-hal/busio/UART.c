@@ -37,6 +37,14 @@ static void usart_async_rxc_callback(const struct usart_async_descriptor *const 
     // Nothing needs to be done by us.
 }
 
+// Mark the object deinited: deinited() is true and deinit() does nothing.
+static void mark_deinit(busio_uart_obj_t *self) {
+    self->rx_pin = NO_PIN;
+    self->tx_pin = NO_PIN;
+    self->rts_pin = NO_PIN;
+    self->cts_pin = NO_PIN;
+}
+
 // shared-bindings validates that the tx and rx are not both missing,
 // and that the pins are distinct.
 void common_hal_busio_uart_construct(busio_uart_obj_t *self,
@@ -56,11 +64,8 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     uint32_t rts_pinmux = 0;
     uint32_t cts_pinmux = 0;
 
-    // Set state so the object is deinited to start.
-    self->rx_pin = NO_PIN;
-    self->tx_pin = NO_PIN;
-    self->rts_pin = NO_PIN;
-    self->cts_pin = NO_PIN;
+    // Ensure the object starts in its deinit state.
+    mark_deinit(self);
 
     if ((rs485_dir != NULL) || (rs485_invert)) {
         mp_raise_NotImplementedError(MP_ERROR_TEXT("RS485"));
@@ -319,10 +324,7 @@ void common_hal_busio_uart_deinit(busio_uart_obj_t *self) {
     reset_pin_number(self->tx_pin);
     reset_pin_number(self->rts_pin);
     reset_pin_number(self->cts_pin);
-    self->rx_pin = NO_PIN;
-    self->tx_pin = NO_PIN;
-    self->rts_pin = NO_PIN;
-    self->cts_pin = NO_PIN;
+    mark_deinit(self);
 }
 
 // Read characters.

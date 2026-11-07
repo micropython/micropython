@@ -37,11 +37,21 @@
 
 static Sdhc *sdhc_insts[] = SDHC_INSTS;
 
+// Mark the object deinited: deinited() is true and deinit() does nothing.
+static void mark_deinit(sdioio_sdcard_obj_t *self) {
+    self->command_pin = COMMON_HAL_MCU_NO_PIN;
+    self->clock_pin = COMMON_HAL_MCU_NO_PIN;
+    self->data_pins[0] = COMMON_HAL_MCU_NO_PIN;
+    self->data_pins[1] = COMMON_HAL_MCU_NO_PIN;
+    self->data_pins[2] = COMMON_HAL_MCU_NO_PIN;
+    self->data_pins[3] = COMMON_HAL_MCU_NO_PIN;
+}
+
 void common_hal_sdioio_sdcard_construct(sdioio_sdcard_obj_t *self,
     const mcu_pin_obj_t *clock, const mcu_pin_obj_t *command,
     uint8_t num_data, const mcu_pin_obj_t **data, uint32_t frequency) {
     // Ensure the object starts in its deinit state.
-    self->command_pin = COMMON_HAL_MCU_NO_PIN;
+    mark_deinit(self);
 
     /*
 SD breakout as assembled  ("*" = minimum viable set)
@@ -292,10 +302,5 @@ void common_hal_sdioio_sdcard_deinit(sdioio_sdcard_obj_t *self) {
     #endif
     }
 
-    self->command_pin = COMMON_HAL_MCU_NO_PIN;
-    self->clock_pin = COMMON_HAL_MCU_NO_PIN;
-    self->data_pins[0] = COMMON_HAL_MCU_NO_PIN;
-    self->data_pins[1] = COMMON_HAL_MCU_NO_PIN;
-    self->data_pins[2] = COMMON_HAL_MCU_NO_PIN;
-    self->data_pins[3] = COMMON_HAL_MCU_NO_PIN;
+    mark_deinit(self);
 }

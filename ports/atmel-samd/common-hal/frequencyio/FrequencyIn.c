@@ -243,9 +243,14 @@ static void frequencyin_samd51_stop_dpll(void) {
 }
 #endif
 
+// Mark the object deinited: deinited() is true and deinit() does nothing.
+static void mark_deinit(frequencyio_frequencyin_obj_t *self) {
+    self->pin = NO_PIN;
+}
+
 void common_hal_frequencyio_frequencyin_construct(frequencyio_frequencyin_obj_t* self, const mcu_pin_obj_t* pin, const uint16_t capture_period) {
     // Ensure the object starts in its deinit state.
-    self->pin = NO_PIN;
+    mark_deinit(self);
 
     if (!pin->has_extint) {
         raise_ValueError_invalid_pin();
@@ -416,7 +421,7 @@ void common_hal_frequencyio_frequencyin_deinit(frequencyio_frequencyin_obj_t* se
 
     active_frequencyins[self->tc_index] = NULL;
     self->tc_index = 0xff;
-    self->pin = NO_PIN;
+    mark_deinit(self);
 
     bool check_active = false;
     for (uint8_t i = 0; i < TC_INST_NUM; i++) {

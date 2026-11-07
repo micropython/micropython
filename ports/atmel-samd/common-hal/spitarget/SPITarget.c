@@ -15,6 +15,14 @@
 #include "hpl_sercom_config.h"
 #include "samd/sercom.h"
 
+// Mark the object deinited: deinited() is true and deinit() does nothing.
+static void mark_deinit(spitarget_spi_target_obj_t *self) {
+    self->clock_pin = NO_PIN;
+    self->MOSI_pin = NO_PIN;
+    self->MISO_pin = NO_PIN;
+    self->SS_pin = NO_PIN;
+}
+
 void common_hal_spitarget_spi_target_construct(spitarget_spi_target_obj_t *self,
     const mcu_pin_obj_t *sck, const mcu_pin_obj_t *mosi,
     const mcu_pin_obj_t *miso, const mcu_pin_obj_t *ss) {
@@ -30,7 +38,7 @@ void common_hal_spitarget_spi_target_construct(spitarget_spi_target_obj_t *self,
     uint8_t dopo = 255;
 
     // Ensure the object starts in its deinit state.
-    self->clock_pin = NO_PIN;
+    mark_deinit(self);
 
     // Special case for SAMR21 boards. (feather_radiofruit_zigbee)
     #if defined(PIN_PC19F_SERCOM4_PAD0)
@@ -174,7 +182,7 @@ void common_hal_spitarget_spi_target_deinit(spitarget_spi_target_obj_t *self) {
     reset_pin_number(self->MOSI_pin);
     reset_pin_number(self->MISO_pin);
     reset_pin_number(self->SS_pin);
-    self->clock_pin = NO_PIN;
+    mark_deinit(self);
 }
 
 void common_hal_spitarget_spi_target_transfer_start(spitarget_spi_target_obj_t *self,
