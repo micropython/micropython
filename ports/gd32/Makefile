@@ -28,6 +28,9 @@ CROSS_COMPILE ?= arm-none-eabi-
 
 include $(BOARD_DIR)/mpconfigboard.mk
 
+# Feature switches consumed by extmod.mk (make variables, not C macros).
+-include mpconfigport.mk
+
 # ---- pin generation ----
 GEN_PINS_PY  = gen_pins.py
 BOARD_PINS   = $(BOARD_DIR)/pins.csv
@@ -90,6 +93,7 @@ SRC_C = \
 	lib/littlefs/lfs2.c \
 	lib/littlefs/lfs2_util.c \
 	flashbdev.c \
+	fatfs_port.c \
 	sdcard.c \
 	eth.c \
 	network_lan.c \
@@ -113,6 +117,7 @@ SRC_C = \
 	shared/readline/readline.c \
 	shared/runtime/pyexec.c \
 	shared/runtime/stdout_helpers.c \
+	shared/timeutils/timeutils.c \
 	gd32lib/system_gd32f4xx.c \
 	gd32lib/peripheral_source/gd32f4xx_gpio.c \
 	gd32lib/peripheral_source/gd32f4xx_rcu.c \

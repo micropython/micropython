@@ -13,6 +13,34 @@
 // Use the "extra features" ROM level as a base and tune below.
 #define MICROPY_CONFIG_ROM_LEVEL (MICROPY_CONFIG_ROM_LEVEL_EXTRA_FEATURES)
 
+// Floating point: the GD32F4 is a Cortex-M4F with a single-precision FPU, and
+// MCU_ARCH already builds with -mfloat-abi=hard -mfpu=fpv4-sp-d16, so enable
+// the float type.  Without this the port silently falls back to
+// MICROPY_FLOAT_IMPL_NONE and no float support is compiled in at all.
+#ifndef MICROPY_FLOAT_IMPL// Floating point is deliberately DISABLED.
+//
+// The GD32F4 is a Cortex-M4F and MCU_ARCH builds with -mfloat-abi=hard, so the
+// hardware is present, but enabling MICROPY_FLOAT_IMPL_FLOAT costs about
+// 32.7 KB of code.  The internal littlefs partition starts at 0x08060000
+// (Sector 7), which caps the image at 384 KB, and the image is already
+// ~373 KB.  FLOAT grows it to ~406 KB and the linker asserts with
+// "FIRMWARE TOO LARGE".
+//
+// To enable float, first free space: move or shrink the filesystem region in
+// flashbdev.c plus the matching ASSERT in ld/*.ld, or drop a large feature
+// (TLS, lwIP, TinyUSB).
+#define MICROPY_FLOAT_IMPL                (MICROPY_FLOAT_IMPL_NONE)
+#endif
+
+// Interpreter performance: threaded dispatch and a small dictionary lookup
+// cache, both matching what ports/stm32 enables for Cortex-M.
+#ifndef MICROPY_OPT_COMPUTED_GOTO
+#define MICROPY_OPT_COMPUTED_GOTO         (1)
+#endif
+#ifndef MICROPY_OPT_MAP_LOOKUP_CACHE
+#define MICROPY_OPT_MAP_LOOKUP_CACHE      (1)
+#endif
+
 #define MICROPY_LONGINT_IMPL              (MICROPY_LONGINT_IMPL_MPZ)
 // newlib (bare-metal) does not provide SSIZE_MAX
 #ifndef SSIZE_MAX
@@ -49,7 +77,18 @@ typedef long mp_off_t;
 // filesystem: littlefs2 on internal flash
 #define MICROPY_VFS                       (1)
 #define MICROPY_VFS_LFS2                  (1)
-#define MICROPY_VFS_FAT                   (0)
+// FAT filesystem support, so an SD card formatted FAT16/FAT32 can be mounted
+// alongside the internal littlefs2 volume.  extmod.mk compiles lib/oofatfs and
+// passes -DMICROPY_VFS_FAT=1 when the make variable of the same name is set
+// (see mpconfigport.mk), so guard this to avoid a redefinition.
+#ifndef MICROPY_VFS_FAT
+#define MICROPY_VFS_FAT                   (1)
+#endif
+#define MICROPY_FATFS_ENABLE_LFN          (2)
+#define MICROPY_FATFS_LFN_CODE_PAGE       437 /* token-pasted into TBL_CT437 */
+#define MICROPY_FATFS_USE_LABEL           (1)
+#define MICROPY_FATFS_RPATH               (2)
+#define MICROPY_FATFS_MULTI_PARTITION     (1)
 #define MICROPY_READER_VFS                (1)
 #define MICROPY_PY_IO                     (1)
 // os: listdir/stat/rename/remove/mkdir/mount over the built-in VFS
