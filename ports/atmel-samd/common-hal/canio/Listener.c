@@ -274,27 +274,22 @@ static void set_filters(canio_listener_obj_t *self, size_t nmatch, canio_match_o
 
 
 void common_hal_canio_listener_construct(canio_listener_obj_t *self, canio_can_obj_t *can, size_t nmatch, canio_match_obj_t **matches, float timeout) {
+    // Pick a FIFO, but claim it only after the checks below. deinit() frees
+    // it only once self->can is set, so a raise here would leak it.
+    int fifo_idx;
     if (!can->fifo0_in_use) {
-        self->fifo_idx = 0;
-        self->fifo = can->state->rx0_fifo;
-        self->hw = (canio_rxfifo_reg_t *)&can->hw->RXF0C;
-        can->hw->IR.reg = CAN_IR_RF0N | CAN_IR_RF0W | CAN_IR_RF0F | CAN_IR_RF0L;
-        can->fifo0_in_use = true;
+        fifo_idx = 0;
     } else if (!can->fifo1_in_use) {
-        self->fifo_idx = 1;
-        self->fifo = can->state->rx1_fifo;
-        self->hw = (canio_rxfifo_reg_t *)&can->hw->RXF1C;
-        can->fifo1_in_use = true;
-        can->hw->IR.reg = CAN_IR_RF1N | CAN_IR_RF1W | CAN_IR_RF1F | CAN_IR_RF1L;
+        fifo_idx = 1;
     } else {
         mp_raise_ValueError(MP_ERROR_TEXT("All RX FIFOs in use"));
     }
 
     if (!nmatch) {
-        if (can->hw->GFC.bit.ANFS == CAN_GFC_ANFS_RXF1_Val - self->fifo_idx) {
+        if (can->hw->GFC.bit.ANFS == CAN_GFC_ANFS_RXF1_Val - fifo_idx) {
             mp_raise_ValueError(MP_ERROR_TEXT("Already have all-matches listener"));
         }
-        if (can->hw->GFC.bit.ANFE == CAN_GFC_ANFE_RXF1_Val - self->fifo_idx) {
+        if (can->hw->GFC.bit.ANFE == CAN_GFC_ANFE_RXF1_Val - fifo_idx) {
             mp_raise_ValueError(MP_ERROR_TEXT("Already have all-matches listener"));
         }
     }
@@ -307,7 +302,19 @@ void common_hal_canio_listener_construct(canio_listener_obj_t *self, canio_can_o
         mp_raise_ValueError(MP_ERROR_TEXT("Filters too complex"));
     }
 
-    // Nothing can fail now so it's safe to assign self->can
+    // Nothing can fail now so it's safe to claim the FIFO and assign self->can
+    self->fifo_idx = fifo_idx;
+    if (fifo_idx == 0) {
+        self->fifo = can->state->rx0_fifo;
+        self->hw = (canio_rxfifo_reg_t *)&can->hw->RXF0C;
+        can->hw->IR.reg = CAN_IR_RF0N | CAN_IR_RF0W | CAN_IR_RF0F | CAN_IR_RF0L;
+        can->fifo0_in_use = true;
+    } else {
+        self->fifo = can->state->rx1_fifo;
+        self->hw = (canio_rxfifo_reg_t *)&can->hw->RXF1C;
+        can->hw->IR.reg = CAN_IR_RF1N | CAN_IR_RF1W | CAN_IR_RF1F | CAN_IR_RF1L;
+        can->fifo1_in_use = true;
+    }
     self->can = can;
     set_filters(self, nmatch, matches);
     common_hal_canio_listener_set_timeout(self, timeout);
