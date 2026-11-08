@@ -23,25 +23,32 @@ void common_hal_sdioio_sdcard_construct(sdioio_sdcard_obj_t *self,
     uint8_t num_data, const mcu_pin_obj_t **data, uint32_t frequency) {
     struct geometry geo;
 
+    // Ensure the object starts in its deinit state, so its finaliser does
+    // nothing if this raises.
+    self->inode = NULL;
+
     if (clock->number != PIN_SDIO_CLK || command->number != PIN_SDIO_CMD) {
         raise_ValueError_invalid_pins();
     }
 
-    uint8_t data_pins_num = 0;
+    // Only 4-bit mode on the four SDIO data pins, in order.
+    static const uint8_t data_pin_numbers[DATA_PINS_NUM] = {
+        PIN_SDIO_DATA0, PIN_SDIO_DATA1, PIN_SDIO_DATA2, PIN_SDIO_DATA3,
+    };
+    if (num_data != DATA_PINS_NUM) {
+        raise_ValueError_invalid_pins();
+    }
     for (uint8_t i = 0; i < DATA_PINS_NUM; i++) {
-        if (data[i]->number != PIN_SDIO_DATA0 || data[i]->number != PIN_SDIO_DATA1 ||
-            data[i]->number != PIN_SDIO_DATA2 || data[i]->number != PIN_SDIO_DATA3) {
-            data_pins_num++;
+        if (data[i]->number != data_pin_numbers[i]) {
+            raise_ValueError_invalid_pins();
         }
     }
 
-    if (data_pins_num != DATA_PINS_NUM) {
-        raise_ValueError_invalid_pins();
-    }
-
-    if (open_blockdriver("/dev/mmcsd0", 0, &self->inode) < 0) {
+    struct inode *inode;
+    if (open_blockdriver("/dev/mmcsd0", 0, &inode) < 0) {
         mp_raise_RuntimeError(MP_ERROR_TEXT("SDCard init"));
     }
+    self->inode = inode;
 
     self->inode->u.i_bops->geometry(self->inode, &geo);
 
@@ -60,6 +67,9 @@ void common_hal_sdioio_sdcard_construct(sdioio_sdcard_obj_t *self,
 }
 
 void common_hal_sdioio_sdcard_deinit(sdioio_sdcard_obj_t *self) {
+    if (common_hal_sdioio_sdcard_deinited(self)) {
+        return;
+    }
     close_blockdriver(self->inode);
     self->inode = NULL;
 
