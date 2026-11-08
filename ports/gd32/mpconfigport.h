@@ -93,7 +93,9 @@
 #endif
 #define MICROPY_ENABLE_EXTERNAL_IMPORT    (1)
 #define MICROPY_HELPER_REPL               (1)
-#define MICROPY_ENABLE_PYSTACK            (1)
+// Disabled: with it enabled the VM crashed with an LDRD unaligned
+// fault while running the frozen _boot.py (see CONSTRAINTS notes).
+#define MICROPY_ENABLE_PYSTACK            (0)
 #define MICROPY_PYSTACK_SIZE              (2048)
 #define MICROPY_ALLOC_PATH_MAX            (256)
 #define MICROPY_ALLOC_PARSE_CHUNK_INIT    (16)

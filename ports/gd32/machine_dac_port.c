@@ -59,7 +59,7 @@ static mp_obj_t machine_dac_make_new(const mp_obj_type_t *type, size_t n_args,
                                      size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, 1, false);
 
-    mp_int_t pin_enc = mp_obj_get_int(args[0]);
+    mp_int_t pin_enc = (mp_int_t)mp_hal_get_pin_obj(args[0]).pin;
     int unit = pin_to_dac((uint8_t)pin_enc);
     if (unit < 0) {
         mp_raise_ValueError(MP_ERROR_TEXT("DAC available on PA4, PA5"));

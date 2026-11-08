@@ -158,10 +158,10 @@ static void mp_machine_i2c_init(mp_obj_base_t *obj, size_t n_args,
     rcu_periph_clock_enable(RCU_GPIOB);   // I2C pins typically on B
 
     if (args[ARG_scl].u_obj != mp_const_none) {
-        self->scl_pin = (int16_t)mp_obj_get_int(args[ARG_scl].u_obj);
+        self->scl_pin = (int16_t)mp_hal_get_pin_obj(args[ARG_scl].u_obj).pin;
     }
     if (args[ARG_sda].u_obj != mp_const_none) {
-        self->sda_pin = (int16_t)mp_obj_get_int(args[ARG_sda].u_obj);
+        self->sda_pin = (int16_t)mp_hal_get_pin_obj(args[ARG_sda].u_obj).pin;
     }
     i2c_cfg_pin(self->scl_pin);
     i2c_cfg_pin(self->sda_pin);

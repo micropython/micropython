@@ -71,9 +71,17 @@ static mp_obj_t machine_pin_obj_init_helper(const machine_pin_obj_t *self,
                                             size_t n_args, const mp_obj_t *pos_args,
                                             mp_map_t *kw_args) {
     enum { ARG_mode, ARG_pull, ARG_value };
+    // mode and pull may be given positionally, matching every other MicroPython
+    // port (ports/stm32 declares them without MP_ARG_KW_ONLY too).  Declaring
+    // them keyword-only - which this port used to do - made the extremely common
+    // `Pin("PA0", Pin.OUT)` raise "extra positional arguments given", so code
+    // copied from any other port failed here for no obvious reason.
+    //
+    // `value` stays keyword-only: it is optional and positional use would be
+    // ambiguous next to mode/pull.
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_mode,  MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = GPIO_MODE_INPUT} },
-        { MP_QSTR_pull,  MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = GPIO_PUPD_NONE} },
+        { MP_QSTR_mode,  MP_ARG_INT, {.u_int = GPIO_MODE_INPUT} },
+        { MP_QSTR_pull,  MP_ARG_INT, {.u_int = GPIO_PUPD_NONE} },
         { MP_QSTR_value, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
     };
 

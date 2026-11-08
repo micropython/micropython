@@ -96,7 +96,13 @@ static machine_uart_obj_t machine_uart_obj[NUM_UART];
 static void machine_uart_irq_handler(uint8_t idx);
 
 // ---- per-instance IRQ handlers ----
-void USART0_IRQHandler(void) { machine_uart_irq_handler(0); }
+// USART0 is shared with the REPL: the REPL owns the peripheral from boot and
+// enables the RXNE interrupt so that Ctrl-C can reach the interpreter while
+// user code holds the CPU.  Because there is exactly one data register, the
+// REPL must stay the only reader of it.  machine.UART(0) is therefore rejected
+// in mp_machine_uart_make_new() rather than being allowed to steal bytes and
+// starve the REPL of input (which would leave the board unusable over serial).
+void USART0_IRQHandler(void) { mp_hal_repl_uart_rx_isr(); }
 void USART1_IRQHandler(void) { machine_uart_irq_handler(1); }
 void USART2_IRQHandler(void) { machine_uart_irq_handler(2); }
 void UART3_IRQHandler(void)  { machine_uart_irq_handler(3); }
@@ -301,6 +307,18 @@ static mp_obj_t mp_machine_uart_make_new(const mp_obj_type_t *type, size_t n_arg
     self->usart = uart_hw[uart_id].usart;
     self->rcu = uart_hw[uart_id].rcu;
     self->idx = (uint8_t)uart_id;
+
+    #if MICROPY_HW_UART_REPL == 0
+    // USART0 carries the REPL and its Ctrl-C interrupt character.  One data
+    // register cannot serve two independent consumers: whoever loses the race
+    // re-reads the previous byte, and Python would consume the characters meant
+    // for the REPL, leaving no way to type a command again.  Use one of the
+    // other five instances instead.
+    if (uart_id == 0) {
+        mp_raise_ValueError(MP_ERROR_TEXT(
+            "UART(0) is the REPL; use UART(1)..UART(5)"));
+    }
+    #endif
 
     mp_map_t kw_args;
     mp_map_init_fixed_table(&kw_args, n_kw, all_args + n_args);

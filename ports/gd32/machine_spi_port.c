@@ -128,13 +128,13 @@ static void mp_machine_spi_init(mp_obj_base_t *s, size_t n_args,
 
     // pins may be supplied as machine.Pin objects; accept int encoding too
     if (args[ARG_sck].u_obj != mp_const_none) {
-        self->sck_pin = (int16_t)mp_obj_get_int(args[ARG_sck].u_obj);
+        self->sck_pin = (int16_t)mp_hal_get_pin_obj(args[ARG_sck].u_obj).pin;
     }
     if (args[ARG_mosi].u_obj != mp_const_none) {
-        self->mosi_pin = (int16_t)mp_obj_get_int(args[ARG_mosi].u_obj);
+        self->mosi_pin = (int16_t)mp_hal_get_pin_obj(args[ARG_mosi].u_obj).pin;
     }
     if (args[ARG_miso].u_obj != mp_const_none) {
-        self->miso_pin = (int16_t)mp_obj_get_int(args[ARG_miso].u_obj);
+        self->miso_pin = (int16_t)mp_hal_get_pin_obj(args[ARG_miso].u_obj).pin;
     }
 
     spi_cfg_pin(self->sck_pin, GPIO_AF_5, GPIO_PUPD_NONE);

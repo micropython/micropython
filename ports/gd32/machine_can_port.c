@@ -57,8 +57,20 @@ static mp_uint_t machine_can_port_max_data_len(mp_uint_t flags) {
 }
 
 static void machine_can_port_clear_filters(machine_can_obj_t *self) {
-    uint32_t can = can_periph((uint8_t)self->can_idx);
-    can_deinit(can);
+    // Only forget how many filters we programmed.
+    //
+    // This used to call can_deinit(can), which returns the controller to its
+    // reset state.  set_filters() calls this and then immediately programs the
+    // new filters via can_filter_init(); with the peripheral deinitialised that
+    // programming failed and every set_filters() raised
+    // "OSError: [Errno 22] EINVAL" - which is what made the documented
+    // CAN example unusable.
+    //
+    // Re-programming filter number N replaces the old one anyway, so dropping
+    // the counter is enough.  Note that machine_can_port_set_filter_done() is a
+    // no-op here, so filters left over from an earlier, longer list stay
+    // programmed; callers that shrink the list should not rely on the extra
+    // ones being removed.
     self->port->filter_count = 0;
 }
 
@@ -95,6 +107,20 @@ static void machine_can_port_set_filter_done(machine_can_obj_t *self) {
 static void machine_can_port_init(machine_can_obj_t *self) {
     uint8_t idx = (uint8_t)self->can_idx;
     uint32_t can = can_periph(idx);
+
+    // Allocate the port state if this is the first init.
+    //
+    // Everything below dereferences self->port, and extmod/machine_can.c uses
+    // "self->port != NULL" as its definition of "controller is initialised":
+    // machine_can_check_initialised() raises OSError(EINVAL) while it is NULL.
+    // This allocation was missing, so init() wrote through a NULL pointer (the
+    // board survived only because address 0 happens to be readable flash) and
+    // every later set_filters()/send()/recv() failed with EINVAL.  ports/stm32
+    // allocates it in the same place.
+    if (self->port == NULL) {
+        self->port = m_new(struct machine_can_port, 1);
+    }
+    memset(self->port, 0, sizeof(struct machine_can_port));
 
     rcu_periph_clock_enable(can_rcu(idx));
 

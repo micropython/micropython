@@ -48,21 +48,40 @@ make BOARD=GD32F470 -j1 dist
 Artifacts land in `dist/GD32F407/` and `dist/GD32F470/`:
 
 - `firmware.elf` — ELF with debug info
-- `firmware.bin` — raw binary, flash at `0x08000000`
-- `firmware.hex` — Intel HEX
+- `firmware-isr.bin` — vector table only, flash at **`0x08000000`**
+- `firmware.bin` — code/rodata, flash at **`0x08010000`** (NOT `0x08000000`)
+- `firmware.hex` — Intel HEX, absolute addresses embedded
 
-> **Note on `-j1`**: builds are serial because this port has been validated
-> on a 2 GB host. On a larger machine you can raise the job count.
+`firmware.bin` does **not** start at `0x08000000`: the vector table and the
+code are separate regions with a 48 KB filesystem in between.  Use
+`firmware.hex` unless you have a reason not to.
+
+> **Note on `-j1`**: the Makefile passes `-j1` in the examples because this
+> port was validated on a 2 GB host.  On a larger machine raise the job
+> count, e.g. `make BOARD=GD32F407 -j16 dist`.
 
 ## Flashing
 
 Any SWD probe works (ST-Link, J-Link, DAPLink):
 
+The vector table and the code are **not contiguous** (48 KB of filesystem
+sits between them), so program the `.hex`, which carries absolute addresses:
+
 ```bash
-# OpenOCD example
+cd ports/gd32
 openocd -f interface/stlink.cfg -f target/stm32f4x.cfg \
-        -c "program dist/GD32F407/firmware.elf verify reset exit"
+        -c "program dist/GD32F407/firmware.hex verify reset exit"
 ```
+
+Expected output ends with `** Verified OK **` and `** Resetting Target **`.
+
+> **Do not program `firmware.bin` at `0x08000000`.**  That address belongs
+> to the vector table; `firmware.bin` goes to `0x08010000`.  Writing it to
+> the wrong address bricks the boot with no error message.  If you must use
+> the `.bin` files, program both halves, `-isr` first — see
+> [CONSTRAINTS.md](CONSTRAINTS.md) §4.5.
+
+`.elf` works too but is larger to transfer; `.hex` is the recommended path.
 
 GD32F4 is largely register-compatible with STM32F4, so the `stm32f4x`
 OpenOCD target generally works for flashing and debugging.
@@ -77,13 +96,141 @@ Connect a USB-serial adapter to the board:
 | TX      | PA10    | USART0 RX  |
 | GND     | GND     | ground     |
 
-Open the port at **115200 8N1**. You should see:
+The port is **115200 8N1**, no flow control.
+
+On the build server the adapter shows up as `/dev/ttyUSB0` (FTDI FT232R):
+
+```bash
+screen /dev/ttyUSB0 115200        # leave with Ctrl-A, K, y
+# or, if screen is not installed:
+# sudo apt-get install -y picocom && picocom -b 115200 /dev/ttyUSB0  (exit: Ctrl-A Ctrl-X)
+```
+
+> `picocom`, `minicom` and `tio` are **not** installed by default on the
+> build server; `screen` is.  Add yourself to the `dialout` group (or use
+> `sudo`) if opening the device fails with permission denied.
+
+A freshly flashed board prints:
 
 ```
-GD32F407 with GD32F407VE
-MicroPython v1.30.0 on ...
+MicroPython v1.30.0 on 2026-11-08; GD32F407 with GD32F407VE
+Type "help()" for more information.
 >>>
 ```
+
+Press Enter once if nothing appears — the prompt is only printed together
+with the banner, and if the board was already running when you attached, that
+output is gone.
+
+## First test after flashing
+
+This is the shortest path from "just flashed" to "I can run Python on it", and
+it is what the port is actually verified against.  The serial adapter lives on
+the **build server** as `/dev/ttyUSB0`, next to the ST-Link.
+
+### 1. Flash the firmware
+
+```bash
+cd ports/gd32
+make BOARD=GD32F407 -j16 dist
+openocd -f interface/stlink.cfg -f target/stm32f4x.cfg \
+        -c "program dist/GD32F407/firmware.hex verify reset exit"
+```
+
+### 2. Let the board format its own filesystem
+
+On a brand-new board the 48 KB littlefs partition is blank.  The firmware
+detects this at boot and runs `mkfs` automatically, so there is normally
+**nothing to do** — but if you ever erase sectors 1-3 by hand, or upgrade from
+an older firmware with a different block geometry, the mount fails and you get:
+
+```
+storage: '/' not mounted, run machine.Flash().mkfs()
+```
+
+Fix it with (note: `mkfs` is a **staticmethod of the class**, no parentheses
+after `Flash`):
+
+```python
+import machine
+machine.Flash.mkfs()
+machine.reset()
+```
+
+### 3. Check that the REPL answers
+
+```bash
+screen /dev/ttyUSB0 115200
+```
+
+then press Enter — you should get `>>>`.  If a user program is running
+(`/main.py`), send **Ctrl-C** first; it always breaks out to the prompt.
+
+### 4. Use mpremote for everything else
+
+`mpremote` is installed on the build server and is the recommended way to move
+files around without a terminal emulator:
+
+```bash
+mpremote connect /dev/ttyUSB0                     # interactive REPL
+mpremote connect /dev/ttyUSB0 exec "import os; print(os.statvfs('/'))"
+mpremote connect /dev/ttyUSB0 fs ls
+mpremote connect /dev/ttyUSB0 fs cp local.py :/main.py
+mpremote connect /dev/ttyUSB0 run local.py        # run once, do not persist
+mpremote connect /dev/ttyUSB0 soft-reset
+```
+
+A working board answers:
+
+```
+$ mpremote connect /dev/ttyUSB0 exec "import os; print(os.statvfs('/'))"
+(4096, 4096, 12, 10, 10, 0, 0, 0, 0, 255)
+```
+
+Read that tuple as: 4096-byte blocks, **12 blocks total**, then the free
+block count — `10` on an empty filesystem, `9` once a `/main.py` of more
+than 128 bytes exists (it takes one block).  `12 * 4096` = the 48 KB
+partition.
+
+If the leading numbers are `(0, 0, 0, ...)` the filesystem is **not mounted**
+— go back to step 2.
+
+> **mpremote needs the soft-reset hand-off.**  This port implements a soft
+> reset as a real `NVIC_SystemReset()`, which would lose the REPL mode and make
+> `mpremote` fail with `could not enter raw repl`.  The firmware therefore
+> saves the requested mode in an RTC backup register across the reset.  If you
+> write your own tooling that drives the raw REPL, expect the same hand-off.
+
+### 5. Run something
+
+```bash
+cat > /tmp/blink.py <<'EOF'
+import machine, time
+led = machine.Pin("PB2", machine.Pin.OUT)
+while True:
+    led.value(1); time.sleep_ms(500)
+    led.value(0); time.sleep_ms(500)
+EOF
+mpremote connect /dev/ttyUSB0 fs cp /tmp/blink.py :/main.py
+```
+
+`/main.py` runs automatically on every reset (the LED on PB2 starts blinking).
+Ctrl-C interrupts it and drops you at `>>>`.
+
+If nothing is running, Ctrl-C just prints a fresh `>>>` — that is normal,
+not an error.  You only see a `KeyboardInterrupt` traceback when a program
+was actually executing.
+
+### What "working" looks like
+
+| Check | Expected |
+|-------|----------|
+| `os.statvfs('/')` | `(4096, 4096, 12, 10, 10, ...)` |
+| `os.listdir('/')` on a fresh board | `[]` |
+| Pressing Enter in `screen` | `>>>` |
+| Ctrl-C while `/main.py` runs | `KeyboardInterrupt` traceback, then `>>>` |
+| Ctrl-C when idle | just another `>>>` |
+| `mpremote fs ls` | lists `/main.py` if you copied one |
 
 ## Using machine.Pin
 
@@ -93,16 +240,23 @@ by encoded integer (`port << 4 | num`).
 ```python
 from machine import Pin
 
-led = Pin("PA0", Pin.OUT)      # or Pin(0, Pin.OUT)
-led.value(1)                    # drive high
+# The only user LED on this board is PB2 and it is active high
+# (PB2 -> 2k -> LED -> GND), see the schematic.
+led = Pin("PB2", Pin.OUT)       # or Pin(18, Pin.OUT); also Pin("PB2", mode=Pin.OUT)
+led.value(1)                    # LED on
 led.on()                        # alias
 led.off()
 led.toggle()
 
-btn = Pin("PC13", Pin.IN, Pin.PULL_UP)
-print(btn.value())              # 0 when pressed (active low)
+# PA0 is the WKUP button, active high (10k pulldown, switch to 3V3).
+btn = Pin("PA0", Pin.IN, Pin.PULL_DOWN)
+print(btn.value())              # 1 while pressed
 
 print(Pin("PA0"))               # Pin(PA0)
+
+# Pin(...) accepts the options positionally or as keywords, like every other
+# MicroPython port.  (Firmware before 2026-11-08 declared them keyword-only,
+# which made the positional form raise "extra positional arguments given".)
 ```
 
 Available constants: `Pin.IN`, `Pin.OUT`, `Pin.OPEN_DRAIN`,
@@ -114,6 +268,7 @@ Available constants: `Pin.IN`, `Pin.OUT`, `Pin.OPEN_DRAIN`,
 from machine import Pin, UART, SPI, I2C, ADC, Timer, WDT
 
 # ---- UART ----
+# UART(1) is free; UART(0) carries the REPL and is refused on purpose.
 u = UART(1, baudrate=115200, bits=8, parity=None, stop=1,
          tx=Pin("PA2"), rx=Pin("PA3"))
 u.write(b"hello\r\n")
@@ -121,25 +276,40 @@ n = u.any()
 data = u.read(10)          # blocks up to timeout
 
 # ---- SPI (master, software NSS) ----
-spi = SPI(0, baudrate=10_000_000, polarity=0, phase=0,
+# PA4-PA7 is SPI0 and is also where the on-board SPI flash sits.  Keep the bus
+# at 4 MHz or 8 MHz: 1-2 MHz mis-clocks on this port and 16 MHz+ shifts the
+# sample point, both of which return garbage.  `nss` is accepted but ignored,
+# so drive CS yourself with a Pin.
+cs = Pin("PA4", Pin.OUT, value=1)
+spi = SPI(0, baudrate=4_000_000, polarity=0, phase=0,
           sck=Pin("PA5"), mosi=Pin("PA7"), miso=Pin("PA6"))
+cs.value(0)
 spi.write(b"\x9f")
-val = spi.read(3)
+val = spi.read(3)              # b'\xc8\x40\x18' = GD25Q128, 16 MiB
+cs.value(1)
 
 # ---- I2C ----
 i2c = I2C(0, freq=400000, scl=Pin("PB6"), sda=Pin("PB7"))
 i2c.writeto(0x68, b"\x00")
 raw = i2c.readfrom(0x68, 6)
 
+# A bare read on empty bus pins raises EIO/ENODEV; check scan() first:
+print([hex(a) for a in i2c.scan()])
+
 # ---- ADC ----
-adc = ADC(Pin("PA0"))      # PA0..PA7 -> ch0..7, PB0/1 -> ch8/9, PC0..5 -> ch10..15
-print(adc.read_u16())      # 0..4095 (12-bit)
+# Valid ADC pins: PA0..PA7 -> ch0..7, PB0/PB1 -> ch8/9, PC0..PC5 -> ch10..15.
+# Anything else raises ValueError.
+adc = ADC(Pin("PC0"))      # PC0 is a free header pin; PA0 is the WKUP button
+print(adc.read_u16())      # 0..65535, scaled from the 12-bit conversion
 
 # ---- Timer (software timer, 1 kHz tick) ----
+# Only the software timer is implemented, so the id MUST be -1.
+# Timer(0) raises ValueError("Timer doesn't exist").
 def tick(t):
     print("tick")
 
-tim = Timer(0, mode=Timer.PERIODIC, callback=tick, period=500)   # every 500 ms
+tim = Timer(-1)
+tim.init(mode=Timer.PERIODIC, callback=tick, period=500)   # every 500 ms
 tim.deinit()
 
 # ---- Watchdog ----
@@ -151,19 +321,30 @@ dac = DAC(Pin("PA4"))      # PA4 -> DAC0, PA5 -> DAC1
 dac.write(2048)            # mid-scale (12-bit)
 print(dac.read())
 
+# NOTE: PA4/PA5 are also the SPI flash CS/SCK, so do not use DAC and the
+# on-board flash at the same time.
+
 # ---- RTC ----
 rtc = RTC()
 rtc.init((2026, 11, 5, 3, 20, 15, 0, 0))   # y, m, d, wday, h, min, s, us
 print(rtc.datetime())                       # (2026, 11, 5, 3, 20, 15, 0, 0)
 
 # ---- CAN ----
-can = CAN(0, bitrate=500_000)
-can.set_filters([(0x123, 0x7FF, CAN.STD)])   # accept one standard id
-can.send(bytes([1, 2, 3]), 0x123)
-if can.recv(0):                              # blocking
-    pass
-print(can.state())                           # CAN.STATE_ACTIVE etc.
-print(can.get_counters())
+# CAN controllers are numbered from 1: CAN(0) raises
+# ValueError: CAN(0) doesn't exist.  CAN(1) is the CAN0 peripheral and CAN(2)
+# is CAN1 - both verified.  String names such as "CAN0" are NOT accepted here.
+can = CAN(1, bitrate=500_000)
+
+# Filter items are (id, mask, flags); flags 0 means standard 11-bit id.
+# There is no CAN.STD constant - passing one raises AttributeError.
+can.set_filters([(0x123, 0x7FF, 0)])
+# set_filters(None) is the shortcut for "accept everything".
+
+can.send(0x123, bytes([1, 2, 3]))   # send(ID, DATA) - id first, unlike some ports
+msg = can.recv()                    # no timeout argument; returns None if empty
+print(msg)                          # e.g. [0, 0, 570425344, 3, 0, 0, memoryview(...)]
+print(can.state())                  # CAN.STATE_ACTIVE etc.
+print(can.get_counters())           # 8-tuple, all zero on an idle bus
 ```
 
 # ---- PWM ----
@@ -187,7 +368,10 @@ not implemented.
 ### Pin encoding
 
 Pins are identified either by name (from `pins.csv`) or by an encoded
-integer `port << 4 | num`, e.g. `PA0` = `0`, `PB7` = `1 << 4 | 7` = `23`.
+integer `port << 4 | num`, where port A=0, B=1, C=2 and so on, so
+`PA0` = `0`, `PB7` = `1 << 4 | 7` = `23`, `PB2` = `18`, `PC1` = `33`.
+Both forms are accepted wherever a pin is expected, including the
+`sck=`/`mosi=`/`miso=`, `scl=`/`sda=` and `ADC()`/`DAC()` arguments.
 
 ## Memory layout (GD32F407/F470, 512K flash)
 
@@ -386,41 +570,68 @@ See `gd32lib/` sources for the original headers.
 
 ## Filesystem
 
-The 48 KB filesystem partition (`0x08070000`–`0x08080000`, sectors 4-7) is
-reserved for a **littlefs2** filesystem mounted at `/` at boot:
+Internal flash is split into three regions (see
+[CONSTRAINTS.md](CONSTRAINTS.md) §1.1 for the measured budget):
+
+| Region | Sectors | Size | Address |
+|--------|---------|------|---------|
+| `.vectors` | 0 | 16 KB | `0x08000000`–`0x08003FFF` |
+| littlefs | 1-3 | 48 KB | `0x08004000`–`0x0800FFFF` |
+| firmware | 4-7 | 448 KB | `0x08010000`–`0x0807FFFF` |
+
+The filesystem is mounted at `/` during boot, before `/main.py` runs:
 
 ```python
 import os
-print(os.listdir('/'))          # []
+os.statvfs('/')                 # (4096, 4096, 12, 10, 10, ...)
 
-with open('/boot.py', 'w') as f:
-    f.write("print('hello')\n")
-
-print(open('/boot.py').read())
-os.stat('/boot.py')
+with open('/data.txt', 'w') as f:
+    f.write('hello\n')
+print(open('/data.txt').read())
 ```
 
-Notes:
+### Block geometry
 
-- **Partition**: Sector 7 of internal flash only, i.e.
-  `0x08060000 - 0x0807FFFF` (128 KB).  Sector 6 is left to the firmware, which
-  gives the image a 384 KB ceiling; the current build ends at `0x0803DF24`,
-  so ~136 KB is free.  Both linker scripts assert this at link time and fail
-  with `FIRMWARE TOO LARGE` if the image ever grows past `0x08060000`.
-  GD32F4 sector sizes are 16 KB (0-3), 64 KB (4) and 128 KB (5-7), so 128 KB
-  is the smallest erasure unit available above the image.
-- **Block size equals the erase size** (128 KB).  littlefs erases before it
-  programs and never reads back a block it is writing, so the driver keeps no
-  read-modify-write buffer.  That is deliberate: caching a 128 KB sector would
-  not fit in the ~24 KB of free RAM on the GD32F407 build.
-- `writeblocks` with a non-zero offset raises `OSError(EINVAL)`, because a
-  partial write would need the rest of the sector (littlefs never does this).
-- To format, run `machine.Flash.mkfs()`.  This erases the whole 256 KB
-  partition, so it is explicit and never automatic.
-- File mtimes come from `mp_hal_time_ns()`, which reads the RTC when
-  available and otherwise returns a fixed epoch offset by uptime.
-- **Flash wear**: writing to the FS erases 16 KB sectors. Do not use it as
-  a scratch buffer in a tight loop.
+The driver exposes **4 KB logical blocks** even though the chip erases 16 KB
+sectors.  A 16 KB RAM cache holds one whole sector, so erases are deferred and
+applied to all four blocks at once when the sector is flushed.  That is what
+makes the partition usable:
+
+| | 16 KB blocks | 4 KB blocks (current) |
+|---|---|---|
+| Blocks in 48 KB | 3 | **12** |
+| Usable after metadata | 1 | **10** |
+| Files >128 B rewritable | no (`ENOSPC`) | **yes** |
+
+With only three 16 KB blocks, two were consumed by littlefs' metadata pair and
+a single free block remained, so any file larger than the 128-byte inline
+threshold could be written exactly once — the second save failed with
+`OSError: 28` (`LFS2_ERR_NOSPC`).  Smaller logical blocks fixed that; see
+`flashbdev.c` and CONSTRAINTS.md §1.1.1.
+
+### Formatting
+
+```python
+import machine
+machine.Flash.mkfs()        # static method of the class; erases sectors 1-3
+machine.reset()
+```
+
+`mkfs` wipes the whole partition, so it is always explicit.  It is also unsafe
+to call while `/` is mounted in the same session — see
+CONSTRAINTS.md §4.4; reset immediately afterwards.
+
+### Caveats
+
+- **128-byte inline threshold.**  A file of 128 bytes or less is stored inside
+  the directory metadata and can be rewritten freely.  Anything larger needs a
+  whole 4 KB block.
+- **Erase granularity is still 16 KB.**  Flushing a sector rewrites all four of
+  its logical blocks, so do not treat this as 4 KB wear levelling.  The internal
+  flash is rated ~100k erase cycles; do not use it as a high-frequency scratch
+  area.
+- File mtimes come from `mp_hal_time_ns()`, which reads the RTC when available
+  and otherwise returns a fixed epoch offset by uptime.
 
 ## SD Card
 
@@ -451,16 +662,45 @@ os.umount('/sd')
 | D1  | PC9 |
 | D2  | PC10 |
 | D3  | PC11 |
-| CD  | PD13 (active low) |
+| CD  | PD3 (active low, pulled up by R20) |
 
 The driver implements CMD0/2/3/6/7/8/9/16/17/18/24/25 and
 ACMD6/ACMD41. Card detect is polled; removing the card invalidates the
 driver state so the next `SDCard()` re-initialises.
 
-**Note:** this driver has been verified to *compile* on both boards but
-has not been exercised against real hardware. The SDIO init sequence,
-CSD capacity decoding and clock switching should be validated on a board
-with an actual card before relying on it.
+### Status: read-only, verified on hardware (2026-11-08)
+
+Tested on a LCKFB ``Sky Star`` board with a 16 GB microSD card:
+
+```
+SDCard(present=True, ready=True)
+info()  -> (30883840, 512, True, True)     # 16 GB, SDHC, ready
+block 0 -> 0x55AA MBR signature present
+os.mount(vfs.VfsFat(card), '/sd')
+os.listdir('/sd') -> ['System Volume Information']
+```
+
+**Writes are not supported yet and raise `OSError(EROFS)`.**  The transmit
+side of the SDIO driver still loses data: words pushed into the transmit FIFO
+are dropped when the FIFO is full, so the card rejects the block with a data
+CRC error.  Rather than risk half-written blocks corrupting the filesystem, the
+block device refuses writes outright.  `sdcard.c` keeps the write
+implementation for whoever picks this up - see `CONSTRAINTS.md`.
+
+So the card works as a read-only volume: you can mount it, list it and read
+files from it, but not create or modify them.
+
+### Three driver bugs that were fixed to get this far
+
+| Symptom | Cause |
+|---------|-------|
+| `OSError: [Errno 5] EIO` on `SDCard()` | card-detect was read from **PD13**, but the TF socket's `CD` contact is on **PD3** (see schematic). The driver saw "no card" on a board that had one. |
+| commands silently "succeeded" with stale data | `sd_cmd()` waited for `CMDSEND`, which only fires for commands with **no** response; responding commands raise `CMDRECV`. |
+| `card init failed (ACMD41)` | `sd_clear_flags()` never cleared the latched `CMDRECV`/`CMDSEND`/`DTEND` bits, so after CMD8 every later command returned immediately with the CMD8 echo (0x1AA) still in the response register. |
+
+Also fixed: the SDIO data-timeout argument was being passed a block count
+instead of a timeout, and the CSD capacity decoder read `RESP0` where the
+capacity field lives in `RESP1`/`RESP2` (which reported a nonsense block count).
 
 
 ## USB device (TinyUSB) — extra setup

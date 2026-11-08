@@ -64,7 +64,7 @@ static mp_obj_t mp_machine_adc_make_new(const mp_obj_type_t *type, size_t n_args
                                         size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
 
-    mp_int_t pin_enc = mp_obj_get_int(args[0]);
+    mp_int_t pin_enc = (mp_int_t)mp_hal_get_pin_obj(args[0]).pin;
     int ch = pin_to_adc_channel((uint8_t)pin_enc);
     if (ch < 0) {
         mp_raise_ValueError(MP_ERROR_TEXT("pin has no ADC channel"));

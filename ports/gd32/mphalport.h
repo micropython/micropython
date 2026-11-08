@@ -60,6 +60,26 @@ extern int mp_interrupt_char;
 // needs to request a scheduler pass.
 void mp_hal_wake_main_task_from_isr(void);
 
+// ---- REPL receive interrupt ----
+// The REPL UART keeps its RXNE interrupt enabled so that Ctrl-C can raise
+// KeyboardInterrupt even while user code (e.g. /main.py) owns the CPU.  The
+// single USART0 vector is shared with machine.UART(0), so the ISR in
+// machine_uart_port.c delegates to the REPL whenever the REPL still owns the
+// peripheral.
+
+// Drain USART0, routing an armed interrupt character to
+// mp_sched_keyboard_interrupt() and every other byte to stdin_ringbuf.
+// Called from the USART0 ISR.  This is the only reader of the data register,
+// which is why machine.UART(0) is refused (see machine_uart_port.c).
+void mp_hal_repl_uart_rx_isr(void);
+
+// ---- wake-for-event ----
+// The REPL and all delay loops wait with WFI so that SysTick and the REPL RX
+// interrupt can wake the CPU.  This macro is what py/scheduler.c calls from
+// mp_event_wait_ms(), which is also where pending KeyboardInterrupts get
+// processed.
+#define MICROPY_INTERNAL_WFE(TIMEOUT_MS) __WFI()
+
 // ---- pin operations for extmod soft protocols ----
 #include "pin_defs.h"
 

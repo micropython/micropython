@@ -17,7 +17,12 @@
 // endpoint feed characters into this buffer.
 static uint8_t stdin_ringbuf_array[MICROPY_HW_STDIN_BUFFER_LEN];
 ringbuf_t stdin_ringbuf = { stdin_ringbuf_array, sizeof(stdin_ringbuf_array) };
-int mp_interrupt_char = 3;   // Ctrl-C
+// `mp_interrupt_char` and `mp_hal_set_interrupt_char()` come from
+// shared/runtime/interrupt_char.c.  They used to be stubbed out here, which
+// silently disabled Ctrl-C: the interrupt character was hard-coded to 3 and
+// nothing ever read it, so no byte could ever reach
+// mp_sched_keyboard_interrupt().
+#include "shared/runtime/interrupt_char.h"
 #include "shared/runtime/softtimer.h"
 
 // REPL UART: USART0 PA9(TX)/PA10(RX) AF7
@@ -27,8 +32,11 @@ int mp_interrupt_char = 3;   // Ctrl-C
 #define REPL_TX_PIN     GPIO_PIN_9
 #define REPL_RX_PIN     GPIO_PIN_10
 #define REPL_AF         GPIO_AF_7
+#define REPL_UART_IRQN  USART0_IRQn
 
 static int uart_ready = 0;
+
+void uart_repl_init(void);
 
 void uart_repl_init(void) {
     if (uart_ready) {
@@ -37,11 +45,12 @@ void uart_repl_init(void) {
     rcu_periph_clock_enable(REPL_GPIO_RCU);
     rcu_periph_clock_enable(REPL_UART_RCU);
 
-    gpio_af_set(GPIOA, REPL_AF, REPL_TX_PIN | REPL_RX_PIN);
-    gpio_mode_set(GPIOA, GPIO_MODE_AF, GPIO_PUPD_PULLUP, REPL_TX_PIN);
-    gpio_output_options_set(GPIOA, GPIO_OTYPE_PP, GPIO_OSPEED_50MHZ, REPL_TX_PIN);
-    gpio_mode_set(GPIOA, GPIO_MODE_AF, GPIO_PUPD_PULLUP, REPL_RX_PIN);
-
+    // Order matters.  Configure and enable USART0 *before* routing PA9/PA10 to
+    // AF7.  Doing it the other way round - which is the obvious order - lets the
+    // pin float during the switch: PA9 has no defined level until the
+    // peripheral drives it, the receiver sees a start bit, samples 8 high bits
+    // and reports a stray 0xFF before the first real character.  Thonny shows
+    // that as a mojibake glyph right after "%Run -c $EDITOR_CONTENT".
     usart_deinit(REPL_UART);
     usart_baudrate_set(REPL_UART, MICROPY_HW_UART_REPL_BAUD);
     usart_word_length_set(REPL_UART, USART_WL_8BIT);
@@ -51,8 +60,79 @@ void uart_repl_init(void) {
     usart_hardware_flow_cts_config(REPL_UART, USART_CTS_DISABLE);
     usart_receive_config(REPL_UART, USART_RECEIVE_ENABLE);
     usart_transmit_config(REPL_UART, USART_TRANSMIT_ENABLE);
+    // TX is idle-high once the transmitter is enabled, so the pin is already at
+    // the correct level before it becomes an output.
     usart_enable(REPL_UART);
+
+    gpio_af_set(GPIOA, REPL_AF, REPL_TX_PIN | REPL_RX_PIN);
+    gpio_output_options_set(GPIOA, GPIO_OTYPE_PP, GPIO_OSPEED_50MHZ, REPL_TX_PIN);
+    gpio_mode_set(GPIOA, GPIO_MODE_AF, GPIO_PUPD_PULLUP, REPL_TX_PIN);
+    gpio_mode_set(GPIOA, GPIO_MODE_AF, GPIO_PUPD_PULLUP, REPL_RX_PIN);
+
+    // Let the transmitter settle before the first byte is pushed out.
+    for (volatile int i = 0; i < 100; ++i) {
+        ;
+    }
+    // Enable the receive interrupt, not just the peripheral.  Without this the
+    // ISR never runs, which is why Ctrl-C used to be ignored while user code
+    // held the CPU (the bytes piled up unread in the data register).
+    usart_interrupt_enable(REPL_UART, USART_INT_RBNE);
+    NVIC_SetPriority(REPL_UART_IRQN, 2);
+    NVIC_EnableIRQ(REPL_UART_IRQN);
     uart_ready = 1;
+}
+
+// Prepare the REPL UART for a system reset.
+//
+// PA9 must stay high from now until the core restarts, otherwise the receiver
+// sees a false start bit and reports 0xFF.  Two steps: let the last character
+// finish shifting out, then take the pin away from USART0 and drive it high as
+// a GPIO.  NVIC_SystemReset() will still return the pin to its reset state, but
+// by then the line has been idle-high long enough that no framing error occurs.
+void usart_repl_shutdown(void) {
+    if (!uart_ready) {
+        return;
+    }
+
+    // Wait for the transmitter to actually finish shifting out the last byte.
+    // TBE only means the data register has been handed to the shift register;
+    // the final stop bits may still be on the wire.  Waiting on TBE truncated
+    // the trailing "\n" of "MPY: soft reboot\r\n", which broke mpremote: it
+    // looks for the exact string "soft reboot\r\n" and would not connect.
+    for (uint32_t spin = 0; spin < 1000000; ++spin) {
+        if (usart_flag_get(REPL_UART, USART_FLAG_TC) != RESET) {
+            break;
+        }
+    }
+
+    // Hand PA9 back to GPIO and drive it high before disabling the peripheral,
+    // so there is no interval where nobody drives the line.
+    gpio_af_set(GPIOA, REPL_AF, REPL_RX_PIN);
+    gpio_mode_set(GPIOA, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, REPL_TX_PIN);
+    gpio_output_options_set(GPIOA, GPIO_OTYPE_PP, GPIO_OSPEED_50MHZ, REPL_TX_PIN);
+    gpio_bit_set(GPIOA, REPL_TX_PIN);
+
+    usart_interrupt_disable(REPL_UART, USART_INT_RBNE);
+    NVIC_DisableIRQ(REPL_UART_IRQN);
+    usart_disable(REPL_UART);
+    uart_ready = 0;
+}
+
+// USART0 receive interrupt body, called from the shared vector in
+// machine_uart_port.c.
+void mp_hal_repl_uart_rx_isr(void) {
+    while (usart_flag_get(REPL_UART, USART_FLAG_RBNE) != RESET) {
+        uint8_t c = (uint8_t)usart_data_receive(REPL_UART);
+        if (mp_interrupt_char >= 0 && c == (uint8_t)mp_interrupt_char) {
+            // Same contract as ports/stm32 and ports/rp2: the interrupt
+            // character never enters the input stream, it becomes an exception.
+            mp_sched_keyboard_interrupt();
+        } else if (ringbuf_free(&stdin_ringbuf)) {
+            ringbuf_put(&stdin_ringbuf, c);
+        }
+        // On a full buffer the byte is dropped; the alternative (leaving RBNE
+        // set) would re-enter this ISR forever.
+    }
 }
 
 // Which stdio events are ready; used by sys.std*.ioctl(MP_STREAM_POLL).
@@ -92,8 +172,12 @@ uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags) {
 }
 
 int mp_hal_stdin_rx_chr(void) {
+    uart_repl_init();
     for (;;) {
-        // USB CDC input (if enabled) arrives through the shared ring buffer.
+        // The USART0 interrupt is the only reader of the data register.  Do not
+        // add a direct RBNE poll here: usart_data_receive() merely reads DATA,
+        // so a second reader that loses the race against the ISR gets the
+        // previous byte again and the character is delivered twice.
         int c = ringbuf_get(&stdin_ringbuf);
         if (c != -1) {
             return c;
@@ -108,11 +192,11 @@ int mp_hal_stdin_rx_chr(void) {
             return dupterm_c;
         }
         #endif
-        // Fall back to the UART REPL.
-        uart_repl_init();
-        if (usart_flag_get(REPL_UART, USART_FLAG_RBNE) != RESET) {
-            return (int)usart_data_receive(REPL_UART);
-        }
+        // A KeyboardInterrupt queued by the RX interrupt must abort this
+        // blocking wait rather than being swallowed until the next VM check.
+        mp_handle_pending(MP_HANDLE_PENDING_CALLBACKS_AND_EXCEPTIONS);
+        // Sleep until SysTick or a character wakes us.
+        __WFI();
     }
 }
 
@@ -163,9 +247,14 @@ void mp_hal_ticks_cpu_enable(void) {
 }
 
 void mp_hal_delay_ms(mp_uint_t ms) {
-    uint32_t start = systick_ms;
+    mp_uint_t start = systick_ms;
     while ((systick_ms - start) < ms) {
-        __WFI();
+        // mp_event_wait_ms() runs the pending-exception check before sleeping.
+        // Sleeping on a bare __WFI loop meant a KeyboardInterrupt queued by the
+        // REPL RX interrupt was never noticed: the CPU woke on SysTick, compared
+        // the counter and went straight back to sleep, so time.sleep_ms() inside
+        // /main.py was effectively uninterruptible.
+        mp_event_wait_ms(1);
     }
 }
 
@@ -179,10 +268,6 @@ void mp_hal_delay_us(mp_uint_t us) {
     while ((DWT->CYCCNT - start) < cycles) {
         ;
     }
-}
-
-void mp_hal_set_interrupt_char(int c) {
-    (void)c;
 }
 
 // ---- pin low-level operations (used by extmod soft protocols) ----
