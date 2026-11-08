@@ -39,9 +39,14 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self, const mcu_pin_obj_t *
         raise_ValueError_invalid_pins();
     }
 
+    // MOSI or MISO may be None.
     claim_pin(clock);
-    claim_pin(mosi);
-    claim_pin(miso);
+    if (mosi != NULL) {
+        claim_pin(mosi);
+    }
+    if (miso != NULL) {
+        claim_pin(miso);
+    }
 
     self->clock_pin = clock;
     self->mosi_pin = mosi;
@@ -57,8 +62,12 @@ void common_hal_busio_spi_deinit(busio_spi_obj_t *self) {
     common_hal_busio_spi_mark_deinit(self);
 
     reset_pin_number(self->clock_pin->number);
-    reset_pin_number(self->mosi_pin->number);
-    reset_pin_number(self->miso_pin->number);
+    if (self->mosi_pin != NULL) {
+        reset_pin_number(self->mosi_pin->number);
+    }
+    if (self->miso_pin != NULL) {
+        reset_pin_number(self->miso_pin->number);
+    }
 }
 
 bool common_hal_busio_spi_deinited(busio_spi_obj_t *self) {
