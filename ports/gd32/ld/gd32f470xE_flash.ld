@@ -30,10 +30,10 @@ MEMORY
 {
   /* Sector 0: the Cortex-M vector table must sit at 0x08000000. */
   FLASH_ISR   (rx): ORIGIN = 0x08000000, LENGTH = 16K
-  /* Sectors 1-3: internal littlefs partition (3 x 16 KB). */
-  FLASH_FS    (rx): ORIGIN = 0x08004000, LENGTH = 48K
-  /* Sectors 4-7: the firmware image (64 + 128 + 128 + 128 = 448 KB). */
-  FLASH_TEXT  (rx): ORIGIN = 0x08010000, LENGTH = 448K
+  /* Sectors 1-2: internal littlefs partition (2 x 16 KB). */
+  FLASH_FS    (rx): ORIGIN = 0x08004000, LENGTH = 32K
+  /* Sectors 3-7: the firmware image (16 + 64 + 128 + 128 + 128 = 464 KB). */
+  FLASH_TEXT  (rx): ORIGIN = 0x0800C000, LENGTH = 464K
   RAM        (xrw): ORIGIN = 0x20000000, LENGTH = 128K
   TCMRAM     (xrw): ORIGIN = 0x10000000, LENGTH = 64K
 }
@@ -198,7 +198,7 @@ _flash_code_start = ORIGIN(FLASH_TEXT);
 _flash_fs_start   = ORIGIN(FLASH_FS);
 _flash_fs_end     = ORIGIN(FLASH_FS) + LENGTH(FLASH_FS);
 _flash_fs_block_size = 16K;
-_flash_fs_block_count = 3;
+_flash_fs_block_count = 2;
 
 /* The vector table must fit inside Sector 0. */
 ASSERT(SIZEOF(.vectors) <= 16K,

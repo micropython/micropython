@@ -69,9 +69,16 @@ OF SUCH DAMAGE.
 #define SR8201F                          2
 #define RTL8201F                         2
 #define YT8512                           3
+/* Overridable from the port: the values below are the vendor defaults
+   (DP83848 at MDIO address 1), but the actual PHY depends on the carrier board.
+   ports/gd32/Makefile sets these for the LCKFB expansion board. */
+#ifndef PHY_TYPE
 #define PHY_TYPE                         DP83848
+#endif
 
+#ifndef PHY_ADDRESS
 #define PHY_ADDRESS                      ((uint16_t)1U)                         /*!< phy address determined by the hardware */
+#endif
 
 /* PHY read write timeouts */ 
 #define PHY_READ_TO                      ((uint32_t)0x0004FFFFU)                /*!< PHY read timeout */

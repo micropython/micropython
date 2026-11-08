@@ -63,6 +63,16 @@ endif
 CFLAGS += -Os -g -std=gnu99 -Wall -Werror
 CFLAGS += -ffunction-sections -fdata-sections
 CFLAGS += -fno-common -fno-strict-aliasing
+# PHY fitted on the LCKFB "Sky Star" expansion board: a LAN8720 answering on
+# MDIO address 0 (probed: id 0007:c0f1).  The vendor library defaults to a
+# DP83848 at address 1, which selects the wrong status register and the wrong
+# MDIO target, so enet_init() would never bring the link up.
+CFLAGS += -DPHY_TYPE=LAN8700 -DPHY_ADDRESS=0
+# DMA descriptor count per direction.  The vendor default of 5 costs 5 * 1524
+# bytes twice, ~15 KB of SRAM, and this board only has about 15 KB free - the
+# link would not even fit (it overflowed RAM by 384 bytes).  Three each is
+# plenty for a bring-up driver.
+CFLAGS += -DENET_RXBUF_NUM=3 -DENET_TXBUF_NUM=3
 CFLAGS += -DNDEBUG
 CFLAGS += -fsingle-precision-constant -Wdouble-promotion
 

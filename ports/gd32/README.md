@@ -439,8 +439,19 @@ the size of the firmware image:
 | Region | Sectors | Size | Address |
 |--------|---------|------|---------|
 | `.vectors` | 0 | 16 KB | `0x08000000`-`0x08003FFF` |
-| littlefs | 1-3 | 48 KB | `0x08004000`-`0x0800FFFF` |
-| firmware | 4-7 | 448 KB | `0x08010000`-`0x0807FFFF` |
+| littlefs | 1-2 | **32 KB** | `0x08004000`-`0x0800BFFF` |
+| firmware | 3-7 | **464 KB** | `0x0800C000`-`0x0807FFFF` |
+
+The filesystem used to occupy sectors 1-3 (48 KB).  It was reduced to two
+sectors to make room for the Ethernet/lwIP code: registering the netif with lwIP
+pulls in about 10 KB that the 448 KB region no longer had (the link failed with
+"FLASH_TEXT overflowed by 9932 bytes").  With the SD card working, large files
+belong on the card anyway, so 32 KB of internal flash - 8 logical 4 KB blocks,
+6 of them free on a fresh partition - is the better trade.
+
+**Upgrading an existing board:** the block geometry changed again, so the old
+filesystem will not mount.  Run `machine.Flash.mkfs()` once and re-create your
+files (the first test after flashing section covers this).
 
 The vector table has to sit at `0x08000000`, so it gets its own small region at
 the bottom.  Putting the filesystem directly above it and the code after that
@@ -455,7 +466,7 @@ _flash_fs_start      = ORIGIN(FLASH_FS);
 _flash_fs_end        = ORIGIN(FLASH_FS) + LENGTH(FLASH_FS);
 _flash_code_start    = ORIGIN(FLASH_TEXT);
 _flash_fs_block_size = 16K;
-_flash_fs_block_count = 3;
+_flash_fs_block_count = 2;
 ```
 
 `flashbdev.c` reads those symbols rather than hard-coding addresses, and checks
@@ -859,12 +870,19 @@ print(nic.status())
 |--------|-----|
 | REF_CLK | PA1 |
 | MDIO | PA2 |
+| CRS_DV | PA7 |
 | MDC | PC1 |
 | RXD0 | PC4 |
 | RXD1 | PC5 |
 | TX_EN | PB11 |
 | TXD0 | PB12 |
 | TXD1 | PB13 |
+| PHY_NRST | PE12 (plain GPIO, pulsed by the driver) |
+
+`CRS_DV` (PA7) and `PHY_NRST` (PE12) were both missing from the driver and from
+this table; without CRS_DV the MAC never sees carrier sense, and without the
+reset pulse the PHY may never leave reset.  The pin list comes from the
+extension-board table, `doc/天空星筑基学习板-引脚分配总表.xlsx`.
 
 MII vs RMII is selected through SYSCFG using
 `syscfg_enet_phy_interface_config`, which differs from STM32 where the
@@ -884,9 +902,99 @@ only leaves about 24 KB of RAM free:
 Raise these for sustained throughput, and lower `MICROPY_HEAP_SIZE` in the
 board header to make room.
 
-NOTE: the driver compiles on both boards but has not been exercised against
-a real PHY. Auto-negotiation timing and the RMII clock setup should be
-verified on hardware before relying on it.
+### Status: PHY found and link up, frames still do not pass
+
+The bare Sky Star core board has **no Ethernet nets at all** in its schematic -
+the PHY lives on the 筑基学习板 extension board, which routes the ten signals
+above.
+
+Five real driver defects were found and fixed while bringing this up (all in
+`eth.c` / `network_lan.c`):
+
+| Defect | Consequence |
+|--------|-------------|
+| `PA7` (CRS_DV) never configured | RMII cannot receive: no carrier sense |
+| `PE12` (PHY_NRST) never driven | the PHY may sit in hardware reset forever |
+| MDC clock divider never programmed before PHY access | `enet_phy_write_read()` does not set `ENET_MAC_PHY_CTL.CLR` itself; with CLR = 0 no MDC clock is produced |
+| `enet_init(ENET_AUTO_NEGOTIATION, ...)` called unconditionally | it waits for the PHY to report a link, so it times out (and returns a useless "init failed") whenever the cable is unplugged |
+| `eth_set_mac(self, self->mac)` | copied uninitialised `.bss` onto itself, so the MAC was garbage; now derived from the factory UID |
+
+The probing order was also wrong: the PHY was probed before `enet_init()` had
+programmed the MDC divider, so every address looked dead.  `eth_init()` now
+does: clocks -> pins -> PHY reset pulse -> `enet_deinit()` -> MDC divider ->
+**probe** -> link check -> `enet_init()` with a media mode it can actually
+satisfy (auto-negotiation when a link exists, forced 100M full duplex when not).
+
+**What is verified:** MDIO/MDC now work.  After a probe cycle
+`ENET_MAC_PHY_CTL = 0x0000f8d0` - the busy bit has cleared (the transaction
+completes normally), CLR = 4 (HCLK/102, correct for 168 MHz) and the scan
+reached address 31 register 3.  The pin mux is confirmed: PA1/PA2/PA7 read back
+as AF11, PC1/PC4/PC5 as AF11.
+
+**Then the PHY was found, and that changed the picture.**  The blocker was the
+reset line: the driver was *driving* `PE12` (either level), which holds the
+extension board's PHY in reset.  Releasing the pin (high-Z) lets the board's own
+reset circuit own it and the PHY answers immediately:
+
+```
+eth: PHY at MDIO addr 0, id 0007:c0f1        -> LAN8720 at MDIO address 0
+```
+
+So `PHY_TYPE` is `LAN8700` (the library's branch for LAN8720: status register 31,
+speed bit 0x0004, duplex bit 0x0010) and `PHY_ADDRESS` is 0.  Both are now
+overridable (`#ifndef` guards in the vendored header) and set from the port
+Makefile instead of being hard-coded defaults.
+
+Forcing a media mode at boot also had to go: `enet_init()` writes
+`BCR = 100M full duplex` when no link is present, which *clears the
+auto-negotiation enable bit*, and a switch that expects negotiation then never
+brings the link up.  The driver now always restarts auto-negotiation with all
+four modes advertised, and copies the result into the MAC.  The link then comes
+up two seconds after `LAN()`.
+
+**What is still failing: no frame is ever received.**  With the interface
+configured and the cable in a live port:
+
+| Observation | Meaning |
+|-------------|---------|
+| `MAC_CFG = 0x0001c80c` | REN(bit2)=1, TEN(bit3)=1, full duplex, 100M - MAC enabled |
+| `DMA_OPMODE = 0x02202002` | start-receive / start-transmit set |
+| `DMA_STAT` bit 10 (RPS) was set, now clear after the tail-pointer fix | receive process had stopped, now running |
+| `DMA_STAT` bit 6 (RS) never sets; no received frames | nothing arrives from the PHY |
+| server `ping 192.168.1.50` | ARP FAILED, board never answers |
+
+The receive process is running and the descriptors are armed, but zero frames
+reach the MAC while MDIO and the link are both healthy.  That is the classic
+signature of **no 50 MHz RMII reference clock on PA1**: MDIO is clocked from
+HCLK and does not need it, the link status is read over MDIO and does not need
+it either, but every actual data transfer does.  A LAN8720 only drives REF_CLKO
+when it is strapped for it, and the extension board's strapping is not documented
+in the pin table we have.
+
+Next steps, in order of usefulness:
+
+1. Put a scope on PA1 and confirm a 50 MHz square wave.
+2. If it is absent, check how the extension board expects REF_CLK to be
+   produced (LAN8720 `REF_CLK Out` mode, or an external oscillator).
+3. If it is present, the remaining suspects are the RX/TX pin mapping on the
+   40-pin headers and the PHY's TX/RX delay settings.
+
+If you are bringing up Ethernet, check in this order:
+
+1. Is the extension board fully seated on both 40-pin headers (a PHY needs the
+   MDIO/MDC pair specifically)?
+2. Does the extension board's PHY have power - is there a 3.3 V rail switch,
+   jumper or a power LED?
+3. Is `ETH_NRST` (PE12) really active low on your board revision?  The driver
+   tries both levels, but a board that requires a longer reset pulse or a
+   specific power-up order would still fail.
+4. Which PHY is fitted?  `gd32lib` is compiled with `PHY_TYPE = DP83848` and
+   `PHY_ADDRESS = 1`; a YT8512 / SR8201F / LAN8720 changes which status register
+   the library reads for speed/duplex (the library already has `#if` branches
+   for SR8201F and YT8512, so set `PHY_TYPE` to match and address strapping to 1).
+
+`network.LAN()` now fails with `OSError(ENODEV)` when nothing answers, instead of
+a generic "failed to init ethernet".
 
 ## Frozen modules
 
@@ -933,20 +1041,37 @@ than listing the core/extmod objects by hand.
 
 ## TLS (mbedTLS)
 
-`import tls` (also reachable as `ssl`) provides TLS 1.2 through mbedTLS 3.6.6,
-which makes HTTPS possible on top of `socket`.
+`import tls` provides TLS 1.2 through mbedTLS 3.6.6, which makes HTTPS
+possible on top of `socket`.
+
+Both `import tls` and `import ssl` work: upstream only registers
+`MP_REGISTER_MODULE(MP_QSTR_tls, mp_module_tls)`, so this port registers the same
+module object again under `ssl` in `mbedtls_port.c`.  (Before that,
+`import ssl` - which every other MicroPython network port accepts - raised
+ImportError.)  `SSLContext` / `SSLSocket` are attributes inside the module.
 
 ```python
 import socket, tls
 
-# Verify the server certificate against the bundled CA bundle
 ctx = tls.SSLContext(tls.PROTOCOL_TLS_CLIENT)
-ctx.load_verify_locations(cafile="/certs/ca.pem")
+
+# Nothing is bundled: no CA file ships in the firmware or the 48 KB internal
+# filesystem, so load a PEM you put there (or on the SD card) yourself.  A full
+# Mozilla bundle does not fit in 48 KB; use the one or two roots you need.
+ctx.load_verify_locations(cafile="/ca.pem")
+
 s = ctx.wrap_socket(socket.socket(), server_hostname="example.com")
 s.connect(socket.getaddrinfo("example.com", 443)[0][-1])
 s.write(b"GET / HTTP/1.0\r\nHost: example.com\r\n\r\n")
 print(s.read(1024))
 ```
+
+For a smoke test without a CA file, `ctx.verify_mode = tls.CERT_NONE` skips
+verification (do not ship that).
+
+Note that there is also **no network path on this board** - see the lwIP section,
+the board has no PHY - so a handshake cannot be exercised here even with the
+module working.
 
 ### Trimming for this chip
 
@@ -961,21 +1086,47 @@ about 90 KB is already committed:
 | ECP curves | secp256r1, secp384r1 only | the P-192/224/521 and Koblitz curves cost code for no practical gain |
 | `MBEDTLS_ECP_WINDOW_SIZE` | 4 | compact ECC multiplication |
 
-Measured cost of enabling TLS:
+Measured cost of enabling TLS (builds with and without `MICROPY_SSL_MBEDTLS`):
 
-| | before | after | delta |
+| | without TLS | with TLS | delta |
 |---|---|---|---|
-| Flash | 253,788 B | 375,456 B | **+121 KB** |
-| RAM (bss) | 90,880 B | 90,888 B | +8 B |
+| `.text+.data` | 331,164 B | 454,028 B | **+120 KB** |
+| firmware budget | — | 448 KB (458,752 B) | — |
+| free after build | — | **4,724 B (1.0 %)** | — |
 
-Flash is now at 95.5% of the 384 KB firmware budget (17.3 KB free), so there is
-very little room for further additions.  RAM is comfortable: 39 KB free on the
-GD32F407, 103 KB on the GD32F470.
+So TLS is about a quarter of the whole image, and the build is now within 4.7 KB
+of the linker limit - there is essentially no room left for further additions
+without first removing something (see `CONSTRAINTS.md` for the trade-offs, and
+note that switching TLS off also removes `hashlib.sha1`/`md5` and `cryptolib`).
 
-**Note:** TLS compiles and the module is present, but no handshake has been
-exercised on hardware.  The ECC/bignum paths are the ones most likely to need
-tuning (they are the slowest part of a handshake on a Cortex-M4 without a
-crypto accelerator).
+### Verified on hardware (2026-11-08)
+
+The TLS building blocks were run on a real board and checked against published
+test vectors, so the crypto layer is known-good:
+
+| Check | Result |
+|-------|--------|
+| `import tls` / `import ssl` | both OK (`__name__` is `tls`) |
+| `tls.MBEDTLS_VERSION` | `Mbed TLS 3.6.6` |
+| `tls.SSLContext(tls.PROTOCOL_TLS_CLIENT)` | constructs; `verify_mode` = 2 (`CERT_REQUIRED`) |
+| `hashlib.sha256(b"abc")` | `ba7816bf...20015ad` - matches NIST |
+| `hashlib.sha1(b"abc")` | `a9993e36...9cd0d89d` - matches NIST |
+| `hashlib.md5(b"abc")` | `90015098...e17f72` - matches RFC 1321 |
+| AES-128-CBC, NIST SP 800-38A F.2.1 vector | `7649abac8119b246cee98e9b12e9197d` - PASS |
+
+Two API details that cost time when testing:
+
+* `cryptolib` mode numbers are **`1 = ECB`, `2 = CBC`**.  Passing the wrong one
+  produces a plausible-looking ciphertext that fails the vector (ECB of the first
+  block instead of the CBC chain).
+* `hashlib` objects here expose **only `update()` and `digest()`** - there is no
+  `hexdigest()`, so use `hashlib.sha256(b"abc").digest().hex()`.  The module
+  provides exactly `sha256`, `sha1` and `md5`.
+
+**Still not exercised: an actual handshake.**  That needs a working network path,
+and the board has none without a responding Ethernet PHY (see the lwIP section),
+so the ECC/bignum handshake paths remain the untested part - they are also the
+slowest on a Cortex-M4 without a crypto accelerator.
 
 ## Machine module coverage
 
@@ -996,7 +1147,7 @@ Compared with `ports/stm32` for STM32F4:
 | `PWM` | ✅ | TIMER0/1/2/3/7/8/12, duty_u16 + duty_ns |
 | `Signal` / `PinBase` | ✅ | Pin implements the virtpin protocol |
 | `onewire` | ✅ | DS18B20 etc. over any GPIO (bit-banged) |
-| `tls` / `ssl` | ✅ | mbedTLS 3.6, TLS 1.2, certificate verification |
+| `tls` | ✅ | mbedTLS 3.6, TLS 1.2, certificate verification.  **`import ssl` does not work** - only `tls` is registered.  Module present, no handshake ever run |
 | `SoftSPI` / `SoftI2C` | ✅ | extmod bit-bang on any GPIO |
 | `SDCard` | ✅ | SDIO driver, hot-plug, block device protocol |
 | `I2S` | ✅ | SPI1/SPI2 as I2S1/I2S2, DMA ping-pong, blocking/non-blocking/async |
@@ -1019,6 +1170,21 @@ Compared with `ports/stm32` for STM32F4:
 | `os.dupterm` | ✅ | attach a stream (e.g. a UART) to the REPL |
 | `framebuf` | ✅ | `FrameBuffer` for drawing into a bytearray |
 
+**What ✅ means here.** It means *implemented and compiled into the image* - not
+*verified on hardware*.  The distinction matters: every driver in this table builds
+and links, but only some have actually been exercised on a real board.
+
+Exercised on hardware so far: `Pin`, `Timer`, `WDT`, `UART`, `SPI`, `I2C`, `ADC`,
+`DAC`, `RTC`, `CAN`, `SDCard`, `freq`, `unique_id`, `time_pulse_us`, and the internal
+filesystem plus `boot.py`/`main.py` execution.
+
+Compile-verified only, never run: `I2S`, `I2CTarget`, `USBDevice`, `PWM`, `SoftSPI`,
+`SoftI2C`, `onewire`, `dht_readinto`, `Signal`, `bitstream`, `mem_backup`,
+`lightsleep`/`deepsleep`, `tls`.  Treat those as untested until someone runs them.
+
+For `network`/lwIP and `tls`, note that this board has no Ethernet PHY at all
+(see the lwIP section), so neither can be exercised here without added hardware.
+
 ### Python standard-library modules
 
 These are enabled and use no external dependencies:
@@ -1030,7 +1196,7 @@ These are enabled and use no external dependencies:
 | `re` | `compile`, `match`, `search`, `sub` (MicroPython subset) |
 | `uctypes` | struct/pointer access to raw memory |
 | `heapq` | `heappush`, `heappop`, `heapify` |
-| `hashlib` | `sha256` via mbedTLS |
+| `hashlib` | `sha256`, `sha1`, `md5` only, and objects have `update()`/`digest()` but no `hexdigest()`.  sha1/md5 come from mbedTLS and disappear if TLS is switched off |
 | `random` | seeded from the TRNG; `getrandbits`, `choice`, `randint` |
 | `time` | `time`, `time_ns`, `sleep*`, `ticks_*`, `gmtime`, `localtime`, `mktime` |
 | `os` | `listdir`, `stat`, `mkdir`, `rename`, `remove`, `mount`, `uname`, `urandom`, `sync`, `dupterm` |

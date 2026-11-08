@@ -34,6 +34,11 @@ void eth_set_mac(eth_t *self, const uint8_t *mac);
 #if MICROPY_PY_LWIP
 // The lwIP interface backing this driver.
 struct netif *eth_netif(eth_t *self);
+
+// Register that interface with lwIP (netif_add).  Must be called after
+// eth_init() and before any packet can arrive, otherwise netif->input is
+// NULL and the ENET interrupt faults on the first received frame.
+err_t eth_netif_add(eth_t *self);
 #endif
 
 #endif // MICROPY_INCLUDED_GD32_ETH_H

@@ -50,19 +50,53 @@ static mp_obj_t network_lan_make_new(const mp_obj_type_t *type, size_t n_args,
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    if (eth_init((eth_t *)&eth_instance_for_lan, (uint32_t)args[ARG_phy_addr].u_int) != 0) {
-        mp_raise_ValueError(MP_ERROR_TEXT("failed to init ethernet"));
+    // Report which stage failed - "failed to init ethernet" on its own gives the
+    // user nothing to act on, and the usual cause is simply that no PHY answered
+    // on the MDIO bus (board without a PHY, or PHY held in reset).
+    int rc = eth_init((eth_t *)&eth_instance_for_lan, (uint32_t)args[ARG_phy_addr].u_int);
+    if (rc != 0) {
+        switch (rc) {
+            case -3:
+                mp_raise_OSError(MP_ENODEV);      // no PHY answered on MDIO
+            case -4:
+                mp_raise_msg(&mp_type_OSError,
+                    MP_ERROR_TEXT("PHY not at the configured MDIO address"));
+            case -2:
+                mp_raise_msg(&mp_type_OSError,
+                    MP_ERROR_TEXT("PHY auto-negotiation failed"));
+            default:
+                mp_raise_msg(&mp_type_OSError,
+                    MP_ERROR_TEXT("ENET MAC init failed"));
+        }
     }
+    // Register the interface with lwIP.  eth.c provides eth_netif_add() for this
+    // and nothing ever called it, so the netif stayed all-zero: netif->input was
+    // NULL, and the first received frame (any broadcast, e.g. ARP) made the
+    // ENET interrupt dereference it and hard-fault.  It also means lwIP had no
+    // route, which is why connect() reported EHOSTUNREACH.
+    if (eth_netif_add((eth_t *)&eth_instance_for_lan) != ERR_OK) {
+        mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("netif_add failed"));
+    }
+
     return MP_OBJ_FROM_PTR(&network_lan_eth0);
 }
 
 static mp_obj_t network_lan_active(size_t n_args, const mp_obj_t *args) {
     network_lan_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+    struct netif *netif = eth_netif(self->eth);
     if (n_args == 1) {
-        return mp_obj_new_bool(eth_link_status(self->eth));
+        return mp_obj_new_bool(netif_is_up(netif));
     }
-    // The GD32 driver has no separate enable/disable; report the link state.
-    (void)args[1];
+    // Bring the lwIP interface up/down.  The MAC itself has no separate enable:
+    // this used to be a no-op that only reported the link, so nothing ever
+    // called netif_set_up() and lwIP would not transmit even with a live link.
+    if (mp_obj_is_true(args[1])) {
+        netif_set_link_up(netif);
+        netif_set_up(netif);
+    } else {
+        netif_set_link_down(netif);
+        netif_set_down(netif);
+    }
     return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(network_lan_active_obj, 1, 2, network_lan_active);
@@ -73,19 +107,39 @@ static mp_obj_t network_lan_isconnected(mp_obj_t self_in) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(network_lan_isconnected_obj, network_lan_isconnected);
 
-static mp_obj_t network_lan_ifconfig(mp_obj_t self_in) {
-    network_lan_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    struct netif *netif = eth_netif(self->eth);
-    return netutils_format_ipv4_addr((uint8_t *)&netif->ip_addr.addr, NETUTILS_BIG);
+// ifconfig() with no argument returns (ip, netmask, gateway, dns); with an
+// argument it applies one.  This used to be a hand-written getter that returned
+// only the IP string and rejected any argument with TypeError, so a static
+// address could not be configured from Python at all.  The shared helper is what
+// ports/stm32 uses and handles both directions plus multi-argument forms.
+static mp_obj_t network_lan_ifconfig(size_t n_args, const mp_obj_t *args) {
+    network_lan_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+    return mod_network_nic_ifconfig(eth_netif(self->eth), n_args - 1, args + 1);
 }
-static MP_DEFINE_CONST_FUN_OBJ_1(network_lan_ifconfig_obj, network_lan_ifconfig);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(network_lan_ifconfig_obj, 1, 2, network_lan_ifconfig);
 
 static mp_obj_t network_lan_ipconfig(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
     network_lan_obj_t *self = MP_OBJ_TO_PTR(args[0]);
-    struct netif *netif = eth_netif(self->eth);
-    return netutils_format_ipv4_addr((uint8_t *)&netif->ip_addr.addr, NETUTILS_BIG);
+    return mod_network_nic_ipconfig(eth_netif(self->eth), n_args - 1, args + 1, kwargs);
 }
 static MP_DEFINE_CONST_FUN_OBJ_KW(network_lan_ipconfig_obj, 1, network_lan_ipconfig);
+
+// Direct PHY register access over MDIO: indispensable when bringing a new board
+// up, because "no link" can mean a dead cable, a PHY held in reset, or a PHY that
+// never finished auto-negotiation, and only the PHY itself can tell you which.
+static mp_obj_t network_lan_phyreg(mp_obj_t self_in, mp_obj_t reg_in) {
+    (void)self_in;
+    mp_int_t reg = mp_obj_get_int(reg_in);
+    if (reg < 0 || reg > 31) {
+        mp_raise_ValueError(MP_ERROR_TEXT("phy register must be 0-31"));
+    }
+    uint16_t val = 0;
+    if (enet_phy_write_read(ENET_PHY_READ, PHY_ADDRESS, (uint16_t)reg, &val) != SUCCESS) {
+        mp_raise_OSError(MP_EIO);
+    }
+    return MP_OBJ_NEW_SMALL_INT(val);
+}
+static MP_DEFINE_CONST_FUN_OBJ_2(network_lan_phyreg_obj, network_lan_phyreg);
 
 static mp_obj_t network_lan_status(size_t n_args, const mp_obj_t *args) {
     network_lan_obj_t *self = MP_OBJ_TO_PTR(args[0]);
@@ -137,6 +191,7 @@ static const mp_rom_map_elem_t network_lan_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_ipconfig),    MP_ROM_PTR(&network_lan_ipconfig_obj) },
     { MP_ROM_QSTR(MP_QSTR_status),      MP_ROM_PTR(&network_lan_status_obj) },
     { MP_ROM_QSTR(MP_QSTR_config),      MP_ROM_PTR(&network_lan_config_obj) },
+    { MP_ROM_QSTR(MP_QSTR_phyreg),      MP_ROM_PTR(&network_lan_phyreg_obj) },
 
     // Status values returned by status().
     { MP_ROM_QSTR(MP_QSTR_STAT_IDLE),        MP_ROM_INT(0) },

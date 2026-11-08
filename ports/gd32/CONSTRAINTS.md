@@ -485,3 +485,63 @@ CPU 轮询 `TFH` 喂 FIFO（四种时序）、DMA 但 DPSM 先于命令、1 位 
 **最后一项最重要**：本仓库的所有验证都是编译期和静态分析。
 浮点、viper、TLS、lwIP、TinyUSB、文件系统、FAT、DHT、UART 中断等在
 **真实硬件上的行为均未经实测**。上板验证是必要的下一步。
+
+### 7.2 以太网 / lwIP 移植（2026-11-08，链路已通、数据未通）
+
+#### 分区调整：内部文件系统 48 KB → 32 KB
+
+`eth_netif_add()` 要把 netif 注册进 lwIP，这一步拉进约 10 KB 代码，448 KB 代码区
+装不下（链接报 `FLASH_TEXT overflowed by 9932 bytes`）。于是把内部 littlefs 从
+`S1–S3`（48 KB）缩到 `S1–S2`（32 KB），代码区从 `0x08010000`+448K 改为
+`0x0800C000`+464K。
+
+- 两板链接脚本（`gd32f405_407_xE`、`gd32f470xE`）、`flashbdev.c` 扇区表与静态断言
+  同步修改，`_flash_fs_block_count` 3 → 2。
+- 代价：内部 FS 变成 **8 个 4 KB 逻辑块（新分区 6 块空闲）**；**几何再次变更，
+  旧文件系统无法挂载**，需 `machine.Flash.mkfs()` 一次。
+- 取舍理由：SD 卡读写已验证可用，大文件本就该放卡上。
+
+#### 修掉的 13 个缺陷（复盘顺序即排查顺序）
+
+| # | 缺陷 | 症状 |
+|---|------|------|
+| 1 | PA7（CRS_DV）未配置 | RMII 无载波侦听 |
+| 2 | PE12（PHY_NRST）被 MCU 强制驱动 | **PHY 一直复位，MDIO 全程无应答** |
+| 3 | MDC 分频未在 PHY 访问前配置 | `enet_phy_write_read` 不自配 CLR，无 MDC 时钟 |
+| 4 | 硬编码 `PHY_ADDRESS=1` / `PHY_TYPE=DP83848` | 实际 LAN8720@**地址 0**（ID `0007:c0f1`） |
+| 5 | 无链路时强制 100M FD | **清掉自动协商使能位，对端永远建不起链路** |
+| 6 | MAC 不跟随协商结果 | 速率/双工可能错配 |
+| 7 | `lwip_init()` 从未调用 | `socket()` 直接 `ENOMEM` |
+| 8 | `mod_network_init()` 从未调用 | 网络模块状态未初始化 |
+| 9 | `eth_netif_add()` 从未调用 | netif 全零，`input` 为 NULL |
+| 10 | ISR 用 `eth.c` 静态实例，注册的却是另一个 | **首个接收帧即 HardFault** |
+| 11 | DMA 描述符环未初始化 | 收发完全不动 |
+| 12 | ENET 缓冲 5+5×1524 ≈ 15 KB | RAM 溢出 384 B |
+| 13 | `ifconfig` 只读、`active()` 空操作 | 无法配静态 IP、netif 不 up |
+
+另外补了 `network.LAN.phyreg(reg)`，可直接读 PHY 寄存器（排查必备）。
+
+#### 当前状态与关键取证
+
+链路已通（`LAN()` 后约 2 秒），MDIO、PHY 识别、静态 IP 配置均正常。
+但**收不到任何帧**：
+
+```
+MAC_CFG    = 0x0001c80c   REN/TEN 已置位，100M 全双工
+DMA_OPMODE = 0x02202002   SR/ST 已启动
+DMA_STAT    bit10 RPS     修好尾指针后已清零（收进程在跑）
+DMA_STAT    bit6  RS      始终不置位 —— 没有帧到达
+服务器 ping 192.168.1.50  ARP FAILED
+```
+
+RX 描述符尾指针 `ENET_DMA_RDTADDR` 必须先于收进程停止前指到环尾，
+否则收进程立即停（`RPS`）。这一处已修并验证。
+
+剩下的现象指向 **PA1 上没有 50 MHz RMII 参考时钟**：MDIO 由 HCLK 分频、链路状态
+也走 MDIO，都不需要它；而真正的数据搬运需要。LAN8720 只有在被 strap 成
+`REF_CLK Out` 时才输出 50 MHz，扩展板的 strap 手上没有资料。
+
+**下一步**：示波器量 PA1 是否有 50 MHz；若无，查扩展板 REF_CLK 由谁产生；
+若有，则查 40P 排针上 RX/TX 的实际对应与 PHY 的 TX/RX delay 设置。
+
+---

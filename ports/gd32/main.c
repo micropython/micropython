@@ -18,6 +18,12 @@
 #include "shared/readline/readline.h"
 #include "extmod/vfs.h"
 #include "extmod/vfs_lfs.h"
+#if MICROPY_PY_NETWORK
+#include "extmod/modnetwork.h"
+#endif
+#if MICROPY_PY_LWIP
+#include "lwip/init.h"
+#endif
 
 #include "gd32f4xx.h"
 #include "board.h"
@@ -236,6 +242,19 @@ int main(void) {
 
     gc_init(heap, heap + sizeof(heap));
     mp_init();
+
+    // lwIP and the network module need explicit initialisation.  Nothing else in
+    // this port did it, so the memp pools stayed zeroed and the first
+    // socket.socket() failed with ENOMEM even though the link was up and the
+    // interface had an address.  ports/stm32 calls these from main() as well;
+    // lwIP only tolerates being initialised once per power-up because its
+    // timeout list is only ever reset by BSS clearing.
+    #if MICROPY_PY_LWIP
+    lwip_init();
+    #endif
+    #if MICROPY_PY_NETWORK
+    mod_network_init();
+    #endif
 
     if (mount_internal_fs() != 0) {
         mp_printf(&mp_plat_print,

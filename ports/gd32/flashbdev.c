@@ -82,7 +82,6 @@ typedef struct {
 static const flash_sector_t flash_fs_sectors[] = {
     { 1, 0x08004000, 16 * 1024 },
     { 2, 0x08008000, 16 * 1024 },
-    { 3, 0x0800C000, 16 * 1024 },
 };
 
 #define FLASH_BDEV_BLOCK_COUNT  ((uint32_t)MP_ARRAY_SIZE(flash_fs_sectors))
@@ -90,12 +89,12 @@ static const flash_sector_t flash_fs_sectors[] = {
 // Compile-time agreement checks between this table and the linker script.
 // If the linker script moves the filesystem region, these fail loudly instead
 // of producing a device that erases the wrong thing at runtime.
-_Static_assert(MP_ARRAY_SIZE(flash_fs_sectors) == 3,
-               "expected exactly three 16 KB filesystem sectors");
+_Static_assert(MP_ARRAY_SIZE(flash_fs_sectors) == 2,
+               "expected exactly two 16 KB filesystem sectors");
 
 #define FLASH_BDEV_EXPECTED_START   (0x08004000)
-#define FLASH_BDEV_EXPECTED_END     (0x08010000)
-#define FLASH_BDEV_EXPECTED_SIZE    (48 * 1024)
+#define FLASH_BDEV_EXPECTED_END     (0x0800C000)
+#define FLASH_BDEV_EXPECTED_SIZE    (32 * 1024)
 
 // The linker symbols cannot be used in a _Static_assert (they are addresses),
 // so record the expected values and cross-check them at runtime in the ioctl

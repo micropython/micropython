@@ -29,4 +29,12 @@ mbedtls_ms_time_t mbedtls_ms_time(void) {
     return (mbedtls_ms_time_t)mp_hal_ticks_ms();
 }
 
+// extmod/modtls_mbedtls.c only registers the module under the name `tls`
+// (MP_REGISTER_MODULE(MP_QSTR_tls, mp_module_tls)), and there is no second
+// registration for `ssl` anywhere in the tree - so `import ssl`, which every
+// other MicroPython network port accepts and which the README documented,
+// raised ImportError.  Register the same module object under both names.
+extern const mp_obj_module_t mp_module_tls;
+MP_REGISTER_MODULE(MP_QSTR_ssl, mp_module_tls);
+
 #endif // MICROPY_PY_SSL && MICROPY_SSL_MBEDTLS

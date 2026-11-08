@@ -21,4 +21,17 @@ uint32_t mp_hal_get_hw_random_u32(void);
 
 #include "extmod/lwip-include/lwipopts_common.h"
 
+// Trim features this port cannot use, to make room for netif_add() and the TCP
+// path in the 448 KB code region (the image is within a few KB of the limit).
+//   * the mDNS responder is not usable here and is several KB of code
+//   * mDNS queries through the resolver go with the responder
+// IGMP has to stay enabled: modlwip.c calls igmp_joingroup()/igmp_leavegroup()
+// unconditionally for the IP_ADD_MEMBERSHIP socket option.
+// Disabled after the shared options are included because that header defines
+// them unconditionally.
+#undef LWIP_MDNS_RESPONDER
+#define LWIP_MDNS_RESPONDER             0
+#undef LWIP_DNS_SUPPORT_MDNS_QUERIES
+#define LWIP_DNS_SUPPORT_MDNS_QUERIES   0
+
 #endif // MICROPY_INCLUDED_GD32_LWIPOPTS_H
