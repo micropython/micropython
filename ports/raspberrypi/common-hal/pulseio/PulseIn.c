@@ -25,6 +25,9 @@ static const uint16_t pulsein_program[] = {
 
 void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t *self,
     const mcu_pin_obj_t *pin, uint16_t maxlen, bool idle_state) {
+    // Ensure the object starts in its deinit state, so its finaliser does
+    // nothing if this raises before the pin is set.
+    self->pin = NO_PIN;
 
     self->buffer = (uint16_t *)m_malloc_without_collect(maxlen * sizeof(uint16_t));
     if (self->buffer == NULL) {

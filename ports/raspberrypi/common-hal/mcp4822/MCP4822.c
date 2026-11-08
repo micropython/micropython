@@ -139,6 +139,9 @@ void mcp4822_reset(void) {
 void common_hal_mcp4822_mcp4822_construct(mcp4822_mcp4822_obj_t *self,
     const mcu_pin_obj_t *clock, const mcu_pin_obj_t *mosi,
     const mcu_pin_obj_t *cs, uint8_t gain) {
+    // Ensure the object starts in its deinit state, so its finaliser does
+    // nothing if this raises before the state machine is constructed.
+    common_hal_rp2pio_statemachine_mark_deinit(&self->state_machine);
 
     // The SET pin group spans from MOSI to CS.
     // MOSI must have a lower GPIO number than CS, gap at most 4.

@@ -259,6 +259,9 @@ void common_hal_audioi2sin_i2sin_construct(audioi2sin_i2sin_obj_t *self,
     uint32_t sample_rate, uint8_t bit_depth, uint8_t output_bit_depth,
     bool mono, bool left_justified, bool samples_signed,
     bool external_clock) {
+    // Ensure the object starts in its deinit state, so its finaliser does
+    // nothing if this raises before the state machine is constructed.
+    common_hal_rp2pio_statemachine_mark_deinit(&self->state_machine);
 
     if (main_clock != NULL) {
         mp_raise_NotImplementedError_varg(MP_ERROR_TEXT("%q"), MP_QSTR_main_clock);

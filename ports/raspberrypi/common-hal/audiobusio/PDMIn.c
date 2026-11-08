@@ -36,6 +36,10 @@ void common_hal_audiobusio_pdmin_construct(audiobusio_pdmin_obj_t *self,
     uint8_t bit_depth,
     bool mono,
     uint8_t oversample) {
+    // Ensure the object starts in its deinit state, so its finaliser does
+    // nothing if this raises before the state machine is constructed.
+    common_hal_rp2pio_statemachine_mark_deinit(&self->state_machine);
+
     if (!(bit_depth == 16 || bit_depth == 8) || !mono || oversample != OVERSAMPLING) {
         mp_raise_NotImplementedError_varg(MP_ERROR_TEXT("Only 8 or 16 bit mono with %dx oversampling supported."), OVERSAMPLING);
     }

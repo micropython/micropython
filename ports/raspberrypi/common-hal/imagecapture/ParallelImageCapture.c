@@ -54,6 +54,9 @@ void common_hal_imagecapture_parallelimagecapture_construct(imagecapture_paralle
     const mcu_pin_obj_t *data_clock,
     const mcu_pin_obj_t *vertical_sync,
     const mcu_pin_obj_t *horizontal_reference) {
+    // Ensure the object starts in its deinit state, so its finaliser does
+    // nothing if this raises before the state machine is constructed.
+    common_hal_rp2pio_statemachine_mark_deinit(&self->state_machine);
 
     for (int i = 1; i < data_count; i++) {
         if (common_hal_mcu_pin_number(data_pins[i]) - common_hal_mcu_pin_number(data_pins[0]) != i) {
