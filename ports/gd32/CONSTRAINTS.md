@@ -415,7 +415,66 @@ cd ports/gd32
 | `os.VfsRom` | 未实现 | 需 ROMFS 镜像数据源 |
 | `pyb`/`stm`/蓝牙/PPP | 不适用或不可行 | — |
 | 小幅精简（DTLS + 短文件名） | 未实施 | 可释放 ~9 KB |
-| 运行时硬件验证 | **未做** | 需要实际板子 |
+| 运行时硬件验证 | **部分已做** | Pin/SPI/I2C/ADC/DAC/Timer/WDT/RTC/CAN/UART/文件系统/
+SDCard 均已上板实测；TLS、lwIP、TinyUSB、FAT 写入仍未实测 |
+
+### 7.1 microSD 写入为何仍未启用（2026-11-08 实测记录）
+
+读路径已上板验证通过；写入路径试了两代实现都不成立，因此保持 `EROFS`。
+这一节记录**已经排除的可能**，避免重复投入。
+
+#### 已修复的部分（写入的前提，均已验证）
+
+卡检测 PD3、`sd_cmd` 等错完成标志、`sd_clear_flags` 漏清锁存位、
+数据超时参数、CSD 容量解码 —— 见 README 的 SD Card 一节。
+
+#### 第一代：CPU 轮询喂 FIFO —— 四种时序全部失败
+
+| 时序 | 实测结果（SWD 读寄存器） |
+|------|--------------------------|
+| DPSM 先于命令使能，收到 R1 后再推数据 | `STAT.TXURE`，`DATACNT` 停在 507（只发出 5 字节） |
+| 先发命令，再使能 DPSM，再推数据 | `DATACNT` 保持 512，`TFE` 置位，一个字节都没动 |
+| DPSM 关闭时预填 FIFO，再使能 | 使能后 `TFE` 置位，预填内容丢失 |
+| 预填按 `TFF` 限流，再使能后按 `TFH` 续推 | 全 512 字节发出，但卡片以**数据 CRC 错误**拒收 |
+
+最后一种说明字节流错位（FIFO 满时写入的字被静默丢弃）。
+更麻烦的是**结果不稳定**：同样的代码两次运行，一次发满 512 字节，
+一次 0 字节且无任何错误标志 —— 说明轮询依赖的标志语义在本控制器上不可靠。
+
+#### 第二代：DMA 发送 —— 消除时序竞争，但数据仍不落盘
+
+映射已查明（GD32F4xx DMA1，peripheral select 4）：
+
+```
+DMA_REQ_SDIO_1 = DMA1 channel 3   （接收）
+DMA_REQ_SDIO_2 = DMA1 channel 6   （发送）
+```
+
+实现要点（`dma_single_data_mode_init` + `dma_channel_subperipheral_select`，
+32 位宽、`DMA_MEMORY_TO_PERIPH`、字数 = 字节数/4、`sdio_dma_enable()`）。
+
+**结果**：`TXURE`/"TX data timeout" 这类时序错误消失，写入函数返回成功；
+但
+
+1. 读回内容与写入内容**不一致**，且卡片与控制器都**没报 CRC 错误**；
+2. 写完之后**紧接着的读会失败**（`RX data timeout`），必须重新
+   `SDCard()` 全量初始化才能恢复读能力；
+3. 上述行为**不稳定**：同一脚本重复执行，读回时而无异常时而不符。
+
+把 `sd_wait_ready()`（CMD13 轮询 READY_FOR_DATA）从"一次失败就返回"改成
+重试到超时，也没改变结论。
+
+#### 结论与后续线索
+
+- 数据**没有真正落到卡上**，而硬件侧不报错 —— 说明数据阶段没有真正完成，
+  只是我们自己的完成判据（`DATACNT` 归零 / 无错误标志）被骗过了。
+- 保守起见保持 `writeblocks()` 抛 `EROFS`：宁可明确只读，也不能让半写块
+  破坏 FAT。当前卡可正常挂载、列目录、读文件。
+- 下一步建议按顺序查：① 数据响应令牌（data response token）是否被 DPSM 正确接收，
+  即 `DTBLKEND`/`DTCRCERR` 时序；② 写命令后卡片 busy（DAT0 拉低）与
+  我们使能 DPSM 的先后关系；③ 用逻辑分析仪抓 CLK/CMD/DAT0，比继续盲试寄存器更快。
+
+---
 
 **最后一项最重要**：本仓库的所有验证都是编译期和静态分析。
 浮点、viper、TLS、lwIP、TinyUSB、文件系统、FAT、DHT、UART 中断等在
