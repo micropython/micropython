@@ -83,6 +83,11 @@ void common_hal_countio_counter_deinit(countio_counter_obj_t *self) {
     pwm_set_irq_enabled(self->slice_num, false);
     pwm_clear_irq(self->slice_num);
 
+    // Put the slice back in its default (free-running) mode, so a later
+    // PWMOut on it runs. PWMOut doesn't set the clock divider mode.
+    pwm_config cfg = pwm_get_default_config();
+    pwm_init(self->slice_num, &cfg, false);
+
     pwmio_release_slice_ab_channels(self->slice_num);
 
     reset_pin_number(self->pin);
@@ -90,6 +95,16 @@ void common_hal_countio_counter_deinit(countio_counter_obj_t *self) {
     MP_STATE_PORT(counting)[self->slice_num] = NULL;
     self->slice_num = 0;
     mark_deinit(self);
+
+    // Remove the wrap handler after the last Counter, so something else
+    // (rgbmatrix) can install its own exclusive handler later.
+    for (size_t i = 0; i < enum_NUM_PWM_SLICES; i++) {
+        if (MP_STATE_PORT(counting)[i] != NULL) {
+            return;
+        }
+    }
+    irq_set_enabled(PWM_IRQ_WRAP, false);
+    irq_remove_handler(PWM_IRQ_WRAP, counter_interrupt_handler);
 }
 
 mp_int_t common_hal_countio_counter_get_count(countio_counter_obj_t *self) {
@@ -106,17 +121,16 @@ void common_hal_countio_counter_set_count(countio_counter_obj_t *self,
 
 void counter_interrupt_handler(void) {
     uint32_t mask = pwm_get_irq_status_mask();
-
-    uint8_t i = 1;
-    uint8_t pos = 0;
-    while (!(i & mask)) {
-        i = i << 1;
-        ++pos;
+    if (mask == 0) {
+        return;
     }
+
+    // RP2350B has more than 8 slices, so look at the whole mask.
+    uint pos = __builtin_ctz(mask);
+    pwm_clear_irq(pos);
 
     countio_counter_obj_t *self = MP_STATE_PORT(counting)[pos];
     if (self != NULL) {
-        pwm_clear_irq(self->slice_num);
         self->count += 65536;
     }
 }
