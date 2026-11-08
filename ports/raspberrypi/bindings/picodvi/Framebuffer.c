@@ -109,25 +109,28 @@ static mp_obj_t picodvi_framebuffer_make_new(const mp_obj_type_t *type, size_t n
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    picodvi_framebuffer_obj_t *self = &allocate_display_bus_or_raise()->picodvi;
-    self->base.type = &picodvi_framebuffer_type;
-
     mp_uint_t width = (mp_uint_t)mp_arg_validate_int_min(args[ARG_width].u_int, 0, MP_QSTR_width);
     mp_uint_t height = (mp_uint_t)mp_arg_validate_int_min(args[ARG_height].u_int, 0, MP_QSTR_height);
     mp_uint_t color_depth = args[ARG_color_depth].u_int;
     if (color_depth != 1 && color_depth != 2 && color_depth != 4 && color_depth != 8 && color_depth != 16 && color_depth != 32) {
         mp_raise_ValueError_varg(MP_ERROR_TEXT("Invalid %q"), MP_QSTR_color_depth);
     }
+    const mcu_pin_obj_t *clk_dp = validate_obj_is_free_pin(args[ARG_clk_dp].u_obj, MP_QSTR_clk_dp);
+    const mcu_pin_obj_t *clk_dn = validate_obj_is_free_pin(args[ARG_clk_dn].u_obj, MP_QSTR_clk_dn);
+    const mcu_pin_obj_t *red_dp = validate_obj_is_free_pin(args[ARG_red_dp].u_obj, MP_QSTR_red_dp);
+    const mcu_pin_obj_t *red_dn = validate_obj_is_free_pin(args[ARG_red_dn].u_obj, MP_QSTR_red_dn);
+    const mcu_pin_obj_t *green_dp = validate_obj_is_free_pin(args[ARG_green_dp].u_obj, MP_QSTR_green_dp);
+    const mcu_pin_obj_t *green_dn = validate_obj_is_free_pin(args[ARG_green_dn].u_obj, MP_QSTR_green_dn);
+    const mcu_pin_obj_t *blue_dp = validate_obj_is_free_pin(args[ARG_blue_dp].u_obj, MP_QSTR_blue_dp);
+    const mcu_pin_obj_t *blue_dn = validate_obj_is_free_pin(args[ARG_blue_dn].u_obj, MP_QSTR_blue_dn);
+
+    // Validate everything before taking a display bus slot.
+    picodvi_framebuffer_obj_t *self = &allocate_display_bus_or_raise()->picodvi;
+    self->base.type = &picodvi_framebuffer_type;
+
     common_hal_picodvi_framebuffer_construct(self,
         width, height,
-        validate_obj_is_free_pin(args[ARG_clk_dp].u_obj, MP_QSTR_clk_dp),
-        validate_obj_is_free_pin(args[ARG_clk_dn].u_obj, MP_QSTR_clk_dn),
-        validate_obj_is_free_pin(args[ARG_red_dp].u_obj, MP_QSTR_red_dp),
-        validate_obj_is_free_pin(args[ARG_red_dn].u_obj, MP_QSTR_red_dn),
-        validate_obj_is_free_pin(args[ARG_green_dp].u_obj, MP_QSTR_green_dp),
-        validate_obj_is_free_pin(args[ARG_green_dn].u_obj, MP_QSTR_green_dn),
-        validate_obj_is_free_pin(args[ARG_blue_dp].u_obj, MP_QSTR_blue_dp),
-        validate_obj_is_free_pin(args[ARG_blue_dn].u_obj, MP_QSTR_blue_dn),
+        clk_dp, clk_dn, red_dp, red_dn, green_dp, green_dn, blue_dp, blue_dn,
         color_depth);
 
     return MP_OBJ_FROM_PTR(self);

@@ -110,9 +110,6 @@ static mp_obj_t mipidsi_display_make_new(const mp_obj_type_t *type, size_t n_arg
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    mipidsi_display_obj_t *self = &allocate_display_bus_or_raise()->mipidsi;
-    self->base.type = &mipidsi_display_type;
-
     mipidsi_bus_obj_t *bus = mp_arg_validate_type(args[ARG_bus].u_obj, &mipidsi_bus_type, MP_QSTR_bus);
 
     mp_buffer_info_t bufinfo;
@@ -136,6 +133,10 @@ static mp_obj_t mipidsi_display_make_new(const mp_obj_type_t *type, size_t n_arg
     if (color_depth != 16 && color_depth != 24) {
         mp_raise_ValueError_varg(MP_ERROR_TEXT("Invalid %q"), MP_QSTR_color_depth);
     }
+
+    // Validate everything before taking a display bus slot.
+    mipidsi_display_obj_t *self = &allocate_display_bus_or_raise()->mipidsi;
+    self->base.type = &mipidsi_display_type;
 
     common_hal_mipidsi_display_construct(self, bus, bufinfo.buf, bufinfo.len, virtual_channel, width, height,
         rotation, color_depth, MP_OBJ_TO_PTR(backlight_pin), brightness,
