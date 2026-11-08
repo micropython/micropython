@@ -17,6 +17,8 @@ static uint16_t *pulse_buffer = NULL;
 static uint16_t pulse_index = 0;
 static uint16_t pulse_length;
 static int pulse_fd = -1;
+// PulseOuts share the timer. Close it when the last one is deinited.
+static uint8_t pulse_users = 0;
 
 static bool pulseout_timer_handler(uint32_t *next_interval_us, void *arg) {
     uint8_t pwm_num = (uint8_t)(int)arg;
@@ -53,9 +55,12 @@ void common_hal_pulseio_pulseout_construct(pulseio_pulseout_obj_t *self,
     }
 
     if (pulse_fd < 0) {
+        // Don't leave the PWMOut claimed.
+        common_hal_pwmio_pwmout_deinit(&self->pwmout);
         mp_raise_RuntimeError(MP_ERROR_TEXT("All timers in use"));
     }
 
+    pulse_users++;
     self->pwm_num = self->pwmout.number;
 }
 
@@ -64,17 +69,20 @@ void common_hal_pulseio_pulseout_deinit(pulseio_pulseout_obj_t *self) {
         return;
     }
 
-    ioctl(pulse_fd, TCIOC_STOP, 0);
-    close(pulse_fd);
-    pulse_fd = -1;
-
     common_hal_pwmio_pwmout_deinit(&self->pwmout);
 
-    pulse_buffer = NULL;
+    pulse_users--;
+    if (pulse_users == 0) {
+        ioctl(pulse_fd, TCIOC_STOP, 0);
+        close(pulse_fd);
+        pulse_fd = -1;
+        pulse_buffer = NULL;
+    }
 }
 
+// Per object: the timer is shared with any other PulseOuts.
 bool common_hal_pulseio_pulseout_deinited(pulseio_pulseout_obj_t *self) {
-    return pulse_fd < 0;
+    return common_hal_pwmio_pwmout_deinited(&self->pwmout);
 }
 
 void common_hal_pulseio_pulseout_send(pulseio_pulseout_obj_t *self, uint16_t *pulses, uint16_t len) {
