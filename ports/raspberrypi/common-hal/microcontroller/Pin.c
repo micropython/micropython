@@ -60,6 +60,9 @@ void reset_pin_number(uint8_t pin_number) {
 
 
 void common_hal_reset_pin(const mcu_pin_obj_t *pin) {
+    if (pin == NULL) {
+        return;
+    }
     #if CIRCUITPY_CYW43
     if (pin->base.type == &cyw43_pin_type) {
         reset_pin_number_cyw(pin->number);
