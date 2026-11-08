@@ -80,6 +80,7 @@ void common_hal_gnss_deinit(gnss_obj_t *self) {
         return;
     }
 
+    ioctl(gnss_dev.fd, CXD56_GNSS_IOCTL_STOP, 0);
     close(gnss_dev.fd);
     gnss_dev.fd = -1;
 }
