@@ -396,7 +396,7 @@ static bool _clean_area(epaperdisplay_epaperdisplay_obj_t *self) {
     memset(buffer, 0x77, width / 2);
 
     uint8_t write_command = self->write_black_ram_command;
-    if (displayio_display_bus_begin_transaction(&self->bus)) {
+    if (!displayio_display_bus_begin_transaction(&self->bus)) {
         return false;
     }
     self->bus.send(self->bus.bus, DISPLAY_COMMAND, self->chip_select, &write_command, 1);
