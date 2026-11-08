@@ -25,9 +25,16 @@ static pwmout_dev_t pwmout_dev[] = {
     {"/dev/pwm3", &pin_PWM3, -1}
 };
 
+static void mark_deinit(pwmio_pwmout_obj_t *self) {
+    self->pin = NULL;
+}
+
 pwmout_result_t common_hal_pwmio_pwmout_construct(pwmio_pwmout_obj_t *self,
     const mcu_pin_obj_t *pin, uint16_t duty, uint32_t frequency,
     bool variable_frequency) {
+    // Ensure the object starts in its deinit state, so its finaliser does
+    // nothing if this fails.
+    mark_deinit(self);
     self->number = -1;
 
     for (int i = 0; i < MP_ARRAY_SIZE(pwmout_dev); i++) {
@@ -53,6 +60,8 @@ pwmout_result_t common_hal_pwmio_pwmout_construct(pwmio_pwmout_obj_t *self,
     self->variable_frequency = variable_frequency;
 
     if (ioctl(pwmout_dev[self->number].fd, PWMIOC_SETCHARACTERISTICS, (unsigned long)((uintptr_t)&self->info)) < 0) {
+        close(pwmout_dev[self->number].fd);
+        pwmout_dev[self->number].fd = -1;
         mp_arg_error_invalid(MP_QSTR_frequency);
     }
     ioctl(pwmout_dev[self->number].fd, PWMIOC_START, 0);
@@ -74,11 +83,12 @@ void common_hal_pwmio_pwmout_deinit(pwmio_pwmout_obj_t *self) {
     pwmout_dev[self->number].fd = -1;
 
     reset_pin_number(self->pin->number);
-    self->pin = NULL;
+    mark_deinit(self);
 }
 
+// Per object: the device's fd may now belong to a newer PWMOut.
 bool common_hal_pwmio_pwmout_deinited(pwmio_pwmout_obj_t *self) {
-    return pwmout_dev[self->number].fd < 0;
+    return self->pin == NULL;
 }
 
 void common_hal_pwmio_pwmout_set_duty_cycle(pwmio_pwmout_obj_t *self, uint16_t duty) {

@@ -20,18 +20,29 @@ typedef struct {
     const char *devpath;
     const mcu_pin_obj_t *pin;
     int fd;
+    // The ADC pins aren't claimed, so more than one AnalogIn can use a device.
+    // Close it when the last one is deinited.
+    uint8_t num_users;
 } analogin_dev_t;
 
 static analogin_dev_t analogin_dev[] = {
-    {"/dev/lpadc0", &pin_LPADC0, -1},
-    {"/dev/lpadc1", &pin_LPADC1, -1},
-    {"/dev/lpadc2", &pin_LPADC2, -1},
-    {"/dev/lpadc3", &pin_LPADC3, -1},
-    {"/dev/hpadc0", &pin_HPADC0, -1},
-    {"/dev/hpadc1", &pin_HPADC1, -1},
+    {"/dev/lpadc0", &pin_LPADC0, -1, 0},
+    {"/dev/lpadc1", &pin_LPADC1, -1, 0},
+    {"/dev/lpadc2", &pin_LPADC2, -1, 0},
+    {"/dev/lpadc3", &pin_LPADC3, -1, 0},
+    {"/dev/hpadc0", &pin_HPADC0, -1, 0},
+    {"/dev/hpadc1", &pin_HPADC1, -1, 0},
 };
 
+static void mark_deinit(analogio_analogin_obj_t *self) {
+    self->pin = NULL;
+}
+
 void common_hal_analogio_analogin_construct(analogio_analogin_obj_t *self, const mcu_pin_obj_t *pin) {
+    // Ensure the object starts in its deinit state, so its finaliser does
+    // nothing if this raises.
+    mark_deinit(self);
+
     if (!pin->analog) {
         raise_ValueError_invalid_pin();
     }
@@ -65,6 +76,7 @@ void common_hal_analogio_analogin_construct(analogio_analogin_obj_t *self, const
     // start ADC
     ioctl(analogin_dev[self->number].fd, ANIOC_CXD56_START, 0);
 
+    analogin_dev[self->number].num_users++;
     self->pin = pin;
 }
 
@@ -73,16 +85,20 @@ void common_hal_analogio_analogin_deinit(analogio_analogin_obj_t *self) {
         return;
     }
 
-    // stop ADC
-    ioctl(analogin_dev[self->number].fd, ANIOC_CXD56_STOP, 0);
-    close(analogin_dev[self->number].fd);
-    analogin_dev[self->number].fd = -1;
+    analogin_dev[self->number].num_users--;
+    if (analogin_dev[self->number].num_users == 0) {
+        // stop ADC
+        ioctl(analogin_dev[self->number].fd, ANIOC_CXD56_STOP, 0);
+        close(analogin_dev[self->number].fd);
+        analogin_dev[self->number].fd = -1;
+    }
 
-    self->pin = NULL;
+    mark_deinit(self);
 }
 
+// Per object: the device's fd may now belong to a newer AnalogIn.
 bool common_hal_analogio_analogin_deinited(analogio_analogin_obj_t *self) {
-    return analogin_dev[self->number].fd < 0;
+    return self->pin == NULL;
 }
 
 uint16_t common_hal_analogio_analogin_get_value(analogio_analogin_obj_t *self) {
