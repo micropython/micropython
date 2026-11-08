@@ -265,15 +265,27 @@ Available constants: `Pin.IN`, `Pin.OUT`, `Pin.OPEN_DRAIN`,
 ## Using peripherals
 
 ```python
-from machine import Pin, UART, SPI, I2C, ADC, Timer, WDT
+from machine import Pin, UART, SPI, I2C, ADC, DAC, Timer, WDT, RTC, CAN
 
 # ---- UART ----
 # UART(1) is free; UART(0) carries the REPL and is refused on purpose.
+# ALWAYS pass a timeout (in ms) if you plan to call read().  With no timeout the
+# default is "wait forever", and a bare `u.read(10)` on a quiet line will sit
+# there until the board is reset - it never returns, so main.py never finishes
+# and the REPL is occupied.  Ctrl-C now breaks it, but do not rely on that.
 u = UART(1, baudrate=115200, bits=8, parity=None, stop=1,
-         tx=Pin("PA2"), rx=Pin("PA3"))
+         tx=Pin("PA2"), rx=Pin("PA3"), timeout=1000)
 u.write(b"hello\r\n")
-n = u.any()
-data = u.read(10)          # blocks up to timeout
+
+# Preferred: only read what is actually there.
+data = u.read(u.any()) if u.any() else b""
+
+# Or read a fixed count; this now raises EAGAIN after the 1 s timeout instead of
+# hanging forever.
+try:
+    data = u.read(10)
+except OSError:
+    data = b""
 
 # ---- SPI (master, software NSS) ----
 # PA4-PA7 is SPI0 and is also where the on-board SPI flash sits.  Keep the bus
@@ -289,12 +301,17 @@ val = spi.read(3)              # b'\xc8\x40\x18' = GD25Q128, 16 MiB
 cs.value(1)
 
 # ---- I2C ----
+# Scan FIRST.  Talking to a device that is not there does not fail politely:
+# writeto()/readfrom() raise OSError(ETIMEDOUT, 116) and abort the script, which
+# on an empty board is exactly what happens with nothing wired to the bus.
 i2c = I2C(0, freq=400000, scl=Pin("PB6"), sda=Pin("PB7"))
-i2c.writeto(0x68, b"\x00")
-raw = i2c.readfrom(0x68, 6)
+found = i2c.scan()
+print("i2c devices:", [hex(a) for a in found])
 
-# A bare read on empty bus pins raises EIO/ENODEV; check scan() first:
-print([hex(a) for a in i2c.scan()])
+if 0x68 in found:                     # only if something really answered
+    i2c.writeto(0x68, b"\x00")
+    raw = i2c.readfrom(0x68, 6)
+    print("raw:", raw)
 
 # ---- ADC ----
 # Valid ADC pins: PA0..PA7 -> ch0..7, PB0/PB1 -> ch8/9, PC0..PC5 -> ch10..15.
@@ -313,8 +330,14 @@ tim.init(mode=Timer.PERIODIC, callback=tick, period=500)   # every 500 ms
 tim.deinit()
 
 # ---- Watchdog ----
-wdt = WDT(timeout=8000)    # 8 s
-wdt.feed()
+# NOT armed in this walk-through on purpose: once WDT() returns the countdown is
+# running, and unless something keeps calling feed() the board silently resets
+# when it expires - it looks exactly like a crash.  See the Watchdog section.
+#
+# wdt = WDT(timeout=8000)   # ~8 s, then reset unless fed
+# while True:
+#     wdt.feed()
+#     time.sleep_ms(1000)
 
 # ---- DAC ----
 dac = DAC(Pin("PA4"))      # PA4 -> DAC0, PA5 -> DAC1
@@ -372,6 +395,41 @@ integer `port << 4 | num`, where port A=0, B=1, C=2 and so on, so
 `PA0` = `0`, `PB7` = `1 << 4 | 7` = `23`, `PB2` = `18`, `PC1` = `33`.
 Both forms are accepted wherever a pin is expected, including the
 `sck=`/`mosi=`/`miso=`, `scl=`/`sda=` and `ADC()`/`DAC()` arguments.
+
+## Watchdog
+
+`machine.WDT` drives the independent watchdog (FWDGT).  Two things to know before
+using it:
+
+**It starts counting the moment `WDT()` returns.**  Nothing disables it again
+except a reset, so an example that arms it and then goes back to the REPL resets
+the board a few seconds later - which looks exactly like a crash.  Only arm it
+when the program is actually going to feed it.
+
+```python
+from machine import WDT
+import time
+
+wdt = WDT(timeout=8000)     # roughly 8 s
+while True:
+    wdt.feed()              # must happen more often than the timeout
+    time.sleep_ms(1000)
+```
+
+**The timeout is approximate.**  FWDGT runs from IRC32K, and the datasheet
+(GD32F407xx Rev3.0, Table 4-20) gives only a 32 kHz typical value - no min/max at
+all, because it is a characterised RC oscillator.  Measured on a real board the
+effective rate is nearer 28 kHz, so timeouts come out about 10-15 % longer than
+requested:
+
+| requested | measured |
+|-----------|----------|
+| 4000 ms | ~4600 ms |
+| 8000 ms | ~11.5 s |
+
+Supported range is roughly 1 ms to 33 s; anything longer is clamped to the
+largest reload.  Do not use it for timing you care about - it is a hang
+detector, not a clock.
 
 ## Memory layout (GD32F407/F470, 512K flash)
 
@@ -479,7 +537,7 @@ ports/gd32/
 | `sys`, `gc`, `struct`, `array`, full compiler | ✅ |
 | `machine.Pin` — get/set, on/off/toggle, named + numeric, IN/OUT/OPEN_DRAIN/PULL_* | ✅ working |
 | `machine.Timer` — soft timer, ONE_SHOT / PERIODIC, callback | ✅ working |
-| `machine.WDT` — independent watchdog (FWDGT), configurable timeout | ✅ working |
+| `machine.WDT` — independent watchdog (FWDGT), configurable timeout | ✅ working（timeout 约偏长 10–15%，见 Watchdog 一节） |
 | `machine.UART` — 6 instances, baudrate/bits/parity/stop, read/write/any/txdone | ✅ working |
 | `machine.SPI` — hardware SPI0-5, polarity/phase/bits/firstbit, transfer | ✅ working |
 | `machine.I2C` — hardware I2C0-2, master transfer via `modmachine` protocol | ✅ working |
@@ -587,7 +645,11 @@ os.statvfs('/')                 # (4096, 4096, 12, 10, 10, ...)
 
 with open('/data.txt', 'w') as f:
     f.write('hello\n')
-print(open('/data.txt').read())
+
+with open('/data.txt') as f:        # close it: a leaked handle costs FS blocks
+    print(f.read())
+
+os.remove('/data.txt')              # the internal FS is only 48 KB
 ```
 
 ### Block geometry

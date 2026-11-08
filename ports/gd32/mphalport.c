@@ -121,6 +121,18 @@ void usart_repl_shutdown(void) {
 // USART0 receive interrupt body, called from the shared vector in
 // machine_uart_port.c.
 void mp_hal_repl_uart_rx_isr(void) {
+    // Clear an overrun error first.
+    //
+    // While ORERR is set the receiver silently throws away everything that
+    // arrives, so leaving it pending makes the REPL permanently deaf: this ISR
+    // drains the one byte that is waiting, no further byte is ever delivered,
+    // and nothing but a reset brings the port back.  It is easy to trigger by
+    // pasting more than the 256-byte stdin buffer while the interpreter is busy
+    // (it looks like the board is dead, with RBNE=1 and ORERR=1 in USART_STAT).
+    if (usart_flag_get(REPL_UART, USART_FLAG_ORERR) != RESET) {
+        usart_flag_clear(REPL_UART, USART_FLAG_ORERR);
+    }
+
     while (usart_flag_get(REPL_UART, USART_FLAG_RBNE) != RESET) {
         uint8_t c = (uint8_t)usart_data_receive(REPL_UART);
         if (mp_interrupt_char >= 0 && c == (uint8_t)mp_interrupt_char) {

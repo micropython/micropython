@@ -373,6 +373,14 @@ static mp_uint_t mp_machine_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t 
                 }
                 return n_read;
             }
+            // Service the VM while waiting.  UART.read() with no timeout blocks
+            // indefinitely, and without this the loop spins without ever acting
+            // on a pending KeyboardInterrupt - so Ctrl-C could not break out and
+            // the board became unreachable (REPL occupied, no way back except
+            // forcing a raw REPL on the next reset).  mp_handle_pending() raises
+            // the interrupt; mp_hal_delay_ms() lets the event loop run.
+            mp_handle_pending(true);
+            mp_hal_delay_ms(1);
         }
         dest[n_read++] = (uint8_t)c;
     }
