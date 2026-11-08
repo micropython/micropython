@@ -178,7 +178,7 @@ Read at startup.
 
 `ESP32-S3 SuperMini <https://circuitpython.org/board/generic_esp32s3_supermini/>`_:
 ``"rgb_led"`` for boards whose status NeoPixel takes RGB order, so red shows as green
-with ``neopixel.GRB``. Some boards marked "HW747 V0.0.2" are like this.
+with ``neopixel.GRB``.
 
 CIRCUITPY_DISPLAY_WIDTH (integer)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
