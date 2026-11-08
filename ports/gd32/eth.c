@@ -58,6 +58,16 @@ static eth_t *eth_active;
 // Last PHY identity seen on the MDIO bus.  Kept for diagnostics: read them over
 // SWD with `nm` to find the address, no need to expose them to Python.
 static uint16_t self_phy_id1;
+// Bring-up counters: how many frames lwIP handed to the MAC, and how many the
+// receive interrupt actually drained.  Without these two numbers "no traffic"
+// cannot be told apart from "nothing was ever queued for transmission".
+volatile uint32_t eth_tx_frames;
+volatile uint32_t eth_rx_frames;
+volatile uint32_t eth_isr_count;
+
+// Address of the last RX descriptor: the value the DMA needs in RDTADDR
+// for the ring to be considered available.
+static uint32_t eth_rx_desc_tail;
 static uint16_t self_phy_id2;
 
 // ---- helpers ----
@@ -257,6 +267,7 @@ static err_t eth_netif_output(struct netif *netif, struct pbuf *p) {
     if (enet_frame_transmit(txbuf, p->tot_len) != SUCCESS) {
         return ERR_IF;
     }
+    eth_tx_frames++;
     return ERR_OK;
 }
 
@@ -376,26 +387,27 @@ int eth_init(eth_t *self, uint32_t phy_addr) {
     // Latch the negotiated media mode into the MAC.
     enet_initpara_config(STORE_OPTION, ENET_RX_MODE_STOREFORWARD);
 
+    // Arm the RX ring BEFORE starting the receiver.
+    //
+    // enet_descriptors_chain_init() leaves RDTADDR equal to the head of the
+    // table, and enet_rx_enable() immediately starts the receive process.  If
+    // the tail is still on the head at that moment the controller concludes it
+    // has no buffer it may fill, stops, and never recovers - writing the tail
+    // pointer afterwards is too late: frames stop being delivered after the
+    // first one or two, and even MAC internal loopback produces nothing.  So
+    // the tail goes last-descriptor first, then the receiver is enabled.
+    eth_rx_desc_tail = ENET_DMA_RDTADDR
+        + (ENET_RXBUF_NUM - 1) * sizeof(enet_descriptors_struct);
+    ENET_DMA_RDTADDR = eth_rx_desc_tail;
+
     enet_enable();
     enet_rx_enable();
     enet_tx_enable();
 
-    // Point the RX DMA tail pointer at the LAST descriptor of the ring.
-    //
-    // enet_descriptors_chain_init() leaves RDTADDR equal to the head of the
-    // table, and enet_rx_enable() then starts the receive process.  With the
-    // tail sitting on the head the controller concludes it has no buffers it is
-    // allowed to fill, stops immediately (DMA_STAT.RPS gets set) and every
-    // incoming frame is dropped - the link is up, MDIO works, the MAC is
-    // enabled, and yet ARP never gets an answer.  Writing the tail after the
-    // DMA is running is what actually arms the ring.
-    ENET_DMA_RDTADDR = ENET_DMA_RDTADDR + (ENET_RXBUF_NUM - 1) * sizeof(enet_descriptors_struct);
 
-    // Enable receive-complete interrupts.
-    enet_interrupt_enable(ENET_DMA_INT_RIE);
-    enet_interrupt_enable(ENET_DMA_INT_NIE);
-    NVIC_SetPriority(ENET_IRQn, 2);
-    NVIC_EnableIRQ(ENET_IRQn);
+    // The ENET interrupt line stays off: reception is polled from SysTick (see
+    // eth_poll()).  Enabling it as well would let the ISR and the poll race for
+    // the same descriptors.
 
     if (eth_mac_is_unset(self->mac)) {
         eth_mac_from_uid(self->mac);
@@ -431,58 +443,96 @@ err_t eth_netif_add(eth_t *self) {
 }
 #endif
 
-// ---- interrupt ----
-// Pull every complete frame out of the DMA ring and hand it to lwIP.
-void ENET_IRQHandler(void) {
-    if (enet_interrupt_flag_get(ENET_DMA_INT_FLAG_RS) == RESET) {
-        enet_interrupt_flag_clear(ENET_DMA_INT_FLAG_NI);
+// ---- receive path ----
+// Reception is driven by eth_poll() from SysTick, not from the ENET interrupt.
+//
+// With RIE, NIE and the NVIC line all enabled, frames still piled up in the RX
+// ring with RS set and RBU raised: the descriptors were filled by the DMA but
+// never handed to lwIP.  A polled drain is deterministic, cannot race with the
+// main loop, and gives lwIP the periodic tick (sys_check_timeouts) that a NO_SYS
+// port needs for ARP/TCP timers - this port never had that hook at all, so DHCP
+// and ARP retransmissions could not have worked either.
+// Walk the RX descriptor table directly.
+//
+// The vendor helpers keep their idea of "the current descriptor" in
+// dma_current_rxdesc and only ever look at that one entry via
+// enet_rxframe_size_get().  When the DMA fills a different entry, the frame is
+// invisible: the ring showed desc0/desc1 still owned by the DMA, a complete
+// 64-byte frame sitting in desc2, and the poll seeing nothing at all.  Reading
+// every entry ourselves is both simpler and immune to that bookkeeping drift.
+extern enet_descriptors_struct rxdesc_tab[ENET_RXBUF_NUM];
+
+void eth_poll(void) {
+    if (eth_active == NULL || !eth_active->initialized) {
         return;
     }
-    enet_interrupt_flag_clear(ENET_DMA_INT_FLAG_RS);
+
+    // Status bits latched by the controller are informational here.
+    uint32_t pending = ENET_DMA_STAT;
+    ENET_DMA_STAT = pending;
 
     #if MICROPY_PY_LWIP
-    struct netif *netif = eth_active ? &eth_active->netif : NULL;
-    if (netif == NULL || netif->input == NULL) {
-        // Interface not registered yet: drain the ring so the DMA keeps moving.
-        for (;;) {
-            uint32_t len = enet_rxframe_size_get();
-            if (len == 0) {
-                break;
+    struct netif *netif = &eth_active->netif;
+
+    for (uint32_t i = 0; i < ENET_RXBUF_NUM; i++) {
+        enet_descriptors_struct *d = &rxdesc_tab[i];
+        uint32_t status = d->status;
+
+        if (status & ENET_RDES0_DAV) {
+            continue;                       // still owned by the DMA
+        }
+        if ((status & ENET_RDES0_ERRS)
+            || !(status & ENET_RDES0_LDES)
+            || !(status & ENET_RDES0_FDES)) {
+            d->status = ENET_RDES0_DAV;     // bad or fragmented frame: drop, re-arm
+            continue;
+        }
+
+        uint32_t frame_len = GET_RDES0_FRML(status);
+        if (frame_len < 14 || frame_len > ENET_MAX_FRAME_SIZE) {
+            d->status = ENET_RDES0_DAV;
+            continue;
+        }
+        frame_len -= 4;                     // the DMA count includes the CRC
+
+        struct pbuf *p = NULL;
+        if (netif->input != NULL) {
+            p = pbuf_alloc(PBUF_RAW, frame_len, PBUF_POOL);
+            if (p != NULL) {
+                // Copy before re-arming: once the descriptor is handed back the
+                // DMA may overwrite its buffer at any moment.
+                memcpy(p->payload, (const void *)d->buffer1_addr, frame_len);
             }
-            uint8_t discard[ENET_MAX_FRAME_SIZE];
-            enet_frame_receive(discard, sizeof(discard));
         }
-        enet_rxprocess_check_recovery();
-        return;
-    }
-    #endif
+        d->status = ENET_RDES0_DAV;         // give the buffer back
 
-    for (;;) {
-        uint32_t frame_len = enet_rxframe_size_get();
-        if (frame_len == 0) {
-            break;
-        }
-
-        #if MICROPY_PY_LWIP
-        struct pbuf *p = pbuf_alloc(PBUF_RAW, frame_len, PBUF_POOL);
         if (p == NULL) {
-            // Out of pbufs: drop the frame but keep the ring moving.
-            uint8_t discard[ENET_MAX_FRAME_SIZE];
-            enet_frame_receive(discard, sizeof(discard));
             continue;
         }
-        if (enet_frame_receive(p->payload, frame_len) != SUCCESS) {
-            pbuf_free(p);
-            continue;
-        }
+        eth_rx_frames++;
         if (netif->input(p, netif) != ERR_OK) {
             pbuf_free(p);
         }
-        #else
-        uint8_t discard[ENET_MAX_FRAME_SIZE];
-        enet_frame_receive(discard, sizeof(discard));
-        #endif
     }
 
-    enet_rxprocess_check_recovery();
+    // Run the lwIP timers (ARP retries, TCP retransmit, DHCP).
+    extern void sys_check_timeouts(void);
+    sys_check_timeouts();
+    #endif
+
+    // Re-advertise the whole ring and resume the receive process if it parked.
+    uint32_t st = ENET_DMA_STAT;
+    if (st & (ENET_DMA_STAT_RBU | ENET_DMA_STAT_RPS)) {
+        ENET_DMA_STAT = st & (ENET_DMA_STAT_RBU | ENET_DMA_STAT_RPS);
+    }
+    ENET_DMA_RDTADDR = (uint32_t)&rxdesc_tab[ENET_RXBUF_NUM - 1];
+    ENET_DMA_RPEN = 0U;                     // poll demand: resume reception
+}
+
+// Still installed as the vector in case anything enables the line, but it only
+// clears the flags: the work happens in eth_poll().
+void ENET_IRQHandler(void) {
+    eth_isr_count++;
+    uint32_t pending = ENET_DMA_STAT;
+    ENET_DMA_STAT = pending;
 }

@@ -521,27 +521,36 @@ CPU 轮询 `TFH` 喂 FIFO（四种时序）、DMA 但 DPSM 先于命令、1 位 
 
 另外补了 `network.LAN.phyreg(reg)`，可直接读 PHY 寄存器（排查必备）。
 
-#### 当前状态与关键取证
+#### 当前状态与关键取证（已更正）
 
-链路已通（`LAN()` 后约 2 秒），MDIO、PHY 识别、静态 IP 配置均正常。
-但**收不到任何帧**：
+上一轮曾判断"PA1 缺 50 MHz REF_CLK"——**该判断是错的**。软件采样 PA1 10000 次
+得到约 6425 次电平跳变，参考时钟存在；`SYSCFG_CFG1` bit23=1 确认 RMII 已选；
+PA1/PA2/PA7/PC1/PC4/PC5 均为 AF11。
+
+实测结论：
 
 ```
-MAC_CFG    = 0x0001c80c   REN/TEN 已置位，100M 全双工
-DMA_OPMODE = 0x02202002   SR/ST 已启动
-DMA_STAT    bit10 RPS     修好尾指针后已清零（收进程在跑）
-DMA_STAT    bit6  RS      始终不置位 —— 没有帧到达
-服务器 ping 192.168.1.50  ARP FAILED
+发送：tx 计数器随 active()/connect() 递增（1、3），TX 描述符 OWN 位被 DMA 清回
+      → 发送链路（MAC→PHY→线上）确实在工作
+接收：RX 描述符 DAV=1 已武装、RDTADDR 指向环尾、RE=1、DMA SRE=1、
+      收进程状态=3(等待收包)，但最多只收到过 1 帧，之后完全静默
+回环：MAC 内部回环（LBM=1）下发送正常，接收仍然一帧不进来
 ```
 
-RX 描述符尾指针 `ENET_DMA_RDTADDR` 必须先于收进程停止前指到环尾，
-否则收进程立即停（`RPS`）。这一处已修并验证。
+内部回环把 PHY 和网线都排除在外，所以问题在 **RMII 接收信号本身**
+（PC4/PC5/PA7 在 40P 排针上的实际连通）或 **PHY 接收侧/strap**，不是驱动能修的。
 
-剩下的现象指向 **PA1 上没有 50 MHz RMII 参考时钟**：MDIO 由 HCLK 分频、链路状态
-也走 MDIO，都不需要它；而真正的数据搬运需要。LAN8720 只有在被 strap 成
-`REF_CLK Out` 时才输出 50 MHz，扩展板的 strap 手上没有资料。
+本轮两个真实修复（已保留）：
 
-**下一步**：示波器量 PA1 是否有 50 MHz；若无，查扩展板 REF_CLK 由谁产生；
-若有，则查 40P 排针上 RX/TX 的实际对应与 PHY 的 TX/RX delay 设置。
+1. **接收改为 SysTick 轮询**（`eth_poll()`）。ENET 中断向量正确（slot 77 →
+   `ENET_IRQHandler`）、`RIE`/`NIE` 与 NVIC 全部使能，但该中断**从未执行过**
+   （`diag()[6]` 恒为 0）。轮询同时补上了本 NO_SYS 端口一直缺失的
+   `sys_check_timeouts()` 周期 tick —— 没有它，ARP 重传/DHCP/TCP 定时器都不推进。
+2. **直接遍历 `rxdesc_tab`**，不再依赖库的 `dma_current_rxdesc`。用库的辅助函数时
+   出现过"描述符 2 里躺着完整 64 字节帧、`enet_rxframe_size_get()` 却报没有帧"。
 
----
+新增调试 API（都留在固件里）：`LAN.phyreg(reg)`、`LAN.diag()`（7 元组：PA1 跳变数、
+DMA_STAT、DMA_CTL、MAC_CFG、tx 帧数、rx 帧数、ISR 次数）、`LAN.loopback(bool)`。
+
+**下一步是电气检查**：示波器看 PA7/PC4/PC5；核对 LAN8720 strap 是否禁用了接收；
+换一颗已知良好的 RMII PHY 用同一组引脚，以区分板子与驱动。

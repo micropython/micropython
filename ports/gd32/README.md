@@ -902,99 +902,51 @@ only leaves about 24 KB of RAM free:
 Raise these for sustained throughput, and lower `MICROPY_HEAP_SIZE` in the
 board header to make room.
 
-### Status: PHY found and link up, frames still do not pass
+### Status: transmitter confirmed working, receiver still dead
 
-The bare Sky Star core board has **no Ethernet nets at all** in its schematic -
-the PHY lives on the 筑基学习板 extension board, which routes the ten signals
-above.
+The PHY is a **LAN8720 at MDIO address 0** (`id 0007:c0f1`) and it works: MDIO
+responds, auto-negotiation completes, the link comes up two seconds after
+`LAN()`.  The reference clock was **not** the problem - sampling PA1 in software
+10 000 times shows ~6400 level changes, i.e. the 50 MHz RMII REF_CLK from the
+PHY's 25 MHz crystal is present and the MAC is muxed to it (AF11), with
+`SYSCFG_CFG1` bit 23 confirming RMII selection.
 
-Five real driver defects were found and fixed while bringing this up (all in
-`eth.c` / `network_lan.c`):
+What the counters now prove (all readable from Python via `LAN.diag()`):
 
-| Defect | Consequence |
-|--------|-------------|
-| `PA7` (CRS_DV) never configured | RMII cannot receive: no carrier sense |
-| `PE12` (PHY_NRST) never driven | the PHY may sit in hardware reset forever |
-| MDC clock divider never programmed before PHY access | `enet_phy_write_read()` does not set `ENET_MAC_PHY_CTL.CLR` itself; with CLR = 0 no MDC clock is produced |
-| `enet_init(ENET_AUTO_NEGOTIATION, ...)` called unconditionally | it waits for the PHY to report a link, so it times out (and returns a useless "init failed") whenever the cable is unplugged |
-| `eth_set_mac(self, self->mac)` | copied uninitialised `.bss` onto itself, so the MAC was garbage; now derived from the factory UID |
+| Fact | Evidence |
+|------|----------|
+| lwIP hands frames to the MAC | `tx` counter increments (1 after `active(True)`, 3 after three ARP attempts) |
+| The MAC really transmits | all TX descriptors come back with OWN cleared, `TBU` is just the normal "queue empty" flag |
+| Reception is armed | RX descriptors carry `DAV=1`, `RDTADDR` points at the last descriptor, `SYSCFG` RMII, MAC `RE=1`, DMA `SRE=1`, receive process state "waiting for packet" |
+| Frames essentially never arrive | at most **one** frame is ever delivered, then the ring sits idle with no error flags |
+| Not a driver bug in the loopback sense | MAC **internal loopback** (`LAN.loopback(True)`) transmits fine but still delivers nothing to RX |
 
-The probing order was also wrong: the PHY was probed before `enet_init()` had
-programmed the MDC divider, so every address looked dead.  `eth_init()` now
-does: clocks -> pins -> PHY reset pulse -> `enet_deinit()` -> MDC divider ->
-**probe** -> link check -> `enet_init()` with a media mode it can actually
-satisfy (auto-negotiation when a link exists, forced 100M full duplex when not).
+So the transmitter path works end to end and the receiver path does not, even
+with the PHY and cable taken out of the picture by internal loopback.  That is
+beyond what the driver can fix: it points at the RMII receive signals themselves
+(`ETH_RXD0` = PC4, `ETH_RXD1` = PC5, `ETH_CRS_DV` = PA7 on the 40-pin headers),
+the PHY's receive side, or a PHY strap that leaves the receiver disabled.
 
-**What is verified:** MDIO/MDC now work.  After a probe cycle
-`ENET_MAC_PHY_CTL = 0x0000f8d0` - the busy bit has cleared (the transaction
-completes normally), CLR = 4 (HCLK/102, correct for 168 MHz) and the scan
-reached address 31 register 3.  The pin mux is confirmed: PA1/PA2/PA7 read back
-as AF11, PC1/PC4/PC5 as AF11.
+Two driver changes were still real fixes and are kept:
 
-**Then the PHY was found, and that changed the picture.**  The blocker was the
-reset line: the driver was *driving* `PE12` (either level), which holds the
-extension board's PHY in reset.  Releasing the pin (high-Z) lets the board's own
-reset circuit own it and the PHY answers immediately:
+* **Reception is polled from SysTick** (`eth_poll()`), not driven by the ENET
+  interrupt.  The ENET vector is correctly installed (vector slot 77 points at
+  `ENET_IRQHandler`), `RIE`/`NIE` are set and the NVIC line is enabled, yet the
+  handler never ran - `LAN.diag()[6]` stays 0.  Polling also gives this NO_SYS
+  port the periodic `sys_check_timeouts()` tick it never had, without which ARP
+  retransmission, DHCP and TCP timers cannot advance at all.
+* **The RX ring is walked directly** (`rxdesc_tab`) instead of through the
+  library's `dma_current_rxdesc` bookkeeping.  With the library's helpers a
+  complete 64-byte frame sat in descriptor 2 while `enet_rxframe_size_get()`
+  looked only at the descriptor it thought was current and reported "nothing".
 
-```
-eth: PHY at MDIO addr 0, id 0007:c0f1        -> LAN8720 at MDIO address 0
-```
+If you pick this up, the next checks are electrical, in this order:
 
-So `PHY_TYPE` is `LAN8700` (the library's branch for LAN8720: status register 31,
-speed bit 0x0004, duplex bit 0x0010) and `PHY_ADDRESS` is 0.  Both are now
-overridable (`#ifndef` guards in the vendored header) and set from the port
-Makefile instead of being hard-coded defaults.
-
-Forcing a media mode at boot also had to go: `enet_init()` writes
-`BCR = 100M full duplex` when no link is present, which *clears the
-auto-negotiation enable bit*, and a switch that expects negotiation then never
-brings the link up.  The driver now always restarts auto-negotiation with all
-four modes advertised, and copies the result into the MAC.  The link then comes
-up two seconds after `LAN()`.
-
-**What is still failing: no frame is ever received.**  With the interface
-configured and the cable in a live port:
-
-| Observation | Meaning |
-|-------------|---------|
-| `MAC_CFG = 0x0001c80c` | REN(bit2)=1, TEN(bit3)=1, full duplex, 100M - MAC enabled |
-| `DMA_OPMODE = 0x02202002` | start-receive / start-transmit set |
-| `DMA_STAT` bit 10 (RPS) was set, now clear after the tail-pointer fix | receive process had stopped, now running |
-| `DMA_STAT` bit 6 (RS) never sets; no received frames | nothing arrives from the PHY |
-| server `ping 192.168.1.50` | ARP FAILED, board never answers |
-
-The receive process is running and the descriptors are armed, but zero frames
-reach the MAC while MDIO and the link are both healthy.  That is the classic
-signature of **no 50 MHz RMII reference clock on PA1**: MDIO is clocked from
-HCLK and does not need it, the link status is read over MDIO and does not need
-it either, but every actual data transfer does.  A LAN8720 only drives REF_CLKO
-when it is strapped for it, and the extension board's strapping is not documented
-in the pin table we have.
-
-Next steps, in order of usefulness:
-
-1. Put a scope on PA1 and confirm a 50 MHz square wave.
-2. If it is absent, check how the extension board expects REF_CLK to be
-   produced (LAN8720 `REF_CLK Out` mode, or an external oscillator).
-3. If it is present, the remaining suspects are the RX/TX pin mapping on the
-   40-pin headers and the PHY's TX/RX delay settings.
-
-If you are bringing up Ethernet, check in this order:
-
-1. Is the extension board fully seated on both 40-pin headers (a PHY needs the
-   MDIO/MDC pair specifically)?
-2. Does the extension board's PHY have power - is there a 3.3 V rail switch,
-   jumper or a power LED?
-3. Is `ETH_NRST` (PE12) really active low on your board revision?  The driver
-   tries both levels, but a board that requires a longer reset pulse or a
-   specific power-up order would still fail.
-4. Which PHY is fitted?  `gd32lib` is compiled with `PHY_TYPE = DP83848` and
-   `PHY_ADDRESS = 1`; a YT8512 / SR8201F / LAN8720 changes which status register
-   the library reads for speed/duplex (the library already has `#if` branches
-   for SR8201F and YT8512, so set `PHY_TYPE` to match and address strapping to 1).
-
-`network.LAN()` now fails with `OSError(ENODEV)` when nothing answers, instead of
-a generic "failed to init ethernet".
+1. Scope PA7 (CRS_DV) during traffic and PC4/PC5 while a frame is on the wire.
+2. Confirm the LAN8720 straps: a PHY strapped into a mode that disables its
+   receiver, or an RMII variant with different RXD polarity, shows exactly this
+   pattern.
+3. Try a known-good RMII PHY on the same pins to separate board from driver.
 
 ## Frozen modules
 

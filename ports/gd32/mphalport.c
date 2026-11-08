@@ -6,6 +6,7 @@
 #include "py/mphal.h"
 #include "gd32f4xx.h"
 #include "mphalport.h"
+#include "eth.h"
 #if MICROPY_PY_OS_DUPTERM
 #include "extmod/misc.h"
 #endif
@@ -233,6 +234,11 @@ volatile uint32_t systick_ms = 0;
 
 void SysTick_Handler(void) {
     systick_ms++;
+    #if MICROPY_PY_LWIP
+    // Poll the Ethernet ring and run lwIP's timers.  Same idea as
+    // ports/stm32's systick dispatch; a NO_SYS port has no other tick.
+    eth_poll();
+    #endif
     #if MICROPY_PY_MACHINE_TIMER
     // run soft timer callbacks at 1 kHz
     soft_timer_handler();

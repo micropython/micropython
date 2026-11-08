@@ -60,7 +60,7 @@ static mp_obj_t network_lan_make_new(const mp_obj_type_t *type, size_t n_args,
                 mp_raise_OSError(MP_ENODEV);      // no PHY answered on MDIO
             case -4:
                 mp_raise_msg(&mp_type_OSError,
-                    MP_ERROR_TEXT("PHY not at the configured MDIO address"));
+                    MP_ERROR_TEXT("PHY not at MDIO address 1"));
             case -2:
                 mp_raise_msg(&mp_type_OSError,
                     MP_ERROR_TEXT("PHY auto-negotiation failed"));
@@ -141,6 +141,62 @@ static mp_obj_t network_lan_phyreg(mp_obj_t self_in, mp_obj_t reg_in) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_2(network_lan_phyreg_obj, network_lan_phyreg);
 
+// ---- bring-up diagnostics ----
+// diag() reports the facts needed to tell "the MAC/DMA path is broken" apart
+// from "nothing is arriving from the PHY", which look identical from Python:
+//
+//   [0] edge count seen while sampling PA1 (RMII REF_CLK).
+//       A 50 MHz clock gives a large fraction of the 10000 samples; a static
+//       (or absent) clock gives 0.  This needs no oscilloscope.
+//   [1] ENET_DMA_STAT   - bit6 = RS (a frame was received), bit8 = RPS (RX
+//       process stopped), bit2 = TBU (TX queue ran dry, normal), bit10 = ET.
+//   [2] ENET_DMA_CTL    - bit1 = start receive, bit13 = start transmit.
+//   [3] ENET_MAC_CFG    - bit2 = RE, bit3 = TE, bit12 = loopback, bit14 = speed.
+//   [4] frames lwIP asked the MAC to transmit
+//   [5] frames delivered to lwIP by eth_poll()
+//   [6] times the (now unused) ENET interrupt vector ran
+extern volatile uint32_t eth_tx_frames;
+extern volatile uint32_t eth_rx_frames;
+extern volatile uint32_t eth_isr_count;
+
+static mp_obj_t network_lan_diag(mp_obj_t self_in) {
+    (void)self_in;
+    uint32_t edges = 0;
+    uint32_t prev = (GPIO_ISTAT(GPIOA) >> 1) & 1u;
+    for (uint32_t i = 0; i < 10000; i++) {
+        uint32_t cur = (GPIO_ISTAT(GPIOA) >> 1) & 1u;
+        edges += (cur ^ prev);
+        prev = cur;
+    }
+    mp_obj_t items[7] = {
+        mp_obj_new_int(edges),
+        mp_obj_new_int(ENET_DMA_STAT),
+        mp_obj_new_int(ENET_DMA_CTL),
+        mp_obj_new_int(ENET_MAC_CFG),
+        mp_obj_new_int(eth_tx_frames),
+        mp_obj_new_int(eth_rx_frames),
+        mp_obj_new_int(eth_isr_count),
+    };
+    return mp_obj_new_tuple(7, items);
+}
+static MP_DEFINE_CONST_FUN_OBJ_1(network_lan_diag_obj, network_lan_diag);
+
+// Put the MAC in internal loopback: transmitted frames appear on the receive
+// path inside the chip, with the PHY and the cable completely out of the
+// picture.  If frames are still not received in this mode, the fault is in this
+// driver; if they are, everything on the MCU side works and the problem is
+// external (reference clock, pin mapping or PHY wiring).
+static mp_obj_t network_lan_loopback(mp_obj_t self_in, mp_obj_t on_in) {
+    (void)self_in;
+    if (mp_obj_is_true(on_in)) {
+        ENET_MAC_CFG |= ENET_MAC_CFG_LBM;
+    } else {
+        ENET_MAC_CFG &= ~ENET_MAC_CFG_LBM;
+    }
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_2(network_lan_loopback_obj, network_lan_loopback);
+
 static mp_obj_t network_lan_status(size_t n_args, const mp_obj_t *args) {
     network_lan_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     if (n_args == 1) {
@@ -192,6 +248,8 @@ static const mp_rom_map_elem_t network_lan_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_status),      MP_ROM_PTR(&network_lan_status_obj) },
     { MP_ROM_QSTR(MP_QSTR_config),      MP_ROM_PTR(&network_lan_config_obj) },
     { MP_ROM_QSTR(MP_QSTR_phyreg),      MP_ROM_PTR(&network_lan_phyreg_obj) },
+    { MP_ROM_QSTR(MP_QSTR_diag),        MP_ROM_PTR(&network_lan_diag_obj) },
+    { MP_ROM_QSTR(MP_QSTR_loopback),    MP_ROM_PTR(&network_lan_loopback_obj) },
 
     // Status values returned by status().
     { MP_ROM_QSTR(MP_QSTR_STAT_IDLE),        MP_ROM_INT(0) },

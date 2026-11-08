@@ -39,6 +39,10 @@ struct netif *eth_netif(eth_t *self);
 // eth_init() and before any packet can arrive, otherwise netif->input is
 // NULL and the ENET interrupt faults on the first received frame.
 err_t eth_netif_add(eth_t *self);
+
+// Drain the RX ring and run the lwIP timers.  Call from the 1 kHz
+// SysTick handler once an interface is initialised.
+void eth_poll(void);
 #endif
 
 #endif // MICROPY_INCLUDED_GD32_ETH_H
