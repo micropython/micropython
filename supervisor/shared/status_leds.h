@@ -30,6 +30,13 @@ void status_led_init(void);
 void status_led_deinit(void);
 void new_status_color(uint32_t rgb);
 
+// Set the byte order sent to a status NeoPixel, for boards whose variants
+// differ in LED order. true sends R,G,B; false sends G,R,B. The default is
+// MICROPY_HW_NEOPIXEL_ORDER_GRB. Only sets the order; call it from board_init(),
+// and the next status_led_init() writes the LED with it.
+// Does nothing on boards without MICROPY_HW_NEOPIXEL.
+void status_led_set_neopixel_rgb_order(bool rgb_order);
+
 uint32_t color_brightness(uint32_t color, uint8_t brightness);
 void set_status_brightness(uint8_t level);
 uint8_t get_status_brightness(void);

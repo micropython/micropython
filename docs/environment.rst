@@ -169,6 +169,17 @@ so set this to ``false`` if you don't need this feature.
 Additional board-specific keys
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+CIRCUITPY_BOARD_VARIANT (string)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Selects a hardware variant for boards sold in versions that the chip can't tell apart,
+such as clones with a different status LED color order. Each board documents the values it
+accepts in its ``board.c``. Unknown values are ignored and the board uses its default.
+Read at startup.
+
+`ESP32-S3 SuperMini <https://circuitpython.org/board/generic_esp32s3_supermini/>`_:
+``"rgb_led"`` for boards whose status NeoPixel takes RGB order, so red shows as green
+with ``neopixel.GRB``. Some boards marked "HW747 V0.0.2" are like this.
+
 CIRCUITPY_DISPLAY_WIDTH (integer)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 (Sunton, MaTouch boards)
