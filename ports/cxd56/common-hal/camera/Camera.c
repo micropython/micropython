@@ -21,6 +21,8 @@ typedef struct {
 } camera_dev_t;
 
 static camera_dev_t camera_dev = {"/dev/video", -1};
+// Camera objects share the device. Close it when the last one is deinited.
+static uint8_t camera_users = 0;
 
 typedef struct {
     uint16_t width;
@@ -127,12 +129,17 @@ static void camera_start_preview(void) {
 }
 
 void common_hal_camera_construct(camera_obj_t *self) {
+    // Ensure the object starts in its deinit state, so its finaliser does
+    // nothing if this raises.
+    self->active = false;
+
     if (camera_dev.fd < 0) {
         if (video_initialize(camera_dev.devpath) < 0) {
             mp_raise_RuntimeError(MP_ERROR_TEXT("Camera init"));
         }
         camera_dev.fd = open(camera_dev.devpath, 0);
         if (camera_dev.fd < 0) {
+            video_uninitialize();
             mp_raise_RuntimeError(MP_ERROR_TEXT("Camera init"));
         }
     }
@@ -142,10 +149,18 @@ void common_hal_camera_construct(camera_obj_t *self) {
     camera_start_streaming(V4L2_BUF_TYPE_STILL_CAPTURE);
 
     sleep(1);
+
+    camera_users++;
+    self->active = true;
 }
 
 void common_hal_camera_deinit(camera_obj_t *self) {
     if (common_hal_camera_deinited(self)) {
+        return;
+    }
+    self->active = false;
+    camera_users--;
+    if (camera_users > 0) {
         return;
     }
 
@@ -156,7 +171,7 @@ void common_hal_camera_deinit(camera_obj_t *self) {
 }
 
 bool common_hal_camera_deinited(camera_obj_t *self) {
-    return camera_dev.fd < 0;
+    return !self->active;
 }
 
 size_t common_hal_camera_take_picture(camera_obj_t *self, uint8_t *buffer, size_t len, uint16_t width, uint16_t height, camera_imageformat_t format) {

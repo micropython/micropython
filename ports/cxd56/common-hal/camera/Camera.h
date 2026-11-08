@@ -10,4 +10,6 @@
 
 typedef struct {
     mp_obj_base_t base;
+    // False on a zeroed object, so a failed construct reads as deinited.
+    bool active;
 } camera_obj_t;

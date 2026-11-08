@@ -19,6 +19,8 @@ typedef struct {
 } gnss_dev_t;
 
 static gnss_dev_t gnss_dev = {"/dev/gps", -1};
+// GNSS objects share the device. Close it when the last one is deinited.
+static uint8_t gnss_users = 0;
 
 static gnss_positionfix_t fix_to_positionfix_type(uint8_t fix) {
     switch (fix) {
@@ -33,6 +35,10 @@ static gnss_positionfix_t fix_to_positionfix_type(uint8_t fix) {
 }
 
 void common_hal_gnss_construct(gnss_obj_t *self, unsigned long selection) {
+    // Ensure the object starts in its deinit state, so its finaliser does
+    // nothing if this raises.
+    self->active = false;
+
     if (gnss_dev.fd < 0) {
         gnss_dev.fd = open(gnss_dev.devpath, O_RDONLY);
         if (gnss_dev.fd < 0) {
@@ -59,10 +65,18 @@ void common_hal_gnss_construct(gnss_obj_t *self, unsigned long selection) {
 
     ioctl(gnss_dev.fd, CXD56_GNSS_IOCTL_SELECT_SATELLITE_SYSTEM, sel);
     ioctl(gnss_dev.fd, CXD56_GNSS_IOCTL_START, CXD56_GNSS_STMOD_COLD);
+
+    gnss_users++;
+    self->active = true;
 }
 
 void common_hal_gnss_deinit(gnss_obj_t *self) {
     if (common_hal_gnss_deinited(self)) {
+        return;
+    }
+    self->active = false;
+    gnss_users--;
+    if (gnss_users > 0) {
         return;
     }
 
@@ -71,7 +85,7 @@ void common_hal_gnss_deinit(gnss_obj_t *self) {
 }
 
 bool common_hal_gnss_deinited(gnss_obj_t *self) {
-    return gnss_dev.fd < 0;
+    return !self->active;
 }
 
 void common_hal_gnss_update(gnss_obj_t *self) {

@@ -12,6 +12,8 @@
 
 typedef struct {
     mp_obj_base_t base;
+    // False on a zeroed object, so a failed construct reads as deinited.
+    bool active;
     unsigned long satellite_system;
     uint8_t fix;
     double latitude;
