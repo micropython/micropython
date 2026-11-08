@@ -251,6 +251,18 @@ static mp_obj_t i2ctarget_i2c_target_request_deinit(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(i2ctarget_i2c_target_request_deinit_obj, i2ctarget_i2c_target_request_deinit);
 
+// The finaliser. Unlike deinit(), do nothing if the request or its target is already deinited:
+// the target may have been finalised first.
+static mp_obj_t i2ctarget_i2c_target_request_del(mp_obj_t self_in) {
+    i2ctarget_i2c_target_request_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    if (self->target == NULL || common_hal_i2ctarget_i2c_target_deinited(self->target)) {
+        self->target = NULL;
+        return mp_const_none;
+    }
+    return i2ctarget_i2c_target_request_deinit(self_in);
+}
+static MP_DEFINE_CONST_FUN_OBJ_1(i2ctarget_i2c_target_request_del_obj, i2ctarget_i2c_target_request_del);
+
 //|     address: int
 //|     """The I2C address of the request."""
 static mp_obj_t i2ctarget_i2c_target_request_get_address(mp_obj_t self_in) {
@@ -416,7 +428,7 @@ static const mp_rom_map_elem_t i2ctarget_i2c_target_request_locals_dict_table[] 
     { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&default___enter___obj) },
     { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&default___exit___obj) },
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&i2ctarget_i2c_target_request_deinit_obj) },
-    { MP_ROM_QSTR(MP_QSTR__del__), MP_ROM_PTR(&i2ctarget_i2c_target_request_deinit_obj) },
+    { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&i2ctarget_i2c_target_request_del_obj) },
     { MP_ROM_QSTR(MP_QSTR_address), MP_ROM_PTR(&i2ctarget_i2c_target_request_address_obj) },
     { MP_ROM_QSTR(MP_QSTR_is_read), MP_ROM_PTR(&i2ctarget_i2c_target_request_is_read_obj) },
     { MP_ROM_QSTR(MP_QSTR_is_restart), MP_ROM_PTR(&i2ctarget_i2c_target_request_is_restart_obj) },
