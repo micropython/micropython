@@ -128,6 +128,7 @@ usb_video = false
 ustack = false
 vectorio = true # Zephyr board has busio
 videocore = false
+videogif = false
 warnings = true
 watchdog = true # Zephyr board has watchdog
 wifi = false

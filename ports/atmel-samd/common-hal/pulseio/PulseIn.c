@@ -121,8 +121,16 @@ void pulsein_interrupt_handler(uint8_t channel) {
     common_hal_mcu_enable_interrupts();
 }
 
+// Mark the object deinited: deinited() is true and deinit() does nothing.
+static void mark_deinit(pulseio_pulsein_obj_t *self) {
+    self->pin = NO_PIN;
+}
+
 void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t *self,
     const mcu_pin_obj_t *pin, uint16_t maxlen, bool idle_state) {
+    // Ensure the object starts in its deinit state.
+    mark_deinit(self);
+
     if (!pin->has_extint) {
         raise_ValueError_invalid_pin();
     }
@@ -135,7 +143,6 @@ void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t *self,
         m_malloc_fail(maxlen * sizeof(uint16_t));
     }
     self->channel = pin->extint_channel;
-    self->pin = pin->number;
     self->maxlen = maxlen;
     self->idle_state = idle_state;
     self->start = 0;
@@ -194,6 +201,9 @@ void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t *self,
         overflow_count = 0;
     }
     refcount++;
+    // Set the pin only after the last raise: until then the object reads as
+    // deinited, so its finaliser doesn't drop a refcount it never took.
+    self->pin = pin->number;
     self->last_overflow = overflow_count;
     self->last_count = 0;
 
@@ -234,10 +244,14 @@ void common_hal_pulseio_pulsein_deinit(pulseio_pulsein_obj_t *self) {
 
     refcount--;
     if (refcount == 0) {
-        tc_reset(tc_insts[pulsein_tc_index]);
+        Tc *tc = tc_insts[pulsein_tc_index];
+        tc->COUNT16.INTENCLR.reg = TC_INTENCLR_OVF;
+        tc_disable_interrupts(pulsein_tc_index);
+        tc_reset(tc);
+        set_timer_handler(true, pulsein_tc_index, TC_HANDLER_NO_INTERRUPT);
         pulsein_tc_index = 0xff;
     }
-    self->pin = NO_PIN;
+    mark_deinit(self);
 }
 
 void common_hal_pulseio_pulsein_pause(pulseio_pulsein_obj_t *self) {

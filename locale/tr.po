@@ -1567,7 +1567,7 @@ msgstr "AudioOut oluşturulamıyor çünkü kesintisiz kanal zaten açık"
 
 #: ports/espressif/common-hal/audioio/AudioOut.c
 #: ports/espressif/common-hal/mipicsi/Camera.c
-#: shared-module/videocore/VideoBuffer.c
+#: shared-module/videocore/VideoBuffer.c shared-module/videogif/GifDecoder.c
 msgid "already playing"
 msgstr ""
 
@@ -1805,6 +1805,14 @@ msgstr ""
 msgid "ISP conversion not supported on this chip"
 msgstr ""
 
+#: ports/espressif/common-hal/mipidsi/Bus.c
+msgid "%q is above %u"
+msgstr ""
+
+#: ports/espressif/common-hal/mipidsi/Bus.c
+msgid "%q is not reachable by the PHY"
+msgstr ""
+
 #: ports/espressif/common-hal/nvm/ByteArray.c
 msgid "NVS Error"
 msgstr "NVS hatası"
@@ -1911,6 +1919,7 @@ msgid "Already scanning for wifi networks"
 msgstr "Halihazırda wifi ağları için tarama yapılıyor"
 
 #: ports/espressif/common-hal/wifi/Radio.c
+#: ports/espressif/common-hal/wifi/__init__.c
 #: ports/raspberrypi/common-hal/wifi/Radio.c
 #: ports/zephyr-cp/common-hal/wifi/Radio.c
 msgid "WiFi is not enabled"
@@ -2574,6 +2583,7 @@ msgstr "%q >= %d olmalıdır"
 
 #: py/argcheck.c shared-bindings/gifio/GifWriter.c
 #: shared-module/_airlift/__init__.c shared-module/gifio/OnDiskGif.c
+#: shared-module/videogif/GifDecoder.c
 msgid "%q must be <= %d"
 msgstr "%q <= %d olmalıdır"
 

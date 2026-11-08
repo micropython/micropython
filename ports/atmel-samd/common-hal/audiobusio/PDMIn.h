@@ -23,8 +23,6 @@ typedef struct {
     uint8_t gclk;
 } audiobusio_pdmin_obj_t;
 
-void pdmin_reset(void);
-
 void pdmin_evsys_handler(void);
 
 void pdmin_background(void);

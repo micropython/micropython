@@ -471,6 +471,11 @@ bool supervisor_start_web_workflow(void) {
     if (!common_hal_wifi_radio_get_enabled(&common_hal_wifi_radio_obj)) {
         common_hal_wifi_init(false);
         common_hal_wifi_radio_set_enabled(&common_hal_wifi_radio_obj, true);
+        // The radio stays off if Wi-Fi couldn't start, for example with no Wi-Fi firmware on a
+        // co-processor. connect() raises in that case, and there is no VM to catch it here.
+        if (!common_hal_wifi_radio_get_enabled(&common_hal_wifi_radio_obj)) {
+            return false;
+        }
     }
 
     // TODO: Do our own scan so that we can find the channel we want before calling connect.

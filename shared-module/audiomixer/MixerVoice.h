@@ -19,6 +19,8 @@ typedef struct {
     mp_obj_t sample;
     bool loop;
     bool more_data;
+    // Start at the current level instead of waiting for a zero crossing.
+    bool snap_to_level;
     uint32_t *remaining_buffer;
     uint32_t buffer_length;
     #if CIRCUITPY_SYNTHIO

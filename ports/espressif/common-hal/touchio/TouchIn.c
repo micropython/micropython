@@ -26,7 +26,10 @@ void common_hal_touchio_touchin_construct(touchio_touchin_obj_t *self,
     // but for touches using fruit or other objects, the difference is much less.
 
     self->pin = pin;
-    self->threshold = common_hal_touchio_touchin_get_raw_value(self) + 100;
+    // Clamp to avoid uint16_t wraparound: a reading near UINT16_MAX would otherwise
+    // give a small threshold, and value would always be True.
+    uint32_t threshold = common_hal_touchio_touchin_get_raw_value(self) + 100;
+    self->threshold = MIN(threshold, UINT16_MAX);
 }
 
 bool common_hal_touchio_touchin_deinited(touchio_touchin_obj_t *self) {
@@ -37,6 +40,7 @@ void common_hal_touchio_touchin_deinit(touchio_touchin_obj_t *self) {
     if (common_hal_touchio_touchin_deinited(self)) {
         return;
     }
+    peripherals_touch_deinit(self->pin->touch_channel);
     reset_pin_number(self->pin->number);
     self->pin = NULL;
 }

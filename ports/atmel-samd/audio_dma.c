@@ -163,19 +163,18 @@ static void setup_audio_descriptor(DmacDescriptor *descriptor, uint8_t beat_size
 }
 
 // Playback should be shutdown before calling this.
-audio_dma_result audio_dma_setup_playback(audio_dma_t *dma,
+// The body of audio_dma_setup_playback(), run once dma_channel is allocated.
+// It can raise: m_realloc(), find_sync_event_channel_raise() and
+// audio_dma_load_next_block() all do.
+static audio_dma_result setup_playback(audio_dma_t *dma,
     mp_obj_t sample,
     bool loop,
     bool single_channel_output,
     uint8_t audio_channel,
     bool output_signed,
     uint32_t output_register_address,
-    uint8_t dma_trigger_source) {
-    uint8_t dma_channel = dma_allocate_audio_channel();
-    if (dma_channel == NO_DMA_CHANNEL) {
-        return AUDIO_DMA_DMA_BUSY;
-    }
-
+    uint8_t dma_trigger_source,
+    uint8_t dma_channel) {
     dma->sample = sample;
     dma->loop = loop;
     dma->single_channel_output = single_channel_output;
@@ -296,11 +295,50 @@ audio_dma_result audio_dma_setup_playback(audio_dma_t *dma,
     return AUDIO_DMA_OK;
 }
 
+audio_dma_result audio_dma_setup_playback(audio_dma_t *dma,
+    mp_obj_t sample,
+    bool loop,
+    bool single_channel_output,
+    uint8_t audio_channel,
+    bool output_signed,
+    uint32_t output_register_address,
+    uint8_t dma_trigger_source) {
+    uint8_t dma_channel = dma_allocate_audio_channel();
+    if (dma_channel == NO_DMA_CHANNEL) {
+        return AUDIO_DMA_DMA_BUSY;
+    }
+    dma->dma_channel = dma_channel;
+    dma->event_channel = 0xff;
+
+    // If setup fails or raises, free the DMA channel and anything else it
+    // took. Nothing else will: there's no bulk audio DMA reset at VM end, and
+    // the caller's deinit() only stops playback that started.
+    audio_dma_result result;
+    nlr_buf_t nlr;
+    if (nlr_push(&nlr) == 0) {
+        result = setup_playback(dma, sample, loop, single_channel_output, audio_channel,
+            output_signed, output_register_address, dma_trigger_source, dma_channel);
+        nlr_pop();
+    } else {
+        audio_dma_stop(dma);
+        nlr_jump(nlr.ret_val);
+    }
+    if (result != AUDIO_DMA_OK) {
+        audio_dma_stop(dma);
+    }
+    return result;
+}
+
 void audio_dma_stop(audio_dma_t *dma) {
     uint8_t channel = dma->dma_channel;
     if (channel != NO_DMA_CHANNEL) {
         audio_dma_disable_channel(channel);
-        disable_event_channel(dma->event_channel);
+        // 0xff means no event channel (single buffer). SAMD51's
+        // disable_event_channel() would index past the channel registers.
+        if (dma->event_channel != 0xff) {
+            disable_event_channel(dma->event_channel);
+            dma->event_channel = 0xff;
+        }
         MP_STATE_PORT(playing_audio)[channel] = NULL;
         audio_dma_state[channel] = NULL;
         dma_free_channel(dma->dma_channel);
@@ -328,16 +366,6 @@ bool audio_dma_get_paused(audio_dma_t *dma) {
 
 void audio_dma_init(audio_dma_t *dma) {
     dma->dma_channel = NO_DMA_CHANNEL;
-}
-
-void audio_dma_reset(void) {
-    for (uint8_t i = 0; i < AUDIO_DMA_CHANNEL_COUNT; i++) {
-        audio_dma_state[i] = NULL;
-        audio_dma_pending[i] = false;
-        dma_free_channel(i);
-        dma_descriptor(i)->BTCTRL.bit.VALID = false;
-        MP_STATE_PORT(playing_audio)[i] = NULL;
-    }
 }
 
 bool audio_dma_get_playing(audio_dma_t *dma) {

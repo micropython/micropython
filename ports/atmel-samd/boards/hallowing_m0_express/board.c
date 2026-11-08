@@ -51,7 +51,6 @@ void board_init(void) {
     fourwire_fourwire_obj_t *bus = &allocate_display_bus()->fourwire_bus;
     bus->base.type = &fourwire_fourwire_type;
     busio_spi_obj_t *spi = common_hal_board_create_spi(0);
-    common_hal_busio_spi_never_reset(spi);
     common_hal_fourwire_fourwire_construct(bus,
         spi,
         MP_OBJ_FROM_PTR(&pin_PA28), // Command or data

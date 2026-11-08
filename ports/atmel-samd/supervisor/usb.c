@@ -5,6 +5,7 @@
 // SPDX-License-Identifier: MIT
 
 #include "atmel_start_pins.h"
+#include "common-hal/microcontroller/Pin.h"
 #include "hpl/pm/hpl_pm_base.h"
 #include "hpl/gclk/hpl_gclk_base.h"
 #include "hal_gpio.h"
@@ -39,6 +40,8 @@ void init_usb_hardware(void) {
     gpio_set_pin_function(PIN_PA24, PINMUX_PA24H_USB_DM);
     gpio_set_pin_function(PIN_PA25, PINMUX_PA25H_USB_DP);
     #endif
+    claim_pin_number(PIN_PA24);
+    claim_pin_number(PIN_PA25);
 }
 
 #ifdef SAMD21

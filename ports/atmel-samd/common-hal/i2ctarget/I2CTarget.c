@@ -16,9 +16,18 @@
 #include "hal/include/hal_gpio.h"
 #include "peripherals/samd/sercom.h"
 
+// Mark the object deinited: deinited() is true and deinit() does nothing.
+static void mark_deinit(i2ctarget_i2c_target_obj_t *self) {
+    self->sda_pin = NO_PIN;
+    self->scl_pin = NO_PIN;
+}
+
 void common_hal_i2ctarget_i2c_target_construct(i2ctarget_i2c_target_obj_t *self,
     const mcu_pin_obj_t *scl, const mcu_pin_obj_t *sda,
     uint8_t *addresses, unsigned int num_addresses, bool smbus) {
+    // Ensure the object starts in its deinit state.
+    mark_deinit(self);
+
     uint8_t sercom_index;
     uint32_t sda_pinmux, scl_pinmux;
     Sercom *sercom = samd_i2c_get_sercom(scl, sda, &sercom_index, &sda_pinmux, &scl_pinmux);
@@ -93,8 +102,7 @@ void common_hal_i2ctarget_i2c_target_deinit(i2ctarget_i2c_target_obj_t *self) {
 
     reset_pin_number(self->sda_pin);
     reset_pin_number(self->scl_pin);
-    self->sda_pin = NO_PIN;
-    self->scl_pin = NO_PIN;
+    mark_deinit(self);
 }
 
 static int i2c_target_check_error(i2ctarget_i2c_target_obj_t *self, bool raise) {

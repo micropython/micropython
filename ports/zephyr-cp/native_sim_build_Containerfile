@@ -1,10 +1,10 @@
-FROM ubuntu:24.04
+FROM docker.io/library/ubuntu:24.04
 ENV DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC
 ENV PKG_CONFIG_PATH=/usr/lib/i386-linux-gnu/pkgconfig
 
 RUN dpkg --add-architecture i386 && apt-get update && apt-get install -y --no-install-recommends \
         git cmake ninja-build gperf ccache dfu-util device-tree-compiler \
-        wget python3 python3-dev python3-pip python3-venv python3-setuptools \
+        curl wget python3 python3-dev python3-pip python3-venv python3-setuptools \
         python3-tk python3-wheel xz-utils file make gcc \
         gcc-multilib g++-multilib libc6-dev-i386 \
         libsdl2-dev:i386 libsdl2-image-dev:i386 \
@@ -31,9 +31,9 @@ RUN pip install --no-cache-dir west pytest pyelftools pyyaml intelhex protobuf g
 #   cd ~/circuitpython/ports/zephyr-cp
 #   west init -l zephyr-config
 #   west update
-#   west zephyr-export
 #   pip install -r zephyr/scripts/requirements.txt
 #   pip install -r ../../requirements-dev.txt
+#   west zephyr-export
 #   west sdk install -t x86_64-zephyr-elf
 #   python ../../tools/ci_fetch_deps.py zephyr-cp
 WORKDIR /home/dev/circuitpython/ports/zephyr-cp

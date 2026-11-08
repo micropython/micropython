@@ -23,14 +23,14 @@ fi
 echo "==> west update"
 west update
 
-echo "==> west zephyr-export"
-west zephyr-export
-
 echo "==> pip install Zephyr requirements"
 pip install -r zephyr/scripts/requirements.txt
 
 echo "==> pip install CircuitPython dev requirements"
 pip install -r ../../requirements-dev.txt
+
+echo "==> west zephyr-export"
+west zephyr-export
 
 echo "==> west sdk install (x86_64-zephyr-elf)"
 west sdk install -t x86_64-zephyr-elf

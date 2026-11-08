@@ -21,4 +21,3 @@ typedef struct espcamera_camera_obj {
 
 // Deinitialize the active camera, if any, so it releases its device on the
 // shared I2C bus. Called from reset_port_early().
-void espcamera_reset(void);

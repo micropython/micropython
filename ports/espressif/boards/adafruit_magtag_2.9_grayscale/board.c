@@ -278,12 +278,15 @@ static display_type_t detect_display_type(void) {
 }
 
 void board_init(void) {
+    // GPIO16 (SPEAKER_ENABLE) has an external pull-down that keeps the speaker
+    // off. Default to no internal pull, so as not to fight it.
+    espressif_board_reset_pin_number(16);
+
     display_type_t display_type = detect_display_type();
 
     fourwire_fourwire_obj_t *bus = &allocate_display_bus()->fourwire_bus;
     busio_spi_obj_t *spi = &bus->inline_bus;
     common_hal_busio_spi_construct(spi, &pin_GPIO36, &pin_GPIO35, NULL, false);
-    common_hal_busio_spi_never_reset(spi);
 
     bus->base.type = &fourwire_fourwire_type;
     common_hal_fourwire_fourwire_construct(bus,

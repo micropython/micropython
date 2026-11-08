@@ -187,60 +187,57 @@ void sleep_timer_cb(void *arg);
 #define PICO_V3_02_PSRAM_CS_IO     9
 #endif // CONFIG_SPIRAM
 
-static void _never_reset_spi_ram_flash(void) {
-    #if defined(CONFIG_IDF_TARGET_ESP32)
+#if defined(CONFIG_IDF_TARGET_ESP32)
+// Claim the ESP32's flash and PSRAM pins so user code can't use them. They depend
+// on the chip package and efuses, so they can't be in the static reset-forbidden mask.
+static void _claim_spi_ram_flash_pins(void) {
     #if defined(CONFIG_SPIRAM)
     uint32_t pkg_ver = esp_efuse_get_pkg_ver();
     if (pkg_ver == EFUSE_RD_CHIP_VER_PKG_ESP32D2WDQ5) {
-        never_reset_pin_number(D2WD_PSRAM_CLK_IO);
-        never_reset_pin_number(D2WD_PSRAM_CS_IO);
+        claim_pin_number(D2WD_PSRAM_CLK_IO);
+        claim_pin_number(D2WD_PSRAM_CS_IO);
     } else if (pkg_ver == EFUSE_RD_CHIP_VER_PKG_ESP32PICOD4 && efuse_hal_get_major_chip_version() >= 3) {
         // This chip is ESP32-PICO-V3 and doesn't have PSRAM.
     } else if ((pkg_ver == EFUSE_RD_CHIP_VER_PKG_ESP32PICOD2) || (pkg_ver == EFUSE_RD_CHIP_VER_PKG_ESP32PICOD4)) {
-        never_reset_pin_number(PICO_PSRAM_CLK_IO);
-        never_reset_pin_number(PICO_PSRAM_CS_IO);
+        claim_pin_number(PICO_PSRAM_CLK_IO);
+        claim_pin_number(PICO_PSRAM_CS_IO);
     } else if (pkg_ver == EFUSE_RD_CHIP_VER_PKG_ESP32PICOV302) {
-        never_reset_pin_number(PICO_V3_02_PSRAM_CLK_IO);
-        never_reset_pin_number(PICO_V3_02_PSRAM_CS_IO);
+        claim_pin_number(PICO_V3_02_PSRAM_CLK_IO);
+        claim_pin_number(PICO_V3_02_PSRAM_CS_IO);
     } else if ((pkg_ver == EFUSE_RD_CHIP_VER_PKG_ESP32D0WDQ6) || (pkg_ver == EFUSE_RD_CHIP_VER_PKG_ESP32D0WDQ5)) {
-        never_reset_pin_number(D0WD_PSRAM_CLK_IO);
-        never_reset_pin_number(D0WD_PSRAM_CS_IO);
+        claim_pin_number(D0WD_PSRAM_CLK_IO);
+        claim_pin_number(D0WD_PSRAM_CS_IO);
     } else if (pkg_ver == EFUSE_RD_CHIP_VER_PKG_ESP32D0WDR2V3) {
-        never_reset_pin_number(D0WDR2_V3_PSRAM_CLK_IO);
-        never_reset_pin_number(D0WDR2_V3_PSRAM_CS_IO);
+        claim_pin_number(D0WDR2_V3_PSRAM_CLK_IO);
+        claim_pin_number(D0WDR2_V3_PSRAM_CS_IO);
     }
     #endif // CONFIG_SPIRAM
 
     const uint32_t spiconfig = esp_rom_efuse_get_flash_gpio_info();
     if (spiconfig == ESP_ROM_EFUSE_FLASH_DEFAULT_SPI) {
-        never_reset_pin_number(MSPI_IOMUX_PIN_NUM_CLK);
-        never_reset_pin_number(MSPI_IOMUX_PIN_NUM_CS0);
-        never_reset_pin_number(PSRAM_SPIQ_SD0_IO);
-        never_reset_pin_number(PSRAM_SPID_SD1_IO);
-        never_reset_pin_number(PSRAM_SPIWP_SD3_IO);
-        never_reset_pin_number(PSRAM_SPIHD_SD2_IO);
+        claim_pin_number(MSPI_IOMUX_PIN_NUM_CLK);
+        claim_pin_number(MSPI_IOMUX_PIN_NUM_CS0);
+        claim_pin_number(PSRAM_SPIQ_SD0_IO);
+        claim_pin_number(PSRAM_SPID_SD1_IO);
+        claim_pin_number(PSRAM_SPIWP_SD3_IO);
+        claim_pin_number(PSRAM_SPIHD_SD2_IO);
     } else if (spiconfig == ESP_ROM_EFUSE_FLASH_DEFAULT_HSPI) {
-        never_reset_pin_number(FLASH_HSPI_CLK_IO);
-        never_reset_pin_number(FLASH_HSPI_CS_IO);
-        never_reset_pin_number(PSRAM_HSPI_SPIQ_SD0_IO);
-        never_reset_pin_number(PSRAM_HSPI_SPID_SD1_IO);
-        never_reset_pin_number(PSRAM_HSPI_SPIWP_SD3_IO);
-        never_reset_pin_number(PSRAM_HSPI_SPIHD_SD2_IO);
+        claim_pin_number(FLASH_HSPI_CLK_IO);
+        claim_pin_number(FLASH_HSPI_CS_IO);
+        claim_pin_number(PSRAM_HSPI_SPIQ_SD0_IO);
+        claim_pin_number(PSRAM_HSPI_SPID_SD1_IO);
+        claim_pin_number(PSRAM_HSPI_SPIWP_SD3_IO);
+        claim_pin_number(PSRAM_HSPI_SPIHD_SD2_IO);
     } else {
-        never_reset_pin_number(EFUSE_SPICONFIG_RET_SPICLK(spiconfig));
-        never_reset_pin_number(EFUSE_SPICONFIG_RET_SPICS0(spiconfig));
-        never_reset_pin_number(EFUSE_SPICONFIG_RET_SPIQ(spiconfig));
-        never_reset_pin_number(EFUSE_SPICONFIG_RET_SPID(spiconfig));
-        never_reset_pin_number(EFUSE_SPICONFIG_RET_SPIHD(spiconfig));
-        never_reset_pin_number(bootloader_flash_get_wp_pin());
+        claim_pin_number(EFUSE_SPICONFIG_RET_SPICLK(spiconfig));
+        claim_pin_number(EFUSE_SPICONFIG_RET_SPICS0(spiconfig));
+        claim_pin_number(EFUSE_SPICONFIG_RET_SPIQ(spiconfig));
+        claim_pin_number(EFUSE_SPICONFIG_RET_SPID(spiconfig));
+        claim_pin_number(EFUSE_SPICONFIG_RET_SPIHD(spiconfig));
+        claim_pin_number(bootloader_flash_get_wp_pin());
     }
-    #endif // CONFIG_IDF_TARGET_ESP32
-    #if defined(CONFIG_IDF_TARGET_ESP32C61)
-    #if defined(CONFIG_SPIRAM)
-    common_hal_never_reset_pin(&pin_GPIO14);
-    #endif
-    #endif
 }
+#endif // CONFIG_IDF_TARGET_ESP32
 
 safe_mode_t port_init(void) {
     esp_timer_create_args_t args;
@@ -267,43 +264,41 @@ safe_mode_t port_init(void) {
     esp_rom_install_uart_printf();
     #endif
 
-    #define pin_GPIOn(n) pin_GPIO##n
-    #define pin_GPIOn_EXPAND(x) pin_GPIOn(x)
-
-    #ifdef CONFIG_ESP_CONSOLE_UART_TX_GPIO
-    common_hal_never_reset_pin(&pin_GPIOn_EXPAND(CONFIG_ESP_CONSOLE_UART_TX_GPIO));
+    claim_reset_forbidden_pins();
+    #if defined(CONFIG_IDF_TARGET_ESP32)
+    _claim_spi_ram_flash_pins();
     #endif
 
-    #ifdef CONFIG_ESP_CONSOLE_UART_RX_GPIO
-    common_hal_never_reset_pin(&pin_GPIOn_EXPAND(CONFIG_ESP_CONSOLE_UART_RX_GPIO));
-    #endif
-
-    #ifndef ENABLE_JTAG
-    #define ENABLE_JTAG (0)
-    #endif
-
-    #if ENABLE_JTAG
-    ESP_LOGI(TAG, "Marking JTAG pins never_reset");
-    // JTAG
+    #if defined(ENABLE_JTAG) && ENABLE_JTAG
+    // Keep user code off the JTAG pins in JTAG debug builds.
     #if defined(CONFIG_IDF_TARGET_ESP32C3) || defined(CONFIG_IDF_TARGET_ESP32C6)
-    common_hal_never_reset_pin(&pin_GPIO4);
-    common_hal_never_reset_pin(&pin_GPIO5);
-    common_hal_never_reset_pin(&pin_GPIO6);
-    common_hal_never_reset_pin(&pin_GPIO7);
+    claim_pin_number(4);  // MTMS
+    claim_pin_number(5);  // MTDI
+    claim_pin_number(6);  // MTCK
+    claim_pin_number(7);  // MTDO
+    #elif defined(CONFIG_IDF_TARGET_ESP32C61)
+    claim_pin_number(3);  // MTMS
+    claim_pin_number(4);  // MTDI
+    claim_pin_number(5);  // MTCK
+    claim_pin_number(6);  // MTDO
+    #elif defined(CONFIG_IDF_TARGET_ESP32P4)
+    claim_pin_number(2);  // MTCK
+    claim_pin_number(3);  // MTDI
+    claim_pin_number(4);  // MTMS
+    claim_pin_number(5);  // MTDO
     #elif defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3)
-    common_hal_never_reset_pin(&pin_GPIO39);
-    common_hal_never_reset_pin(&pin_GPIO40);
-    common_hal_never_reset_pin(&pin_GPIO41);
-    common_hal_never_reset_pin(&pin_GPIO42);
-    #elif defined(CONFIG_IDF_TARGET_ESP32P4) || defined(CONFIG_IDF_TARGET_ESP32C61)
-    common_hal_never_reset_pin(&pin_GPIO3);
-    common_hal_never_reset_pin(&pin_GPIO4);
-    common_hal_never_reset_pin(&pin_GPIO5);
-    common_hal_never_reset_pin(&pin_GPIO6);
+    claim_pin_number(39); // MTCK
+    claim_pin_number(40); // MTDO
+    claim_pin_number(41); // MTDI
+    claim_pin_number(42); // MTMS
     #endif
     #endif
 
-    _never_reset_spi_ram_flash();
+    #ifdef DOUBLE_TAP_PIN
+    // Pull the double-tap pin down at boot so that resets come back to
+    // CircuitPython. reset_pin_number() applies the pull-down.
+    reset_pin_number(DOUBLE_TAP_PIN->number);
+    #endif
 
     #if CIRCUITPY_HARDWAREKEY
     // Populate board.EFUSE_KEY* from the eFuse key blocks. eFuse reads and the
@@ -461,49 +456,19 @@ void *esp_native_code_commit(void *buf, size_t len, void *reloc) {
 void reset_port_early(void) {
     // esp-camera adds an I2C device on the ESP I2C bus, and keeps it there. This
     // is unlike busio.I2C, which adds and removes the device on each operation.
-    // So have the esp-camera API shut down the camera now, before reset_board_buses() tries to delete the I2C bus.
+    // Since the camera object is not deinit'ed yet at this point, we can't call
+    // esp_camera_deinit() from here. Instead, let GC finalization (via __del__)
+    // deinit the camera before reset_board_buses() deletes the I2C bus.
     // Unfortunately, there is no I2C driver API to enumerate or delete all the devices.
-    #if CIRCUITPY_ESPCAMERA
-    espcamera_reset();
-    #endif
 }
 
 void reset_port(void) {
-
     #if CIRCUITPY_SSL
     ssl_reset();
     #endif
 
-    #if CIRCUITPY_ANALOGIO
-    analogout_reset();
-    #endif
-
-    #if CIRCUITPY_AUDIOPWMIO
-    audiopwmout_reset();
-    #endif
-
-    #if CIRCUITPY_BUSIO
-    uart_reset();
-    #endif
-
-    #if CIRCUITPY_SDIOIO
-    sdioio_reset();
-    #endif
-
     #if CIRCUITPY_DUALBANK
     dualbank_reset();
-    #endif
-
-    #if CIRCUITPY_ESPNOW
-    espnow_reset();
-    #endif
-
-    #if CIRCUITPY_ESPULP
-    espulp_reset();
-    #endif
-
-    #if CIRCUITPY_PS2IO
-    ps2_reset();
     #endif
 
     #if CIRCUITPY_RCLCPY
@@ -516,10 +481,6 @@ void reset_port(void) {
 
     #if CIRCUITPY_SOCKETPOOL
     socketpool_user_reset();
-    #endif
-
-    #if CIRCUITPY_TOUCHIO_USE_NATIVE
-    peripherals_touch_reset();
     #endif
 
     #if CIRCUITPY_WATCHDOG

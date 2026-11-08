@@ -14,6 +14,7 @@ typedef struct {
     uint32_t frequency;
     uint32_t capacity;
     uint8_t num_data : 3, state_programming : 1, has_lock : 1;
+    uint8_t instance;
     uint8_t command_pin;
     uint8_t clock_pin;
     uint8_t data_pins[4];

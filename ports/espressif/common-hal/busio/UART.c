@@ -20,8 +20,6 @@
 #include "supervisor/port.h"
 #include "supervisor/shared/tick.h"
 
-static uint8_t never_reset_uart_mask = 0;
-
 static void uart_event_task(void *param) {
     busio_uart_obj_t *self = param;
     uart_event_t event;
@@ -50,28 +48,6 @@ static void uart_event_task(void *param) {
             }
         }
     }
-}
-
-void uart_reset(void) {
-    for (uart_port_t num = 0; num < UART_NUM_MAX; num++) {
-        #ifdef CONFIG_ESP_CONSOLE_UART_NUM
-        // Do not reset the UART used by the IDF for logging.
-        if ((int)num == CONFIG_ESP_CONSOLE_UART_NUM) {
-            continue;
-        }
-        #endif
-        if (uart_is_driver_installed(num) && !(never_reset_uart_mask & (1 << num))) {
-            uart_driver_delete(num);
-        }
-    }
-}
-
-void common_hal_busio_uart_never_reset(busio_uart_obj_t *self) {
-    common_hal_never_reset_pin(self->rx_pin);
-    common_hal_never_reset_pin(self->tx_pin);
-    common_hal_never_reset_pin(self->rts_pin);
-    common_hal_never_reset_pin(self->cts_pin);
-    never_reset_uart_mask |= 1 << self->uart_num;
 }
 
 void common_hal_busio_uart_construct(busio_uart_obj_t *self,
@@ -154,6 +130,9 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
         uart_set_mode(self->uart_num, mode) != ESP_OK) {
         mp_raise_RuntimeError(MP_ERROR_TEXT("UART init"));
     }
+    // IDF interrupts at 120 of the 128 FIFO bytes, which leaves 8 byte times (40 us at 2 Mbaud)
+    // before bytes are dropped. Half the FIFO gives 320 us at 2 Mbaud.
+    uart_set_rx_full_threshold(self->uart_num, UART_HW_FIFO_LEN(self->uart_num) / 2);
 
     // On the console uart, enable pattern detection to look for CTRL+C
     #if CIRCUITPY_CONSOLE_UART

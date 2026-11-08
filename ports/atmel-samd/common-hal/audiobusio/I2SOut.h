@@ -28,6 +28,5 @@ typedef struct {
     audio_dma_t dma;
 } audiobusio_i2sout_obj_t;
 
-void i2sout_reset(void);
 
 #endif // CIRCUITPY_AUDIOBUSIO_I2SOUT

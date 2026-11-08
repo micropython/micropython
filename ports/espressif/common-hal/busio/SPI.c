@@ -151,16 +151,6 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     claim_pin(clock);
 }
 
-void common_hal_busio_spi_never_reset(busio_spi_obj_t *self) {
-    common_hal_never_reset_pin(self->clock);
-    if (self->MOSI != NULL) {
-        common_hal_never_reset_pin(self->MOSI);
-    }
-    if (self->MISO != NULL) {
-        common_hal_never_reset_pin(self->MISO);
-    }
-}
-
 bool common_hal_busio_spi_deinited(busio_spi_obj_t *self) {
     return self->clock == NULL;
 }
@@ -174,8 +164,11 @@ void common_hal_busio_spi_deinit(busio_spi_obj_t *self) {
         return;
     }
 
-    // Wait for any other users of this to finish.
+    // Wait for other users to finish. Ctrl-C ends the wait and leaves the bus up.
     while (!common_hal_busio_spi_try_lock(self)) {
+        if (mp_hal_is_interrupted()) {
+            return;
+        }
         RUN_BACKGROUND_TASKS;
     }
 

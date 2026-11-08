@@ -12,8 +12,6 @@
 
 void external_flash_setup(void) {
     // Do not reset the external flash write-protect and hold pins high
-    never_reset_pin_number(PIN_PB22);
-    never_reset_pin_number(PIN_PB23);
 
     // note: using output instead of input+pullups because the pullups are a little weak
     // Set the WP pin high

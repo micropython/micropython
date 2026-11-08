@@ -32,11 +32,6 @@
 static bool ulp_used = false;
 static uint32_t pins_used = 0;
 
-void espulp_reset(void) {
-    // NOTE: This *doesn't* disable the ULP. It'll keep running even when CircuitPython isn't.
-    ulp_used = false;
-}
-
 void common_hal_espulp_ulp_set_wakeup_period(espulp_ulp_obj_t *self, size_t period_index, uint32_t period_us) {
     CHECK_ESP_RESULT(ulp_set_wakeup_period(period_index, period_us));
 }
@@ -69,7 +64,6 @@ void common_hal_espulp_ulp_run(espulp_ulp_obj_t *self, uint32_t *program, size_t
     for (uint8_t i = 0; i < 32; i++) {
         if ((pin_mask & (1 << i)) != 0) {
             claim_pin_number(i);
-            never_reset_pin_number(i);
         }
     }
     pins_used = pin_mask;

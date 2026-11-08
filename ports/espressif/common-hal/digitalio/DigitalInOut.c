@@ -19,17 +19,16 @@ static bool _pin_is_input(uint8_t pin_number) {
 }
 
 void digitalio_digitalinout_preserve_for_deep_sleep(size_t n_dios, digitalio_digitalinout_obj_t *preserve_dios[]) {
+    // Start from no chip-wide hold, so a hold from an earlier (fake) deep sleep
+    // isn't left on. preserve_pin_number() turns it back on if any pin is preserved.
+    disable_deep_sleep_pin_hold();
+
     // Mark the pin states of the given DigitalInOuts for preservation during deep sleep
     for (size_t i = 0; i < n_dios; i++) {
         if (!common_hal_digitalio_digitalinout_deinited(preserve_dios[i])) {
             preserve_pin_number(preserve_dios[i]->pin->number);
         }
     }
-}
-
-void common_hal_digitalio_digitalinout_never_reset(
-    digitalio_digitalinout_obj_t *self) {
-    never_reset_pin_number(self->pin->number);
 }
 
 digitalinout_result_t common_hal_digitalio_digitalinout_construct(
@@ -106,6 +105,10 @@ digitalinout_result_t common_hal_digitalio_digitalinout_set_drive_mode(
     gpio_mode_t mode = GPIO_MODE_OUTPUT;
     if (drive_mode == DRIVE_MODE_OPEN_DRAIN) {
         mode |= GPIO_MODE_OUTPUT_OD;
+        // Turn on open drain before gpio_set_direction() enables the output driver. It
+        // enables the output first, so a pin coming from input would briefly drive a
+        // push-pull high. On an I2C SDA line held low by a peripheral, that is a STOP.
+        gpio_od_enable(number);
     }
     esp_err_t result = gpio_set_direction(number, mode);
     if (result != ESP_OK) {

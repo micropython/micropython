@@ -83,6 +83,11 @@ bool common_hal_wifi_radio_get_enabled(wifi_radio_obj_t *self) {
 }
 
 void common_hal_wifi_radio_set_enabled(wifi_radio_obj_t *self, bool enabled) {
+    if (self->netif == NULL) {
+        // Wi-Fi init failed, for example because the co-processor doesn't run ESP-Hosted.
+        // Leave the radio off so callers see that, rather than starting a driver that isn't there.
+        return;
+    }
     if (self->started && !enabled) {
         if (self->current_scan != NULL) {
             common_hal_wifi_radio_stop_scanning_networks(self);
@@ -422,7 +427,12 @@ wifi_radio_error_t common_hal_wifi_radio_connect(wifi_radio_obj_t *self, uint8_t
     esp_wifi_set_config(WIFI_IF_STA, config);
     self->starting_retries = 5;
     self->retries_left = 5;
-    esp_wifi_connect();
+    // On failure no connected or disconnected event will come, and the loop below would never end.
+    // ESP_ERR_WIFI_STATE only means a scan was aborted; the connection attempt still goes ahead.
+    esp_err_t connect_result = esp_wifi_connect();
+    if (connect_result != ESP_OK && connect_result != ESP_ERR_WIFI_STATE) {
+        return WIFI_RADIO_ERROR_UNSPECIFIED;
+    }
 
     do {
         RUN_BACKGROUND_TASKS;

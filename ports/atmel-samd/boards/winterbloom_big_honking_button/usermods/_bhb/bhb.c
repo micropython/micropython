@@ -14,7 +14,6 @@ static mp_obj_t _bhb_read_adc(void);
 
 static mp_obj_t _bhb_init_adc(void) {
     claim_pin(&pin_PB08);
-    common_hal_never_reset_pin(&pin_PB08);
 
     /* Enable the APB clock for the ADC. */
     PM->APBCMASK.reg |= PM_APBCMASK_ADC;

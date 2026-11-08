@@ -380,14 +380,20 @@ void common_hal_sdcardio_sdcard_construct(sdcardio_sdcard_obj_t *self, busio_spi
 }
 
 void common_hal_sdcardio_sdcard_deinit(sdcardio_sdcard_obj_t *self) {
-    if (common_hal_sdcardio_sdcard_deinited(self)) {
+    // Already deinited.
+    if (self->bus == NULL) {
         return;
     }
-    common_hal_sdcardio_sdcard_sync(self);
+    // The SPI bus may already be deinited, for example board.SPI() at the end of the VM.
+    // Then skip the sync, but still release the CS pin.
+    if (!common_hal_busio_spi_deinited(self->bus)) {
+        common_hal_sdcardio_sdcard_sync(self);
+    }
     common_hal_sdcardio_sdcard_mark_deinit(self);
     if (self->own_cs) {
         digitalinout_protocol_deinit(self->cs);
         circuitpy_free_obj(self->cs);
+        self->own_cs = false;
     }
 }
 
@@ -434,6 +440,9 @@ mp_uint_t sdcardio_sdcard_readblocks(mp_obj_t self_in, uint8_t *buf, uint32_t st
             ptr += 512;
         }
 
+        // Keep the first error: the CMD12 status below must not overwrite a failed read.
+        int read_r = r;
+
         // End the multi-block read
         r = cmd(self, 12, 0, NULL, 0, true, false);
 
@@ -446,9 +455,12 @@ mp_uint_t sdcardio_sdcard_readblocks(mp_obj_t self_in, uint8_t *buf, uint32_t st
             }
             r = single_byte;
         }
+        if (read_r != 0) {
+            r = read_r;
+        }
     }
     extraclock_and_unlock_bus(self);
-    // No caller actually uses this value.
+    // Negative errors reach the Python binding, which raises OSError.
     return r;
 }
 
