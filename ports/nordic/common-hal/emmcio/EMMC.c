@@ -935,6 +935,9 @@ emmcio_construct_result_t common_hal_emmcio_emmc_construct(emmcio_emmc_obj_t *se
     const mcu_pin_obj_t *clock, const mcu_pin_obj_t *command, const mcu_pin_obj_t *data,
     const mcu_pin_obj_t *reset, const mcu_pin_obj_t *vccq,
     bool high_speed, bool write_enabled, int *detail) {
+    // Ensure the object starts in its deinit state, so its finaliser does
+    // nothing if construct fails.
+    self->deinited = true;
     *detail = 0;
     if (emmcio_is_automounted()) {
         return EMMCIO_ERR_USB_OWNED;

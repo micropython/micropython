@@ -35,6 +35,10 @@ void common_hal_rgbmatrix_timer_enable(void *ptr) {
 }
 
 void common_hal_rgbmatrix_timer_disable(void *ptr) {
+    // ptr is NULL when the timer allocation failed.
+    if (ptr == NULL) {
+        return;
+    }
     nrfx_timer_t *timer = nrf_peripherals_timer_from_reg(ptr);
     nrfx_timer_uninit(timer);
 }
