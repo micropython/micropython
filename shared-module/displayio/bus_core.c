@@ -33,6 +33,26 @@
 #define DISPLAYIO_CORE_DEBUG(...) (void)0
 // #define DISPLAYIO_CORE_DEBUG(...) mp_printf(&mp_plat_print __VA_OPT__(,) __VA_ARGS__)
 
+void displayio_display_bus_validate(mp_obj_t bus) {
+    if (
+        #if CIRCUITPY_PARALLELDISPLAYBUS
+        mp_obj_is_type(bus, &paralleldisplaybus_parallelbus_type) ||
+        #endif
+        #if CIRCUITPY_FOURWIRE
+        mp_obj_is_type(bus, &fourwire_fourwire_type) ||
+        #endif
+        #if CIRCUITPY_I2CDISPLAYBUS
+        mp_obj_is_type(bus, &i2cdisplaybus_i2cdisplaybus_type) ||
+        #endif
+        #if CIRCUITPY_QSPIBUS
+        mp_obj_is_type(bus, &qspibus_qspibus_type) ||
+        #endif
+        false) {
+        return;
+    }
+    mp_raise_ValueError(MP_ERROR_TEXT("Unsupported display bus type"));
+}
+
 void displayio_display_bus_construct(displayio_display_bus_t *self,
     mp_obj_t bus, uint16_t ram_width, uint16_t ram_height, int16_t colstart, int16_t rowstart,
     uint16_t column_command, uint16_t row_command, uint16_t set_current_column_command, uint16_t set_current_row_command,

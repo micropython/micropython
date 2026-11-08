@@ -43,6 +43,10 @@ typedef struct {
     bool address_little_endian;
 } displayio_display_bus_t;
 
+// Raise ValueError if bus isn't a supported display bus type. Call it before allocating a
+// display, so a bad bus doesn't leave a half-built display in its slot.
+void displayio_display_bus_validate(mp_obj_t bus);
+
 void displayio_display_bus_construct(displayio_display_bus_t *self,
     mp_obj_t bus, uint16_t ram_width, uint16_t ram_height, int16_t colstart, int16_t rowstart,
     uint16_t column_command, uint16_t row_command, uint16_t set_current_column_command, uint16_t set_current_row_command,

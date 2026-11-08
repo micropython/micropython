@@ -77,6 +77,10 @@ static mp_obj_t framebufferio_framebufferdisplay_make_new(const mp_obj_type_t *t
         mp_raise_ValueError(MP_ERROR_TEXT("Display rotation must be in 90 degree increments"));
     }
 
+    // Check the framebuffer before taking a display slot: construct would raise after the slot
+    // is in use.
+    mp_proto_get_or_throw(MP_QSTR_protocol_framebuffer, framebuffer);
+
     primary_display_t *disp = allocate_display_or_raise();
     framebufferio_framebufferdisplay_obj_t *self = &disp->framebuffer_display;
     self->base.type = &framebufferio_framebufferdisplay_type;

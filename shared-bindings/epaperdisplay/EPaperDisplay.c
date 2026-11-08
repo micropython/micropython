@@ -17,6 +17,7 @@
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/util.h"
 #include "shared-module/displayio/__init__.h"
+#include "shared-module/displayio/bus_core.h"
 
 //| from busdisplay import _DisplayBus
 //|
@@ -175,6 +176,9 @@ static mp_obj_t epaperdisplay_epaperdisplay_make_new(const mp_obj_type_t *type, 
     if (rotation % 90 != 0) {
         mp_raise_ValueError(MP_ERROR_TEXT("Display rotation must be in 90 degree increments"));
     }
+
+    // Check the bus before taking a display slot: construct would raise after the slot is in use.
+    displayio_display_bus_validate(display_bus);
 
     primary_display_t *disp = allocate_display_or_raise();
     epaperdisplay_epaperdisplay_obj_t *self = &disp->epaper_display;
