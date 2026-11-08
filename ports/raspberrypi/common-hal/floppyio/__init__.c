@@ -121,7 +121,7 @@ int common_hal_floppyio_flux_readinto(void *buf, size_t len, digitalio_digitalin
     while (pio_sm_is_rx_fifo_empty(reader.pio, reader.sm)) {
         if (time_us_64() > flux_deadline_us) {
             common_hal_mcu_enable_interrupts();
-            common_hal_rp2pio_statemachine_deinit(&state_machine);
+            rp2pio_statemachine_deinit(&state_machine, true);
             mp_raise_RuntimeError(MP_ERROR_TEXT("timeout waiting for flux"));
         }
     }
@@ -130,7 +130,7 @@ int common_hal_floppyio_flux_readinto(void *buf, size_t len, digitalio_digitalin
     while (READ_INDEX()) {
         if (time_us_64() > index_deadline_us) {
             common_hal_mcu_enable_interrupts();
-            common_hal_rp2pio_statemachine_deinit(&state_machine);
+            rp2pio_statemachine_deinit(&state_machine, true);
             mp_raise_RuntimeError(MP_ERROR_TEXT("timeout waiting for index pulse"));
         }
     }
@@ -172,7 +172,7 @@ int common_hal_floppyio_flux_readinto(void *buf, size_t len, digitalio_digitalin
     }
 
     common_hal_mcu_enable_interrupts();
-    common_hal_rp2pio_statemachine_deinit(&state_machine);
+    rp2pio_statemachine_deinit(&state_machine, true);
 
     return ptr - (uint8_t *)buf;
 }
