@@ -1,0 +1,4 @@
+two voices [4000, 4500, 5000, 5500] worst 0
+new level [2000, 2000, 2000, 2000] worst 0
+restart [2000, 2000, 2000, 2000] worst 0
+stereo pan [4000, 2000, 4000, 2000] worst 0
