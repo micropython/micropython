@@ -30,12 +30,43 @@ static MP_NORETURN void math_error(void) {
     mp_raise_ValueError(MP_ERROR_TEXT("math domain error"));
 }
 
+// A NaN or infinite result from finite arguments is a domain error, as in
+// py/modmath.c.
+static mp_obj_t math_generic_1(mp_obj_t x_obj, mp_float_t (*f)(mp_float_t)) {
+    mp_float_t x = mp_obj_get_float(x_obj);
+    mp_float_t ans = f(x);
+    if ((isnan(ans) && !isnan(x)) || (isinf(ans) && !isinf(x))) {
+        math_error();
+    }
+    return mp_obj_new_float(ans);
+}
+
+static mp_obj_t math_generic_2(mp_obj_t x_obj, mp_obj_t y_obj, mp_float_t (*f)(mp_float_t, mp_float_t)) {
+    mp_float_t x = mp_obj_get_float(x_obj);
+    mp_float_t y = mp_obj_get_float(y_obj);
+    mp_float_t ans = f(x, y);
+    if ((isnan(ans) && !isnan(x) && !isnan(y)) || (isinf(ans) && !isinf(x) && !isinf(y))) {
+        math_error();
+    }
+    return mp_obj_new_float(ans);
+}
+
 #define MATH_FUN_1(py_name, c_name) \
-    static mp_obj_t mp_math_##py_name(mp_obj_t x_obj) { return mp_obj_new_float(MICROPY_FLOAT_C_FUN(c_name)(mp_obj_get_float(x_obj))); } \
+    static mp_obj_t mp_math_##py_name(mp_obj_t x_obj) { \
+        return math_generic_1(x_obj, MICROPY_FLOAT_C_FUN(c_name)); \
+    } \
     static MP_DEFINE_CONST_FUN_OBJ_1(mp_math_##py_name##_obj, mp_math_##py_name);
 
 #define MATH_FUN_2(py_name, c_name) \
-    static mp_obj_t mp_math_##py_name(mp_obj_t x_obj, mp_obj_t y_obj) { return mp_obj_new_float(MICROPY_FLOAT_C_FUN(c_name)(mp_obj_get_float(x_obj), mp_obj_get_float(y_obj))); } \
+    static mp_obj_t mp_math_##py_name(mp_obj_t x_obj, mp_obj_t y_obj) { \
+        return math_generic_2(x_obj, y_obj, MICROPY_FLOAT_C_FUN(c_name)); \
+    } \
+    static MP_DEFINE_CONST_FUN_OBJ_2(mp_math_##py_name##_obj, mp_math_##py_name);
+
+#define MATH_FUN_2_FLT_INT(py_name, c_name) \
+    static mp_obj_t mp_math_##py_name(mp_obj_t x_obj, mp_obj_t y_obj) { \
+        return mp_obj_new_float(MICROPY_FLOAT_C_FUN(c_name)(mp_obj_get_float(x_obj), mp_obj_get_int(y_obj))); \
+    } \
     static MP_DEFINE_CONST_FUN_OBJ_2(mp_math_##py_name##_obj, mp_math_##py_name);
 
 #define MATH_FUN_1_TO_BOOL(py_name, c_name) \
@@ -310,9 +341,18 @@ MATH_FUN_2(atan2, atan2)
 
 MATH_FUN_1_TO_INT(ceil, ceil)
 
-MATH_FUN_2(copysign, copysign)
+// fabs and copysign are compiler builtins. Call them directly so they are
+// inlined: through a function pointer they reach the libm symbol, and
+// pico-sdk's copysignf returns nan for a nan y.
+static mp_float_t MICROPY_FLOAT_C_FUN(copysign_func)(mp_float_t x, mp_float_t y) {
+    return MICROPY_FLOAT_C_FUN(copysign)(x, y);
+}
+MATH_FUN_2(copysign, copysign_func)
 
-MATH_FUN_1(fabs, fabs)
+static mp_float_t MICROPY_FLOAT_C_FUN(fabs_func)(mp_float_t x) {
+    return MICROPY_FLOAT_C_FUN(fabs)(x);
+}
+MATH_FUN_1(fabs, fabs_func)
 
 MATH_FUN_1_TO_INT(floor, floor) // TODO: delegate to x.__floor__() if x is not a float
 
@@ -326,7 +366,7 @@ MATH_FUN_1_TO_BOOL(isnan, isnan)
 
 MATH_FUN_1_TO_INT(trunc, trunc)
 
-MATH_FUN_2(ldexp, ldexp)
+MATH_FUN_2_FLT_INT(ldexp, ldexp)
 #if MICROPY_PY_MATH_SPECIAL_FUNCTIONS
 
 //| def erf(x: float) -> float:
@@ -420,7 +460,7 @@ static mp_obj_t mp_math_log(size_t n_args, const mp_obj_t *args) {
             #pragma GCC diagnostic ignored "-Wfloat-equal"
         } else if (base == (mp_float_t)1.0) {
             #pragma GCC diagnostic pop
-            math_error();
+            mp_raise_ZeroDivisionError();
         }
         return mp_obj_new_float(l / MICROPY_FLOAT_C_FUN(log)(base));
     }
