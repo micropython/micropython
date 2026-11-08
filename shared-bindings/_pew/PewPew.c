@@ -106,8 +106,19 @@ static mp_obj_t pewpew_make_new(const mp_obj_type_t *type, size_t n_args, size_t
     return MP_OBJ_FROM_PTR(pew);
 }
 
+static mp_obj_t pewpew_deinit(mp_obj_t self_in) {
+    // Only the current PewPew owns the timer. An older one that was already
+    // deinited must not stop its replacement.
+    if (MP_STATE_VM(pew_singleton) == self_in) {
+        pew_deinit();
+        MP_STATE_VM(pew_singleton) = NULL;
+    }
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_1(pewpew_deinit_obj, pewpew_deinit);
 
 static const mp_rom_map_elem_t pewpew_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&pewpew_deinit_obj) },
 };
 static MP_DEFINE_CONST_DICT(pewpew_locals_dict, pewpew_locals_dict_table);
 

@@ -9,6 +9,51 @@
 
 #include "mpconfigport.h"
 
+#include "i2s_shared.h"
+#include "samd/clocks.h"
+
+#ifdef SAMD21
+#include "hpl/pm/hpl_pm_base.h"
+#endif
+
+// Shared I2S reference count. See i2s_shared.h.
+static uint8_t i2s_user_count = 0;
+
+void i2s_acquire(void) {
+    i2s_user_count++;
+}
+
+void i2s_release(void) {
+    i2s_user_count--;
+    if (i2s_user_count == 0) {
+        // Fully power the I2S peripheral down; undo what turn_on_i2s() did.
+        // Disable it first, so the next user finds ENABLE == 0 and resets it,
+        // instead of starting from the last user's configuration.
+        // The I2S can't disable without a clock on its clock units: the
+        // ENABLE sync never finishes. Its users have disconnected theirs, so
+        // connect one for now: the 2MHz GCLK5 on SAMD51, GCLK0 on SAMD21.
+        #ifdef SAM_D5X_E5X
+        const uint8_t sync_gclk = 5;
+        #else
+        const uint8_t sync_gclk = 0;
+        #endif
+        connect_gclk_to_peripheral(sync_gclk, I2S_GCLK_ID_0);
+        connect_gclk_to_peripheral(sync_gclk, I2S_GCLK_ID_1);
+        if (I2S->CTRLA.bit.ENABLE == 1) {
+            I2S->CTRLA.bit.ENABLE = 0;
+            while (I2S->SYNCBUSY.bit.ENABLE == 1) {
+            }
+        }
+        disconnect_gclk_from_peripheral(sync_gclk, I2S_GCLK_ID_0);
+        disconnect_gclk_from_peripheral(sync_gclk, I2S_GCLK_ID_1);
+        #ifdef SAM_D5X_E5X
+        MCLK->APBDMASK.reg &= ~MCLK_APBDMASK_I2S;
+        #else
+        _pm_disable_bus_clock(PM_BUS_APBC, I2S);
+        #endif
+    }
+}
+
 // Some boards don't implement I2SOut, so suppress any routines from here.
 #if CIRCUITPY_AUDIOBUSIO_I2SOUT
 
@@ -34,6 +79,7 @@
 #include "samd/dma.h"
 #include "samd/events.h"
 #include "samd/i2s.h"
+#include "i2s_shared.h"
 #include "samd/pins.h"
 #include "samd/timers.h"
 
@@ -46,33 +92,6 @@
 #ifdef SAM_D5X_E5X
 #define SERCTRL(name) I2S_TXCTRL_##name
 #endif
-
-void i2sout_reset(void) {
-    // Make sure the I2S peripheral is running so we can see if the resources we need are free.
-    #ifdef SAM_D5X_E5X
-    // Connect the clock units to the 2MHz clock. It can't disable without it.
-    connect_gclk_to_peripheral(5, I2S_GCLK_ID_0);
-    connect_gclk_to_peripheral(5, I2S_GCLK_ID_1);
-    #endif
-    if (I2S->CTRLA.bit.ENABLE == 1) {
-        I2S->CTRLA.bit.ENABLE = 0;
-        while (I2S->SYNCBUSY.bit.ENABLE == 1) {
-        }
-    }
-
-    // Make sure the I2S peripheral is running so we can see if the resources we need are free.
-    #ifdef SAM_D5X_E5X
-    // Connect the clock units to the 2MHz clock by default. They can't reset without it.
-    disconnect_gclk_from_peripheral(5, I2S_GCLK_ID_0);
-    disconnect_gclk_from_peripheral(5, I2S_GCLK_ID_1);
-
-    hri_mclk_clear_APBDMASK_I2S_bit(MCLK);
-    #endif
-
-    #ifdef SAMD21
-    _pm_disable_bus_clock(PM_BUS_APBC, I2S);
-    #endif
-}
 
 // Caller validates that pins are free.
 void common_hal_audiobusio_i2sout_construct(audiobusio_i2sout_obj_t *self,
@@ -151,8 +170,9 @@ void common_hal_audiobusio_i2sout_construct(audiobusio_i2sout_obj_t *self,
     self->clock_unit = ws_clock_unit;
     self->serializer = serializer;
 
+    // Check the shared I2S peripheral before refcounting it, so a raise here
+    // doesn't leak the reference.
     turn_on_i2s();
-
     if (I2S->CTRLA.bit.ENABLE == 0) {
         I2S->CTRLA.bit.SWRST = 1;
         while (I2S->CTRLA.bit.SWRST == 1) {
@@ -169,6 +189,9 @@ void common_hal_audiobusio_i2sout_construct(audiobusio_i2sout_obj_t *self,
         }
         #endif
     }
+    i2s_acquire();
+
+    self->gclk = 0xff;
 
     #ifdef SAM_D5X_E5X
     #define GPIO_I2S_FUNCTION GPIO_PIN_FUNCTION_J
@@ -203,16 +226,30 @@ void common_hal_audiobusio_i2sout_deinit(audiobusio_i2sout_obj_t *self) {
         return;
     }
 
+    // Stop the DMA channel, serializer and clock unit, and release the GCLK.
+    // A GCLK is held from play() until stop(). Don't touch the serializer or
+    // clock unit otherwise: their enable bits sync on that GCLK, so with it
+    // disconnected the SYNCBUSY wait never ends.
+    if (self->gclk != 0xff) {
+        common_hal_audiobusio_i2sout_stop(self);
+    }
+
     reset_pin_number(self->bit_clock->number);
     self->bit_clock = NULL;
     reset_pin_number(self->word_select->number);
     self->word_select = NULL;
     reset_pin_number(self->data->number);
+    self->data = NULL;
+
+    // Fully power the I2S peripheral down if we were its last user.
+    i2s_release();
 }
 
 void common_hal_audiobusio_i2sout_play(audiobusio_i2sout_obj_t *self,
     mp_obj_t sample, bool loop) {
-    if (common_hal_audiobusio_i2sout_get_playing(self)) {
+    // Stop if playing, or if a GCLK is still held from a play() that raised
+    // after taking it. Otherwise this play() would overwrite self->gclk and leak it.
+    if (common_hal_audiobusio_i2sout_get_playing(self) || self->gclk != 0xff) {
         common_hal_audiobusio_i2sout_stop(self);
     }
 
@@ -232,7 +269,6 @@ void common_hal_audiobusio_i2sout_play(audiobusio_i2sout_obj_t *self,
     if (gclk > GCLK_GEN_NUM) {
         mp_raise_RuntimeError(MP_ERROR_TEXT("No free GCLKs"));
     }
-    self->gclk = gclk;
 
     uint32_t clkctrl = I2S_CLKCTRL_MCKSEL_GCLK |
         I2S_CLKCTRL_NBSLOTS(1) |
@@ -277,6 +313,8 @@ void common_hal_audiobusio_i2sout_play(audiobusio_i2sout_obj_t *self,
     #endif
 
     // The DFLL is always a 48MHz clock
+    // Hold the GCLK only once it's running: deinit() calls stop() while one is held.
+    self->gclk = gclk;
     enable_clock_generator(self->gclk, CLOCK_48MHZ, divisor);
     connect_gclk_to_peripheral(self->gclk, I2S_GCLK_ID_0 + self->clock_unit);
 
@@ -367,12 +405,17 @@ void common_hal_audiobusio_i2sout_stop(audiobusio_i2sout_obj_t *self) {
         }
     }
     #endif
-    disconnect_gclk_from_peripheral(self->gclk, I2S_GCLK_ID_0 + self->clock_unit);
-    disable_clock_generator(self->gclk);
+    // Release the GCLK once and forget it, so a later stop() or deinit()
+    // doesn't disable a generator that another object now owns.
+    if (self->gclk != 0xff) {
+        disconnect_gclk_from_peripheral(self->gclk, I2S_GCLK_ID_0 + self->clock_unit);
+        disable_clock_generator(self->gclk);
+        self->gclk = 0xff;
 
-    #ifdef SAM_D5X_E5X
-    connect_gclk_to_peripheral(5, I2S_GCLK_ID_0 + self->clock_unit);
-    #endif
+        #ifdef SAM_D5X_E5X
+        connect_gclk_to_peripheral(5, I2S_GCLK_ID_0 + self->clock_unit);
+        #endif
+    }
 
     self->playing = false;
 }

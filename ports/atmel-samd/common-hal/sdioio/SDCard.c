@@ -37,9 +37,22 @@
 
 static Sdhc *sdhc_insts[] = SDHC_INSTS;
 
+// Mark the object deinited: deinited() is true and deinit() does nothing.
+static void mark_deinit(sdioio_sdcard_obj_t *self) {
+    self->command_pin = COMMON_HAL_MCU_NO_PIN;
+    self->clock_pin = COMMON_HAL_MCU_NO_PIN;
+    self->data_pins[0] = COMMON_HAL_MCU_NO_PIN;
+    self->data_pins[1] = COMMON_HAL_MCU_NO_PIN;
+    self->data_pins[2] = COMMON_HAL_MCU_NO_PIN;
+    self->data_pins[3] = COMMON_HAL_MCU_NO_PIN;
+}
+
 void common_hal_sdioio_sdcard_construct(sdioio_sdcard_obj_t *self,
     const mcu_pin_obj_t *clock, const mcu_pin_obj_t *command,
     uint8_t num_data, const mcu_pin_obj_t **data, uint32_t frequency) {
+    // Ensure the object starts in its deinit state.
+    mark_deinit(self);
+
     /*
 SD breakout as assembled  ("*" = minimum viable set)
 
@@ -62,6 +75,7 @@ CLK PA21 PCC_D? (D32)  BROWN
     mcu_pin_function_t *functions[6] = {};
     functions[0] = mcu_find_pin_function(sdio_cmd, command, -1, MP_QSTR_command);
     int instance = functions[0]->instance;
+    self->instance = instance;
     functions[1] = mcu_find_pin_function(sdio_ck, clock, instance, MP_QSTR_clock);
     functions[2] = mcu_find_pin_function(sdio_dat0, data[0], instance, MP_QSTR_data0);
     if (num_data == 4) {
@@ -94,6 +108,7 @@ CLK PA21 PCC_D? (D32)  BROWN
         gpio_set_pin_pull_mode(functions[i]->pin,
             (i == 1 || i == 5) ? GPIO_PULL_OFF : GPIO_PULL_UP);
         gpio_set_pin_function(functions[i]->pin, GPIO_PIN_FUNCTION_SDIO);
+        claim_pin(functions[i]->obj);
     }
 
     self->num_data = num_data;
@@ -123,12 +138,9 @@ CLK PA21 PCC_D? (D32)  BROWN
     }
 
     if (result != SD_MMC_OK) {
-        for (size_t i = 0; i < MP_ARRAY_SIZE(functions); i++) {
-            if (!functions[i]->obj) {
-                break;
-            }
-            reset_pin_number(functions[i]->obj->number);
-        }
+        // Everything deinit() undoes is set up by now: it powers the SDHC down,
+        // releases the pins and marks the object deinited.
+        common_hal_sdioio_sdcard_deinit(self);
         mp_raise_OSError_msg_varg(MP_ERROR_TEXT("%q failure: %d"), MP_QSTR_sd_mmc_check, (int)result);
     }
     // sd_mmc_get_capacity() is in KiB, but our "capacity" is in 512-byte blocks
@@ -260,6 +272,13 @@ bool common_hal_sdioio_sdcard_deinited(sdioio_sdcard_obj_t *self) {
 }
 
 void common_hal_sdioio_sdcard_deinit(sdioio_sdcard_obj_t *self) {
+    if (common_hal_sdioio_sdcard_deinited(self)) {
+        return;
+    }
+
+    wait_write_complete(self);
+    mci_sync_deinit(&self->IO_BUS);
+
     reset_pin_number(self->command_pin);
     reset_pin_number(self->clock_pin);
     reset_pin_number(self->data_pins[0]);
@@ -267,13 +286,18 @@ void common_hal_sdioio_sdcard_deinit(sdioio_sdcard_obj_t *self) {
     reset_pin_number(self->data_pins[2]);
     reset_pin_number(self->data_pins[3]);
 
-    self->command_pin = COMMON_HAL_MCU_NO_PIN;
-    self->clock_pin = COMMON_HAL_MCU_NO_PIN;
-    self->data_pins[0] = COMMON_HAL_MCU_NO_PIN;
-    self->data_pins[1] = COMMON_HAL_MCU_NO_PIN;
-    self->data_pins[2] = COMMON_HAL_MCU_NO_PIN;
-    self->data_pins[3] = COMMON_HAL_MCU_NO_PIN;
-}
+    // Power down the SDHC peripheral.
+    if (self->instance == 0) {
+        hri_gclk_write_PCHCTRL_reg(GCLK, SDHC0_GCLK_ID, 0);
+        hri_gclk_write_PCHCTRL_reg(GCLK, SDHC0_GCLK_ID_SLOW, 0);
+        hri_mclk_clear_AHBMASK_SDHC0_bit(MCLK);
+    #ifdef SDHC1_GCLK_ID
+    } else {
+        hri_gclk_write_PCHCTRL_reg(GCLK, SDHC1_GCLK_ID, 0);
+        hri_gclk_write_PCHCTRL_reg(GCLK, SDHC1_GCLK_ID_SLOW, 0);
+        hri_mclk_clear_AHBMASK_SDHC1_bit(MCLK);
+    #endif
+    }
 
-void common_hal_sdioio_sdcard_never_reset(sdioio_sdcard_obj_t *self) {
+    mark_deinit(self);
 }

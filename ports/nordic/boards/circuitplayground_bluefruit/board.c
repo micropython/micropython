@@ -9,6 +9,7 @@
 #include "py/obj.h"
 #include "peripherals/nrf/pins.h"
 #include "supervisor/shared/board.h"
+#include "shared-bindings/microcontroller/Pin.h"
 
 #include "nrf_gpio.h"
 
@@ -21,6 +22,10 @@ void board_init(void) {
         NRF_GPIO_PIN_S0S1,
         NRF_GPIO_PIN_NOSENSE);
     nrf_gpio_pin_write(POWER_SWITCH_PIN->number, false);
+
+    // P1.04 (SPEAKER_ENABLE) turns on the speaker amplifier.
+    // Default to low (off).
+    reset_pin_number(SPEAKER_ENABLE_PIN->number);
 }
 
 void board_deinit(void) {

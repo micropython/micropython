@@ -222,8 +222,17 @@ void ps2_interrupt_handler(uint8_t channel) {
     }
 }
 
+// Mark the object deinited: deinited() is true and deinit() does nothing.
+static void mark_deinit(ps2io_ps2_obj_t *self) {
+    self->clock_pin = NO_PIN;
+    self->data_pin = NO_PIN;
+}
+
 void common_hal_ps2io_ps2_construct(ps2io_ps2_obj_t *self,
     const mcu_pin_obj_t *data_pin, const mcu_pin_obj_t *clock_pin) {
+    // Ensure the object starts in its deinit state.
+    mark_deinit(self);
+
     if (!clock_pin->has_extint) {
         mp_arg_error_invalid(MP_QSTR_clock_pin);
     }
@@ -231,12 +240,12 @@ void common_hal_ps2io_ps2_construct(ps2io_ps2_obj_t *self,
         mp_raise_RuntimeError(MP_ERROR_TEXT("Internal resource(s) in use"));
     }
 
-    clk_hi(self);
-    data_hi(self);
-
     self->channel = clock_pin->extint_channel;
     self->clock_pin = clock_pin->number;
     self->data_pin = data_pin->number;
+    // These configure the pins in self, so call them only once they're set.
+    clk_hi(self);
+    data_hi(self);
     self->state = STATE_IDLE;
     self->bufcount = 0;
     self->bufposr = 0;
@@ -274,8 +283,7 @@ void common_hal_ps2io_ps2_deinit(ps2io_ps2_obj_t *self) {
     turn_off_eic_channel(self->channel);
     reset_pin_number(self->clock_pin);
     reset_pin_number(self->data_pin);
-    self->clock_pin = NO_PIN;
-    self->data_pin = NO_PIN;
+    mark_deinit(self);
 }
 
 uint16_t common_hal_ps2io_ps2_get_len(ps2io_ps2_obj_t *self) {

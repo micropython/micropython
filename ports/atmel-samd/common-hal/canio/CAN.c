@@ -27,7 +27,17 @@ static canio_can_obj_t *can_objs[MP_ARRAY_SIZE(can_insts)];
 // This must be placed in the first 64kB of RAM
 static COMPILER_SECTION(".canram") canio_can_state_t can_state[MP_ARRAY_SIZE(can_insts)];
 
+// Mark the object deinited: deinited() is true and deinit() does nothing.
+static void mark_deinit(canio_can_obj_t *self) {
+    self->hw = NULL;
+    self->tx_pin_number = COMMON_HAL_MCU_NO_PIN;
+    self->rx_pin_number = COMMON_HAL_MCU_NO_PIN;
+}
+
 void common_hal_canio_can_construct(canio_can_obj_t *self, const mcu_pin_obj_t *tx, const mcu_pin_obj_t *rx, int baudrate, bool loopback, bool silent) {
+    // Ensure the object starts in its deinit state.
+    mark_deinit(self);
+
     mcu_pin_function_t *tx_function = mcu_find_pin_function(can_tx, tx, -1, MP_QSTR_tx);
     int instance = tx_function->instance;
 
@@ -48,11 +58,11 @@ void common_hal_canio_can_construct(canio_can_obj_t *self, const mcu_pin_obj_t *
 
     gpio_set_pin_direction(tx_function->pin, GPIO_DIRECTION_OUT);
     gpio_set_pin_function(tx_function->pin, tx_function->function);
-    common_hal_never_reset_pin(tx_function->obj);
+    claim_pin(tx_function->obj);
 
     gpio_set_pin_direction(rx_function->pin, GPIO_DIRECTION_IN);
     gpio_set_pin_function(rx_function->pin, rx_function->function);
-    common_hal_never_reset_pin(rx_function->obj);
+    claim_pin(rx_function->obj);
 
     self->tx_pin_number = tx ? common_hal_mcu_pin_number(tx) : COMMON_HAL_MCU_NO_PIN;
     self->rx_pin_number = rx ? common_hal_mcu_pin_number(rx) : COMMON_HAL_MCU_NO_PIN;
@@ -62,6 +72,18 @@ void common_hal_canio_can_construct(canio_can_obj_t *self, const mcu_pin_obj_t *
     self->loopback = loopback;
     self->silent = silent;
 
+    // Turn the CAN clocks on before touching its registers. deinit() turns
+    // them off, so CCCR.INIT would never read back as set without them.
+    if (instance == 0) {
+        hri_mclk_set_AHBMASK_CAN0_bit(MCLK);
+        hri_gclk_write_PCHCTRL_reg(GCLK, CAN0_GCLK_ID, CONF_GCLK_CAN0_SRC | (1 << GCLK_PCHCTRL_CHEN_Pos));
+    #ifdef CAN1_GCLK_ID
+    } else if (instance == 1) {
+        hri_mclk_set_AHBMASK_CAN1_bit(MCLK);
+        hri_gclk_write_PCHCTRL_reg(GCLK, CAN1_GCLK_ID, CONF_GCLK_CAN1_SRC | (1 << GCLK_PCHCTRL_CHEN_Pos));
+    #endif
+    }
+
     // Allow configuration change
     hri_can_set_CCCR_INIT_bit(self->hw);
     while (hri_can_get_CCCR_INIT_bit(self->hw) == 0) {
@@ -69,18 +91,12 @@ void common_hal_canio_can_construct(canio_can_obj_t *self, const mcu_pin_obj_t *
     hri_can_set_CCCR_CCE_bit(self->hw);
 
     if (instance == 0) {
-        hri_mclk_set_AHBMASK_CAN0_bit(MCLK);
-        hri_gclk_write_PCHCTRL_reg(GCLK, CAN0_GCLK_ID, CONF_GCLK_CAN0_SRC | (1 << GCLK_PCHCTRL_CHEN_Pos));
-
         NVIC_DisableIRQ(CAN0_IRQn);
         NVIC_ClearPendingIRQ(CAN0_IRQn);
         NVIC_EnableIRQ(CAN0_IRQn);
         hri_can_write_ILE_reg(self->hw, CAN_ILE_EINT0);
     #ifdef CAN1_GCLK_ID
     } else if (instance == 1) {
-        hri_mclk_set_AHBMASK_CAN1_bit(MCLK);
-        hri_gclk_write_PCHCTRL_reg(GCLK, CAN1_GCLK_ID, CONF_GCLK_CAN1_SRC | (1 << GCLK_PCHCTRL_CHEN_Pos));
-
         NVIC_DisableIRQ(CAN1_IRQn);
         NVIC_ClearPendingIRQ(CAN1_IRQn);
         NVIC_EnableIRQ(CAN1_IRQn);
@@ -343,7 +359,39 @@ void common_hal_canio_can_check_for_deinit(canio_can_obj_t *self) {
 void common_hal_canio_can_deinit(canio_can_obj_t *self) {
     if (self->hw) {
         hri_can_set_CCCR_INIT_bit(self->hw);
-        self->hw = 0;
+        while (hri_can_get_CCCR_INIT_bit(self->hw) == 0) {
+        }
+
+        // Find which hardware instance we are so we can release its clocks
+        // and IRQ.
+        size_t instance = MP_ARRAY_SIZE(can_insts);
+        for (size_t i = 0; i < MP_ARRAY_SIZE(can_insts); i++) {
+            if (can_insts[i] == self->hw) {
+                instance = i;
+                break;
+            }
+        }
+        if (instance < MP_ARRAY_SIZE(can_insts)) {
+            // Clear this instance's message RAM, including its RX filters, so
+            // the next CAN on it doesn't inherit them. common_hal_canio_reset()
+            // used to clear all of it at VM end.
+            memset(&can_state[instance], 0, sizeof(can_state[instance]));
+            if (instance == 0) {
+                NVIC_DisableIRQ(CAN0_IRQn);
+                NVIC_ClearPendingIRQ(CAN0_IRQn);
+                hri_gclk_write_PCHCTRL_reg(GCLK, CAN0_GCLK_ID, 0);
+                hri_mclk_clear_AHBMASK_CAN0_bit(MCLK);
+            #ifdef CAN1_GCLK_ID
+            } else if (instance == 1) {
+                NVIC_DisableIRQ(CAN1_IRQn);
+                NVIC_ClearPendingIRQ(CAN1_IRQn);
+                hri_gclk_write_PCHCTRL_reg(GCLK, CAN1_GCLK_ID, 0);
+                hri_mclk_clear_AHBMASK_CAN1_bit(MCLK);
+            #endif
+            }
+            can_objs[instance] = NULL;
+        }
+        self->hw = NULL;
     }
     if (self->rx_pin_number != COMMON_HAL_MCU_NO_PIN) {
         reset_pin_number(self->rx_pin_number);
@@ -354,22 +402,6 @@ void common_hal_canio_can_deinit(canio_can_obj_t *self) {
         self->tx_pin_number = COMMON_HAL_MCU_NO_PIN;
     }
 }
-
-void common_hal_canio_reset(void) {
-    memset(can_state, 0, sizeof(can_state));
-
-    for (size_t i = 0; i < MP_ARRAY_SIZE(can_insts); i++) {
-        hri_can_set_CCCR_INIT_bit(can_insts[i]);
-    }
-
-    for (size_t i = 0; i < MP_ARRAY_SIZE(can_objs); i++) {
-        if (can_objs[i]) {
-            common_hal_canio_can_deinit(can_objs[i]);
-            can_objs[i] = NULL;
-        }
-    }
-}
-
 
 static void can_handler(int i) {
     canio_can_obj_t *self = can_objs[i];

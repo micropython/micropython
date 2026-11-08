@@ -25,6 +25,9 @@
 void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     const mcu_pin_obj_t *clock, const mcu_pin_obj_t *mosi,
     const mcu_pin_obj_t *miso, bool half_duplex) {
+    // Ensure the object starts in its deinit state.
+    common_hal_busio_spi_mark_deinit(self);
+
     Sercom *sercom = NULL;
     uint8_t sercom_index;
     uint32_t clock_pinmux = 0;
@@ -40,9 +43,6 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     if (half_duplex) {
         mp_raise_NotImplementedError_varg(MP_ERROR_TEXT("%q"), MP_QSTR_half_duplex);
     }
-
-    // Ensure the object starts in its deinit state.
-    common_hal_busio_spi_mark_deinit(self);
 
     // Special case for SAMR21 boards. (feather_radiofruit_zigbee)
     #if defined(PIN_PC19F_SERCOM4_PAD0)
@@ -169,13 +169,6 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     spi_m_sync_enable(&self->spi_desc);
 }
 
-void common_hal_busio_spi_never_reset(busio_spi_obj_t *self) {
-    never_reset_sercom(self->spi_desc.dev.prvt);
-
-    never_reset_pin_number(self->clock_pin);
-    never_reset_pin_number(self->MOSI_pin);
-    never_reset_pin_number(self->MISO_pin);
-}
 
 bool common_hal_busio_spi_deinited(busio_spi_obj_t *self) {
     return self->clock_pin == NO_PIN;
@@ -192,7 +185,6 @@ void common_hal_busio_spi_deinit(busio_spi_obj_t *self) {
     #if CIRCUITPY_BUSIO_SPI_ASYNC
     common_hal_busio_spi_end(self);
     #endif
-    allow_reset_sercom(self->spi_desc.dev.prvt);
 
     spi_m_sync_disable(&self->spi_desc);
     spi_m_sync_deinit(&self->spi_desc);

@@ -380,14 +380,20 @@ void common_hal_sdcardio_sdcard_construct(sdcardio_sdcard_obj_t *self, busio_spi
 }
 
 void common_hal_sdcardio_sdcard_deinit(sdcardio_sdcard_obj_t *self) {
-    if (common_hal_sdcardio_sdcard_deinited(self)) {
+    // Already deinited.
+    if (self->bus == NULL) {
         return;
     }
-    common_hal_sdcardio_sdcard_sync(self);
+    // The SPI bus may already be deinited, for example board.SPI() at the end of the VM.
+    // Then skip the sync, but still release the CS pin.
+    if (!common_hal_busio_spi_deinited(self->bus)) {
+        common_hal_sdcardio_sdcard_sync(self);
+    }
     common_hal_sdcardio_sdcard_mark_deinit(self);
     if (self->own_cs) {
         digitalinout_protocol_deinit(self->cs);
         circuitpy_free_obj(self->cs);
+        self->own_cs = false;
     }
 }
 
