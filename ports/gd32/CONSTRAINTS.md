@@ -418,61 +418,67 @@ cd ports/gd32
 | 运行时硬件验证 | **部分已做** | Pin/SPI/I2C/ADC/DAC/Timer/WDT/RTC/CAN/UART/文件系统/
 SDCard 均已上板实测；TLS、lwIP、TinyUSB、FAT 写入仍未实测 |
 
-### 7.1 microSD 写入为何仍未启用（2026-11-08 实测记录）
+### 7.1 microSD 写入：已修复（2026-11-08）
 
-读路径已上板验证通过；写入路径试了两代实现都不成立，因此保持 `EROFS`。
-这一节记录**已经排除的可能**，避免重复投入。
+曾经只读，现已可读写。根因来自 GD32F4xx 用户手册 24.4.2 节给出的一小段写流程。
 
-#### 已修复的部分（写入的前提，均已验证）
+#### 决定性的一段（手册原文）
 
-卡检测 PD3、`sd_cmd` 等错完成标志、`sd_clear_flags` 漏清锁存位、
-数据超时参数、CSD 容量解码 —— 见 README 的 SD Card 一节。
+> Program SDIO_CMDCTL: CMDIDX with 24, CMDRESP with 1, CSMEN with 1.
+> **Other fields are their reset value.**
+> **When the CMDRECV flag is set**, program SDIO_DATACTL: DATAEN with 1,
+> DATADIR with 0, TRANSMOD with 0, DMAEN with 1, BLKSZ with 0x9.
+> Wait for **DTBLKEND** flag is set.
 
-#### 第一代：CPU 轮询喂 FIFO —— 四种时序全部失败
+两个要点：
 
-| 时序 | 实测结果（SWD 读寄存器） |
-|------|--------------------------|
-| DPSM 先于命令使能，收到 R1 后再推数据 | `STAT.TXURE`，`DATACNT` 停在 507（只发出 5 字节） |
-| 先发命令，再使能 DPSM，再推数据 | `DATACNT` 保持 512，`TFE` 置位，一个字节都没动 |
-| DPSM 关闭时预填 FIFO，再使能 | 使能后 `TFE` 置位，预填内容丢失 |
-| 预填按 `TFF` 限流，再使能后按 `TFH` 续推 | 全 512 字节发出，但卡片以**数据 CRC 错误**拒收 |
+1. **`DATAEN` 在发命令时必须为 0**，等 `CMDRECV`（R1 收到）之后再置位。
+   提前使能会让 DSM 进入 `DS_WaitS`，FIFO 一有数据就往总线上送，而卡片还没在听
+   —— 于是每个块到卡上都是错位字节流，卡片回数据 CRC 失败。
+   读方向提前使能无害：DSM 停在 `DS_WaitR` 等起始位，这也解释了为什么读一直正常。
+2. **完成判据是 `DTBLKEND`**，不是 `DTEND`。`DTEND` 只表示主机把字节搬完了；
+   `DTBLKEND` 才是卡片的 CRC 状态令牌确认。用 `DTEND` + "无错误标志"判断，
+   会让"卡片压根没确认"的写看起来成功（这正是之前误报成功的原因）。
 
-最后一种说明字节流错位（FIFO 满时写入的字被静默丢弃）。
-更麻烦的是**结果不稳定**：同样的代码两次运行，一次发满 512 字节，
-一次 0 字节且无任何错误标志 —— 说明轮询依赖的标志语义在本控制器上不可靠。
+#### 三个数据标志的确切含义
 
-#### 第二代：DMA 发送 —— 消除时序竞争，但数据仍不落盘
+| 标志 | 位 | 手册定义 | 含义 |
+|------|----|----------|------|
+| `DTEND` | 8 | "data end (data counter, SDIO_DATACNT, is zero)" | 主机搬完字节 |
+| `DTBLKEND` | 10 | "data block sent/received (CRC check passed)" | 卡片确认，CRC 通过 |
+| `DTCRCERR` | 1 | "data block sent/received (CRC check failed)" | 卡片确认，CRC 失败 |
 
-映射已查明（GD32F4xx DMA1，peripheral select 4）：
+#### 最终实现
 
-```
-DMA_REQ_SDIO_1 = DMA1 channel 3   （接收）
-DMA_REQ_SDIO_2 = DMA1 channel 6   （发送）
-```
+- 发送走 DMA1 CH6（`DMA_REQ_SDIO_2`，peripheral select 4），手册要求的
+  外设侧 4 拍增量突发；接收仍用 FIFO 轮询（已验证可靠，不引入额外风险）。
+- 顺序严格按手册：配 `DATALEN`/`BLKSZ` → 配 DMA → 发 CMD24（`DATAEN=0`）
+  → 等 `CMDRECV` → 置 `DATAEN/DATADIR/TRANSMOD/DMAEN` → 等 `DTBLKEND`
+  → 等 DMA 完成 → CMD13 轮询 `READY_FOR_DATA`。
+- 端口层按块读写，部分块写先读出整块再覆盖，避免用填充值覆盖同块其他数据。
 
-实现要点（`dma_single_data_mode_init` + `dma_channel_subperipheral_select`，
-32 位宽、`DMA_MEMORY_TO_PERIPH`、字数 = 字节数/4、`sdio_dma_enable()`）。
+#### 验证结果（真机 16 GB 卡）
 
-**结果**：`TXURE`/"TX data timeout" 这类时序错误消失，写入函数返回成功；
-但
+| 测试 | 结果 |
+|------|------|
+| 原始块写后读回逐字节比对 | 3/3 一致 |
+| FAT 文件写入 + 读回 | 一致 |
+| 12 KiB 分 256 字节块写入、逐块读回 | 全部一致 |
+| 小文件（走部分块写路径） | 一致 |
+| 复位后重挂载读回 | 内容完好 |
+| 内部 littlefs 无回归 | 12 块、`boot.py` + `main.py` 均在 |
+| GD32F470 编译 | 通过 |
 
-1. 读回内容与写入内容**不一致**，且卡片与控制器都**没报 CRC 错误**；
-2. 写完之后**紧接着的读会失败**（`RX data timeout`），必须重新
-   `SDCard()` 全量初始化才能恢复读能力；
-3. 上述行为**不稳定**：同一脚本重复执行，读回时而无异常时而不符。
+#### 走过的弯路（均已排除，勿重复）
 
-把 `sd_wait_ready()`（CMD13 轮询 READY_FOR_DATA）从"一次失败就返回"改成
-重试到超时，也没改变结论。
+CPU 轮询 `TFH` 喂 FIFO（四种时序）、DMA 但 DPSM 先于命令、1 位 vs 4 位总线、
+24 MHz vs 4 MHz 卡时钟 —— 全部失败，且**根因都不在这里**，唯一要害是
+`DATAEN` 的使能时机。当时若先拿到用户手册这一段，可以省掉绝大部分时间。
 
-#### 结论与后续线索
+#### 注意
 
-- 数据**没有真正落到卡上**，而硬件侧不报错 —— 说明数据阶段没有真正完成，
-  只是我们自己的完成判据（`DATACNT` 归零 / 无错误标志）被骗过了。
-- 保守起见保持 `writeblocks()` 抛 `EROFS`：宁可明确只读，也不能让半写块
-  破坏 FAT。当前卡可正常挂载、列目录、读文件。
-- 下一步建议按顺序查：① 数据响应令牌（data response token）是否被 DPSM 正确接收，
-  即 `DTBLKEND`/`DTCRCERR` 时序；② 写命令后卡片 busy（DAT0 拉低）与
-  我们使能 DPSM 的先后关系；③ 用逻辑分析仪抓 CLK/CMD/DAT0，比继续盲试寄存器更快。
+测试过程中曾把花样写进块 1、2、1000（属于 FAT 元数据区），会破坏文件系统。
+验证写入请只用分区之外的高 LBA，或只用文件 API。
 
 ---
 

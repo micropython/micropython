@@ -44,17 +44,16 @@ static mp_obj_t machine_sdcard_readblocks(size_t n_args, const mp_obj_t *args) {
     size_t len = bufinfo.len;
     if (n_args > 3) {
         offset = mp_obj_get_int(args[3]);
-        if (n_args > 3 && offset + len > 512) {
-            len = 512 - offset;
-        }
+    }
+    if (offset > 512) {
+        offset = 512;
+    }
+    if (offset + len > 512) {
+        len = 512 - offset;
     }
 
     static uint8_t bounce[512];
-    uint32_t blocks = (len + 511) / 512;
-    if (blocks == 0) {
-        blocks = 1;
-    }
-    if (sdcard_read(block_num, bounce, blocks) != 0) {
+    if (sdcard_read(block_num, bounce, 1) != 0) {
         mp_raise_OSError(MP_EIO);
     }
     memcpy(bufinfo.buf, bounce + offset, len);
@@ -63,19 +62,39 @@ static mp_obj_t machine_sdcard_readblocks(size_t n_args, const mp_obj_t *args) {
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_sdcard_readblocks_obj, 3, 4, machine_sdcard_readblocks);
 
 static mp_obj_t machine_sdcard_writeblocks(size_t n_args, const mp_obj_t *args) {
-    (void)n_args;
-    (void)args;
+    uint32_t block_num = mp_obj_get_int(args[1]);
 
-    // Writes are deliberately refused for now.
-    //
-    // The read path is verified on hardware: block 0 reads back a valid MBR
-    // signature and a FAT filesystem mounts and lists.  The transmit side of the
-    // SDIO driver still loses data - words pushed into the transmit FIFO are
-    // dropped when it is full, so the card rejects the block with a data CRC
-    // error.  Returning EROFS keeps a half-written block from ever reaching the
-    // card, which would corrupt the filesystem.  sdcard.c keeps the write
-    // implementation for whoever picks this up; see CONSTRAINTS.md.
-    mp_raise_OSError(MP_EROFS);
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(args[2], &bufinfo, MP_BUFFER_READ);
+
+    size_t offset = 0;
+    size_t len = bufinfo.len;
+    if (n_args > 3) {
+        offset = mp_obj_get_int(args[3]);
+    }
+    if (offset > 512) {
+        offset = 512;
+    }
+    if (offset + len > 512) {
+        len = 512 - offset;
+    }
+
+    static uint8_t bounce[512];
+    if (offset == 0 && len == 512) {
+        memcpy(bounce, bufinfo.buf, 512);
+    } else {
+        // Partial block: read the current contents first, otherwise the rest of
+        // the sector would be overwritten with filler and neighbouring data in
+        // the same block would be lost.
+        if (sdcard_read(block_num, bounce, 1) != 0) {
+            mp_raise_OSError(MP_EIO);
+        }
+        memcpy(bounce + offset, bufinfo.buf, len);
+    }
+
+    if (sdcard_write(block_num, bounce, 1) != 0) {
+        mp_raise_OSError(MP_EIO);
+    }
     return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_sdcard_writeblocks_obj, 3, 4, machine_sdcard_writeblocks);

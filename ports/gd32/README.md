@@ -668,7 +668,7 @@ The driver implements CMD0/2/3/6/7/8/9/16/17/18/24/25 and
 ACMD6/ACMD41. Card detect is polled; removing the card invalidates the
 driver state so the next `SDCard()` re-initialises.
 
-### Status: read-only, verified on hardware (2026-11-08)
+### Status: read and write, verified on hardware (2026-11-08)
 
 Tested on a LCKFB ``Sky Star`` board with a 16 GB microSD card:
 
@@ -676,19 +676,44 @@ Tested on a LCKFB ``Sky Star`` board with a 16 GB microSD card:
 SDCard(present=True, ready=True)
 info()  -> (30883840, 512, True, True)     # 16 GB, SDHC, ready
 block 0 -> 0x55AA MBR signature present
+
+raw block round trip (write then read back)          -> 3/3 byte-identical
 os.mount(vfs.VfsFat(card), '/sd')
-os.listdir('/sd') -> ['System Volume Information']
+file write + read back                               -> identical
+12 KiB written in 256-byte chunks, read back per chunk -> all match
+survives a reset (remount, file contents intact)     -> yes
 ```
 
-**Writes are not supported yet and raise `OSError(EROFS)`.**  The transmit
-side of the SDIO driver still loses data: words pushed into the transmit FIFO
-are dropped when the FIFO is full, so the card rejects the block with a data
-CRC error.  Rather than risk half-written blocks corrupting the filesystem, the
-block device refuses writes outright.  `sdcard.c` keeps the write
-implementation for whoever picks this up - see `CONSTRAINTS.md`.
+Both directions work, so the card can be used as a normal read/write volume.
+Transfers are 512 bytes at a time through a bounce buffer; multi-block bursts
+are not used.
 
-So the card works as a read-only volume: you can mount it, list it and read
-files from it, but not create or modify them.
+### What actually made writes fail
+
+Reading one section of the GD32F4xx user manual (24.4.2, *APB2 interface*)
+settled it - the order of the two register writes is what matters:
+
+> Program SDIO_CMDCTL: CMDIDX with 24, CMDRESP with 1, CSMEN with 1.
+> **Other fields are their reset value.**
+> **When the CMDRECV flag is set**, program SDIO_DATACTL: DATAEN with 1,
+> DATADIR with 0, TRANSMOD with 0, DMAEN with 1, BLKSZ with 0x9.
+> Wait for **DTBLKEND** flag is set.
+
+`DATAEN` must stay **0** until the card has answered the command. Arming the
+data path earlier drops the data state machine into `DS_WaitS`, which starts
+pushing the FIFO onto the bus as soon as it holds data - before the card is
+listening - so every block arrived garbled and the card rejected it with a data
+CRC error. Reads tolerate early arming because their state machine just parks in
+`DS_WaitR` waiting for a start bit, which is why reads worked all along.
+
+The second half of the fix is the completion test: `DTEND` only means the host
+finished shifting bytes out, `DTBLKEND` is the card's CRC-status acknowledgement.
+Judging a write by `DTEND` plus "no error flag" made an unacknowledged write look
+successful.
+
+Pointers on what was tried and rejected before finding this (CPU-fed FIFO in four
+orderings, DMA, 1-bit vs 4-bit bus, 24 MHz vs 4 MHz clock) are in
+`CONSTRAINTS.md` 7.1.
 
 ### Three driver bugs that were fixed to get this far
 

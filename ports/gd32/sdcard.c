@@ -254,16 +254,71 @@ static uint32_t sd_resp(uint32_t index) {
 // After a write the card keeps DAT0 low while it programs internally; polling
 // CMD13 is the defined way to wait for that, and it also catches write errors
 // instead of silently ignoring them.
+//
+// A failure of CMD13 here is expected while the card is busy - it must not end
+// the wait, otherwise the very next read issues CMD17 to a card that is still
+// programming and dies with "RX data timeout".
 static void sd_wait_ready(void) {
-    for (int i = 0; i < 500; i++) {
-        if (sd_cmd(CMD_SEND_STATUS, sd_ctx.rca, RESP_SHORT) != 0) {
-            return;
-        }
-        if (sd_resp(SDIO_RESPONSE0) & (1u << 8)) {
+    for (int i = 0; i < 1000; i++) {
+        if (sd_cmd(CMD_SEND_STATUS, sd_ctx.rca, RESP_SHORT) == 0
+            && (sd_resp(SDIO_RESPONSE0) & (1u << 8))) {
             return;
         }
         mp_hal_delay_ms(1);
     }
+}
+
+// ---- SDIO transmit DMA ----
+//
+// SDIO request mapping (GD32F4xx DMA1, peripheral select 4):
+//   DMA_REQ_SDIO_1 = DMA1 channel 3
+//   DMA_REQ_SDIO_2 = DMA1 channel 6
+// Channel 6 carries the transmit request, channel 3 the receive request.
+#define SD_DMA_PERIPH       DMA1
+#define SD_DMA_TX_CH        DMA_CH6
+#define SD_DMA_TX_SUBPERI   DMA_SUBPERI4
+
+static void sd_dma_prepare(const uint8_t *buf, uint32_t bytes) {
+    dma_single_data_parameter_struct init;
+
+    rcu_periph_clock_enable(RCU_DMA1);
+    dma_deinit(SD_DMA_PERIPH, SD_DMA_TX_CH);
+
+    dma_single_data_para_struct_init(&init);
+    init.periph_addr = (uint32_t)&SDIO_FIFO;      // 32-bit wide FIFO port
+    init.periph_inc = DMA_PERIPH_INCREASE_DISABLE;
+    init.memory0_addr = (uint32_t)buf;
+    init.memory_inc = DMA_MEMORY_INCREASE_ENABLE;
+    init.periph_memory_width = DMA_PERIPH_WIDTH_32BIT;   // sets both sides
+    init.circular_mode = DMA_CIRCULAR_MODE_DISABLE;
+    init.direction = DMA_MEMORY_TO_PERIPH;
+    init.number = bytes / 4;                      // counted in 32-bit words
+    init.priority = DMA_PRIORITY_ULTRA_HIGH;
+    dma_single_data_mode_init(SD_DMA_PERIPH, SD_DMA_TX_CH, &init);
+
+    // Select the SDIO request after the mode init, which rewrites parts of the
+    // same control register.  The manual also asks for an incremental burst of
+    // 4 on the peripheral side.
+    dma_channel_subperipheral_select(SD_DMA_PERIPH, SD_DMA_TX_CH, SD_DMA_TX_SUBPERI);
+    dma_periph_burst_beats_config(SD_DMA_PERIPH, SD_DMA_TX_CH, DMA_PERIPH_BURST_4_BEAT);
+    dma_flag_clear(SD_DMA_PERIPH, SD_DMA_TX_CH, DMA_FLAG_FTF);
+}
+
+static bool sd_dma_wait_done(void) {
+    mp_uint_t start = mp_hal_ticks_ms();
+    while (dma_flag_get(SD_DMA_PERIPH, SD_DMA_TX_CH, DMA_FLAG_FTF) == RESET) {
+        if ((mp_hal_ticks_ms() - start) > SD_TIMEOUT_MS) {
+            return false;
+        }
+    }
+    return true;
+}
+
+static void sd_dma_tx_stop(void) {
+    dma_channel_disable(SD_DMA_PERIPH, SD_DMA_TX_CH);
+    dma_flag_clear(SD_DMA_PERIPH, SD_DMA_TX_CH, DMA_FLAG_FTF);
+    sdio_dma_disable();
+    sdio_dsm_disable();
 }
 
 // ---- data transfer ----
@@ -320,85 +375,109 @@ static int sd_read_blocks(uint32_t addr, uint8_t *buf, uint32_t blocks) {
     return 0;
 }
 
+// Wait for the card to acknowledge the data block.
+//
+// The three data-path flags mean very different things (vendor definitions, see
+// gd32f4xx_sdio.h):
+//
+//   DTEND    (bit 8)  "data end (data counter, SDIO_DATACNT, is zero)"
+//                     - the HOST finished shifting bytes out. Says nothing
+//                       about the card.
+//   DTBLKEND (bit 10) "data block sent/received (CRC check passed)"
+//                     - the card returned its CRC status token for the block
+//                       and reported success.  This is the real acknowledgement.
+//   DTCRCERR (bit 1)  "data block sent/received (CRC check failed)"
+//                     - the card returned a token saying the block was corrupt.
+//
+// The old code judged success by "DATACNT reached zero and no error flag is
+// set".  A write that the card never acknowledged satisfies both - it produces
+// no token at all, so not even DTCRCERR is raised - which is why writes were
+// reported as successful while nothing was ever stored.
+static bool sd_wait_block_ack(void) {
+    mp_uint_t start = mp_hal_ticks_ms();
+    for (;;) {
+        if (sdio_flag_get(SDIO_FLAG_DTBLKEND) != RESET) {
+            return true;
+        }
+        if (sdio_flag_get(SDIO_FLAG_DTCRCERR) != RESET) {
+            sd_err_str = "data CRC error";
+            return false;
+        }
+        if (sdio_flag_get(SDIO_FLAG_TXURE) != RESET) {
+            sd_err_str = "TX underrun";
+            return false;
+        }
+        if (sdio_flag_get(SDIO_FLAG_DTTMOUT) != RESET) {
+            sd_err_str = "data timeout";
+            return false;
+        }
+        if ((mp_hal_ticks_ms() - start) > SD_TIMEOUT_MS) {
+            sd_err_str = "block not acked";
+            return false;
+        }
+    }
+}
+
 static int sd_write_blocks(uint32_t addr, const uint8_t *buf, uint32_t blocks) {
     uint32_t start_addr = sd_ctx.high_capacity ? addr : addr * BLOCK_SIZE;
     uint32_t total = blocks * BLOCK_SIZE;
 
-    // Reset the data path first: disabling it flushes the transmit FIFO, so a
-    // write never starts with leftovers from an earlier transfer.  Without this
-    // the preload below silently drops words and the transfer stalls with
-    // "TX data timeout".
+    // This follows the block-write sequence from the GD32F4xx user manual
+    // (24.4.2, "APB2 interface") step by step, because the ORDER is what makes a
+    // write work:
+    //
+    //   "Program SDIO_CMDCTL: CMDIDX with 24, CMDRESP with 1, CSMEN with 1.
+    //    Other fields are their reset value."
+    //   "When the CMDRECV flag is set, program SDIO_DATACTL: DATAEN with 1,
+    //    DATADIR with 0, TRANSMOD with 0, DMAEN with 1, BLKSZ with 0x9."
+    //   "Wait for DTBLKEND flag is set."
+    //
+    // DATAEN must stay 0 until the card has answered.  Arming the data path
+    // earlier drops the DSM into DS_WaitS, which starts pushing the FIFO to the
+    // bus as soon as it holds data - before the card is listening - and every
+    // write then fails with a data CRC error.  That is exactly what several
+    // earlier attempts did.  (Reads tolerate early arming because DSM just parks
+    // in DS_WaitR waiting for a start bit.)
     sdio_dsm_disable();
     sd_clear_flags();
+
+    // DATALEN in bytes + BLKSZ in DATACTL.  DATAEN stays clear.
     sdio_data_config(SD_DATA_TIMEOUT, total, SDIO_DATABLOCKSIZE_512BYTES);
-    sdio_data_transfer_config(SDIO_TRANSMODE_BLOCK, SDIO_TRANSDIRECTION_TOCARD);
 
-    // Queue the first words while the data path is still disabled: the TX FIFO
-    // accepts data with DPSM off.  Enabling DPSM with an empty FIFO makes the
-    // transmitter start and underrun immediately, and pushing only after
-    // enabling loses the same race.  So preload, then arm.
-    //
-    // The preload must stop as soon as the FIFO reports full (TFF): a write to
-    // a full FIFO is silently dropped, which shifts every following byte by one
-    // word and makes the card reject the block with a CRC error.
-    uint32_t i = 0;
-    while (i < total && sdio_flag_get(SDIO_FLAG_TFF) == RESET) {
-        uint32_t word;
-        memcpy(&word, &buf[i], 4);
-        sdio_data_write(word);
-        i += 4;
-    }
+    // Manual step 4: set the DMA channel up before the block write.
+    sd_dma_prepare(buf, total);
 
+    // Manual step 5, first half: the command alone, data path still disabled.
     sd_cmd_start(blocks == 1 ? CMD_WRITE_SINGLE : CMD_WRITE_MULTIPLE,
                  start_addr, RESP_SHORT);
-    sdio_dsm_enable();
 
-    for (; i < total; i += 4) {
-        // Mirror the reference driver: wait until the transmit FIFO reports at
-        // least eight free words (TFH) before handing it the next one.  If that
-        // times out the words may already have been consumed, so fall through to
-        // the DATACNT check below instead of failing outright.
-        if (!sd_wait_flag(SDIO_FLAG_TFH, SET, SD_TIMEOUT_MS)) {
-            break;
-        }
-        uint32_t word;
-        memcpy(&word, &buf[i], 4);
-        sdio_data_write(word);
-    }
-
-    // The R1 response has been waiting since the data phase began; collect it
-    // and act on the card's own verdict instead of ignoring a rejected write.
+    // "When the CMDRECV flag is set" - wait for the card's R1 first.
     if (sd_cmd_finish(RESP_SHORT) != 0) {
-        sdio_dsm_disable();
         return -1;
     }
     uint32_t r1 = sd_resp(SDIO_RESPONSE0);
     if (r1 & 0x0FFE0000u) {      // OUT_OF_RANGE .. UNDERRUN error bits
         sd_err_str = "write rejected";
-        sdio_dsm_disable();
         return -1;
     }
 
-    // Completion is judged from DATACNT (bytes still to move) plus the error
-    // flags.  Waiting for DTEND alone is unreliable here: the transfer can
-    // finish with DATACNT already at zero while DTEND never latches, which used
-    // to be reported as "DTEND timeout" even though every byte had been sent.
-    uint32_t left = SDIO_DATACNT & 0x01FFFFFFu;
-    mp_uint_t t0 = mp_hal_ticks_ms();
-    while (left != 0 && (mp_hal_ticks_ms() - t0) <= SD_TIMEOUT_MS) {
-        left = SDIO_DATACNT & 0x01FFFFFFu;
-    }
-    uint32_t errf = SDIO_STAT & (SDIO_FLAG_TXURE | SDIO_FLAG_DTCRCERR | SDIO_FLAG_DTTMOUT);
-    sdio_dsm_disable();
+    // Manual step 5, second half: now enable the data path and the DMA handshake.
+    sdio_data_transfer_config(SDIO_TRANSMODE_BLOCK, SDIO_TRANSDIRECTION_TOCARD);
+    dma_channel_enable(SD_DMA_PERIPH, SD_DMA_TX_CH);
+    sdio_dma_enable();
+    sdio_dsm_enable();                       // DATAEN last: this starts the DSM
 
-    if (errf != 0) {
-        sd_err_str = "data transfer error";
+    // "Wait for DTBLKEND flag is set" - the card's CRC status token.
+    if (!sd_wait_block_ack()) {
+        sd_dma_tx_stop();
         return -1;
     }
-    if (left != 0) {
-        sd_err_str = "DTEND timeout";
+    if (!sd_dma_wait_done()) {
+        sd_err_str = "DMA timeout";
+        sd_dma_tx_stop();
         return -1;
     }
+    sd_dma_tx_stop();
 
     if (blocks > 1) {
         sd_cmd(CMD_STOP_TRANSMISSION, 0, RESP_SHORT);
