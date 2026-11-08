@@ -272,10 +272,10 @@ static void mix_down_one_voice(audiomixer_mixer_obj_t *self,
             pending_hi_level = (right_panning_scaled * pending_hi_level) >> 15;
         }
 
-        if (voice->snap_level) {
+        if (voice->snap_to_level) {
             voice->active_lo_level = pending_lo_level;
             voice->active_hi_level = pending_hi_level;
-            voice->snap_level = false;
+            voice->snap_to_level = false;
         }
 
         int32_t active_lo_level = voice->active_lo_level;
