@@ -26,6 +26,11 @@
 static void audio_dma_enable_irq(uint channel);
 static void audio_dma_disable_irq(uint channel);
 
+// Start address of each looping single buffer sample, by DMA channel. The reload DMA reads it
+// once per loop, so it is kept here instead of in the audio object, which may be in PSRAM.
+// A DMA read from PSRAM stalls the other DMA channels, such as picodvi.
+static uint8_t *single_buffer_start[NUM_DMA_CHANNELS];
+
 void audio_dma_reset(void) {
     for (size_t channel = 0; channel < NUM_DMA_CHANNELS; channel++) {
         if (MP_STATE_PORT(playing_audio)[channel] == NULL) {
@@ -329,6 +334,7 @@ audio_dma_result audio_dma_setup_playback(
     // Read and write addresses change with DMA so we need to reset the read address back to the
     // start of the sample.
     if (single_buffer) {
+        single_buffer_start[dma->channel[0]] = dma->buffer[0];
         dma_channel_config c = dma_channel_get_default_config(dma->channel[1]);
         channel_config_set_transfer_data_size(&c, DMA_SIZE_32);
         channel_config_set_dreq(&c, 0x3f); // dma as fast as possible
@@ -337,7 +343,7 @@ audio_dma_result audio_dma_setup_playback(
         channel_config_set_chain_to(&c, dma->channel[1]); // Chain to ourselves so we stop.
         dma_channel_configure(dma->channel[1], &c,
             &dma_hw->ch[dma->channel[0]].al3_read_addr_trig, // write address
-            &dma->buffer[0], // read address
+            &single_buffer_start[dma->channel[0]], // read address
             1, // transaction count
             false); // trigger
     } else {
