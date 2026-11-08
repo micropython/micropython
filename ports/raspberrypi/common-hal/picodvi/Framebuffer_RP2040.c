@@ -109,6 +109,11 @@ static void __not_in_flash_func(core1_scanline_callback)(void) {
 extern uint8_t dvi_vertical_repeat;
 extern bool dvi_monochrome_tmds;
 
+// Mark the object deinited. A zeroed object also reads as deinited.
+static void mark_deinit(picodvi_framebuffer_obj_t *self) {
+    self->framebuffer = NULL;
+}
+
 void common_hal_picodvi_framebuffer_construct(picodvi_framebuffer_obj_t *self,
     mp_uint_t width, mp_uint_t height,
     const mcu_pin_obj_t *clk_dp, const mcu_pin_obj_t *clk_dn,
@@ -116,6 +121,10 @@ void common_hal_picodvi_framebuffer_construct(picodvi_framebuffer_obj_t *self,
     const mcu_pin_obj_t *green_dp, const mcu_pin_obj_t *green_dn,
     const mcu_pin_obj_t *blue_dp, const mcu_pin_obj_t *blue_dn,
     mp_uint_t color_depth) {
+    // Ensure the object starts in its deinit state, so its finaliser does
+    // nothing if this raises before the framebuffer is allocated.
+    mark_deinit(self);
+
     if (active_picodvi != NULL) {
         mp_raise_msg_varg(&mp_type_RuntimeError, MP_ERROR_TEXT("%q in use"), MP_QSTR_picodvi);
     }
@@ -215,16 +224,18 @@ void common_hal_picodvi_framebuffer_construct(picodvi_framebuffer_obj_t *self,
     size_t framebuffer_size = self->pitch * self->height;
     self->tmdsbuf_size = tmds_bufs_per_scanline * scanline_width / DVI_SYMBOLS_PER_WORD + 1;
     size_t total_allocation_size = sizeof(uint32_t) * (framebuffer_size + DVI_N_TMDS_BUFFERS * self->tmdsbuf_size);
-    self->framebuffer = (uint32_t *)port_malloc(total_allocation_size, true);
-    if (self->framebuffer == NULL) {
-        m_malloc_fail(total_allocation_size);
-        return;
-    }
-
-    // Do the pwmio check last because it claims the pwm slice.
+    // Claim the pwm slice before allocating the framebuffer. deinited() checks
+    // the framebuffer, so this object must not raise once it is set.
     if (!pwmio_claim_slice_ab_channels(slice)) {
         mp_raise_ValueError(MP_ERROR_TEXT("All timers for this pin are in use"));
     }
+    uint32_t *framebuffer = (uint32_t *)port_malloc(total_allocation_size, true);
+    if (framebuffer == NULL) {
+        pwmio_release_slice_ab_channels(slice);
+        m_malloc_fail(total_allocation_size);
+        return;
+    }
+    self->framebuffer = framebuffer;
     self->pwm_slice = slice;
 
     // For the output.
@@ -342,7 +353,7 @@ void common_hal_picodvi_framebuffer_deinit(picodvi_framebuffer_obj_t *self) {
     active_picodvi = NULL;
 
     port_free(self->framebuffer);
-    self->framebuffer = NULL;
+    mark_deinit(self);
 
     self->base.type = &mp_type_NoneType;
 }
