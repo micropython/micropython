@@ -43,11 +43,18 @@ void reset_pin_number(uint8_t pin_number) {
     #ifdef SPEAKER_ENABLE_PIN
     if (pin_number == SPEAKER_ENABLE_PIN->number) {
         reset_speaker_enable_pin();
+        return;
     }
     #endif
 
     // Allow the board to override the reset state of any pin.
-    board_reset_pin_number(pin_number);
+    if (board_reset_pin_number(pin_number)) {
+        return;
+    }
+
+    // Disconnected input, as at power-on. Classes that leave a pin driven
+    // (busio.SPI's SCK and MOSI, say) rely on this.
+    nrf_gpio_cfg_default(pin_number);
 }
 
 
