@@ -15,8 +15,16 @@
 #include "samd/external_interrupts.h"
 #include "py/runtime.h"
 
+// Mark the object deinited: deinited() is true and deinit() does nothing.
+static void mark_deinit(countio_counter_obj_t *self) {
+    self->pin = NO_PIN;
+}
+
 void common_hal_countio_counter_construct(countio_counter_obj_t *self,
     const mcu_pin_obj_t *pin, countio_edge_t edge, digitalio_pull_t pull) {
+    // Ensure the object starts in its deinit state.
+    mark_deinit(self);
+
     if (!pin->has_extint) {
         raise_ValueError_invalid_pin();
     }
@@ -87,7 +95,7 @@ void common_hal_countio_counter_deinit(countio_counter_obj_t *self) {
 
 
     reset_pin_number(self->pin);
-    self->pin = NO_PIN;
+    mark_deinit(self);
 
 }
 

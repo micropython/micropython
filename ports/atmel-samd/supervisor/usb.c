@@ -42,8 +42,6 @@ void init_usb_hardware(void) {
     #endif
     claim_pin_number(PIN_PA24);
     claim_pin_number(PIN_PA25);
-    never_reset_pin_number(PIN_PA24);
-    never_reset_pin_number(PIN_PA25);
 }
 
 #ifdef SAMD21

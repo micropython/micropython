@@ -55,6 +55,14 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
     // Ensure the object starts in its deinit state.
     common_hal_busio_i2c_mark_deinit(self);
 
+    // Check the frequency before setting anything up, so there's nothing to undo.
+    // The maximum frequency divisor gives a clock rate of around 48MHz/2/255
+    // but set_baudrate does not diagnose this problem. (This is not the
+    // exact cutoff, but no frequency well under 100kHz is available)
+    if (frequency < 95000) {
+        mp_arg_error_invalid(MP_QSTR_frequency);
+    }
+
     Sercom *sercom = samd_i2c_get_sercom(scl, sda, &sercom_index, &sda_pinmux, &scl_pinmux);
     if (sercom == NULL) {
         raise_ValueError_invalid_pins();
@@ -97,20 +105,20 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
         mp_raise_OSError(MP_EIO);
     }
 
-    // clkrate is always 0. baud_rate is in kHz.
-
     // Frequency must be set before the I2C device is enabled.
-    // The maximum frequency divisor gives a clock rate of around 48MHz/2/255
-    // but set_baudrate does not diagnose this problem. (This is not the
-    // exact cutoff, but no frequency well under 100kHz is available)
-    if ((frequency < 95000) ||
-        (i2c_m_sync_set_baudrate(&self->i2c_desc, 0, frequency / 1000) != ERR_NONE)) {
-        common_hal_busio_i2c_deinit(self);
+    // clkrate is always 0. baud_rate is in kHz.
+    if (i2c_m_sync_set_baudrate(&self->i2c_desc, 0, frequency / 1000) != ERR_NONE) {
+        // The object is still marked deinited, so deinit() would do nothing.
+        i2c_m_sync_deinit(&self->i2c_desc);
+        reset_pin_number(sda->number);
+        reset_pin_number(scl->number);
         mp_arg_error_invalid(MP_QSTR_frequency);
     }
 
     if (i2c_m_sync_enable(&self->i2c_desc) != ERR_NONE) {
-        common_hal_busio_i2c_deinit(self);
+        i2c_m_sync_deinit(&self->i2c_desc);
+        reset_pin_number(sda->number);
+        reset_pin_number(scl->number);
         mp_raise_OSError(MP_EIO);
     }
 
@@ -118,9 +126,6 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
     self->scl_pin = scl->number;
     claim_pin(sda);
     claim_pin(scl);
-
-    // Prevent bulk sercom reset from resetting us. The finalizer will instead.
-    never_reset_sercom(self->i2c_desc.device.hw);
 }
 
 bool common_hal_busio_i2c_deinited(busio_i2c_obj_t *self) {
@@ -135,7 +140,6 @@ void common_hal_busio_i2c_deinit(busio_i2c_obj_t *self) {
     if (common_hal_busio_i2c_deinited(self)) {
         return;
     }
-    allow_reset_sercom(self->i2c_desc.device.hw);
 
     i2c_m_sync_disable(&self->i2c_desc);
     i2c_m_sync_deinit(&self->i2c_desc);
@@ -241,9 +245,4 @@ mp_negative_errno_t common_hal_busio_i2c_write_read(busio_i2c_obj_t *self, uint1
     }
 
     return common_hal_busio_i2c_read(self, addr, in_data, in_len);
-}
-
-void common_hal_busio_i2c_never_reset(busio_i2c_obj_t *self) {
-    never_reset_pin_number(self->scl_pin);
-    never_reset_pin_number(self->sda_pin);
 }

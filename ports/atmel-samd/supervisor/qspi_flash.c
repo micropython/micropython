@@ -234,7 +234,6 @@ void spi_flash_init(void) {
         gpio_set_pin_pull_mode(pins[i], GPIO_PULL_OFF);
         gpio_set_pin_function(pins[i], GPIO_PIN_FUNCTION_H);
         claim_pin_number(pins[i]);
-        never_reset_pin_number(pins[i]);
     }
 }
 

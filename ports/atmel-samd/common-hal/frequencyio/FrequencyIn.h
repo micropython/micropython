@@ -25,4 +25,3 @@ typedef struct {
 } frequencyio_frequencyin_obj_t;
 
 void frequencyin_interrupt_handler(uint8_t index);
-void frequencyin_reset(void);

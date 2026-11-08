@@ -97,11 +97,20 @@ void pew_init(void) {
     }
 }
 
-void pew_reset(void) {
-    if (pewpew_tc_index != 0xff) {
-        tc_reset(tc_insts[pewpew_tc_index]);
-        pewpew_tc_index = 0xff;
+void pew_deinit(void) {
+    if (pewpew_tc_index == 0xff) {
+        return;
     }
+    Tc *tc = tc_insts[pewpew_tc_index];
+    tc->COUNT16.INTENCLR.reg = TC_INTENCLR_MC0;
+    tc_disable_interrupts(pewpew_tc_index);
+    tc_reset(tc);
+    set_timer_handler(true, pewpew_tc_index, TC_HANDLER_NO_INTERRUPT);
+    pewpew_tc_index = 0xff;
+}
+
+void pew_reset(void) {
+    pew_deinit();
     MP_STATE_VM(pew_singleton) = NULL;
 }
 

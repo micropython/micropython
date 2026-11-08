@@ -28,6 +28,12 @@ bool board_requests_safe_mode(void) {
     return safe_mode;
 }
 
+void board_init(void) {
+    // PA30 (SPEAKER_ENABLE) turns on the speaker amplifier.
+    // Default to low (off).
+    reset_pin_number(PIN_PA30);
+}
+
 void reset_board(void) {
     board_reset_user_neopixels(&pin_PB23, 10);
 }

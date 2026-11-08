@@ -16,6 +16,7 @@
 
 #include "atmel_start_pins.h"
 #include "hal/include/hal_dac_sync.h"
+#include "samd/clocks.h"
 #include "hpl/gclk/hpl_gclk_base.h"
 #include "peripheral_clk_config.h"
 
@@ -28,11 +29,20 @@
     (defined(SAM_D5X_E5X) && defined(PIN_PA05) && !defined(IGNORE_PIN_PA05)) \
     )
 
+#if HAVE_ANALOGOUT
+// Mark the object deinited: deinited() is true and deinit() does nothing.
+static void mark_deinit(analogio_analogout_obj_t *self) {
+    self->pin = NULL;
+}
+#endif
+
 void common_hal_analogio_analogout_construct(analogio_analogout_obj_t *self,
     const mcu_pin_obj_t *pin) {
     #if !HAVE_ANALOGOUT
     mp_raise_NotImplementedError(MP_ERROR_TEXT("No DAC on chip"));
     #else
+    // Ensure the object starts in its deinit state.
+    mark_deinit(self);
 
     uint8_t channel;
     switch (pin->number) {
@@ -54,7 +64,6 @@ void common_hal_analogio_analogout_construct(analogio_analogout_obj_t *self,
     }
 
     self->channel = channel;
-    self->pin = pin;
 
     #ifdef SAM_D5X_E5X
     hri_mclk_set_APBDMASK_DAC_bit(MCLK);
@@ -87,6 +96,9 @@ void common_hal_analogio_analogout_construct(analogio_analogout_obj_t *self,
         mp_raise_OSError(MP_EIO);
         return;
     }
+    // Set the pin only after the last raise: until then the object reads as
+    // deinited, so its finaliser does nothing.
+    self->pin = pin;
     claim_pin(pin);
 
     gpio_set_pin_function(pin->number, GPIO_PIN_FUNCTION_B);
@@ -99,7 +111,7 @@ bool common_hal_analogio_analogout_deinited(analogio_analogout_obj_t *self) {
     #if !HAVE_ANALOGOUT
     return false;
     #else
-    return self->deinited;
+    return self->pin == NULL;
     #endif
 }
 
@@ -110,18 +122,22 @@ void common_hal_analogio_analogout_deinit(analogio_analogout_obj_t *self) {
     }
     dac_sync_disable_channel(&self->descriptor, self->channel);
     reset_pin_number(self->pin->number);
-    self->pin = NULL;
+    mark_deinit(self);
 
     // Only deinit the DAC on the SAMD51 if both outputs are free.
     #ifdef SAM_D5X_E5X
     if (common_hal_mcu_pin_is_free(&pin_PA02) && common_hal_mcu_pin_is_free(&pin_PA05)) {
     #endif
     dac_sync_deinit(&self->descriptor);
+    // Turn off the DAC clocks to save power.
+    disconnect_gclk_from_peripheral(CONF_GCLK_DAC_SRC, DAC_GCLK_ID);
+    #ifdef SAMD21
+    _pm_disable_bus_clock(PM_BUS_APBC, DAC);
+    #endif
     #ifdef SAM_D5X_E5X
+    hri_mclk_clear_APBDMASK_DAC_bit(MCLK);
 }
     #endif
-    self->deinited = true;
-    // TODO(tannewt): Turn off the DAC clocks to save power.
     #endif
 }
 
@@ -131,19 +147,5 @@ void common_hal_analogio_analogout_set_value(analogio_analogout_obj_t *self,
     // Input is 16 bit so make sure and set LEFTADJ to 1 so it takes the top
     // bits. This is currently done in asf4_conf/*/hpl_dac_config.h.
     dac_sync_write(&self->descriptor, self->channel, &value, 1);
-    #endif
-}
-
-void analogout_reset(void) {
-    #if HAVE_ANALOGOUT
-    #ifdef SAMD21
-    while (DAC->STATUS.reg & DAC_STATUS_SYNCBUSY) {
-    }
-    #endif
-    #ifdef SAM_D5X_E5X
-    while (DAC->SYNCBUSY.reg & DAC_SYNCBUSY_SWRST) {
-    }
-    #endif
-    DAC->CTRLA.reg |= DAC_CTRLA_SWRST;
     #endif
 }

@@ -47,7 +47,6 @@ void board_init(void) {
     fourwire_fourwire_obj_t *bus = &allocate_display_bus()->fourwire_bus;
     busio_spi_obj_t *spi = &bus->inline_bus;
     common_hal_busio_spi_construct(spi, &pin_PB20, &pin_PB19, NULL, false);
-    common_hal_busio_spi_never_reset(spi);
 
     bus->base.type = &fourwire_fourwire_type;
     common_hal_fourwire_fourwire_construct(bus,
@@ -104,9 +103,6 @@ void board_init(void) {
     common_hal_digitalio_digitalinout_set_value(&USB_HOST_ENABLE, false);
 
     // Never reset
-    common_hal_digitalio_digitalinout_never_reset(&CTR_5V);
-    common_hal_digitalio_digitalinout_never_reset(&CTR_3V3);
-    common_hal_digitalio_digitalinout_never_reset(&USB_HOST_ENABLE);
 
     // reset pin after fake deep sleep
     reset_pin_number(pin_PA18.number);

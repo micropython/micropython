@@ -481,7 +481,9 @@ static bool claim_esp_pin(digitalio_digitalinout_obj_t *dio, const mcu_pin_obj_t
     if (common_hal_digitalio_digitalinout_construct(dio, pin) != DIGITALINOUT_OK) {
         return false;
     }
+    #if CIRCUITPY_BULK_RESET
     common_hal_digitalio_digitalinout_never_reset(dio);
+    #endif
     return true;
 }
 
@@ -517,7 +519,9 @@ bool airlift_transport_init(void) {
     #endif
 
     spi = MP_OBJ_TO_PTR(common_hal_board_create_spi(CIRCUITPY_AIRLIFT_SPI_INDEX));
+    #if CIRCUITPY_BULK_RESET
     common_hal_busio_spi_never_reset(spi);
+    #endif
     claim_esp_pin(&cs, CIRCUITPY_AIRLIFT_CS);
     common_hal_digitalio_digitalinout_switch_to_output(&cs, true, DRIVE_MODE_PUSH_PULL);
     claim_esp_pin(&ready, CIRCUITPY_AIRLIFT_BUSY);

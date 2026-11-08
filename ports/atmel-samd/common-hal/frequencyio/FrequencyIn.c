@@ -34,31 +34,17 @@
 #endif
 
 static frequencyio_frequencyin_obj_t *active_frequencyins[TC_INST_NUM];
-volatile uint8_t reference_tc;
+// 0xff means none. frequencyin_reset() used to set these at every VM start;
+// now they start that way, and deinit() resets them when the last FrequencyIn is freed.
+volatile uint8_t reference_tc = 0xff;
 #ifdef SAM_D5X_E5X
-static uint8_t dpll_gclk;
+static uint8_t dpll_gclk = 0xff;
 
 #if !BOARD_HAS_CRYSTAL
-static uint8_t osculp32k_gclk;
+static uint8_t osculp32k_gclk = 0xff;
 #endif
 
 #endif
-
-void frequencyin_reset(void) {
-    for (uint8_t i = 0; i < TC_INST_NUM; i++) {
-        active_frequencyins[i] = NULL;
-    }
-
-    reference_tc = 0xff;
-    #ifdef SAM_D5X_E5X
-    dpll_gclk = 0xff;
-
-    #if !BOARD_HAS_CRYSTAL
-    osculp32k_gclk = 0xff;
-    #endif
-
-    #endif
-}
 
 static void frequencyin_emergency_cancel_capture(uint8_t index) {
     frequencyio_frequencyin_obj_t* self = active_frequencyins[index];
@@ -259,7 +245,14 @@ static void frequencyin_samd51_stop_dpll(void) {
 }
 #endif
 
+// Mark the object deinited: deinited() is true and deinit() does nothing.
+static void mark_deinit(frequencyio_frequencyin_obj_t *self) {
+    self->pin = NO_PIN;
+}
+
 void common_hal_frequencyio_frequencyin_construct(frequencyio_frequencyin_obj_t* self, const mcu_pin_obj_t* pin, const uint16_t capture_period) {
+    // Ensure the object starts in its deinit state.
+    mark_deinit(self);
 
     if (!pin->has_extint) {
         raise_ValueError_invalid_pin();
@@ -284,6 +277,16 @@ void common_hal_frequencyio_frequencyin_construct(frequencyio_frequencyin_obj_t*
     }
     Tc *tc = tc_insts[timer_index];
 
+    #ifdef SAM_D5X_E5X
+    // Start the DPLL before setting any state, so this raise leaves the
+    // object deinited. deinit() can't undo a partial setup: it would disable
+    // event channel 0 and toggle this channel's EXTINTEO bit on.
+    frequencyin_samd51_start_dpll();
+    if (dpll_gclk == 0xff && !clock_get_enabled(0, GCLK_SOURCE_DPLL1)) {
+        mp_raise_RuntimeError(MP_ERROR_TEXT("Internal resource(s) in use"));
+    }
+    #endif
+
     self->tc_index = timer_index;
     self->pin = pin->number;
     self->channel = pin->extint_channel;
@@ -306,11 +309,6 @@ void common_hal_frequencyio_frequencyin_construct(frequencyio_frequencyin_obj_t*
     turn_on_clocks(true, timer_index, 0);
     #endif
     #ifdef SAM_D5X_E5X
-    frequencyin_samd51_start_dpll();
-    if (dpll_gclk == 0xff && !clock_get_enabled(0, GCLK_SOURCE_DPLL1)) {
-        common_hal_frequencyio_frequencyin_deinit(self);
-        mp_raise_RuntimeError(MP_ERROR_TEXT("Internal resource(s) in use"));
-    }
     set_timer_handler(timer_index, dpll_gclk, TC_HANDLER_NO_INTERRUPT);
     turn_on_clocks(true, timer_index, dpll_gclk);
     #endif
@@ -430,7 +428,7 @@ void common_hal_frequencyio_frequencyin_deinit(frequencyio_frequencyin_obj_t* se
 
     active_frequencyins[self->tc_index] = NULL;
     self->tc_index = 0xff;
-    self->pin = NO_PIN;
+    mark_deinit(self);
 
     bool check_active = false;
     for (uint8_t i = 0; i < TC_INST_NUM; i++) {
