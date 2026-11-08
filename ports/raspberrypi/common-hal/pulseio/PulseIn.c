@@ -23,17 +23,20 @@ static const uint16_t pulsein_program[] = {
     0x4001, //  1: in     pins, 1
 };
 
+static void mark_deinit(pulseio_pulsein_obj_t *self) {
+    self->pin = NO_PIN;
+}
+
 void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t *self,
     const mcu_pin_obj_t *pin, uint16_t maxlen, bool idle_state) {
     // Ensure the object starts in its deinit state, so its finaliser does
     // nothing if this raises before the pin is set.
-    self->pin = NO_PIN;
+    mark_deinit(self);
 
     self->buffer = (uint16_t *)m_malloc_without_collect(maxlen * sizeof(uint16_t));
     if (self->buffer == NULL) {
         m_malloc_fail(maxlen * sizeof(uint16_t));
     }
-    self->pin = pin->number;
     self->maxlen = maxlen;
     self->idle_state = idle_state;
     self->start = 0;
@@ -60,6 +63,8 @@ void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t *self,
         PIO_ANY_OFFSET,
         PIO_FIFO_TYPE_DEFAULT,
         PIO_MOV_STATUS_DEFAULT, PIO_MOV_N_DEFAULT);
+    // Set the pin only now: deinit uses the state machine.
+    self->pin = pin->number;
 
     common_hal_pulseio_pulsein_pause(self);
 
@@ -80,7 +85,7 @@ void common_hal_pulseio_pulsein_deinit(pulseio_pulsein_obj_t *self) {
     common_hal_rp2pio_statemachine_deinit(&self->state_machine);
     m_free(self->buffer);
     reset_pin_number(self->pin);
-    self->pin = NO_PIN;
+    mark_deinit(self);
 }
 
 void common_hal_pulseio_pulsein_pause(pulseio_pulsein_obj_t *self) {

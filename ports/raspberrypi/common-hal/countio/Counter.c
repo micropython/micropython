@@ -17,9 +17,17 @@
 #include "hardware/pwm.h"
 #include "hardware/irq.h"
 
+#define NO_PIN 0xff
+
+static void mark_deinit(countio_counter_obj_t *self) {
+    self->pin = NO_PIN;
+}
 
 void common_hal_countio_counter_construct(countio_counter_obj_t *self,
     const mcu_pin_obj_t *pin, countio_edge_t edge, digitalio_pull_t pull) {
+    // Ensure the object starts in its deinit state, so its finaliser does
+    // nothing if this raises before the PWM slice is claimed.
+    mark_deinit(self);
 
     if (pwm_gpio_to_channel(pin->number) != PWM_CHAN_B) {
         mp_raise_RuntimeError(MP_ERROR_TEXT("Pin must be on PWM Channel B"));
@@ -29,16 +37,18 @@ void common_hal_countio_counter_construct(countio_counter_obj_t *self,
         mp_raise_NotImplementedError(MP_ERROR_TEXT("RISE_AND_FALL not available on this chip"));
     }
 
-    self->pin = pin->number;
-    self->slice_num = pwm_gpio_to_slice_num(self->pin);
+    uint8_t slice_num = pwm_gpio_to_slice_num(pin->number);
 
-    if (MP_STATE_PORT(counting)[self->slice_num] != NULL) {
+    if (MP_STATE_PORT(counting)[slice_num] != NULL) {
         mp_raise_RuntimeError(MP_ERROR_TEXT("PWM slice already in use"));
     }
 
-    if (!pwmio_claim_slice_ab_channels(self->slice_num)) {
+    if (!pwmio_claim_slice_ab_channels(slice_num)) {
         mp_raise_RuntimeError(MP_ERROR_TEXT("PWM slice channel A already in use"));
     }
+
+    self->pin = pin->number;
+    self->slice_num = slice_num;
 
     pwm_clear_irq(self->slice_num);
     pwm_set_irq_enabled(self->slice_num, true);
@@ -61,7 +71,7 @@ void common_hal_countio_counter_construct(countio_counter_obj_t *self,
 
 
 bool common_hal_countio_counter_deinited(countio_counter_obj_t *self) {
-    return self->pin == 0;
+    return self->pin == NO_PIN;
 }
 
 void common_hal_countio_counter_deinit(countio_counter_obj_t *self) {
@@ -78,8 +88,8 @@ void common_hal_countio_counter_deinit(countio_counter_obj_t *self) {
     reset_pin_number(self->pin);
 
     MP_STATE_PORT(counting)[self->slice_num] = NULL;
-    self->pin = 0;
     self->slice_num = 0;
+    mark_deinit(self);
 }
 
 mp_int_t common_hal_countio_counter_get_count(countio_counter_obj_t *self) {

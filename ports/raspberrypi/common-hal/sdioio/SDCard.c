@@ -20,9 +20,18 @@
 // property.
 #define SDIO_MAX_FREQUENCY (50000000)
 
+// Mark the object deinited. A zeroed object also reads as deinited.
+static void mark_deinit(sdioio_sdcard_obj_t *self) {
+    self->num_data = 0;
+}
+
 void common_hal_sdioio_sdcard_construct(sdioio_sdcard_obj_t *self,
     const mcu_pin_obj_t *clock, const mcu_pin_obj_t *command,
     uint8_t num_data, const mcu_pin_obj_t **data, uint32_t frequency) {
+    // Ensure the object starts in its deinit state, so its finaliser does
+    // nothing if this raises before the pins are claimed.
+    mark_deinit(self);
+
     // The vendored PIO driver only supports 4-bit mode and requires the four
     // data lines to be on consecutive GPIOs (DAT0..DAT3).
     if (num_data != 4) {
@@ -64,7 +73,7 @@ void common_hal_sdioio_sdcard_construct(sdioio_sdcard_obj_t *self,
         for (size_t i = 0; i < num_data; i++) {
             reset_pin_number(self->data[i]);
         }
-        self->command = COMMON_HAL_MCU_NO_PIN;
+        mark_deinit(self);
         mp_raise_OSError_msg_varg(
             MP_ERROR_TEXT("SDIO Init Error 0x%02x"), error_code);
     }
@@ -171,7 +180,7 @@ bool common_hal_sdioio_sdcard_configure(sdioio_sdcard_obj_t *self, uint32_t freq
 }
 
 bool common_hal_sdioio_sdcard_deinited(sdioio_sdcard_obj_t *self) {
-    return self->command == COMMON_HAL_MCU_NO_PIN;
+    return self->num_data == 0;
 }
 
 void common_hal_sdioio_sdcard_deinit(sdioio_sdcard_obj_t *self) {
@@ -192,4 +201,5 @@ void common_hal_sdioio_sdcard_deinit(sdioio_sdcard_obj_t *self) {
         reset_pin_number(self->data[i]);
         self->data[i] = COMMON_HAL_MCU_NO_PIN;
     }
+    mark_deinit(self);
 }

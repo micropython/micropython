@@ -89,6 +89,11 @@ static void uart1_callback(void) {
     shared_callback(active_uarts[1]);
 }
 
+// Mark the object deinited. A zeroed object also reads as deinited.
+static void mark_deinit(busio_uart_obj_t *self) {
+    self->uart = NULL;
+}
+
 void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     const mcu_pin_obj_t *tx, const mcu_pin_obj_t *rx,
     const mcu_pin_obj_t *rts, const mcu_pin_obj_t *cts,
@@ -96,6 +101,10 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     uint32_t baudrate, uint8_t bits, busio_uart_parity_t parity, uint8_t stop,
     mp_float_t timeout, uint16_t receiver_buffer_size, byte *receiver_buffer,
     bool sigint_enabled) {
+
+    // Ensure the object starts in its deinit state, so its finaliser does
+    // nothing if this raises before the UART is set up.
+    mark_deinit(self);
 
     mp_arg_validate_int_max(bits, 8, MP_QSTR_bits);
     mp_arg_validate_int_min(receiver_buffer_size, 1, MP_QSTR_receiver_buffer_size);
@@ -176,7 +185,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
 }
 
 bool common_hal_busio_uart_deinited(busio_uart_obj_t *self) {
-    return self->tx_pin == NO_PIN && self->rx_pin == NO_PIN;
+    return self->uart == NULL;
 }
 
 void common_hal_busio_uart_deinit(busio_uart_obj_t *self) {
@@ -197,6 +206,7 @@ void common_hal_busio_uart_deinit(busio_uart_obj_t *self) {
     self->cts_pin = NO_PIN;
     self->rts_pin = NO_PIN;
     self->rs485_dir_pin = NO_PIN;
+    mark_deinit(self);
 }
 
 // Write characters.
