@@ -189,12 +189,8 @@ usb_host_port_obj_t *common_hal_usb_host_port_construct(const mcu_pin_obj_t *dp,
     claim_pin(dp);
     claim_pin(dm);
 
-
     // Unclaim everything so that the library can.
     dma_channel_unclaim(pio_cfg.tx_ch);
-
-    // Set all of the state machines to never reset.
-
 
     #if PIO_USB_HOST_ISOCHRONOUS
     // Ring storage for isochronous IN endpoints (UVC cameras, UAC audio),

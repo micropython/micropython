@@ -28,8 +28,6 @@ typedef enum {
 
 static uart_status_t uart_status[NUM_UARTS];
 
-
-
 static void pin_check(const uint8_t uart, const mcu_pin_obj_t *pin, const uint8_t pin_type) {
     if (pin == NULL) {
         return;

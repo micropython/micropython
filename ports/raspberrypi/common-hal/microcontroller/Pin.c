@@ -31,7 +31,6 @@ void reset_pin_number_cyw(uint8_t pin_no) {
 }
 #endif
 
-
 // By default, all pins get reset in the same way
 MP_WEAK bool board_reset_pin_number(uint8_t pin_number) {
     return false;
@@ -57,7 +56,6 @@ void reset_pin_number(uint8_t pin_number) {
         PADS_BANK0_GPIO0_PDE_BITS);
     hw_set_bits(&pads_bank0_hw->io[pin_number], PADS_BANK0_GPIO0_OD_BITS);
 }
-
 
 void common_hal_reset_pin(const mcu_pin_obj_t *pin) {
     if (pin == NULL) {

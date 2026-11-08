@@ -251,8 +251,6 @@ void board_init(void) {
     common_hal_digitalio_digitalinout_construct(&enable_pin_obj, &pin_GPIO10);
     common_hal_digitalio_digitalinout_switch_to_output(&enable_pin_obj, true, DRIVE_MODE_PUSH_PULL);
 
-    // Never reset
-
     // Set up the SPI object used to control the display
     busio_spi_obj_t *spi = common_hal_board_create_spi(0);
 

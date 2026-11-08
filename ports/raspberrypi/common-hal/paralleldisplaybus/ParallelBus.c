@@ -65,9 +65,6 @@ void common_hal_paralleldisplaybus_parallelbus_construct(paralleldisplaybus_para
         common_hal_paralleldisplaybus_parallelbus_reset(self);
     }
 
-    for (uint8_t i = 0; i < 8; i++) {
-    }
-
     common_hal_rp2pio_statemachine_construct(&self->state_machine,
         parallel_program, MP_ARRAY_SIZE(parallel_program),
         frequency * 2, // frequency multiplied by 2 as 2 PIO instructions

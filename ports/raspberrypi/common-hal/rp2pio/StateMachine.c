@@ -190,7 +190,6 @@ static void _reset_statemachine(PIO pio, uint8_t sm, bool leave_pins) {
     pio_sm_unclaim(pio, sm);
 }
 
-
 static pio_pinmask_t _check_pins_free(const mcu_pin_obj_t *first_pin, uint8_t pin_count, bool exclusive_pin_use) {
     pio_pinmask_t pins_we_use = PIO_PINMASK_NONE;
     if (first_pin != NULL) {
@@ -976,7 +975,6 @@ void common_hal_rp2pio_statemachine_deinit(rp2pio_statemachine_obj_t *self) {
 void common_hal_rp2pio_statemachine_mark_deinit(rp2pio_statemachine_obj_t *self) {
     self->state_machine = NUM_PIO_STATE_MACHINES;
 }
-
 
 bool common_hal_rp2pio_statemachine_deinited(rp2pio_statemachine_obj_t *self) {
     return self->state_machine == NUM_PIO_STATE_MACHINES;
