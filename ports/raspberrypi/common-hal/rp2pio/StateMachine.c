@@ -949,6 +949,11 @@ uint8_t rp2pio_statemachine_find_pio(int program_size, int sm_count) {
 }
 
 void rp2pio_statemachine_deinit(rp2pio_statemachine_obj_t *self, bool leave_pins) {
+    // Already deinited, or construction raised before a state machine was claimed.
+    // state_machine would index past the per-state-machine arrays, and pio may be NULL.
+    if (common_hal_rp2pio_statemachine_deinited(self)) {
+        return;
+    }
     common_hal_rp2pio_statemachine_stop(self);
     (void)common_hal_rp2pio_statemachine_stop_background_write(self);
 
