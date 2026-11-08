@@ -33,11 +33,8 @@ void common_hal_is31fl3741_framebuffer_construct(is31fl3741_framebuffer_obj_t *s
 
     mp_obj_t *items;
     size_t len;
+    // The binding has checked the mapping's length.
     mp_obj_tuple_get(mapping, &len, &items);
-
-    if (len != (size_t)(self->scale_width * self->scale_height * 3)) {
-        mp_raise_ValueError(MP_ERROR_TEXT("LED mappings must match display size"));
-    }
 
     self->mapping = port_malloc(sizeof(uint16_t) * len, false);
     if (self->mapping == NULL) {
