@@ -35,12 +35,6 @@ void common_hal_rotaryio_incrementalencoder_construct(rotaryio_incrementalencode
     // Ensure object starts in its deinit state.
     common_hal_rotaryio_incrementalencoder_mark_deinit(self);
 
-    self->pin_a = pin_a->number;
-    self->pin_b = pin_b->number;
-
-    _objs[self->pin_a] = self;
-    _objs[self->pin_b] = self;
-
     nrfx_gpiote_in_config_t cfg = {
         .sense = NRF_GPIOTE_POLARITY_TOGGLE,
         .pull = NRF_GPIO_PIN_PULLUP,
@@ -48,15 +42,20 @@ void common_hal_rotaryio_incrementalencoder_construct(rotaryio_incrementalencode
         .hi_accuracy = true,
         .skip_gpio_setup = false
     };
-    nrfx_err_t err = nrfx_gpiote_in_init(self->pin_a, &cfg, _intr_handler);
+    nrfx_err_t err = nrfx_gpiote_in_init(pin_a->number, &cfg, _intr_handler);
     if (err != NRFX_SUCCESS) {
         mp_raise_RuntimeError(MP_ERROR_TEXT("All channels in use"));
     }
-    err = nrfx_gpiote_in_init(self->pin_b, &cfg, _intr_handler);
+    err = nrfx_gpiote_in_init(pin_b->number, &cfg, _intr_handler);
     if (err != NRFX_SUCCESS) {
-        nrfx_gpiote_in_uninit(self->pin_a);
+        nrfx_gpiote_in_uninit(pin_a->number);
         mp_raise_RuntimeError(MP_ERROR_TEXT("All channels in use"));
     }
+    // Set the pins only now, after success to avoid out-of-bounds writes in nrfx_gpiote_in_uninit().
+    self->pin_a = pin_a->number;
+    self->pin_b = pin_b->number;
+    _objs[self->pin_a] = self;
+    _objs[self->pin_b] = self;
     nrfx_gpiote_in_event_enable(self->pin_a, true);
     nrfx_gpiote_in_event_enable(self->pin_b, true);
 

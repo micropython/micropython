@@ -103,6 +103,9 @@ mp_obj_t alarm_pin_pinalarm_record_wake_alarm(void) {
 static uint64_t high_alarms = 0;
 static uint64_t low_alarms = 0;
 static uint64_t pull_pins = 0;
+// Pins that nrfx_gpiote_in_init() has set up. nrfx_gpiote_in_uninit() writes out of
+// bounds on a pin that has no GPIOTE channel, so only these are uninited.
+static uint64_t gpiote_pins = 0;
 
 void alarm_pin_pinalarm_reset(void) {
     for (size_t i = 0; i < 64; i++) {
@@ -112,11 +115,16 @@ void alarm_pin_pinalarm_reset(void) {
         if (!(high || low)) {
             continue;
         }
+        if (gpiote_pins & mask) {
+            nrfx_gpiote_in_event_disable((nrfx_gpiote_pin_t)i);
+            nrfx_gpiote_in_uninit((nrfx_gpiote_pin_t)i);
+        }
+        // After the uninit, which sets the pin to its default state, so a
+        // board's reset state for the pin wins.
         reset_pin_number(i);
-        nrfx_gpiote_in_event_disable((nrfx_gpiote_pin_t)i);
-        nrfx_gpiote_in_uninit((nrfx_gpiote_pin_t)i);
     }
 
+    gpiote_pins = 0;
     high_alarms = 0;
     low_alarms = 0;
     pull_pins = 0;
@@ -155,11 +163,18 @@ static void configure_pins_for_sleep(void) {
             cfg.sense = NRF_GPIOTE_POLARITY_TOGGLE;
             cfg.pull = NRF_GPIO_PIN_NOPULL;
         }
-        nrfx_err_t err = nrfx_gpiote_in_init((nrfx_gpiote_pin_t)i, &cfg,
-            pinalarm_gpiote_handler);
-        assert(err == NRFX_SUCCESS);
-        (void)err;  // In case the assert doesn't use err.
-        nrfx_gpiote_in_event_enable((nrfx_gpiote_pin_t)i, true);
+        if ((gpiote_pins & mask) == 0) {
+            nrfx_err_t err = nrfx_gpiote_in_init((nrfx_gpiote_pin_t)i, &cfg,
+                pinalarm_gpiote_handler);
+            if (err == NRFX_SUCCESS) {
+                gpiote_pins |= mask;
+            }
+        }
+        // Without a GPIOTE channel there is no event, but SENSE below can
+        // still wake the chip from deep sleep.
+        if (gpiote_pins & mask) {
+            nrfx_gpiote_in_event_enable((nrfx_gpiote_pin_t)i, true);
+        }
         if (((high_alarms & mask) != 0) && ((low_alarms & mask) == 0)) {
             nrf_gpio_cfg_sense_set((uint32_t)i, NRF_GPIO_PIN_SENSE_HIGH);
         }

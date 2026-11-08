@@ -23,11 +23,15 @@ static void _intr_handler(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action) {
     self->count += 1;
 }
 
+static void mark_deinit(countio_counter_obj_t *self) {
+    self->pin = NO_PIN;
+}
+
 void common_hal_countio_counter_construct(countio_counter_obj_t *self,
     const mcu_pin_obj_t *pin, countio_edge_t edge, digitalio_pull_t pull) {
-
-    self->pin = pin->number;
-    _countio_objs[self->pin] = self;
+    // Ensure the object starts in its deinit state, so its finaliser does
+    // nothing if this raises before the pin is set.
+    mark_deinit(self);
 
     self->count = 0;
 
@@ -65,10 +69,13 @@ void common_hal_countio_counter_construct(countio_counter_obj_t *self,
         .skip_gpio_setup = false,
     };
 
-    nrfx_err_t err = nrfx_gpiote_in_init(self->pin, &cfg, _intr_handler);
+    nrfx_err_t err = nrfx_gpiote_in_init(pin->number, &cfg, _intr_handler);
     if (err != NRFX_SUCCESS) {
         mp_raise_RuntimeError(MP_ERROR_TEXT("All channels in use"));
     }
+    // Set the pin only now, after success to avoid out-of-bounds writes in nrfx_gpiote_in_uninit().
+    self->pin = pin->number;
+    _countio_objs[self->pin] = self;
     nrfx_gpiote_in_event_enable(self->pin, true);
 
     claim_pin(pin);
@@ -87,7 +94,7 @@ void common_hal_countio_counter_deinit(countio_counter_obj_t *self) {
     nrfx_gpiote_in_event_disable(self->pin);
     nrfx_gpiote_in_uninit(self->pin);
     reset_pin_number(self->pin);
-    self->pin = NO_PIN;
+    mark_deinit(self);
 }
 
 mp_int_t common_hal_countio_counter_get_count(countio_counter_obj_t *self) {
