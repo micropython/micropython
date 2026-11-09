@@ -398,6 +398,18 @@ void common_hal_qspibus_qspibus_deinit(qspibus_qspibus_obj_t *self) {
     self->pending_command = 0;
     self->transfer_in_progress = false;
     self->inflight_transfers = 0;
+
+    // A failed construct calls deinit() and leaves the bus in its display bus slot,
+    // so release_displays() can call deinit() again later. Don't reset the pins
+    // twice: by then they may belong to something else.
+    self->clock_pin = -1;
+    self->data0_pin = -1;
+    self->data1_pin = -1;
+    self->data2_pin = -1;
+    self->data3_pin = -1;
+    self->cs_pin = -1;
+    self->dcx_pin = -1;
+    self->reset_pin = -1;
 }
 
 bool common_hal_qspibus_qspibus_deinited(qspibus_qspibus_obj_t *self) {
