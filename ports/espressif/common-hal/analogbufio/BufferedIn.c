@@ -47,7 +47,6 @@ static void start_dma(analogbufio_bufferedin_obj_t *self, adc_digi_convert_mode_
 static void stop_dma(analogbufio_bufferedin_obj_t *self);
 
 void common_hal_analogbufio_bufferedin_construct(analogbufio_bufferedin_obj_t *self, const mcu_pin_obj_t *pin, uint32_t sample_rate) {
-    self->pin = pin;
     self->sample_rate = sample_rate;
     if (pin->adc_index == NO_ADC || pin->adc_channel == NO_ADC_CHANNEL) {
         raise_ValueError_invalid_pin();
@@ -73,6 +72,7 @@ void common_hal_analogbufio_bufferedin_construct(analogbufio_bufferedin_obj_t *s
 
     mp_arg_validate_int_range(sample_rate, SOC_ADC_SAMPLE_FREQ_THRES_LOW, SOC_ADC_SAMPLE_FREQ_THRES_HIGH, MP_QSTR_sample_rate);
 
+    self->pin = pin;
     common_hal_mcu_pin_claim(pin);
 }
 

@@ -16,8 +16,6 @@
 
 void common_hal_countio_counter_construct(countio_counter_obj_t *self,
     const mcu_pin_obj_t *pin, countio_edge_t edge, digitalio_pull_t pull) {
-    claim_pin(pin);
-
     pcnt_unit_config_t unit_config = {
         // Set counter limit
         .low_limit = INT16_MIN,
@@ -54,6 +52,10 @@ void common_hal_countio_counter_construct(countio_counter_obj_t *self,
 
     pcnt_unit_enable(self->unit);
     pcnt_unit_start(self->unit);
+
+    // Claim the pin last: if pcnt_new_unit() raised above, the unit is NULL,
+    // the object reads as deinited, and its finaliser wouldn't release the pin.
+    claim_pin(pin);
 }
 
 bool common_hal_countio_counter_deinited(countio_counter_obj_t *self) {
