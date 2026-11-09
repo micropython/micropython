@@ -101,7 +101,7 @@ static MP_NORETURN void fun_pos_args_mismatch(mp_obj_fun_bc_t *f, size_t expecte
         MP_ERROR_TEXT("function takes %d positional arguments but %d were given"), expected, given);
     #elif MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_DETAILED
     mp_raise_msg_varg(&mp_type_TypeError,
-        MP_ERROR_TEXT("%q() takes %d positional arguments but %d were given"),
+        MP_ERROR_TEXT("%q() takes " SIZE_FMT " positional arguments but " SIZE_FMT " were given"),
         mp_obj_fun_bc_get_name(f), expected, given);
     #endif
 }
@@ -258,7 +258,7 @@ static void mp_setup_code_state_helper(mp_code_state_t *code_state, size_t n_arg
         while (d < &code_state_state[n_state]) {
             if (*d++ == MP_OBJ_NULL) {
                 mp_raise_msg_varg(&mp_type_TypeError,
-                    MP_ERROR_TEXT("function missing required positional argument #%d"), &code_state_state[n_state] - d);
+                    MP_ERROR_TEXT("function missing required positional argument #" SIZE_FMT), (&code_state_state[n_state] - d));
             }
         }
 

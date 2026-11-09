@@ -51,7 +51,7 @@ void mp_arg_check_num_sig(size_t n_args, size_t n_kw, uint32_t sig) {
             mp_arg_error_terse_mismatch();
             #else
             mp_raise_msg_varg(&mp_type_TypeError,
-                MP_ERROR_TEXT("function takes %d positional arguments but %d were given"),
+                MP_ERROR_TEXT("function takes " SIZE_FMT " positional arguments but " SIZE_FMT " were given"),
                 n_args_min, n_args);
             #endif
         }
@@ -61,7 +61,7 @@ void mp_arg_check_num_sig(size_t n_args, size_t n_kw, uint32_t sig) {
             mp_arg_error_terse_mismatch();
             #else
             mp_raise_msg_varg(&mp_type_TypeError,
-                MP_ERROR_TEXT("function missing %d required positional arguments"),
+                MP_ERROR_TEXT("function missing " SIZE_FMT " required positional arguments"),
                 n_args_min - n_args);
             #endif
         } else if (n_args > n_args_max) {
@@ -69,7 +69,7 @@ void mp_arg_check_num_sig(size_t n_args, size_t n_kw, uint32_t sig) {
             mp_arg_error_terse_mismatch();
             #else
             mp_raise_msg_varg(&mp_type_TypeError,
-                MP_ERROR_TEXT("function expected at most %d arguments, got %d"),
+                MP_ERROR_TEXT("function expected at most " SIZE_FMT " arguments, got " SIZE_FMT),
                 n_args_max, n_args);
             #endif
         }
@@ -93,7 +93,7 @@ void mp_arg_parse_all(size_t n_pos, const mp_obj_t *pos, mp_map_t *kws, size_t n
                     #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
                     mp_arg_error_terse_mismatch();
                     #else
-                    mp_raise_msg_varg(&mp_type_TypeError, MP_ERROR_TEXT("'%q' argument required"), allowed[i].qst);
+                    mp_raise_msg_varg(&mp_type_TypeError, MP_ERROR_TEXT("'%q' argument required"), (qstr)allowed[i].qst);
                     #endif
                 }
                 out_vals[i] = allowed[i].defval;

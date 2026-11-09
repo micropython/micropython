@@ -103,8 +103,8 @@ static mp_obj_t namedtuple_make_new(const mp_obj_type_t *type_in, size_t n_args,
             num_fields, n_args + n_kw);
         #elif MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_DETAILED
         mp_raise_msg_varg(&mp_type_TypeError,
-            MP_ERROR_TEXT("%q() takes %d positional arguments but %d were given"),
-            ((mp_obj_type_t *)&type->base)->name, num_fields, n_args + n_kw);
+            MP_ERROR_TEXT("%q() takes " SIZE_FMT " positional arguments but " SIZE_FMT " were given"),
+            (qstr)((mp_obj_type_t *)&type->base)->name, num_fields, (n_args + n_kw));
         #endif
     }
 

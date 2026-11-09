@@ -1819,7 +1819,7 @@ static mp_obj_t str_modulo_format(mp_obj_t pattern, size_t n_args, const mp_obj_
                 terse_str_format_value_error();
                 #else
                 mp_raise_msg_varg(&mp_type_ValueError,
-                    MP_ERROR_TEXT("unsupported format character '%c' (0x%x) at index %d"),
+                    MP_ERROR_TEXT("unsupported format character '%c' (0x%x) at index " SIZE_FMT),
                     *str, *str, str - start_str);
                 #endif
         }
@@ -2522,7 +2522,7 @@ static MP_NORETURN void bad_implicit_conversion(mp_obj_t self_in) {
     const qstr src_name = mp_obj_get_type(self_in)->name;
     mp_raise_msg_varg(&mp_type_TypeError,
         MP_ERROR_TEXT("can't convert '%q' object to %q implicitly"),
-        src_name, src_name == MP_QSTR_str ? MP_QSTR_bytes : MP_QSTR_str);
+        (qstr)src_name, (qstr)(src_name == MP_QSTR_str ? MP_QSTR_bytes : MP_QSTR_str));
     #endif
 }
 
