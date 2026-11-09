@@ -45,7 +45,6 @@ typedef struct {
 
 void audio_dma_init(audio_dma_t *dma);
 void audio_dma_deinit(audio_dma_t *dma);
-void audio_dma_reset(void);
 
 // This sets everything up but doesn't start the timer.
 // Sample is the python object for the sample to play.

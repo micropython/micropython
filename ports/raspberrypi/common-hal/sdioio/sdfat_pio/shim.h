@@ -69,10 +69,6 @@ uint8_t sdfat_pio_card_error_code(void *storage);
 // Release the card's PIO/state-machine resources.
 void sdfat_pio_card_end(void *storage);
 
-// Mark the card's PIO state machines as surviving a soft reset, so rp2pio's
-// reset path leaves them (and their loaded programs) in place.
-void sdfat_pio_card_never_reset(void *storage);
-
 #ifdef __cplusplus
 }
 #endif

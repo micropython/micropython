@@ -175,7 +175,9 @@ static int one_of(qstr_short_t what, mp_obj_t arg, size_t n_options, const qstr_
 }
 
 static mp_obj_t rp2pio_statemachine_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
-    rp2pio_statemachine_obj_t *self = mp_obj_malloc(rp2pio_statemachine_obj_t, &rp2pio_statemachine_type);
+    rp2pio_statemachine_obj_t *self = mp_obj_malloc_with_finaliser(rp2pio_statemachine_obj_t, &rp2pio_statemachine_type);
+    // Make the finaliser a no-op if construction raises before a state machine is claimed.
+    common_hal_rp2pio_statemachine_mark_deinit(self);
     enum { ARG_program, ARG_frequency, ARG_init, ARG_pio_version, ARG_may_exec,
            ARG_first_out_pin, ARG_out_pin_count, ARG_initial_out_pin_state, ARG_initial_out_pin_direction,
            ARG_first_in_pin, ARG_in_pin_count,
@@ -1119,6 +1121,7 @@ MP_PROPERTY_GETTER(rp2pio_statemachine_last_write_obj,
 
 static const mp_rom_map_elem_t rp2pio_statemachine_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&rp2pio_statemachine_deinit_obj) },
+    { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&rp2pio_statemachine_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&default___enter___obj) },
     { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&default___exit___obj) },
 

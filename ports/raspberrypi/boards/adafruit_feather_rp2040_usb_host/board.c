@@ -29,5 +29,9 @@ bool board_reset_pin_number(uint8_t pin_number) {
     return false;
 }
 void board_init(void) {
+    // GPIO18 (USB_HOST_5V_POWER) powers the USB host port.
+    // Default to high (on).
+    board_reset_pin_number(18);
+
     common_hal_usb_host_port_construct(&pin_GPIO16, &pin_GPIO17);
 }

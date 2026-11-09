@@ -20,5 +20,3 @@ typedef struct {
 
 
 void counter_interrupt_handler(void);
-
-void reset_countio(void);

@@ -105,3 +105,6 @@ CIRCUITPY_MESSAGE_COMPRESSION_LEVEL ?= 1
 
 # (ssl is selectively enabled but it's always the mbedtls implementation)
 CIRCUITPY_SSL_MBEDTLS = 1
+
+# Cleanup is performed by GC finalizers (__del__ -> deinit) instead of a bulk pin reset.
+CIRCUITPY_BULK_RESET = 0

@@ -56,8 +56,6 @@ static void display_init(void) {
         NULL,           // MISO not connected
         false);         // Not half-duplex
 
-    common_hal_busio_spi_never_reset(spi);
-
     bus->base.type = &fourwire_fourwire_type;
 
     common_hal_fourwire_fourwire_construct(
@@ -105,7 +103,6 @@ static void display_init(void) {
         50000           // backlight pwm frequency
         );
 
-    common_hal_never_reset_pin(&pin_GPIO4); // backlight pin
 }
 
 void board_init(void) {
@@ -114,7 +111,6 @@ void board_init(void) {
     gpio_init(PWR_PIN);
     gpio_set_dir(PWR_PIN, GPIO_OUT);
     gpio_put(PWR_PIN, 1);
-    common_hal_never_reset_pin(&pin_GPIO22);
 
     // Display
     display_init();

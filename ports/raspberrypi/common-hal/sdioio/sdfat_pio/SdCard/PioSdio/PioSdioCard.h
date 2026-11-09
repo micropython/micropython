@@ -135,10 +135,6 @@ public:
      * not implemented.
      */
     void end() final;
-    /** CIRCUITPY-CHANGE: mark this card's PIO state machines as surviving a soft
-     * reset, keeping rp2pio's never-reset bookkeeping coherent with the SMs this
-     * driver claims directly. */
-    void neverReset();
 
     #ifndef DOXYGEN_SHOULD_SKIP_THIS
     uint32_t __attribute__((error("use sectorCount()"))) cardSize();

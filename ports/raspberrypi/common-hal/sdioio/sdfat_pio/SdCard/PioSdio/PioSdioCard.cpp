@@ -426,18 +426,6 @@ fail:
 //------------------------------------------------------------------------------
 void PioSdioCard::end() { pioEnd(); }
 //------------------------------------------------------------------------------
-void PioSdioCard::neverReset() {
-  if (!m_pio) {
-    return;
-  }
-  if (m_sm0 >= 0) {
-    rp2pio_statemachine_never_reset(m_pio, m_sm0);
-  }
-  if (m_sm1 >= 0) {
-    rp2pio_statemachine_never_reset(m_pio, m_sm1);
-  }
-}
-//------------------------------------------------------------------------------
 bool PioSdioCard::erase(uint32_t firstSector, uint32_t lastSector) {
   Timeout timeout(SD_ERASE_TIMEOUT);
   if (!syncDevice()) {
@@ -509,18 +497,14 @@ void PioSdioCard::pioEnd() {
     return;
   }
   // CIRCUITPY-CHANGE: release only the two state machines we claimed (see
-  // pioInit) rather than every SM on the block, and clear their rp2pio
-  // never-reset flag so a later reuse of the same SM number by rp2pio is not
-  // wrongly protected across a soft reset.
+  // pioInit) rather than every SM on the block.
   if (m_sm0 >= 0) {
     pio_sm_set_enabled(m_pio, m_sm0, false);
-    rp2pio_statemachine_reset_ok(m_pio, m_sm0);
     pio_sm_unclaim(m_pio, m_sm0);
     m_sm0 = -1;
   }
   if (m_sm1 >= 0) {
     pio_sm_set_enabled(m_pio, m_sm1, false);
-    rp2pio_statemachine_reset_ok(m_pio, m_sm1);
     pio_sm_unclaim(m_pio, m_sm1);
     m_sm1 = -1;
   }

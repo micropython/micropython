@@ -22,36 +22,14 @@ static uint32_t cyw_pin_claimed;
 
 void reset_pin_number_cyw(uint8_t pin_no) {
     cyw_pin_claimed &= ~(1LL << pin_no);
+
+    // Drive the LED (GPIO 0) and SMPS_MODE (GPIO 1) low. Don't touch
+    // VBUS_SENSE (GPIO 2): writing it would switch it to an output for good.
+    if (cyw_ever_init && pin_no <= 1) {
+        cyw43_arch_gpio_put(pin_no, false);
+    }
 }
 #endif
-
-static uint64_t never_reset_pins;
-
-void reset_all_pins(void) {
-    for (size_t i = 0; i < NUM_BANK0_GPIOS; i++) {
-        if ((never_reset_pins & (1LL << i)) != 0) {
-            continue;
-        }
-        reset_pin_number(i);
-    }
-    #if CIRCUITPY_CYW43
-    if (cyw_ever_init) {
-        // reset LED and SMPS_MODE to Low; don't touch VBUS_SENSE
-        // otherwise it is switched to output mode forever!
-        cyw43_arch_gpio_put(0, 0);
-        cyw43_arch_gpio_put(1, 0);
-    }
-    cyw_pin_claimed = 0;
-    #endif
-}
-
-void never_reset_pin_number(uint8_t pin_number) {
-    if (pin_number >= NUM_BANK0_GPIOS) {
-        return;
-    }
-
-    never_reset_pins |= 1LL << pin_number;
-}
 
 // By default, all pins get reset in the same way
 MP_WEAK bool board_reset_pin_number(uint8_t pin_number) {
@@ -64,7 +42,6 @@ void reset_pin_number(uint8_t pin_number) {
     }
 
     gpio_bank0_pin_claimed &= ~(1LL << pin_number);
-    never_reset_pins &= ~(1LL << pin_number);
 
     // Allow the board to override the reset state of any pin
     if (board_reset_pin_number(pin_number)) {
@@ -80,11 +57,10 @@ void reset_pin_number(uint8_t pin_number) {
     hw_set_bits(&pads_bank0_hw->io[pin_number], PADS_BANK0_GPIO0_OD_BITS);
 }
 
-void common_hal_never_reset_pin(const mcu_pin_obj_t *pin) {
-    never_reset_pin_number(pin->number);
-}
-
 void common_hal_reset_pin(const mcu_pin_obj_t *pin) {
+    if (pin == NULL) {
+        return;
+    }
     #if CIRCUITPY_CYW43
     if (pin->base.type == &cyw43_pin_type) {
         reset_pin_number_cyw(pin->number);

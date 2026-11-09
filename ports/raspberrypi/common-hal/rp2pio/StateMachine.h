@@ -12,8 +12,7 @@
 #include "common-hal/memorymap/AddressRange.h"
 #include "hardware/pio.h"
 
-// Shared PIO allocator declarations (rp2pio_statemachine_find_pio,
-// rp2pio_statemachine_never_reset, rp2pio_statemachine_reset_ok). Kept in a
+// Shared PIO allocator declarations (rp2pio_statemachine_find_pio). Kept in a
 // separate, mp-free header so external C++ drivers can include them too.
 #include "pio_alloc.h"
 

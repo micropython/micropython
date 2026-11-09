@@ -20,23 +20,31 @@ static i2c_inst_t *i2c[2] = {i2c0, i2c1};
 
 #define NO_PIN 0xff
 
+// Mark the object deinited. A zeroed object also reads as deinited.
+static void mark_deinit(i2ctarget_i2c_target_obj_t *self) {
+    self->peripheral = NULL;
+}
+
 void common_hal_i2ctarget_i2c_target_construct(i2ctarget_i2c_target_obj_t *self, const mcu_pin_obj_t *scl, const mcu_pin_obj_t *sda,
     uint8_t *addresses, unsigned int num_addresses, bool smbus) {
-    self->peripheral = NULL;
+    // Ensure the object starts in its deinit state, so its finaliser does
+    // nothing if this raises before the peripheral is set.
+    mark_deinit(self);
 
     // I2C pins have a regular pattern. SCL is always odd and SDA is even. They match up in pairs
     // so we can divide by two to get the instance. This pattern repeats.
+    i2c_inst_t *peripheral = NULL;
     size_t scl_instance = (scl->number / 2) % 2;
     size_t sda_instance = (sda->number / 2) % 2;
     if (scl->number % 2 == 1 && sda->number % 2 == 0 && scl_instance == sda_instance) {
-        self->peripheral = i2c[sda_instance];
+        peripheral = i2c[sda_instance];
     }
 
-    if (self->peripheral == NULL) {
+    if (peripheral == NULL) {
         raise_ValueError_invalid_pins();
     }
 
-    if ((i2c_get_hw(self->peripheral)->enable & I2C_IC_ENABLE_ENABLE_BITS) != 0) {
+    if ((i2c_get_hw(peripheral)->enable & I2C_IC_ENABLE_ENABLE_BITS) != 0) {
         mp_raise_ValueError(MP_ERROR_TEXT("I2C peripheral in use"));
     }
 
@@ -44,6 +52,7 @@ void common_hal_i2ctarget_i2c_target_construct(i2ctarget_i2c_target_obj_t *self,
         mp_raise_ValueError(MP_ERROR_TEXT("Only one address is allowed"));
     }
 
+    self->peripheral = peripheral;
     self->addresses = addresses;
     self->num_addresses = num_addresses;
     self->scl_pin = scl->number;
@@ -59,6 +68,9 @@ void common_hal_i2ctarget_i2c_target_construct(i2ctarget_i2c_target_obj_t *self,
     gpio_set_pulls(sda->number, true, false);
     gpio_set_pulls(scl->number, true, false);
 
+    claim_pin(sda);
+    claim_pin(scl);
+
     self->peripheral->hw->intr_mask |= I2C_IC_INTR_MASK_M_RESTART_DET_BITS;
     i2c_set_slave_mode(self->peripheral, true, self->addresses[0]);
 
@@ -66,7 +78,7 @@ void common_hal_i2ctarget_i2c_target_construct(i2ctarget_i2c_target_obj_t *self,
 }
 
 bool common_hal_i2ctarget_i2c_target_deinited(i2ctarget_i2c_target_obj_t *self) {
-    return self->sda_pin == NO_PIN;
+    return self->peripheral == NULL;
 }
 
 void common_hal_i2ctarget_i2c_target_deinit(i2ctarget_i2c_target_obj_t *self) {
@@ -80,8 +92,7 @@ void common_hal_i2ctarget_i2c_target_deinit(i2ctarget_i2c_target_obj_t *self) {
     reset_pin_number(self->scl_pin);
     self->sda_pin = NO_PIN;
     self->scl_pin = NO_PIN;
-
-    return;
+    mark_deinit(self);
 }
 
 int common_hal_i2ctarget_i2c_target_is_addressed(i2ctarget_i2c_target_obj_t *self, uint8_t *address, bool *is_read, bool *is_restart) {

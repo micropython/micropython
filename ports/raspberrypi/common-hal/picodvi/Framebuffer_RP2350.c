@@ -504,7 +504,6 @@ void common_hal_picodvi_framebuffer_construct(picodvi_framebuffer_obj_t *self,
 
     for (int i = 12; i <= 19; ++i) {
         gpio_set_function(i, 0); // HSTX
-        never_reset_pin_number(i);
     }
 
     dma_channel_config c;

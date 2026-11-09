@@ -25,12 +25,6 @@ extern "C" {
 // NUM_PIOS if none qualifies.
 uint8_t rp2pio_statemachine_find_pio(int program_size, int sm_count);
 
-// Mark / unmark a state machine as surviving (or not) a soft reset, so
-// rp2pio's reset path keeps its bookkeeping coherent with the SMs a driver
-// claims directly.
-void rp2pio_statemachine_never_reset(PIO pio, int sm);
-void rp2pio_statemachine_reset_ok(PIO pio, int sm);
-
 #ifdef __cplusplus
 }
 #endif

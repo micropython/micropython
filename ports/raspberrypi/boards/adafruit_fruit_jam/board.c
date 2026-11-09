@@ -49,6 +49,12 @@ void board_init(void) {
     mp_hal_delay_us(1);
     board_reset_pin_number(I2S_RESET_PIN_NUMBER);
 
+    #if defined(DEFAULT_USB_HOST_5V_POWER)
+    // GPIO11 (USB_HOST_5V_POWER) powers the USB host port.
+    // Default to high (on).
+    board_reset_pin_number(DEFAULT_USB_HOST_5V_POWER->number);
+    #endif
+
     #if defined(DEFAULT_USB_HOST_DATA_PLUS)
     common_hal_usb_host_port_construct(DEFAULT_USB_HOST_DATA_PLUS, DEFAULT_USB_HOST_DATA_MINUS);
     #endif

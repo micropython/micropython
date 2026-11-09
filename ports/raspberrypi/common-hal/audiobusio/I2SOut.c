@@ -232,6 +232,10 @@ void common_hal_audiobusio_i2sout_construct(audiobusio_i2sout_obj_t *self,
     const mcu_pin_obj_t *bit_clock, const mcu_pin_obj_t *word_select,
     const mcu_pin_obj_t *data, const mcu_pin_obj_t *main_clock, bool left_justified,
     bool external_clock) {
+    // Ensure the object starts in its deinit state, so its finaliser does
+    // nothing if this raises before the state machine is constructed.
+    common_hal_rp2pio_statemachine_mark_deinit(&self->state_machine);
+
     if (main_clock != NULL) {
         mp_raise_NotImplementedError_varg(MP_ERROR_TEXT("%q"), MP_QSTR_main_clock);
     }

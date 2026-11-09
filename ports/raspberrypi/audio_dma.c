@@ -31,17 +31,6 @@ static void audio_dma_disable_irq(uint channel);
 // A DMA read from PSRAM stalls the other DMA channels, such as picodvi.
 static uint8_t *single_buffer_start[NUM_DMA_CHANNELS];
 
-void audio_dma_reset(void) {
-    for (size_t channel = 0; channel < NUM_DMA_CHANNELS; channel++) {
-        if (MP_STATE_PORT(playing_audio)[channel] == NULL) {
-            continue;
-        }
-
-        audio_dma_stop(MP_STATE_PORT(playing_audio)[channel]);
-    }
-}
-
-
 static size_t audio_dma_convert_samples(audio_dma_t *dma, uint8_t *input, uint32_t input_length, uint8_t *output, uint32_t output_length) {
     #pragma GCC diagnostic push
     #pragma GCC diagnostic ignored "-Wcast-align"

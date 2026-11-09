@@ -50,5 +50,10 @@ void common_hal_rgbmatrix_timer_free(void *ptr) {
     irq_set_enabled(PWM_IRQ_WRAP, false);
     pwm_clear_irq(slice);
     pwmout_free(slice, channel);
-    return;
+    // Protomatter installs an exclusive wrap handler. Remove it, so something
+    // else (countio) can install its own later.
+    irq_handler_t handler = irq_get_exclusive_handler(PWM_IRQ_WRAP);
+    if (handler != NULL) {
+        irq_remove_handler(PWM_IRQ_WRAP, handler);
+    }
 }
