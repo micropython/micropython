@@ -23,7 +23,6 @@
 
 #include "common-hal/microcontroller/Pin.h"
 #include "common-hal/analogio/AnalogIn.h"
-#include "common-hal/busio/UART.h"
 
 #define SPRESENSE_MEM_ALIGN (32)
 
@@ -57,9 +56,6 @@ void reset_cpu(void) {
 }
 
 void reset_port(void) {
-    #if CIRCUITPY_BUSIO
-    busio_uart_reset();
-    #endif
     #if CIRCUITPY_RTC
     rtc_reset();
     #endif
