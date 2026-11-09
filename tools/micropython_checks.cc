@@ -60,38 +60,94 @@ struct micropython_checks : gimple_opt_pass {
         return 0;
     }
 
-    static bool is_mpprint_call(const tree fn) {
+    static const char *fun_name(const tree fn) {
         if (!fn)
-            return false;
+            return nullptr;
         if (fn->base.code != ADDR_EXPR)
-            return false;
+            return nullptr;
         if (!fn->base.constant_flag)
-            return false;
+            return nullptr;
         const tree op = fn->exp.operands[0];
         if (op->base.code != FUNCTION_DECL)
-            return false;
+            return nullptr;
         const tree name = op->decl_minimal.name;
         if (name->base.code != IDENTIFIER_NODE)
-            return false;
-        return strcmp((const char *)name->identifier.id.str, "mp_printf") == 0;
+            return nullptr;
+        return (const char *)name->identifier.id.str; 
     }
 
-    static const char *mpprint_format_arg(gimple *stmt) {
+    static const char *format_arg_from_stmt(gimple *stmt) {
         tree fn = gimple_call_fn(stmt);
-        if (!is_mpprint_call(fn))
-            return NULL;
+        auto name = fun_name(fn);
+        if (!name) {
+            return nullptr;
+        }
+        if (strcmp(name, "MP_COMPRESSED_ROM_TEXT")) {
+            return nullptr;
+        }
         unsigned nargs = gimple_call_num_args(stmt);
-        if (nargs < 2)
-            return NULL;
-        tree arg = gimple_call_arg(stmt, 1);
+        if (nargs < 1) {
+            return nullptr;
+        }
+        tree arg = gimple_call_arg(stmt, 0);
         if (!arg->base.constant_flag)
-            return NULL;
+            return nullptr;
         if (arg->base.code != ADDR_EXPR)
-            return NULL;
+            return nullptr;
         tree op = arg->exp.operands[0];
         if (op->base.code != STRING_CST)
-            return NULL;
+            return nullptr;
         return op->string.str;
+    }
+
+    static const char *mpprint_format_arg(gimple *stmt, unsigned &argno) {
+        tree fn = gimple_call_fn(stmt);
+        auto name = fun_name(fn);
+        if (!name) {
+            return nullptr;
+        }
+        if (!strcmp(name, "mp_printf") || !strcmp(name, "vstr_printf") || !strcmp(name, "mp_warning")) {
+            unsigned nargs = gimple_call_num_args(stmt);
+            if (nargs < 2)
+                return nullptr;
+            tree arg = gimple_call_arg(stmt, 1);
+            if (!arg->base.constant_flag)
+                return nullptr;
+            if (arg->base.code != ADDR_EXPR)
+                return nullptr;
+            tree op = arg->exp.operands[0];
+            if (op->base.code != STRING_CST)
+                return nullptr;
+            argno = 2;
+            return op->string.str;
+        }
+        if (!strcmp(name, "DEBUG_printf")) {
+            unsigned nargs = gimple_call_num_args(stmt);
+            if (nargs < 1)
+                return nullptr;
+            tree arg = gimple_call_arg(stmt, 0);
+            if (!arg->base.constant_flag)
+                return nullptr;
+            if (arg->base.code != ADDR_EXPR)
+                return nullptr;
+            tree op = arg->exp.operands[0];
+            if (op->base.code != STRING_CST)
+                return nullptr;
+            argno = 1;
+            return op->string.str;
+        }
+        if (!strcmp(name, "mp_raise_msg_varg") || !strcmp(name, "mp_obj_new_exception_msg_varg")) {
+            unsigned nargs = gimple_call_num_args(stmt);
+            if (nargs < 2)
+                return nullptr;
+            tree arg = gimple_call_arg(stmt, 1);
+            if (TREE_CODE(arg) != SSA_NAME) {
+                return nullptr;
+            }
+            argno = 2;
+            return format_arg_from_stmt(SSA_NAME_CHECK(arg)->ssa_name.def_stmt);
+        }
+        return nullptr;
     }
 
     void walk(function *fun) {
@@ -104,15 +160,16 @@ struct micropython_checks : gimple_opt_pass {
                 // location_t loc = gimple_location (stmt);
                 switch (gimple_code(stmt)) {
                 case GIMPLE_CALL: {
-                    const char *fmt = mpprint_format_arg(stmt),
+                    unsigned argno;
+                    const char *fmt = mpprint_format_arg(stmt, argno),
                                *fmt_start = nullptr;
 
                     if (!fmt) {
                         break;
                     }
 
+                    // printf("Checking arguments %s\n", fmt);
                     unsigned nargs = gimple_call_num_args(stmt);
-                    unsigned argno = 2;
 
                     auto require_arg = [&](unsigned argno) -> tree_node*{
                         if (argno < nargs) {
