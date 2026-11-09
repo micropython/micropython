@@ -18,7 +18,7 @@ void board_init(void) {
     char variant[16];
     if (settings_get_str("CIRCUITPY_BOARD_VARIANT", variant, sizeof(variant)) == SETTINGS_OK &&
         strcmp(variant, "rgb_led") == 0) {
-        status_led_set_neopixel_rgb_order(true);
+        status_led_set_neopixel_order(STATUS_NEOPIXEL_ORDER_RGB);
     }
     #endif
 }

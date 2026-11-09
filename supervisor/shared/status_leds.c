@@ -31,8 +31,8 @@ uint8_t rgb_status_brightness = 63;
 static uint64_t next_start_raw_ticks;
 static uint8_t status_neopixel_color[3 * MICROPY_HW_NEOPIXEL_COUNT];
 static digitalio_digitalinout_obj_t status_neopixel;
-// true sends R,G,B; false sends G,R,B.
-static bool status_neopixel_rgb_order = MICROPY_HW_NEOPIXEL_ORDER_GRB;
+// GRB sends G,R,B (most WS2812s). RGB sends R,G,B.
+static status_neopixel_order_t status_neopixel_order = MICROPY_HW_NEOPIXEL_ORDER;
 
 #elif defined(MICROPY_HW_APA102_MOSI) && defined(MICROPY_HW_APA102_SCK)
 uint8_t rgb_status_brightness = 50;
@@ -242,7 +242,7 @@ void new_status_color(uint32_t rgb) {
         status_neopixel_color[3 * i + 1] = (rgb_adjusted >> 16) & 0xff;
         status_neopixel_color[3 * i + 2] = rgb_adjusted & 0xff;
 
-        if (status_neopixel_rgb_order) {
+        if (status_neopixel_order == STATUS_NEOPIXEL_ORDER_RGB) {
             // Swap GR to RG
             uint8_t temp = status_neopixel_color[3 * i + 0];
             status_neopixel_color[3 * i + 0] = status_neopixel_color[3 * i + 1];
@@ -289,11 +289,11 @@ void new_status_color(uint32_t rgb) {
     #endif
 }
 
-void status_led_set_neopixel_rgb_order(bool rgb_order) {
+void status_led_set_neopixel_order(status_neopixel_order_t order) {
     #ifdef MICROPY_HW_NEOPIXEL
-    status_neopixel_rgb_order = rgb_order;
+    status_neopixel_order = order;
     #else
-    (void)rgb_order;
+    (void)order;
     #endif
 }
 
