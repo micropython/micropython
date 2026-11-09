@@ -15,6 +15,10 @@ NRF_PDM_Type *nrf_pdm = NRF_PDM;
 
 static uint32_t dummy_buffer[4];
 
+static void mark_deinit(audiobusio_pdmin_obj_t *self) {
+    self->clock_pin_number = NO_PIN;
+}
+
 // Caller validates that pins are free.
 void common_hal_audiobusio_pdmin_construct(audiobusio_pdmin_obj_t *self,
     const mcu_pin_obj_t *clock_pin,
@@ -23,12 +27,9 @@ void common_hal_audiobusio_pdmin_construct(audiobusio_pdmin_obj_t *self,
     uint8_t bit_depth,
     bool mono,
     uint8_t oversample) {
-    claim_pin(clock_pin);
-    claim_pin(data_pin);
-
-    self->mono = mono;
-    self->clock_pin_number = clock_pin->number;
-    self->data_pin_number = data_pin->number;
+    // Ensure the object starts in its deinit state, so its finaliser does
+    // nothing if this raises.
+    mark_deinit(self);
 
     if (sample_rate != 16000) {
         mp_raise_ValueError(MP_ERROR_TEXT("only sample_rate=16000 is supported"));
@@ -36,6 +37,13 @@ void common_hal_audiobusio_pdmin_construct(audiobusio_pdmin_obj_t *self,
     if (bit_depth != 16) {
         mp_raise_ValueError(MP_ERROR_TEXT("only bit_depth=16 is supported"));
     }
+
+    claim_pin(clock_pin);
+    claim_pin(data_pin);
+
+    self->mono = mono;
+    self->clock_pin_number = clock_pin->number;
+    self->data_pin_number = data_pin->number;
     nrf_pdm->PSEL.CLK = self->clock_pin_number;
     nrf_pdm->PSEL.DIN = self->data_pin_number;
     nrf_pdm->PDMCLKCTRL = PDM_PDMCLKCTRL_FREQ_Default; // For Ratio64
@@ -54,12 +62,15 @@ bool common_hal_audiobusio_pdmin_deinited(audiobusio_pdmin_obj_t *self) {
 }
 
 void common_hal_audiobusio_pdmin_deinit(audiobusio_pdmin_obj_t *self) {
+    if (common_hal_audiobusio_pdmin_deinited(self)) {
+        return;
+    }
     nrf_pdm->ENABLE = 0;
 
     reset_pin_number(self->clock_pin_number);
-    self->clock_pin_number = NO_PIN;
     reset_pin_number(self->data_pin_number);
     self->data_pin_number = NO_PIN;
+    mark_deinit(self);
 }
 
 uint8_t common_hal_audiobusio_pdmin_get_bit_depth(audiobusio_pdmin_obj_t *self) {

@@ -109,6 +109,11 @@ static void uart_callback_irq(const nrfx_uarte_event_t *event, void *context) {
     }
 }
 
+// Mark the object deinited. A zeroed object also reads as deinited.
+static void mark_deinit(busio_uart_obj_t *self) {
+    self->uarte = NULL;
+}
+
 void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     const mcu_pin_obj_t *tx, const mcu_pin_obj_t *rx,
     const mcu_pin_obj_t *rts, const mcu_pin_obj_t *cts,
@@ -117,23 +122,14 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     mp_float_t timeout, uint16_t receiver_buffer_size, byte *receiver_buffer,
     bool sigint_enabled) {
 
+    // Ensure the object starts in its deinit state, so its finaliser does
+    // nothing if this raises before the UART is set up.
+    mark_deinit(self);
+
     mp_arg_validate_int(bits, 8, MP_QSTR_bits);
 
     if ((rs485_dir != NULL) || (rs485_invert)) {
         mp_raise_NotImplementedError(MP_ERROR_TEXT("RS485"));
-    }
-
-    // Find a free UART peripheral.
-    self->uarte = NULL;
-    for (size_t i = 0; i < MP_ARRAY_SIZE(nrfx_uartes); i++) {
-        if ((nrfx_uartes[i].p_reg->ENABLE & UARTE_ENABLE_ENABLE_Msk) == 0) {
-            self->uarte = &nrfx_uartes[i];
-            break;
-        }
-    }
-
-    if (self->uarte == NULL) {
-        mp_raise_ValueError(MP_ERROR_TEXT("All UART peripherals are in use"));
     }
 
     // shared-bindings checks that TX and RX are not both None, so we don't need to check here.
@@ -142,6 +138,19 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
 
     if (parity == BUSIO_UART_PARITY_ODD) {
         mp_raise_ValueError(MP_ERROR_TEXT("Odd parity is not supported"));
+    }
+
+    // Find a free UART peripheral.
+    nrfx_uarte_t *uarte = NULL;
+    for (size_t i = 0; i < MP_ARRAY_SIZE(nrfx_uartes); i++) {
+        if ((nrfx_uartes[i].p_reg->ENABLE & UARTE_ENABLE_ENABLE_Msk) == 0) {
+            uarte = &nrfx_uartes[i];
+            break;
+        }
+    }
+
+    if (uarte == NULL) {
+        mp_raise_ValueError(MP_ERROR_TEXT("All UART peripherals are in use"));
     }
 
     bool hwfc = rts != NULL || cts != NULL;
@@ -161,23 +170,29 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
         }
     };
 
-    _VERIFY_ERR(nrfx_uarte_init(self->uarte, &config, uart_callback_irq));
-
-    // Init buffer for rx
+    // Init buffer for rx. Allocate it before the UARTE is enabled, in case the allocate fails.
     if (rx != NULL) {
         // Use the provided buffer when given.
         if (receiver_buffer != NULL) {
             ringbuf_init(&self->ringbuf, receiver_buffer, receiver_buffer_size);
         } else {
             if (!ringbuf_alloc(&self->ringbuf, receiver_buffer_size)) {
-                nrfx_uarte_uninit(self->uarte);
                 m_malloc_fail(receiver_buffer_size);
             }
         }
+    }
 
+    _VERIFY_ERR(nrfx_uarte_init(uarte, &config, uart_callback_irq));
+
+    if (rx != NULL) {
         self->rx_pin_number = rx->number;
         claim_pin(rx);
+    } else {
+        self->rx_pin_number = NO_PIN;
     }
+
+    // The object is live from here.
+    self->uarte = uarte;
 
     if (tx != NULL) {
         self->tx_pin_number = tx->number;
@@ -210,7 +225,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
 }
 
 bool common_hal_busio_uart_deinited(busio_uart_obj_t *self) {
-    return self->rx_pin_number == NO_PIN;
+    return self->uarte == NULL;
 }
 
 void common_hal_busio_uart_deinit(busio_uart_obj_t *self) {
@@ -225,6 +240,7 @@ void common_hal_busio_uart_deinit(busio_uart_obj_t *self) {
         self->rts_pin_number = NO_PIN;
         self->cts_pin_number = NO_PIN;
         ringbuf_deinit(&self->ringbuf);
+        mark_deinit(self);
     }
 }
 

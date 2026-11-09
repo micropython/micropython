@@ -25,14 +25,18 @@ static nrfx_timer_t *timer = NULL;
 static uint16_t *pulse_array = NULL;
 static volatile uint16_t pulse_array_index = 0;
 static uint16_t pulse_array_length;
+// The PulseOut whose send() is running. The timer is shared, so its context
+// can't name the PulseOut.
+static pulseio_pulseout_obj_t *active_pulseout = NULL;
 
+// The PWMOut may have any channel of a PWM it shares with other PWMOuts.
 static void turn_on(pulseio_pulseout_obj_t *pulseout) {
-    pulseout->pwmout.pwm->PSEL.OUT[0] = pulseout->pwmout.pin->number;
+    pulseout->pwmout.pwm->PSEL.OUT[pulseout->pwmout.channel] = pulseout->pwmout.pin->number;
 }
 
 static void turn_off(pulseio_pulseout_obj_t *pulseout) {
     // Disconnect pin from PWM.
-    pulseout->pwmout.pwm->PSEL.OUT[0] = 0xffffffff;
+    pulseout->pwmout.pwm->PSEL.OUT[pulseout->pwmout.channel] = 0xffffffff;
     // Make sure pin is low.
     nrf_gpio_pin_clear(pulseout->pwmout.pin->number);
 }
@@ -45,8 +49,8 @@ static void start_timer(void) {
 }
 
 static void pulseout_event_handler(nrf_timer_event_t event_type, void *p_context) {
-    pulseio_pulseout_obj_t *pulseout = (pulseio_pulseout_obj_t *)p_context;
-    if (event_type != NRF_TIMER_EVENT_COMPARE0) {
+    pulseio_pulseout_obj_t *pulseout = active_pulseout;
+    if (pulseout == NULL || event_type != NRF_TIMER_EVENT_COMPARE0) {
         // Spurious event.
         return;
     }
@@ -81,27 +85,34 @@ void common_hal_pulseio_pulseout_construct(pulseio_pulseout_obj_t *self,
     uint32_t frequency,
     uint16_t duty_cycle) {
 
-    pwmout_result_t result = common_hal_pwmio_pwmout_construct(
-        &self->pwmout, pin, duty_cycle, frequency, false);
-
-    // This will raise an exception and not return if needed.
-    common_hal_pwmio_pwmout_raise_error(result);
-
+    // Get the shared timer before the PWMOut, so a raise due to an error leaves nothing
+    // claimed or counted.
     if (refcount == 0) {
         timer = nrf_peripherals_allocate_timer_or_throw();
+
+        nrfx_timer_config_t timer_config = {
+            // PulseOut durations are in microseconds, so this is convenient.
+            .frequency = NRF_TIMER_FREQ_1MHz,
+            .mode = NRF_TIMER_MODE_TIMER,
+            .bit_width = NRF_TIMER_BIT_WIDTH_32,
+            .interrupt_priority = NRFX_TIMER_DEFAULT_CONFIG_IRQ_PRIORITY,
+            .p_context = NULL,
+        };
+        nrfx_timer_init(timer, &timer_config, &pulseout_event_handler);
+    }
+
+    pwmout_result_t result = common_hal_pwmio_pwmout_construct(
+        &self->pwmout, pin, duty_cycle, frequency, false);
+    if (result != PWMOUT_OK) {
+        if (refcount == 0) {
+            nrf_peripherals_free_timer(timer);
+            timer = NULL;
+        }
+        // This raises.
+        common_hal_pwmio_pwmout_raise_error(result);
     }
     refcount++;
 
-    nrfx_timer_config_t timer_config = {
-        // PulseOut durations are in microseconds, so this is convenient.
-        .frequency = NRF_TIMER_FREQ_1MHz,
-        .mode = NRF_TIMER_MODE_TIMER,
-        .bit_width = NRF_TIMER_BIT_WIDTH_32,
-        .interrupt_priority = NRFX_TIMER_DEFAULT_CONFIG_IRQ_PRIORITY,
-        .p_context = self,
-    };
-
-    nrfx_timer_init(timer, &timer_config, &pulseout_event_handler);
     turn_off(self);
 }
 
@@ -119,6 +130,7 @@ void common_hal_pulseio_pulseout_deinit(pulseio_pulseout_obj_t *self) {
     refcount--;
     if (refcount == 0) {
         nrf_peripherals_free_timer(timer);
+        timer = NULL;
     }
 }
 
@@ -126,6 +138,7 @@ void common_hal_pulseio_pulseout_send(pulseio_pulseout_obj_t *self, uint16_t *pu
     pulse_array = pulses;
     pulse_array_index = 0;
     pulse_array_length = length;
+    active_pulseout = self;
 
     nrfx_timer_enable(timer);
 
@@ -140,4 +153,5 @@ void common_hal_pulseio_pulseout_send(pulseio_pulseout_obj_t *self, uint16_t *pu
     }
 
     nrfx_timer_disable(timer);
+    active_pulseout = NULL;
 }

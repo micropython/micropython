@@ -91,21 +91,41 @@ static void _pulsein_handler(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action
     self->last_count = current_count;
 }
 
+static void mark_deinit(pulseio_pulsein_obj_t *self) {
+    self->pin = NO_PIN;
+}
+
 void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t *self, const mcu_pin_obj_t *pin, uint16_t maxlen, bool idle_state) {
+    // Ensure the object starts in its deinit state, so its finaliser does
+    // nothing if this raises.
+    mark_deinit(self);
+
     int idx = _find_pulsein_obj(NULL);
     if (idx < 0) {
         mp_raise_NotImplementedError(NULL);
     }
-    _objs[idx] = self;
 
     self->buffer = (uint16_t *)m_malloc_without_collect(maxlen * sizeof(uint16_t));
     if (self->buffer == NULL) {
         m_malloc_fail(maxlen * sizeof(uint16_t));
     }
 
+    nrfx_gpiote_in_config_t cfg = {
+        .sense = NRF_GPIOTE_POLARITY_TOGGLE,
+        .pull = NRF_GPIO_PIN_NOPULL,
+        .is_watcher = false, // A plain input, not one that watches a pin we also drive.
+        .hi_accuracy = true,
+        .skip_gpio_setup = false
+    };
+    nrfx_err_t err = nrfx_gpiote_in_init(pin->number, &cfg, _pulsein_handler);
+    if (err != NRFX_SUCCESS) {
+        mp_raise_RuntimeError(MP_ERROR_TEXT("All channels in use"));
+    }
+
     if (refcount == 0) {
         timer = nrf_peripherals_allocate_timer();
         if (timer == NULL) {
+            nrfx_gpiote_in_uninit(pin->number);
             mp_raise_RuntimeError(MP_ERROR_TEXT("All timers in use"));
         }
         overflow_count = 0;
@@ -125,7 +145,6 @@ void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t *self, const mcu
     }
     refcount++;
 
-    self->pin = pin->number;
     self->maxlen = maxlen;
     self->idle_state = idle_state;
     self->start = 0;
@@ -134,20 +153,11 @@ void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t *self, const mcu
     self->paused = false;
     self->last_overflow = 0;
     self->last_count = 0;
+    self->pin = pin->number;
+    _objs[idx] = self;
 
     claim_pin(pin);
 
-    nrfx_gpiote_in_config_t cfg = {
-        .sense = NRF_GPIOTE_POLARITY_TOGGLE,
-        .pull = NRF_GPIO_PIN_NOPULL, // idle_state ? NRF_GPIO_PIN_PULLDOWN : NRF_GPIO_PIN_PULLUP,
-        .is_watcher = false, // nrf_gpio_cfg_watcher vs nrf_gpio_cfg_input
-        .hi_accuracy = true,
-        .skip_gpio_setup = false
-    };
-    nrfx_err_t err = nrfx_gpiote_in_init(self->pin, &cfg, _pulsein_handler);
-    if (err != NRFX_SUCCESS) {
-        mp_raise_RuntimeError(MP_ERROR_TEXT("All channels in use"));
-    }
     nrfx_gpiote_in_event_enable(self->pin, true);
 }
 
@@ -171,7 +181,7 @@ void common_hal_pulseio_pulsein_deinit(pulseio_pulsein_obj_t *self) {
     _objs[idx] = NULL;
 
     reset_pin_number(self->pin);
-    self->pin = NO_PIN;
+    mark_deinit(self);
 
     refcount--;
     if (refcount == 0) {

@@ -189,10 +189,18 @@ static void i2s_buffer_fill(audiobusio_i2sout_obj_t *self) {
     }
 }
 
+static void mark_deinit(audiobusio_i2sout_obj_t *self) {
+    self->data_pin_number = NO_PIN;
+}
+
 void common_hal_audiobusio_i2sout_construct(audiobusio_i2sout_obj_t *self,
     const mcu_pin_obj_t *bit_clock, const mcu_pin_obj_t *word_select,
     const mcu_pin_obj_t *data, const mcu_pin_obj_t *main_clock, bool left_justified,
     bool external_clock) {
+    // Ensure the object starts in its deinit state, so its finaliser does
+    // nothing if this raises.
+    mark_deinit(self);
+
     if (main_clock != NULL) {
         mp_raise_NotImplementedError_varg(MP_ERROR_TEXT("%q"), MP_QSTR_main_clock);
     }
@@ -258,7 +266,7 @@ void common_hal_audiobusio_i2sout_deinit(audiobusio_i2sout_obj_t *self) {
     reset_pin_number(self->word_select_pin_number);
     self->word_select_pin_number = NO_PIN;
     reset_pin_number(self->data_pin_number);
-    self->data_pin_number = NO_PIN;
+    mark_deinit(self);
     instance = NULL;
     supervisor_disable_tick();
 }
