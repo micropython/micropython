@@ -22,9 +22,9 @@ extern void _PM_IRQ_HANDLER(void);
 static uint8_t tc_handler[TC_INST_NUM];
 
 // Find the APB mask register and bit that clock a timer. turn_on_clocks() sets this bit.
-static volatile uint32_t *apb_mask(bool is_tc, uint8_t index, uint32_t *bit) {
+static volatile uint32_t *apb_mask(timer_type_t timer_type, uint8_t index, uint32_t *bit) {
     #ifdef SAM_D5X_E5X
-    if (is_tc) {
+    if (timer_type == TIMER_TYPE_TC) {
         switch (index) {
             case 0:
                 *bit = MCLK_APBAMASK_TC0;
@@ -71,30 +71,30 @@ static volatile uint32_t *apb_mask(bool is_tc, uint8_t index, uint32_t *bit) {
     }
     #else
     // TCC0 is APBC slot 8. TC3, which is TC index 0, is slot 11.
-    *bit = 1 << (8 + index + (is_tc ? 3 : 0));
+    *bit = 1 << (8 + index + (timer_type == TIMER_TYPE_TC ? 3 : 0));
     return &PM->APBCMASK.reg;
     #endif
 }
 
-static bool apb_clock_enabled(bool is_tc, uint8_t index) {
+static bool apb_clock_enabled(timer_type_t timer_type, uint8_t index) {
     uint32_t bit;
-    return (*apb_mask(is_tc, index, &bit) & bit) != 0;
+    return (*apb_mask(timer_type, index, &bit) & bit) != 0;
 }
 
-void turn_off_clocks(bool is_tc, uint8_t index) {
+void turn_off_clocks(timer_type_t timer_type, uint8_t index) {
     uint32_t bit;
-    *apb_mask(is_tc, index, &bit) &= ~bit;
+    *apb_mask(timer_type, index, &bit) &= ~bit;
 
     // Most timers share a GCLK peripheral channel with one other timer. Leave the channel on while
     // any timer on it still has its APB clock.
-    uint8_t gclk_id = is_tc ? tc_gclk_ids[index] : tcc_gclk_ids[index];
+    uint8_t gclk_id = timer_type == TIMER_TYPE_TC ? tc_gclk_ids[index] : tcc_gclk_ids[index];
     for (uint8_t i = 0; i < TC_INST_NUM; i++) {
-        if (tc_gclk_ids[i] == gclk_id && apb_clock_enabled(true, i)) {
+        if (tc_gclk_ids[i] == gclk_id && apb_clock_enabled(TIMER_TYPE_TC, i)) {
             return;
         }
     }
     for (uint8_t i = 0; i < TCC_INST_NUM; i++) {
-        if (tcc_gclk_ids[i] == gclk_id && apb_clock_enabled(false, i)) {
+        if (tcc_gclk_ids[i] == gclk_id && apb_clock_enabled(TIMER_TYPE_TCC, i)) {
             return;
         }
     }

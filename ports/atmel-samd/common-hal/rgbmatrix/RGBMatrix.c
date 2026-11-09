@@ -53,5 +53,5 @@ void common_hal_rgbmatrix_timer_free(void *ptr) {
     }
     tc_set_enable(ptr, false);
     tc_reset(ptr);
-    turn_off_clocks(true, timer_index);
+    turn_off_clocks(TIMER_TYPE_TC, timer_index);
 }

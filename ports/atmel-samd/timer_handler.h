@@ -12,6 +12,11 @@
 #define TC_HANDLER_RGBMATRIX 0x4
 #define TC_HANDLER_PULSEIN 0x5
 
+typedef enum {
+    TIMER_TYPE_TC,
+    TIMER_TYPE_TCC,
+} timer_type_t;
+
 void set_timer_handler(bool is_tc, uint8_t index, uint8_t timer_handler);
 void shared_timer_handler(bool is_tc, uint8_t index);
 
@@ -19,4 +24,4 @@ void shared_timer_handler(bool is_tc, uint8_t index);
 // off the timer's APB clock. Turns off its GCLK peripheral channel only if no other timer sharing
 // that channel still has its APB clock on. Call it after the timer's software reset has synced,
 // which needs the GCLK.
-void turn_off_clocks(bool is_tc, uint8_t index);
+void turn_off_clocks(timer_type_t timer_type, uint8_t index);

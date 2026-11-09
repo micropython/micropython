@@ -167,7 +167,7 @@ void common_hal_pulseio_pulseout_deinit(pulseio_pulseout_obj_t *self) {
         tc_disable_interrupts(pulseout_tc_index);
         tc_reset(tc);
         set_timer_handler(true, pulseout_tc_index, TC_HANDLER_NO_INTERRUPT);
-        turn_off_clocks(true, pulseout_tc_index);
+        turn_off_clocks(TIMER_TYPE_TC, pulseout_tc_index);
         pulseout_tc_index = 0xff;
     }
     self->pin = NO_PIN;
