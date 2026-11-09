@@ -372,6 +372,15 @@ bool audio_dma_get_playing(audio_dma_t *dma) {
     if (dma->dma_channel == NO_DMA_CHANNEL) {
         return false;
     }
+    // A single buffer played once ends with its one descriptor and no further block to load,
+    // so nothing else notices the end: stop once the channel reports the transfer done.
+    if (dma->single_buffer && !dma->loop) {
+        uint32_t status = dma_transfer_status(dma->dma_channel);
+        if ((status & (DMAC_CHINTFLAG_TCMPL | DMAC_CHINTFLAG_TERR)) != 0) {
+            audio_dma_stop(dma);
+            return false;
+        }
+    }
     return dma->playing_in_progress;
 }
 
