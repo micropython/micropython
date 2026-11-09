@@ -98,7 +98,7 @@ static MP_NORETURN void fun_pos_args_mismatch(mp_obj_fun_bc_t *f, size_t expecte
     #elif MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_NORMAL
     (void)f;
     mp_raise_msg_varg(&mp_type_TypeError,
-        MP_ERROR_TEXT("function takes %d positional arguments but %d were given"), expected, given);
+        MP_ERROR_TEXT("function takes " SIZE_FMT " positional arguments but " SIZE_FMT " were given"), expected, given);
     #elif MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_DETAILED
     mp_raise_msg_varg(&mp_type_TypeError,
         MP_ERROR_TEXT("%q() takes " SIZE_FMT " positional arguments but " SIZE_FMT " were given"),

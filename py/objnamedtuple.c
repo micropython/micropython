@@ -99,7 +99,7 @@ static mp_obj_t namedtuple_make_new(const mp_obj_type_t *type_in, size_t n_args,
         mp_arg_error_terse_mismatch();
         #elif MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_NORMAL
         mp_raise_msg_varg(&mp_type_TypeError,
-            MP_ERROR_TEXT("function takes %d positional arguments but %d were given"),
+            MP_ERROR_TEXT("function takes " SIZE_FMT " positional arguments but " SIZE_FMT " were given"),
             num_fields, n_args + n_kw);
         #elif MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_DETAILED
         mp_raise_msg_varg(&mp_type_TypeError,
