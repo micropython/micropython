@@ -16,6 +16,14 @@
 #include "supervisor/shared/tick.h"
 #include "device/usbd.h"
 
+// High-speed bulk endpoints must advertise 512-byte packets. The UVC payload
+// buffer size is independent: a payload smaller than this is a short packet.
+#if CIRCUITPY_USB_DEVICE_HIGH_SPEED == 1
+#define USB_VIDEO_BULK_PACKET_SIZE 512
+#else
+#define USB_VIDEO_BULK_PACKET_SIZE 64
+#endif
+
 static bool do_convert = true;
 static unsigned frame_num = 0;
 static unsigned tx_busy = 0;
@@ -81,9 +89,9 @@ bool usb_video_enabled(void) {
 
 size_t usb_video_descriptor_length(void) {
     #if CFG_TUD_VIDEO_STREAMING_BULK
-    return sizeof((char[]) {TUD_VIDEO_CAPTURE_DESCRIPTOR_UNCOMPR_BULK(0, 0, DEFAULT_FRAME_WIDTH, DEFAULT_FRAME_HEIGHT, DEFAULT_FRAME_RATE, CFG_TUD_VIDEO_STREAMING_EP_BUFSIZE, 0, 0)});
+    return sizeof((char[]) {TUD_VIDEO_CAPTURE_DESCRIPTOR_UNCOMPR_BULK(0, 0, DEFAULT_FRAME_WIDTH, DEFAULT_FRAME_HEIGHT, DEFAULT_FRAME_RATE, USB_VIDEO_BULK_PACKET_SIZE, 0, 0)});
     #else
-    return sizeof((char[]) {TUD_VIDEO_CAPTURE_DESCRIPTOR_UNCOMPR(0, 0, DEFAULT_FRAME_WIDTH, DEFAULT_FRAME_HEIGHT, DEFAULT_FRAME_RATE, 64, 0, 0)});
+    return sizeof((char[]) {TUD_VIDEO_CAPTURE_DESCRIPTOR_UNCOMPR(0, 0, DEFAULT_FRAME_WIDTH, DEFAULT_FRAME_HEIGHT, DEFAULT_FRAME_RATE, CFG_TUD_VIDEO_STREAMING_EP_BUFSIZE, 0, 0)});
     #endif
 }
 
@@ -124,16 +132,16 @@ size_t usb_video_add_descriptor(uint8_t *descriptor_buf, descriptor_counts_t *de
     usb_add_interface_name(*current_interface_string, NULL, "UVC");
     const uint8_t usb_video_descriptor[] = {
         #if CFG_TUD_VIDEO_STREAMING_BULK
-        TUD_VIDEO_CAPTURE_DESCRIPTOR_UNCOMPR_BULK(*current_interface_string, descriptor_counts->current_endpoint | 0x80, usb_video_frame_width, usb_video_frame_height, DEFAULT_FRAME_RATE, 64, descriptor_counts->current_interface, descriptor_counts->current_interface + 1)
+        TUD_VIDEO_CAPTURE_DESCRIPTOR_UNCOMPR_BULK(*current_interface_string, descriptor_counts->current_endpoint | 0x80, usb_video_frame_width, usb_video_frame_height, DEFAULT_FRAME_RATE, USB_VIDEO_BULK_PACKET_SIZE, descriptor_counts->current_interface, descriptor_counts->current_interface + 1)
         #else
         TUD_VIDEO_CAPTURE_DESCRIPTOR_UNCOMPR(*current_interface_string, descriptor_counts->current_endpoint | 0x80, usb_video_frame_width, usb_video_frame_height, DEFAULT_FRAME_RATE, CFG_TUD_VIDEO_STREAMING_EP_BUFSIZE, descriptor_counts->current_interface, descriptor_counts->current_interface + 1)
         #endif
     };
     (*current_interface_string)++;
+    // UVC has two interfaces: video control and video streaming.
     descriptor_counts->current_interface += 2;
     descriptor_counts->num_in_endpoints++;
     descriptor_counts->current_endpoint++;
-    descriptor_counts->current_interface++;
 
     memcpy(descriptor_buf, usb_video_descriptor, sizeof(usb_video_descriptor));
 

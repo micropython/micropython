@@ -23,7 +23,6 @@
 #define DEFAULT_UART_BUS_TX (&pin_GPIO1)
 
 // USB-C shares GPIO24/25 with the ROM USB Serial/JTAG downloader.
-#define CIRCUITPY_USB_DEVICE_INSTANCE 0
 #define CIRCUITPY_ESP32P4_SWAP_LSFS (1)
 
 // USB-A is connected to the dedicated high-speed PHY.

@@ -682,9 +682,19 @@ CFLAGS += \
 	-DCFG_TUD_CDC_TX_BUFSIZE=1024 \
 	-DCFG_TUD_MSC_BUFSIZE=4096
 endif
+ifeq ($(CIRCUITPY_USB_DEVICE_HIGH_SPEED),1)
+# At high speed the MIDI endpoint is a 512-byte bulk endpoint. The MIDI driver
+# refuses to arm the endpoint unless the stream FIFO can hold a full packet, so
+# the buffers must be at least as big as the endpoint's max packet size.
+CFLAGS += \
+	-DCFG_TUD_MIDI_RX_BUFSIZE=512 \
+	-DCFG_TUD_MIDI_TX_BUFSIZE=512
+else
 CFLAGS += \
 	-DCFG_TUD_MIDI_RX_BUFSIZE=128 \
-	-DCFG_TUD_MIDI_TX_BUFSIZE=128 \
+	-DCFG_TUD_MIDI_TX_BUFSIZE=128
+endif
+CFLAGS += \
 	-DCFG_TUD_VENDOR_RX_BUFSIZE=128 \
 	-DCFG_TUD_VENDOR_TX_BUFSIZE=128
 endif
