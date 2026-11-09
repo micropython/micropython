@@ -61,10 +61,14 @@ void common_hal_audiobusio_pdmin_construct(audiobusio_pdmin_obj_t *self,
         },
     };
     err = i2s_channel_init_pdm_rx_mode(self->rx_chan, &pdm_rx_cfg);
-    CHECK_ESP_RESULT(err);
-
-    err = i2s_channel_enable(self->rx_chan);
-    CHECK_ESP_RESULT(err);
+    if (err == ESP_OK) {
+        err = i2s_channel_enable(self->rx_chan);
+    }
+    if (err != ESP_OK) {
+        i2s_del_channel(self->rx_chan);
+        self->rx_chan = NULL;
+        CHECK_ESP_RESULT(err);
+    }
 
     self->clock_pin = clock_pin;
     self->data_pin = data_pin;
