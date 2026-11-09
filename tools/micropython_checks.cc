@@ -177,7 +177,7 @@ struct micropython_checks : gimple_opt_pass {
                             warning_at(
                                 loc, OPT_Wformat_,
                                 "argument %d: Format %q.*s requires a %qT or "
-                                "%qT (%d bits), not %qT [size %d]",
+                                "%qT (%d bits), not %qT (%d bits)",
                                 argno + 1, (int)(fmt - fmt_start + 1),
                                 fmt_start, type1, type2,
                                 type2->type_common.precision, tp,
