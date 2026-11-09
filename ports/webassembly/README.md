@@ -40,6 +40,28 @@ To generate the minified file `micropython.min.mjs`, run:
 
     $ make min
 
+Publishing to npm
+-----------------
+
+The `pyscript` and `browser` variants are published to npm, as
+`@micropython/micropython-webassembly-pyscript` and
+`@micropython/micropython-webassembly-browser`. Each package holds the
+minified `micropython.mjs` and two WebAssembly binaries: the variant as
+built, and a `-settrace` build with `sys.settrace` support for debuggers.
+Both builds share the same JavaScript, which the build checks.
+
+To build a package and inspect it without publishing:
+
+    $ make VARIANT=browser npm_pack
+
+To publish, with the credentials of the npm account you are logged in
+to:
+
+    $ make VARIANT=browser publish
+
+The version is taken from `git describe --tags`; set `NPM_VERSION` on
+the make command line to override it.
+
 Variants
 --------
 
