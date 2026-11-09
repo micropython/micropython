@@ -249,6 +249,7 @@ void common_hal_pulseio_pulsein_deinit(pulseio_pulsein_obj_t *self) {
         tc_disable_interrupts(pulsein_tc_index);
         tc_reset(tc);
         set_timer_handler(true, pulsein_tc_index, TC_HANDLER_NO_INTERRUPT);
+        turn_off_clocks(TIMER_TYPE_TC, pulsein_tc_index);
         pulsein_tc_index = 0xff;
     }
     mark_deinit(self);
