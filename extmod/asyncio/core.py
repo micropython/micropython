@@ -98,17 +98,18 @@ class IOQueue:
         self._enqueue(s, 1)
 
     def remove(self, task):
-        while True:
-            del_s = None
-            for k in self.map:  # Iterate without allocating on the heap
-                q0, q1, s = self.map[k]
-                if q0 is task or q1 is task:
-                    del_s = s
-                    break
-            if del_s is not None:
-                self._dequeue(s)
-            else:
-                break
+        # A task waits on at most one direction of one stream
+        for k in self.map:  # Iterate without allocating on the heap
+            sm = self.map[k]
+            if sm[0] is task or sm[1] is task:
+                i = sm[1] is task
+                sm[i] = None
+                if sm[1 - i] is None:
+                    self._dequeue(sm[2])
+                else:
+                    # Keep polling for the other task waiting on this stream
+                    self.poller.modify(sm[2], select.POLLIN if i else select.POLLOUT)
+                return
 
     def wait_io_event(self, dt):
         for s, ev in self.poller.ipoll(dt):
