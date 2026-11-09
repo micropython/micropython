@@ -232,6 +232,12 @@ void common_hal_mipicsi_camera_videosource_play(
     if (result != ESP_OK) {
         mipidsi_phy_ldo_release();
         self->phy_ldo = NULL;
+        #if SOC_ISP_SUPPORTED
+        if (self->isp_proc) {
+            esp_isp_del_processor(self->isp_proc);
+            self->isp_proc = NULL;
+        }
+        #endif
         raise_esp_error(result);
     }
 
