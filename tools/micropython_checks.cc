@@ -206,9 +206,27 @@ struct micropython_checks : gimple_opt_pass {
                                 fmt_start);
                         }
                     };
-                    auto require_qstr = [&require_sized_int](unsigned argno) {
-                        require_sized_int(argno, size_type_node,
-                                          signed_size_type_node);
+                    auto require_qstr = [&](unsigned argno) {
+                        auto type1 = size_type_node;
+                        auto type2 = signed_size_type_node;
+                        auto arg = require_arg(argno);
+                        if (!arg) {
+                            return;
+                        }
+                        location_t loc = gimple_location(stmt);
+
+                        auto tp = arg ? arg->exp.typed.type : 0;
+                        if (tp && (tp->base.code != INTEGER_TYPE ||
+                                   tp->type_common.precision !=
+                                       type1->type_common.precision)) {
+                            warning_at(
+                                loc, OPT_Wformat_,
+                                "argument %d: Format %q.*s requires a %qs (%d bits), "
+                                "not %qT (%d bits)",
+                                argno + 1, (int)(fmt - fmt_start + 1),
+                                fmt_start, "qstr", type2->type_common.precision,
+                                tp, tp->type_common.precision);
+                        }
                     };
 
                     for (;;) {
