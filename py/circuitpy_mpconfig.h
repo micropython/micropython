@@ -547,6 +547,12 @@ void background_callback_run_all(void);
 #define CIRCUITPY_STATUS_LED_POWER_INVERTED (0)
 #endif
 
+// Byte order of the status NeoPixel. Most WS2812s take GRB. Boards whose LED takes RGB set
+// this to STATUS_NEOPIXEL_ORDER_RGB, from supervisor/shared/status_leds.h.
+#ifndef MICROPY_HW_NEOPIXEL_ORDER
+#define MICROPY_HW_NEOPIXEL_ORDER (STATUS_NEOPIXEL_ORDER_GRB)
+#endif
+
 #define CIRCUITPY_BOOT_OUTPUT_FILE "/boot_out.txt"
 
 #ifndef CIRCUITPY_BOOT_COUNTER

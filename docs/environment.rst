@@ -169,6 +169,24 @@ so set this to ``false`` if you don't need this feature.
 Additional board-specific keys
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+CIRCUITPY_BOARD_VARIANT (string)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Selects a hardware variant for boards sold in versions that the chip can't tell apart,
+such as clones with a different status LED color order. Each board documents the values it
+accepts in its ``board.c``. Unknown values are ignored and the board uses its default.
+Read at startup.
+
+`ESP32-S3 SuperMini <https://circuitpython.org/board/generic_esp32s3_supermini/>`_:
+``"rgb_led"`` for boards whose status NeoPixel takes RGB order. To check, run this.
+If the LED shows green instead of red, set ``CIRCUITPY_BOARD_VARIANT = "rgb_led"``
+and power cycle.
+
+.. code-block:: python
+
+    import board, neopixel
+    p = neopixel.NeoPixel(board.NEOPIXEL, 1, pixel_order=neopixel.GRB)
+    p[0] = (255, 0, 0)
+
 CIRCUITPY_DISPLAY_WIDTH (integer)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 (Sunton, MaTouch boards)
