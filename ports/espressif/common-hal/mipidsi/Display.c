@@ -129,7 +129,7 @@ void common_hal_mipidsi_display_construct(mipidsi_display_obj_t *self,
     ret = esp_lcd_dpi_panel_get_frame_buffer(self->dpi_panel_handle, 1, &fb);
     if (ret != ESP_OK || fb == NULL) {
         clear_panel_handles(self);
-        CHECK_ESP_RESULT(ret);
+        CHECK_ESP_RESULT(ret != ESP_OK ? ret : ESP_ERR_NO_MEM);
     }
 
     self->framebuffer = (uint8_t *)fb;
