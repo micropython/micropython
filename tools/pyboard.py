@@ -201,6 +201,7 @@ class ProcessToSerial:
 
 
 class ProcessPtyToTerminal:
+    # CIRCUITPY-CHANGE: the PTY line need not be the first line of output.
     """Execute a process which creates a PTY and prints secondary PTY in
     a line of its startup output, and emulate serial connection using
     this PTY."""
