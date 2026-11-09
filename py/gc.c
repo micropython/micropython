@@ -292,6 +292,7 @@ void gc_add(void *start, void *end) {
 
 #if MICROPY_GC_SPLIT_HEAP_AUTO
 // Try to automatically add a heap area large enough to fulfill 'failed_alloc'.
+// The caller must hold the GC mutex.
 static bool gc_try_add_heap(size_t failed_alloc) {
     // 'needed' is the size of a heap large enough to hold failed_alloc, with
     // the additional metadata overheads as calculated in gc_setup_area().
@@ -957,15 +958,15 @@ void *gc_alloc(size_t n_bytes, unsigned int alloc_flags) {
             #endif
         }
 
-        GC_EXIT();
         // nothing found!
+        #if MICROPY_GC_SPLIT_HEAP_AUTO
+        if (collected && !added && gc_try_add_heap(n_bytes)) {
+            added = true;
+            continue;
+        }
+        #endif
+        GC_EXIT();
         if (collected) {
-            #if MICROPY_GC_SPLIT_HEAP_AUTO
-            if (!added && gc_try_add_heap(n_bytes)) {
-                added = true;
-                continue;
-            }
-            #endif
             return NULL;
         }
         DEBUG_printf("gc_alloc(" UINT_FMT "): no free mem, triggering GC\n", n_bytes);
