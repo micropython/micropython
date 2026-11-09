@@ -149,7 +149,7 @@ static mp_obj_t audioi2sin_i2sin_make_new(const mp_obj_type_t *type, size_t n_ar
     const mcu_pin_obj_t *data = validate_obj_is_free_pin(args[ARG_data].u_obj, MP_QSTR_data);
     const mcu_pin_obj_t *main_clock = validate_obj_is_free_pin_or_none(args[ARG_main_clock].u_obj, MP_QSTR_main_clock);
 
-    uint32_t sample_rate = args[ARG_sample_rate].u_int;
+    uint32_t sample_rate = (uint32_t)mp_arg_validate_int_min(args[ARG_sample_rate].u_int, 1, MP_QSTR_sample_rate);
     uint8_t bit_depth = args[ARG_bit_depth].u_int;
     if (bit_depth != 8 && bit_depth != 16 && bit_depth != 24 && bit_depth != 32) {
         mp_raise_ValueError_varg(MP_ERROR_TEXT("%q must be 8, 16, 24, or 32"), MP_QSTR_bit_depth);
