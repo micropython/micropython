@@ -16,5 +16,4 @@ typedef struct {
     const mcu_pin_obj_t *pin;
     uint8_t duty_resolution;
     bool variable_frequency : 1;
-    bool deinited : 1;
 } pwmio_pwmout_obj_t;
