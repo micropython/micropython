@@ -541,6 +541,11 @@ void common_hal_audioio_audioout_construct(audioio_audioout_obj_t *self,
     }
 
     audioout_init(self);
+
+    claim_pin(left_channel_pin);
+    if (right_channel_pin != NULL) {
+        claim_pin(right_channel_pin);
+    }
 }
 
 bool common_hal_audioio_audioout_deinited(audioio_audioout_obj_t *self) {
@@ -564,6 +569,12 @@ void common_hal_audioio_audioout_deinit(audioio_audioout_obj_t *self) {
     }
     self->handle = NULL;
     _active_handle = NULL;
+    if (self->channel_mask & DAC_CHANNEL_MASK_CH0) {
+        reset_pin_number(pin_CHANNEL_0.number);
+    }
+    if (self->channel_mask & DAC_CHANNEL_MASK_CH1) {
+        reset_pin_number(pin_CHANNEL_1.number);
+    }
 }
 
 void common_hal_audioio_audioout_play(audioio_audioout_obj_t *self,

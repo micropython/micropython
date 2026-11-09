@@ -120,6 +120,8 @@ void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t *self, const mcu
     rmt_rx_register_event_callbacks(self->channel, &rx_callback, self);
     rmt_enable(self->channel);
     rmt_receive(self->channel, self->raw_symbols, self->raw_symbols_size, &rx_config);
+
+    claim_pin(pin);
 }
 
 bool common_hal_pulseio_pulsein_deinited(pulseio_pulsein_obj_t *self) {

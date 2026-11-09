@@ -54,6 +54,9 @@ void common_hal_pulseio_pulseout_construct(pulseio_pulseout_obj_t *self,
     }
 
     rmt_enable(self->channel);
+
+    self->pin = pin;
+    claim_pin(pin);
 }
 
 bool common_hal_pulseio_pulseout_deinited(pulseio_pulseout_obj_t *self) {
@@ -68,6 +71,7 @@ void common_hal_pulseio_pulseout_deinit(pulseio_pulseout_obj_t *self) {
     rmt_del_encoder(self->encoder);
     rmt_del_channel(self->channel);
     self->channel = NULL;
+    reset_pin_number(self->pin->number);
 }
 
 void common_hal_pulseio_pulseout_send(pulseio_pulseout_obj_t *self, uint16_t *pulses, uint16_t length) {
