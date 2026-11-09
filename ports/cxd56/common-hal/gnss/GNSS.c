@@ -34,8 +34,12 @@ static gnss_positionfix_t fix_to_positionfix_type(uint8_t fix) {
     }
 }
 
-void common_hal_gnss_construct(gnss_obj_t *self, unsigned long selection) {
+static void mark_deinit(gnss_obj_t *self) {
     self->active = false;
+}
+
+void common_hal_gnss_construct(gnss_obj_t *self, unsigned long selection) {
+    mark_deinit(self);
 
     if (gnss_dev.fd < 0) {
         gnss_dev.fd = open(gnss_dev.devpath, O_RDONLY);
@@ -72,7 +76,7 @@ void common_hal_gnss_deinit(gnss_obj_t *self) {
     if (common_hal_gnss_deinited(self)) {
         return;
     }
-    self->active = false;
+    mark_deinit(self);
     gnss_users--;
     if (gnss_users > 0) {
         return;

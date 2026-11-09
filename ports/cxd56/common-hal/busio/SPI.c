@@ -19,6 +19,8 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self, const mcu_pin_obj_t *
     const mcu_pin_obj_t *mosi, const mcu_pin_obj_t *miso, bool half_duplex) {
     int port = -1;
 
+    common_hal_busio_spi_mark_deinit(self);
+
     if (half_duplex) {
         mp_raise_NotImplementedError_varg(MP_ERROR_TEXT("%q"), MP_QSTR_half_duplex);
     }

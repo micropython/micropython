@@ -18,12 +18,16 @@
 
 #define DATA_PINS_NUM 4
 
+static void mark_deinit(sdioio_sdcard_obj_t *self) {
+    self->inode = NULL;
+}
+
 void common_hal_sdioio_sdcard_construct(sdioio_sdcard_obj_t *self,
     const mcu_pin_obj_t *clock, const mcu_pin_obj_t *command,
     uint8_t num_data, const mcu_pin_obj_t **data, uint32_t frequency) {
     struct geometry geo;
 
-    self->inode = NULL;
+    mark_deinit(self);
 
     if (clock->number != PIN_SDIO_CLK || command->number != PIN_SDIO_CMD) {
         raise_ValueError_invalid_pins();
@@ -69,7 +73,7 @@ void common_hal_sdioio_sdcard_deinit(sdioio_sdcard_obj_t *self) {
         return;
     }
     close_blockdriver(self->inode);
-    self->inode = NULL;
+    mark_deinit(self);
 
     reset_pin_number(self->clock_pin->number);
     reset_pin_number(self->command_pin->number);

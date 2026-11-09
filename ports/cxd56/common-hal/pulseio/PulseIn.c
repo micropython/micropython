@@ -63,8 +63,14 @@ static int pulsein_interrupt_handler(int irq, FAR void *context, FAR void *arg) 
     return 0;
 }
 
+static void mark_deinit(pulseio_pulsein_obj_t *self) {
+    self->pin = NULL;
+}
+
 void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t *self,
     const mcu_pin_obj_t *pin, uint16_t maxlen, bool idle_state) {
+    mark_deinit(self);
+
     self->buffer = (uint16_t *)m_malloc_without_collect(maxlen * sizeof(uint16_t));
     if (self->buffer == NULL) {
         m_malloc_fail(maxlen * sizeof(uint16_t));
@@ -80,6 +86,8 @@ void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t *self,
 
     int irq = pulsein_set_config(self, true);
     if (irq < 0) {
+        // The pin is set for pulsein_set_config() but not claimed yet.
+        mark_deinit(self);
         mp_raise_RuntimeError(MP_ERROR_TEXT("Internal resource(s) in use"));
     } else {
         pulsein_objects[irq - CXD56_IRQ_EXDEVICE_0] = self;
@@ -99,7 +107,7 @@ void common_hal_pulseio_pulsein_deinit(pulseio_pulsein_obj_t *self) {
     board_gpio_intconfig(self->pin->number, 0, false, NULL);
 
     reset_pin_number(self->pin->number);
-    self->pin = NULL;
+    mark_deinit(self);
 }
 
 bool common_hal_pulseio_pulsein_deinited(pulseio_pulsein_obj_t *self) {

@@ -43,7 +43,6 @@ void common_hal_busio_i2c_deinit(busio_i2c_obj_t *self) {
     }
 
     cxd56_i2cbus_uninitialize(self->i2c_dev);
-    self->i2c_dev = NULL;
 
     reset_pin_number(self->scl_pin->number);
     reset_pin_number(self->sda_pin->number);

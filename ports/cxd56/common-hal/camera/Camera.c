@@ -128,8 +128,12 @@ static void camera_start_preview(void) {
     camera_start_streaming(V4L2_BUF_TYPE_VIDEO_CAPTURE);
 }
 
-void common_hal_camera_construct(camera_obj_t *self) {
+static void mark_deinit(camera_obj_t *self) {
     self->active = false;
+}
+
+void common_hal_camera_construct(camera_obj_t *self) {
+    mark_deinit(self);
 
     if (camera_dev.fd < 0) {
         if (video_initialize(camera_dev.devpath) < 0) {
@@ -156,7 +160,7 @@ void common_hal_camera_deinit(camera_obj_t *self) {
     if (common_hal_camera_deinited(self)) {
         return;
     }
-    self->active = false;
+    mark_deinit(self);
     camera_users--;
     if (camera_users > 0) {
         return;
