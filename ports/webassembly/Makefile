@@ -39,6 +39,7 @@ CC = emcc
 LD = emcc
 NODE ?= node
 TERSER ?= npx terser
+CMP = cmp
 
 INC += -I.
 INC += -I$(TOP)
@@ -48,6 +49,7 @@ INC += -I$(VARIANT_DIR)
 CFLAGS += -std=c99 -Wall -Werror -Wdouble-promotion -Wfloat-conversion
 CFLAGS += -Os -DNDEBUG
 CFLAGS += $(INC)
+CFLAGS += $(CFLAGS_EXTRA)
 
 EXPORTED_FUNCTIONS_EXTRA += ,\
 	_mp_js_do_exec,\
@@ -135,7 +137,7 @@ OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 ################################################################################
 # Main targets.
 
-.PHONY: all repl min test test//% test_min
+.PHONY: all repl min test test//% test_min npm_pack publish
 
 all: $(BUILD)/micropython.mjs
 
@@ -160,6 +162,46 @@ test//%: $(BUILD)/micropython.mjs $(TOP)/tests/run-tests.py
 
 test_min: $(BUILD)/micropython.min.mjs $(TOP)/tests/run-tests.py
 	cd $(TOP)/tests && MICROPY_MICROPYTHON_MJS=../ports/webassembly/$< ./run-tests.py -t webassembly
+
+################################################################################
+# Publishing to npm.
+
+# A variant is publishable when it has an npm/ directory holding a
+# package.json (with @VERSION@ where the version goes) and a README.md.
+# The package holds the minified JS plus two wasm files: the variant as
+# built, and a settrace sub-variant for debuggers.  Both builds share
+# the same JS, which is checked, so one micropython.mjs serves either
+# wasm.  The package version must be given with NPM_VERSION=... on the
+# command line.  npm_pack builds the tarball for inspection, publish
+# uploads it with the credentials of whoever runs it.
+
+BUILD_NPM = $(BUILD)-npm
+BUILD_SETTRACE = $(BUILD)-settrace
+
+ifneq ($(filter npm_pack publish,$(MAKECMDGOALS)),)
+ifeq ($(NPM_VERSION),)
+$(error NPM_VERSION must be set, e.g. make NPM_VERSION=1.30.0 $(MAKECMDGOALS))
+endif
+endif
+
+$(BUILD_SETTRACE)/micropython.min.mjs: FORCE
+	$(Q)$(MAKE) VARIANT=$(VARIANT) BUILD=$(BUILD_SETTRACE) CFLAGS_EXTRA="$(CFLAGS_EXTRA) -DMICROPY_PY_SYS_SETTRACE=1" min
+
+$(BUILD_NPM)/package.json: $(BUILD)/micropython.min.mjs $(BUILD_SETTRACE)/micropython.min.mjs $(VARIANT_DIR)/npm/package.json $(VARIANT_DIR)/npm/README.md FORCE
+	$(ECHO) "Create $@"
+	$(Q)$(CMP) $(BUILD)/micropython.min.mjs $(BUILD_SETTRACE)/micropython.min.mjs
+	$(Q)$(MKDIR) -p $(BUILD_NPM)
+	$(Q)$(CP) $(BUILD)/micropython.min.mjs $(BUILD_NPM)/micropython.mjs
+	$(Q)$(CP) $(BUILD)/micropython.wasm $(BUILD_NPM)/micropython.wasm
+	$(Q)$(CP) $(BUILD_SETTRACE)/micropython.wasm $(BUILD_NPM)/micropython-settrace.wasm
+	$(Q)$(CP) $(VARIANT_DIR)/npm/README.md $(BUILD_NPM)/README.md
+	$(Q)$(SED) 's/@VERSION@/$(NPM_VERSION)/' $(VARIANT_DIR)/npm/package.json > $@
+
+npm_pack: $(BUILD_NPM)/package.json
+	$(Q)cd $(BUILD_NPM) && npm pack
+
+publish: $(BUILD_NPM)/package.json
+	$(Q)cd $(BUILD_NPM) && npm publish --tag latest --access public
 
 ################################################################################
 # Remaining make rules.

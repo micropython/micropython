@@ -1224,6 +1224,7 @@ function ci_webassembly_build {
     make ${MAKEOPTS} -C ports/webassembly VARIANT=pyscript submodules
     make ${MAKEOPTS} -C ports/webassembly VARIANT=pyscript
     make ${MAKEOPTS} -C ports/webassembly VARIANT=browser
+    make ${MAKEOPTS} -C ports/webassembly VARIANT=browser NPM_VERSION=0.0.0 npm_pack
 }
 
 function ci_webassembly_run_tests {
