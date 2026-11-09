@@ -49,8 +49,6 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     char tmp;
     struct termios tio;
 
-    // Ensure the object starts in its deinit state, so its finaliser does
-    // nothing if this raises.
     mark_deinit(self);
 
     if ((rts != NULL) || (cts != NULL) || (rs485_dir != NULL) || (rs485_invert)) {
@@ -63,7 +61,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
 
     // The one UART needs both TX and RX.
     if (tx == NULL || rx == NULL) {
-        raise_ValueError_invalid_pins();
+        mp_raise_NotImplementedError(MP_ERROR_TEXT("UART needs TX & RX"));
     }
 
     self->number = -1;
