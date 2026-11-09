@@ -20,6 +20,9 @@
 #if CIRCUITPY_RTC
 #include "shared-bindings/rtc/__init__.h"
 #endif
+#if CIRCUITPY_SSL
+#include "shared-module/ssl/__init__.h"
+#endif
 
 #include <stdlib.h>
 
@@ -289,6 +292,10 @@ void reset_port(void) {
 
     #if CIRCUITPY_RTC
     rtc_reset();
+    #endif
+
+    #if CIRCUITPY_SSL
+    ssl_reset();
     #endif
 
     #if defined(CONFIG_ARCH_POSIX)
