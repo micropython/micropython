@@ -42,9 +42,6 @@ void common_hal_i2ctarget_i2c_target_construct(i2ctarget_i2c_target_obj_t *self,
     self->addresses = addresses;
     self->num_addresses = num_addresses;
 
-    self->sda_pin = sda;
-    self->scl_pin = scl;
-
     self->recv_head = 0;
     self->recv_tail = 0;
 
@@ -72,6 +69,9 @@ void common_hal_i2ctarget_i2c_target_construct(i2ctarget_i2c_target_obj_t *self,
             mp_arg_error_invalid(MP_QSTR_I2CTarget);
         }
     }
+
+    self->sda_pin = sda;
+    self->scl_pin = scl;
 
     i2c_slave_event_callbacks_t cbs = {
         .on_receive = i2c_slave_on_receive,

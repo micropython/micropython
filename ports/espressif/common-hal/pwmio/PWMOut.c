@@ -32,11 +32,16 @@ static uint32_t calculate_duty_cycle(uint32_t frequency) {
     return duty_bits;
 }
 
+static void mark_deinit(pwmio_pwmout_obj_t *self) {
+    self->pin = NULL;
+}
+
 pwmout_result_t common_hal_pwmio_pwmout_construct(pwmio_pwmout_obj_t *self,
     const mcu_pin_obj_t *pin,
     uint16_t duty,
     uint32_t frequency,
     bool variable_frequency) {
+    mark_deinit(self);
 
     // check the frequency (avoid divide by zero below)
     if (frequency == 0) {
@@ -110,7 +115,6 @@ pwmout_result_t common_hal_pwmio_pwmout_construct(pwmio_pwmout_obj_t *self,
     }
     self->variable_frequency = variable_frequency;
     self->pin = pin;
-    self->deinited = false;
     self->duty_resolution = duty_bits;
     claim_pin(pin);
 
@@ -121,7 +125,7 @@ pwmout_result_t common_hal_pwmio_pwmout_construct(pwmio_pwmout_obj_t *self,
 }
 
 bool common_hal_pwmio_pwmout_deinited(pwmio_pwmout_obj_t *self) {
-    return self->deinited == true;
+    return self->pin == NULL;
 }
 
 void common_hal_pwmio_pwmout_deinit(pwmio_pwmout_obj_t *self) {
@@ -150,7 +154,7 @@ void common_hal_pwmio_pwmout_deinit(pwmio_pwmout_obj_t *self) {
         varfreq_timers[self->tim_handle.timer_num] = false;
     }
     common_hal_reset_pin(self->pin);
-    self->deinited = true;
+    mark_deinit(self);
 }
 
 void common_hal_pwmio_pwmout_set_duty_cycle(pwmio_pwmout_obj_t *self, uint16_t duty) {

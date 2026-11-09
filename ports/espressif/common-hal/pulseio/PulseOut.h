@@ -15,4 +15,5 @@ typedef struct {
     mp_obj_base_t base;
     rmt_channel_handle_t channel;
     rmt_encoder_handle_t encoder;
+    const mcu_pin_obj_t *pin;
 } pulseio_pulseout_obj_t;

@@ -60,8 +60,15 @@ void common_hal_audioi2sin_i2sin_construct(audioi2sin_i2sin_obj_t *self,
             .din = data->number,
         },
     };
-    CHECK_ESP_RESULT(i2s_channel_init_std_mode(self->rx_chan, &std_cfg));
-    CHECK_ESP_RESULT(i2s_channel_enable(self->rx_chan));
+    err = i2s_channel_init_std_mode(self->rx_chan, &std_cfg);
+    if (err == ESP_OK) {
+        err = i2s_channel_enable(self->rx_chan);
+    }
+    if (err != ESP_OK) {
+        i2s_del_channel(self->rx_chan);
+        self->rx_chan = NULL;
+        CHECK_ESP_RESULT(err);
+    }
 
     self->bit_clock = bit_clock;
     self->word_select = word_select;

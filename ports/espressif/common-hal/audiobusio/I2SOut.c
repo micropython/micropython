@@ -46,7 +46,11 @@ void common_hal_audiobusio_i2sout_construct(audiobusio_i2sout_obj_t *self,
             .din = I2S_GPIO_UNUSED,
         }
     };
-    CHECK_ESP_RESULT(i2s_channel_init_std_mode(self->i2s.handle, &i2s_config));
+    esp_err_t err = i2s_channel_init_std_mode(self->i2s.handle, &i2s_config);
+    if (err != ESP_OK) {
+        port_i2s_deinit(&self->i2s);
+        CHECK_ESP_RESULT(err);
+    }
     self->bit_clock = bit_clock;
     self->word_select = word_select;
     self->mclk = main_clock;

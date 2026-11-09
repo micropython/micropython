@@ -488,6 +488,15 @@ static void audioout_init(audioio_audioout_obj_t *self) {
         mp_raise_RuntimeError(MP_ERROR_TEXT("Failed to create continuous channels: no mem"));
     }
 
+    // Claim the pins here, not in construct: play() calls deinit(), which
+    // releases them, and then calls this again.
+    if (self->channel_mask & DAC_CHANNEL_MASK_CH0) {
+        claim_pin(&pin_CHANNEL_0);
+    }
+    if (self->channel_mask & DAC_CHANNEL_MASK_CH1) {
+        claim_pin(&pin_CHANNEL_1);
+    }
+
     _active_handle = self->handle;
 
     dac_event_callbacks_t callbacks = {
@@ -564,6 +573,12 @@ void common_hal_audioio_audioout_deinit(audioio_audioout_obj_t *self) {
     }
     self->handle = NULL;
     _active_handle = NULL;
+    if (self->channel_mask & DAC_CHANNEL_MASK_CH0) {
+        reset_pin_number(pin_CHANNEL_0.number);
+    }
+    if (self->channel_mask & DAC_CHANNEL_MASK_CH1) {
+        reset_pin_number(pin_CHANNEL_1.number);
+    }
 }
 
 void common_hal_audioio_audioout_play(audioio_audioout_obj_t *self,

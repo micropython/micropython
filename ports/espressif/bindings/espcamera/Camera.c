@@ -114,7 +114,7 @@ static mp_obj_t espcamera_camera_make_new(const mp_obj_type_t *type, size_t n_ar
     const mcu_pin_obj_t *reset_pin =
         validate_obj_is_free_pin_or_none(args[ARG_reset_pin].u_obj, MP_QSTR_reset_pin);
     const mp_int_t external_clock_frequency =
-        mp_arg_validate_int_range(args[ARG_external_clock_frequency].u_int, 0, 40000000, MP_QSTR_external_clock_frequency);
+        mp_arg_validate_int_range(args[ARG_external_clock_frequency].u_int, 1, 40000000, MP_QSTR_external_clock_frequency);
 
     camera_grab_mode_t grab_mode = validate_grab_mode(args[ARG_grab_mode].u_obj, MP_QSTR_grab_mode);
     framesize_t frame_size = validate_frame_size(args[ARG_frame_size].u_obj, MP_QSTR_frame_size);

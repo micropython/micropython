@@ -18,6 +18,13 @@ void common_hal_pulseio_pulseout_construct(pulseio_pulseout_obj_t *self,
     uint32_t frequency,
     uint16_t duty_cycle) {
 
+    // Check the frequency here: IDF doesn't. It divides the RMT source clock
+    // (32 MHz or more) by the carrier frequency, so a frequency of 0 or above
+    // that clock divides by zero and hard faults.
+    if (duty_cycle != 0xffff) {
+        mp_arg_validate_int_range((mp_int_t)frequency, 1, 10000000, MP_QSTR_frequency);
+    }
+
     // Reserve channel
     rmt_tx_channel_config_t config = {
         .gpio_num = pin->number,
@@ -47,6 +54,9 @@ void common_hal_pulseio_pulseout_construct(pulseio_pulseout_obj_t *self,
     }
 
     rmt_enable(self->channel);
+
+    self->pin = pin;
+    claim_pin(pin);
 }
 
 bool common_hal_pulseio_pulseout_deinited(pulseio_pulseout_obj_t *self) {
@@ -61,6 +71,7 @@ void common_hal_pulseio_pulseout_deinit(pulseio_pulseout_obj_t *self) {
     rmt_del_encoder(self->encoder);
     rmt_del_channel(self->channel);
     self->channel = NULL;
+    reset_pin_number(self->pin->number);
 }
 
 void common_hal_pulseio_pulseout_send(pulseio_pulseout_obj_t *self, uint16_t *pulses, uint16_t length) {

@@ -73,9 +73,16 @@ uint8_t get_slot_index(sdioio_sdcard_obj_t *self) {
     }
 }
 
+static void mark_deinit(sdioio_sdcard_obj_t *self) {
+    self->command = COMMON_HAL_MCU_NO_PIN;
+}
+
 void common_hal_sdioio_sdcard_construct(sdioio_sdcard_obj_t *self,
     const mcu_pin_obj_t *clock, const mcu_pin_obj_t *command,
     uint8_t num_data, const mcu_pin_obj_t **data, uint32_t frequency) {
+    // A zeroed command pin is GPIO0, not NO_PIN.
+    mark_deinit(self);
+
     if (num_data != 4 && num_data != 1) {
         mp_raise_ValueError_varg(MP_ERROR_TEXT("Number of data_pins must be %d or %d, not %d"), 1, 4, num_data);
     }
@@ -102,7 +109,6 @@ void common_hal_sdioio_sdcard_construct(sdioio_sdcard_obj_t *self,
     slot_config.clk = clock->number;
     self->clock = clock->number;
     slot_config.cmd = command->number;
-    self->command = command->number;
     slot_config.d0 = data[0]->number;
     self->data[0] = data[0]->number;
     if (num_data == 4) {
@@ -128,6 +134,9 @@ void common_hal_sdioio_sdcard_construct(sdioio_sdcard_obj_t *self,
     err = sdmmc_host_init_slot(sd_slot, &slot_config);
     if (err != ESP_OK) {
         ESP_LOGW(TAG, "Failed to initialize SDMMC slot: %x", err);
+        if (!slot_in_use[0] && !slot_in_use[1]) {
+            sdmmc_host_deinit();
+        }
         mp_raise_OSError_msg_varg(MP_ERROR_TEXT("SDIO Init Error 0x%02x"), err);
     }
     // sdmmc_card_t card;
@@ -135,11 +144,11 @@ void common_hal_sdioio_sdcard_construct(sdioio_sdcard_obj_t *self,
     err = sdmmc_card_init(&host, &self->card);
     if (err != ESP_OK) {
         ESP_LOGW(TAG, "Failed to initialize SDMMC card: %x", err);
+        sdmmc_host_deinit_slot(sd_slot);
         mp_raise_OSError_msg_varg(MP_ERROR_TEXT("SDIO Init Error 0x%02x"), err);
     }
 
-    common_hal_sdioio_sdcard_check_for_deinit(self);
-
+    self->command = command->number;
     slot_in_use[get_slot_index(self)] = true;
 
     claim_pin(clock);
@@ -265,7 +274,7 @@ void common_hal_sdioio_sdcard_deinit(sdioio_sdcard_obj_t *self) {
 
 
     reset_pin_number(self->command);
-    self->command = COMMON_HAL_MCU_NO_PIN;
+    mark_deinit(self);
     reset_pin_number(self->clock);
     self->clock = COMMON_HAL_MCU_NO_PIN;
     for (size_t i = 0; i < self->num_data; i++) {

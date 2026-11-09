@@ -228,7 +228,10 @@ void common_hal_ps2io_ps2_deinit(ps2io_ps2_obj_t *self) {
     if (common_hal_ps2io_ps2_deinited(self)) {
         return;
     }
-    gpio_uninstall_isr_service();
+    // Remove only this object's handler. Uninstalling the GPIO ISR service
+    // would remove every other object's GPIO interrupt handler too.
+    disable_interrupt(self);
+    gpio_set_intr_type(self->clk_pin, GPIO_INTR_DISABLE);
     reset_pin_number(self->clk_pin);
     reset_pin_number(self->data_pin);
     self->clk_pin = GPIO_NUM_MAX;

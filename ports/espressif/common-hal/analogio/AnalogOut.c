@@ -13,6 +13,7 @@
 
 #include "shared-bindings/analogio/AnalogOut.h"
 #include "shared-bindings/microcontroller/Pin.h"
+#include "bindings/espidf/__init__.h"
 
 #ifdef SOC_DAC_SUPPORTED
 #include "driver/dac_oneshot.h"
@@ -41,8 +42,9 @@ void common_hal_analogio_analogout_construct(analogio_analogout_obj_t *self,
     dac_oneshot_config_t config = {
         .chan_id = self->channel
     };
-    dac_oneshot_new_channel(&config, &self->handle);
+    CHECK_ESP_RESULT(dac_oneshot_new_channel(&config, &self->handle));
     _active_handles[self->channel] = self->handle;
+    claim_pin(pin);
     #else
     mp_raise_NotImplementedError(NULL);
     #endif
@@ -64,6 +66,7 @@ void common_hal_analogio_analogout_deinit(analogio_analogout_obj_t *self) {
     dac_oneshot_del_channel(self->handle);
     self->handle = NULL;
     _active_handles[self->channel] = NULL;
+    reset_pin_number(self->channel == DAC_CHAN_0 ? pin_CHANNEL_0.number : pin_CHANNEL_1.number);
     #endif
 }
 

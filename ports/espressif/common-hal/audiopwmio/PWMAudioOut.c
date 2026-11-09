@@ -257,9 +257,6 @@ void common_hal_audiopwmio_pwmaudioout_construct(audiopwmio_pwmaudioout_obj_t *s
     self->internal_data->stereo = right_channel != NULL;
     self->internal_data->out_channels = right_channel != NULL ? 2 : 1;
 
-    self->left_pwm.deinited = true;
-    self->right_pwm.deinited = true;
-
     // variable_frequency is false so that the two channels of a stereo pair can
     // share one LEDC timer. At PWM_FREQUENCY pwmio picks a PWM_BITS-wide duty.
     pwmout_result_t result = common_hal_pwmio_pwmout_construct(

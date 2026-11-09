@@ -65,7 +65,8 @@ void common_hal_max3421e_max3421e_init_irq(max3421e_max3421e_obj_t *self) {
 
     const mcu_pin_obj_t *pin = self->irq.pin;
     esp_err_t result = gpio_install_isr_service(ESP_INTR_FLAG_SHARED);
-    if (result != ESP_OK) {
+    // ESP_ERR_INVALID_STATE means another object already installed the service.
+    if (result != ESP_OK && result != ESP_ERR_INVALID_STATE) {
         vTaskDelete(usb_host_task_handle);
         CHECK_ESP_RESULT(result);
     }
@@ -81,7 +82,7 @@ void common_hal_max3421e_max3421e_init_irq(max3421e_max3421e_obj_t *self) {
 void common_hal_max3421e_max3421e_deinit_irq(max3421e_max3421e_obj_t *self) {
     const mcu_pin_obj_t *pin = self->irq.pin;
     gpio_isr_handler_remove(pin->number);
-    gpio_uninstall_isr_service();
+    // Leave the GPIO ISR service installed: other objects may have handlers on it.
 
     vTaskDelete(usb_host_task_handle);
 }
