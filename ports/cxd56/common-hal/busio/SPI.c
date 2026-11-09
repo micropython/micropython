@@ -39,6 +39,11 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self, const mcu_pin_obj_t *
         raise_ValueError_invalid_pins();
     }
 
+    struct spi_dev_s *spi_dev = cxd56_spibus_initialize(port);
+    if (spi_dev == NULL) {
+        mp_raise_RuntimeError_varg(MP_ERROR_TEXT("%q init failed"), MP_QSTR_SPI);
+    }
+
     // MOSI or MISO may be None.
     claim_pin(clock);
     if (mosi != NULL) {
@@ -51,7 +56,7 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self, const mcu_pin_obj_t *
     self->clock_pin = clock;
     self->mosi_pin = mosi;
     self->miso_pin = miso;
-    self->spi_dev = cxd56_spibus_initialize(port);
+    self->spi_dev = spi_dev;
 }
 
 void common_hal_busio_spi_deinit(busio_spi_obj_t *self) {
