@@ -8,6 +8,7 @@ The tests are organized into several categories:
   compiler, runtime, and built-in modules
 - perf_bench: performance benchmarks
 - internal_bench: internal performance benchmarks
+- gc_bench: garbage collector benchmark
 - Serial reliability and performance test
 - Test key/certificates
 - CPython vs MicroPython Differences
@@ -186,6 +187,32 @@ the test runs, and the absolute difference value is unreliable. High error
 percentages are particularly common on PC builds, where the host OS may
 influence test run times. Increasing the `N` value may help average this out by
 running each test longer.
+
+## gc_bench
+
+The `gc_bench` directory contains `gcbench.py`, a benchmark for the garbage
+collector.  It times collections with different heap contents (many small live
+objects, large buffers, deep and wide object graphs), allocations in a
+fragmented heap, and `gc.mem_free()`, and prints one line per test.  Use it to
+compare GC implementations or configurations on the same board or host.
+
+The data sizes scale with the size of the heap, so the script can run on any
+board.  To run it on a board:
+
+```
+mpremote run gc_bench/gcbench.py
+```
+
+To run it on the unix port, set the heap size, and optionally a fixed scale (1
+suits a heap of about 9 MB):
+
+```
+../ports/unix/build-standard/micropython -X heapsize=64M gc_bench/gcbench.py 4
+```
+
+Compare runs with the same heap size and scale.  On some boards the speed of
+the VM depends on code layout, which changes between builds, so the
+`churn_small` result is less reliable than the others for comparing builds.
 
 ## internal_bench
 
