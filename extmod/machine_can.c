@@ -318,12 +318,12 @@ mp_uint_t machine_can_get_index(mp_obj_t identifier) {
         can_num = mp_obj_get_int(identifier);
     }
     if (can_num < 1 || can_num > MICROPY_HW_NUM_CAN) {
-        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("CAN(%d) doesn't exist"), can_num);
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("CAN(" INT_FMT ") doesn't exist"), can_num);
     }
 
     // check if the CAN is reserved for system use or not
     if (MICROPY_HW_CAN_IS_RESERVED(can_num)) {
-        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("CAN(%d) is reserved"), can_num);
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("CAN(" INT_FMT ") is reserved"), can_num);
     }
 
     return can_num - 1;
@@ -405,7 +405,7 @@ static mp_obj_t mp_machine_can_irq(machine_can_obj_t *self, bool any_args, mp_ar
         mp_uint_t trigger = args[MP_IRQ_ARG_INIT_trigger].u_int;
         mp_uint_t not_supported = trigger & ~CAN_IRQ_ALLOWED_TRIGGERS;
         if (not_supported) {
-            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("trigger 0x%08x unsupported"), not_supported);
+            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("trigger 0x" HEX_FMT " unsupported"), not_supported);
         }
 
         mp_obj_t handler = args[MP_IRQ_ARG_INIT_handler].u_obj;
