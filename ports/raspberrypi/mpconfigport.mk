@@ -88,7 +88,15 @@ CIRCUITPY_CYW43_INIT_DELAY ?= 0
 
 # Audio effects
 CIRCUITPY_AUDIOEFFECTS ?= 1
+
+# Run PSA SHA-256 (hashlib, hmac, ssl) on the SHA-256 block. Needs mbedtls, which
+# is built for ssl or hashlib-only mbedtls.
+CIRCUITPY_RP2_SHA256_HW ?= $(call enable-if-any,$(CIRCUITPY_SSL) $(CIRCUITPY_HASHLIB_MBEDTLS_ONLY))
 endif
+# RP2040 has no SHA-256 block.
+CIRCUITPY_RP2_SHA256_HW ?= 0
+# Adds the driver to mbedtls's hash dispatch.
+MBEDTLS_DRIVER_PATCH = $(if $(filter 1,$(CIRCUITPY_RP2_SHA256_HW)),$(TOP)/lib/mbedtls_config/psa_dispatch.patch)
 
 INTERNAL_LIBM = 1
 

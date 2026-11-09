@@ -25,7 +25,8 @@ repos:
             tests/.*\.exp|
             tests/cmdline/.*|
             tests/.*/data/.*|
-            lib/mbedtls_errors/generate_errors.diff
+            lib/mbedtls_errors/generate_errors.diff|
+            lib/mbedtls_config/psa_dispatch.patch
           )
   - repo: https://github.com/codespell-project/codespell
     rev: v2.4.1
