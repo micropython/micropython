@@ -20,6 +20,7 @@
 #include "shared-module/videocore/__init__.h"
 #endif
 #include "shared-module/displayio/__init__.h"
+#include "shared-module/displayio/bus_core.h"
 
 //| import displayio
 //| import fourwire
@@ -191,6 +192,9 @@ static mp_obj_t busdisplay_busdisplay_make_new(const mp_obj_type_t *type, size_t
     if (sh1107_addressing && color_depth != 1) {
         mp_raise_ValueError_varg(MP_ERROR_TEXT("%q must be 1 when %q is True"), MP_QSTR_color_depth, MP_QSTR_SH1107_addressing);
     }
+
+    // Check the bus before taking a display slot: construct would raise after the slot is in use.
+    displayio_display_bus_validate(display_bus);
 
     primary_display_t *disp = allocate_display_or_raise();
     busdisplay_busdisplay_obj_t *self = &disp->display;

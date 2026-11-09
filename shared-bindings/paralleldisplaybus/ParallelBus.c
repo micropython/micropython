@@ -76,9 +76,6 @@ static mp_obj_t paralleldisplaybus_parallelbus_make_new(const mp_obj_type_t *typ
     const mcu_pin_obj_t *read = validate_obj_is_free_pin_or_none(args[ARG_read].u_obj, MP_QSTR_read);
     const mcu_pin_obj_t *reset = validate_obj_is_free_pin_or_none(args[ARG_reset].u_obj, MP_QSTR_reset);
 
-    paralleldisplaybus_parallelbus_obj_t *self = &allocate_display_bus_or_raise()->parallel_bus;
-    self->base.type = &paralleldisplaybus_parallelbus_type;
-
     bool specified_data0 = args[ARG_data0].u_obj != mp_const_none;
     bool specified_data_pins = args[ARG_data_pins].u_obj != mp_const_none;
 
@@ -88,13 +85,23 @@ static mp_obj_t paralleldisplaybus_parallelbus_make_new(const mp_obj_type_t *typ
 
     uint32_t frequency = (uint32_t)mp_arg_validate_int_min(args[ARG_frequency].u_int, 1, MP_QSTR_frequency);
 
+    // Validate everything before taking a display bus slot. Once the slot has a type,
+    // release_displays() deinits it, even if construct never ran.
+    const mcu_pin_obj_t *data0 = NULL;
+    uint8_t num_pins = 0;
+    const mcu_pin_obj_t *data_pins[16];
     if (specified_data0) {
-        const mcu_pin_obj_t *data0 = validate_obj_is_free_pin(args[ARG_data0].u_obj, MP_QSTR_data0);
+        data0 = validate_obj_is_free_pin(args[ARG_data0].u_obj, MP_QSTR_data0);
+    } else {
+        validate_list_is_free_pins(MP_QSTR_data_pins, data_pins, (mp_int_t)MP_ARRAY_SIZE(data_pins), args[ARG_data_pins].u_obj, &num_pins);
+    }
+
+    paralleldisplaybus_parallelbus_obj_t *self = &allocate_display_bus_or_raise()->parallel_bus;
+    self->base.type = &paralleldisplaybus_parallelbus_type;
+
+    if (specified_data0) {
         common_hal_paralleldisplaybus_parallelbus_construct(self, data0, command, chip_select, write, read, reset, frequency);
     } else {
-        uint8_t num_pins;
-        const mcu_pin_obj_t *data_pins[16];
-        validate_list_is_free_pins(MP_QSTR_data_pins, data_pins, (mp_int_t)MP_ARRAY_SIZE(data_pins), args[ARG_data_pins].u_obj, &num_pins);
         common_hal_paralleldisplaybus_parallelbus_construct_nonsequential(self, num_pins, data_pins, command, chip_select, write, read, reset, frequency);
     }
     return self;
