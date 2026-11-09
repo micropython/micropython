@@ -934,11 +934,13 @@ msgstr "Все периферийные устройства UART уже исп�
 #: ports/raspberrypi/common-hal/picodvi/AudioOut.c
 #: ports/raspberrypi/common-hal/picodvi/Framebuffer_RP2040.c
 #: ports/raspberrypi/common-hal/usb_host_bulk/InStream.c py/argcheck.c
+#: shared-bindings/cryptography/hazmat/primitives/asymmetric/utils/__init__.c
 #: shared-bindings/digitalio/DigitalInOut.c
 #: shared-bindings/epaperdisplay/EPaperDisplay.c
 #: shared-bindings/i2cioexpander/IOPin.c shared-bindings/mipidsi/Display.c
 #: shared-bindings/pwmio/PWMOut.c shared-bindings/supervisor/__init__.c
 #: shared-module/aurora_epaper/aurora_framebuffer.c
+#: shared-module/cryptography/hazmat/primitives/asymmetric/ec/EllipticCurvePublicKey.c
 #: shared-module/jpegio/JpegDecoder.c shared-module/lvfontio/OnDiskFont.c
 msgid "Invalid %q"
 msgstr "Недопустимый %q"
@@ -4259,6 +4261,7 @@ msgstr "Должен быть субклассом %q."
 msgid "RemoteTransmissionRequests limited to 8 bytes"
 msgstr "Запросы на удаленную передачу ограничены 8 байтами"
 
+#: shared-bindings/cryptography/hazmat/primitives/asymmetric/ec/EllipticCurvePublicKey.c
 #: shared-bindings/cryptography/hazmat/primitives/asymmetric/padding/__init__.c
 #: shared-bindings/cryptography/hazmat/primitives/asymmetric/rsa/DigitalSignatureKey.c
 msgid "Only %q supported"
