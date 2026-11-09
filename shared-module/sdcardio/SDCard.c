@@ -84,12 +84,6 @@ static bool lock_and_configure_bus(sdcardio_sdcard_obj_t *self) {
     return true;
 }
 
-static void lock_bus_or_throw(sdcardio_sdcard_obj_t *self) {
-    if (!lock_and_configure_bus(self)) {
-        mp_raise_OSError(EAGAIN);
-    }
-}
-
 static void clock_card(sdcardio_sdcard_obj_t *self, int bytes) {
     uint8_t buf[bytes];
     memset(buf, 0xff, bytes);
@@ -338,8 +332,21 @@ static mp_rom_error_text_t init_card(sdcardio_sdcard_obj_t *self) {
     return NULL;
 }
 
+// Mark the object deinited, then release the CS pin if this object owns it.
+static void mark_deinit_and_release_cs(sdcardio_sdcard_obj_t *self) {
+    common_hal_sdcardio_sdcard_mark_deinit(self);
+    if (self->own_cs) {
+        digitalinout_protocol_deinit(self->cs);
+        circuitpy_free_obj(self->cs);
+        self->own_cs = false;
+    }
+}
+
 mp_rom_error_text_t sdcardio_sdcard_construct(sdcardio_sdcard_obj_t *self, busio_spi_obj_t *bus, mp_obj_t cs, int baudrate, bool persistent_mount) {
-    self->bus = bus;
+    // Ensure the object starts in its deinit state, so its finaliser does
+    // nothing if this raises before the bus is set.
+    common_hal_sdcardio_sdcard_mark_deinit(self);
+    self->own_cs = false;
     self->persistent_mount = persistent_mount;
 
     // Allocate the pins in the same place as self.
@@ -354,15 +361,19 @@ mp_rom_error_text_t sdcardio_sdcard_construct(sdcardio_sdcard_obj_t *self, busio
     // During initialization, talk to the SPI card between 100 khZ and 400 kHz. After that, can use full speed.
     self->baudrate = 250000;
 
-    lock_bus_or_throw(self);
+    // Set the bus last: the object is live from here, and talking to the card needs it.
+    self->bus = bus;
+
+    if (!lock_and_configure_bus(self)) {
+        mark_deinit_and_release_cs(self);
+        mp_raise_OSError(EAGAIN);
+    }
     mp_rom_error_text_t result = init_card(self);
     extraclock_and_unlock_bus(self);
 
     if (result != NULL) {
-        if (self->own_cs) {
-            digitalinout_protocol_deinit(self->cs);
-            circuitpy_free_obj(self->cs);
-        }
+        // Leave the object deinited, so its finaliser doesn't use the freed CS pin.
+        mark_deinit_and_release_cs(self);
         return result;
     }
 
@@ -389,12 +400,7 @@ void common_hal_sdcardio_sdcard_deinit(sdcardio_sdcard_obj_t *self) {
     if (!common_hal_busio_spi_deinited(self->bus)) {
         common_hal_sdcardio_sdcard_sync(self);
     }
-    common_hal_sdcardio_sdcard_mark_deinit(self);
-    if (self->own_cs) {
-        digitalinout_protocol_deinit(self->cs);
-        circuitpy_free_obj(self->cs);
-        self->own_cs = false;
-    }
+    mark_deinit_and_release_cs(self);
 }
 
 int common_hal_sdcardio_sdcard_get_blockcount(sdcardio_sdcard_obj_t *self) {
