@@ -129,8 +129,6 @@ static void camera_start_preview(void) {
 }
 
 void common_hal_camera_construct(camera_obj_t *self) {
-    // Ensure the object starts in its deinit state, so its finaliser does
-    // nothing if this raises.
     self->active = false;
 
     if (camera_dev.fd < 0) {

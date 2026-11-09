@@ -39,8 +39,6 @@ static void mark_deinit(analogio_analogin_obj_t *self) {
 }
 
 void common_hal_analogio_analogin_construct(analogio_analogin_obj_t *self, const mcu_pin_obj_t *pin) {
-    // Ensure the object starts in its deinit state, so its finaliser does
-    // nothing if this raises.
     mark_deinit(self);
 
     if (!pin->analog) {

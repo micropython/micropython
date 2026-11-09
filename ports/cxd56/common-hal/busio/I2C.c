@@ -17,7 +17,6 @@
 void common_hal_busio_i2c_construct(busio_i2c_obj_t *self, const mcu_pin_obj_t *scl,
     const mcu_pin_obj_t *sda, uint32_t frequency, uint32_t timeout) {
 
-    // Ensure the object starts in its deinit state.
     common_hal_busio_i2c_mark_deinit(self);
 
     if (frequency != I2C_SPEED_STANDARD && frequency != I2C_SPEED_FAST) {

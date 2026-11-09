@@ -23,8 +23,6 @@ void common_hal_sdioio_sdcard_construct(sdioio_sdcard_obj_t *self,
     uint8_t num_data, const mcu_pin_obj_t **data, uint32_t frequency) {
     struct geometry geo;
 
-    // Ensure the object starts in its deinit state, so its finaliser does
-    // nothing if this raises.
     self->inode = NULL;
 
     if (clock->number != PIN_SDIO_CLK || command->number != PIN_SDIO_CMD) {

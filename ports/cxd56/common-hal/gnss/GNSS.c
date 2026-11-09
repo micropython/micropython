@@ -35,8 +35,6 @@ static gnss_positionfix_t fix_to_positionfix_type(uint8_t fix) {
 }
 
 void common_hal_gnss_construct(gnss_obj_t *self, unsigned long selection) {
-    // Ensure the object starts in its deinit state, so its finaliser does
-    // nothing if this raises.
     self->active = false;
 
     if (gnss_dev.fd < 0) {

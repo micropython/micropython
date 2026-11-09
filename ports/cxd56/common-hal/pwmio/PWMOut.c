@@ -32,8 +32,6 @@ static void mark_deinit(pwmio_pwmout_obj_t *self) {
 pwmout_result_t common_hal_pwmio_pwmout_construct(pwmio_pwmout_obj_t *self,
     const mcu_pin_obj_t *pin, uint16_t duty, uint32_t frequency,
     bool variable_frequency) {
-    // Ensure the object starts in its deinit state, so its finaliser does
-    // nothing if this fails.
     mark_deinit(self);
     self->number = -1;
 
