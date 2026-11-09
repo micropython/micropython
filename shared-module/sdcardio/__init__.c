@@ -84,6 +84,10 @@ void automount_sd_card(void) {
             #ifdef DEFAULT_SD_MOSI
             common_hal_busio_spi_deinit(&busio_spi_obj);
             #endif
+            // Release the CS pin, so the card can be set up again when it's
+            // reinserted. When the bus was deinited above, deinit() skips the
+            // sync to the removed card.
+            common_hal_sdcardio_sdcard_deinit(&sdcard);
             _automounted = false;
         }
         return;
