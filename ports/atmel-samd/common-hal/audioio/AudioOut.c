@@ -327,8 +327,11 @@ void common_hal_audioio_audioout_deinit(audioio_audioout_obj_t *self) {
     reset_pin_number(self->left_channel->number);
     self->left_channel = NULL;
     #ifdef SAM_D5X_E5X
-    reset_pin_number(self->right_channel->number);
-    self->right_channel = NULL;
+    // right_channel is NULL for mono.
+    if (self->right_channel != NULL) {
+        reset_pin_number(self->right_channel->number);
+        self->right_channel = NULL;
+    }
     #endif
 }
 
