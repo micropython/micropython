@@ -36,7 +36,12 @@ void common_hal_countio_counter_construct(countio_counter_obj_t *self,
         .edge_gpio_num = self->pin,
         .level_gpio_num = -1
     };
-    CHECK_ESP_RESULT(pcnt_new_channel(self->unit, &channel_config, &self->channel));
+    esp_err_t err = pcnt_new_channel(self->unit, &channel_config, &self->channel);
+    if (err != ESP_OK) {
+        pcnt_del_unit(self->unit);
+        self->unit = NULL;
+        CHECK_ESP_RESULT(err);
+    }
     pcnt_channel_edge_action_t pos = (edge == EDGE_RISE || edge == EDGE_RISE_AND_FALL) ? PCNT_CHANNEL_EDGE_ACTION_INCREASE : PCNT_CHANNEL_EDGE_ACTION_HOLD;
     pcnt_channel_edge_action_t neg = (edge == EDGE_FALL || edge == EDGE_RISE_AND_FALL) ? PCNT_CHANNEL_EDGE_ACTION_INCREASE : PCNT_CHANNEL_EDGE_ACTION_HOLD;
     pcnt_channel_set_edge_action(self->channel, pos, neg);
@@ -53,8 +58,6 @@ void common_hal_countio_counter_construct(countio_counter_obj_t *self,
     pcnt_unit_enable(self->unit);
     pcnt_unit_start(self->unit);
 
-    // Claim the pin last: if pcnt_new_unit() raised above, the unit is NULL,
-    // the object reads as deinited, and its finaliser wouldn't release the pin.
     claim_pin(pin);
 }
 
