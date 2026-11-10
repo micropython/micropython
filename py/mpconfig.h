@@ -774,7 +774,7 @@ typedef uint64_t mp_uint_t;
 // to be tagged so the GC mark phase skips scanning their contents. Costs one
 // bit per heap block, and saves scanning large data buffers on every collection.
 #ifndef MICROPY_GC_ENABLE_CONTAINS_NO_GC_POINTERS
-#define MICROPY_GC_ENABLE_CONTAINS_NO_GC_POINTERS (0)
+#define MICROPY_GC_ENABLE_CONTAINS_NO_GC_POINTERS (MICROPY_ENABLE_GC && MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_BASIC_FEATURES)
 #endif
 
 // Whether the garbage-collected heap can be split over multiple memory areas.
