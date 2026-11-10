@@ -30,7 +30,7 @@
 
 #include "py/parsenum.h"
 #include "py/smallint.h"
-#include "py/objint_impl.h"
+#include "py/objint_fwd.h"
 #include "py/objstr.h"
 #include "py/runtime.h"
 #include "py/binary.h"
@@ -478,3 +478,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     binary_op, mp_obj_int_binary_op,
     locals_dict, &int_locals_dict
     );
+
+// Due to technical limitations of compressed string generation, this include
+// must appear after at least one other MP_ERROR_TEXT
+#include "py/objint_impl.h"

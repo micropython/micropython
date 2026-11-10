@@ -30,7 +30,7 @@
 
 #include "py/parsenumbase.h"
 #include "py/smallint.h"
-#include "py/objint_impl.h"
+#include "py/objint_fwd.h"
 #include "py/runtime.h"
 
 #if MICROPY_PY_BUILTINS_FLOAT
@@ -481,5 +481,8 @@ void mp_obj_int_to_bytes(mp_obj_t self_in, size_t buf_len, byte *buf, bool big_e
     }
 }
 
-
 #endif
+
+// Due to technical limitations of compressed string generation, this include
+// must appear after at least one other MP_ERROR_TEXT
+#include "py/objint_impl.h"
