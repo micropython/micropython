@@ -216,6 +216,23 @@ heap.  On boards with PSRAM, the top 16MB of the PSRAM is also reserved for mode
 files and overflowing activations; a board can change this with
 ``MICROPY_HW_NPU_PSRAM_SIZE``.
 
+The NUCLEO-N657X0 has no PSRAM, so it has an ``NPU`` variant, which sets
+``MICROPY_PY_NPU=1`` and adds a ROMFS partition for models::
+
+    $ make BOARD=NUCLEO_N657X0 BOARD_VARIANT=NPU
+
+In this variant, the top 32MB of the SPI flash is a ROMFS partition, and the filesystem
+shrinks from 60MB to 28MB to make room for it.  Models must be in ROMFS, and only
+models whose activations fit in AXISRAM3-6 can be loaded.  As the filesystem's size
+changes, switching between the default firmware and the ``NPU`` variant needs the
+filesystem formatted again: copy off any files to keep, flash the new firmware, then
+format the filesystem and copy the files back::
+
+    >>> import vfs, pyb, machine
+    >>> vfs.umount("/flash")
+    >>> vfs.VfsFat.mkfs(pyb.Flash(start=0))
+    >>> machine.reset()
+
 The runtime is under ST's licence (SLA0104), which allows it to be redistributed but
 only used on ST devices.
 
