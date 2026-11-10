@@ -608,7 +608,7 @@ soft_reset:
 
     for (gc_blocks_table_t const *block = &_gc_blocks_table_start; block < &_gc_blocks_table_end; block++) {
         if (block->size) {
-            gc_add(block->addr, block->addr + block->size);
+            gc_add_ex(block->addr, block->addr + block->size, MICROPY_HW_GC_AREA_ATTRS(block->addr));
         }
     }
     #endif

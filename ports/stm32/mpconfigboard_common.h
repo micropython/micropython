@@ -101,6 +101,14 @@
 #define MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE (1)
 #endif
 
+// The GC_AREA_ATTR_xxx attributes of a heap area at addr, for areas from the
+// linker's _gc_blocks_table.  By default, memory in the Cortex-M external RAM
+// and device regions (FMC, SDRAM, OCTOSPI, XSPI) is external.
+#ifndef MICROPY_HW_GC_AREA_ATTRS
+#define MICROPY_HW_GC_AREA_ATTRS(addr) \
+    ((uintptr_t)(addr) >= 0x60000000 && (uintptr_t)(addr) < 0xe0000000 ? GC_AREA_ATTR_EXTERNAL : 0)
+#endif
+
 // If internal flash storage is enabled, whether to use a second segment of flash.
 #ifndef MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE
 #define MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE_SEGMENT2 (0)
