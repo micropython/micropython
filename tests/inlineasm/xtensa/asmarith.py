@@ -117,3 +117,17 @@ def f10(a2, a3) -> uint:
 
 
 print(hex(f10(0xC0000000, 2)))
+
+
+EXTUI_TEMPLATE = """
+@micropython.asm_xtensa
+def test_extui(a2):
+    extui(a2, a2, {}, {})
+print(hex(test_extui({})))
+"""
+
+for i in range(7):
+    try:
+        exec(EXTUI_TEMPLATE.format(7 - i, i + 1, 0x80))
+    except SyntaxError as error:
+        print(error)
