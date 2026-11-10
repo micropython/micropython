@@ -1283,8 +1283,8 @@ bool common_hal_socketpool_readable(socketpool_socket_obj_t *self) {
     }
 
     if (self->type == SOCKETPOOL_SOCK_STREAM && self->pcb.tcp->state == LISTEN) {
-        struct tcp_pcb *volatile *incoming_connection = &lwip_socket_incoming_array(self)[self->incoming.connection.iget];
-        result = (*incoming_connection != NULL);
+        struct tcp_pcb *incoming_connection = lwip_socket_incoming_array(self)[self->incoming.connection.iget];
+        result = (incoming_connection != NULL);
     }
 
     MICROPY_PY_LWIP_EXIT;
