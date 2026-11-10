@@ -50,7 +50,20 @@
 #define MICROPY_HW_BDEV_SPIFLASH_EXTENDED       (&spi_bdev)
 #define MICROPY_HW_BDEV_SPIFLASH_CONFIG         (&spiflash_config)
 #define MICROPY_HW_BDEV_SPIFLASH_OFFSET_BYTES   (4 * 1024 * 1024)
+#if MICROPY_PY_NPU
+#define MICROPY_HW_BDEV_SPIFLASH_SIZE_BYTES     (92 * 1024 * 1024)
+#else
 #define MICROPY_HW_BDEV_SPIFLASH_SIZE_BYTES     (124 * 1024 * 1024)
+#endif
+
+#if MICROPY_PY_NPU
+// ROMFS in the top 32MB of the SPI flash, for NPU models used in place.
+#define MICROPY_HW_ROMFS_ENABLE_EXTERNAL_XSPI   (1)
+#define MICROPY_HW_ROMFS_XSPI_SPIBDEV_OBJ       (&spi_bdev)
+#define MICROPY_HW_ROMFS_ENABLE_PART0           (1)
+#define MICROPY_HW_ROMFS_PART0_START            (0x76000000)
+#define MICROPY_HW_ROMFS_PART0_SIZE             (32 * 1024 * 1024)
+#endif
 
 // UART buses
 #define MICROPY_HW_UART1_TX                     (pyb_pin_UART1_TX)

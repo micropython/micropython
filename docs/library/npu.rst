@@ -206,9 +206,12 @@ Building the firmware
 
 ST's NPU runtime isn't part of MicroPython.  It is built from an install of ST Edge AI
 Core given by ``STEDGEAI_DIR`` (by default ``~/STEdgeAI/4.0``), when the firmware is
-built with ``MICROPY_PY_NPU=1``::
+built with ``MICROPY_PY_NPU=1``.  The STM32N6570-DK and NUCLEO-N657X0 have an ``NPU``
+variant that sets it::
 
-    $ make BOARD=STM32N6570_DK MICROPY_PY_NPU=1 STEDGEAI_DIR=/path/to/STEdgeAI/4.0
+    $ make BOARD=STM32N6570_DK BOARD_VARIANT=NPU STEDGEAI_DIR=/path/to/STEdgeAI/4.0
+
+Other boards can be built with ``MICROPY_PY_NPU=1`` on the ``make`` command line.
 
 With ``MICROPY_PY_NPU=1``, AXISRAM3-6 and the NPU cache's RAM are reserved for the
 NPU instead of being part of the heap, which leaves about 2MB of internal RAM for the
@@ -216,17 +219,14 @@ heap.  On boards with PSRAM, the top 16MB of the PSRAM is also reserved for mode
 files and overflowing activations; a board can change this with
 ``MICROPY_HW_NPU_PSRAM_SIZE``.
 
-The NUCLEO-N657X0 has no PSRAM, so it has an ``NPU`` variant, which sets
-``MICROPY_PY_NPU=1`` and adds a ROMFS partition for models::
-
-    $ make BOARD=NUCLEO_N657X0 BOARD_VARIANT=NPU
-
-In this variant, the top 32MB of the SPI flash is a ROMFS partition, and the filesystem
-shrinks from 60MB to 28MB to make room for it.  Models must be in ROMFS, and only
-models whose activations fit in AXISRAM3-6 can be loaded.  As the filesystem's size
-changes, switching between the default firmware and the ``NPU`` variant needs the
-filesystem formatted again: copy off any files to keep, flash the new firmware, then
-format the filesystem and copy the files back::
+The ``NPU`` variants also have a 32MB ROMFS partition at the top of the SPI flash, so
+models can be used in place from flash (see `Models in ROMFS`_).  The filesystem shrinks
+to make room for it: from 124MB to 92MB on the STM32N6570-DK, and from 60MB to 28MB on
+the NUCLEO-N657X0.  On boards without PSRAM, such as the NUCLEO, models must be in
+ROMFS, and only models whose activations fit in AXISRAM3-6 can be loaded.  As the
+filesystem's size changes, switching between the default firmware and an ``NPU``
+variant needs the filesystem formatted again: copy off any files to keep, flash the new
+firmware, then format the filesystem and copy the files back::
 
     >>> import vfs, pyb, machine
     >>> vfs.umount("/flash")
