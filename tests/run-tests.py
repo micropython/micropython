@@ -200,6 +200,12 @@ platform_tests_to_skip = {
         "thread/stress_heap.py",
         "thread/thread_lock3.py",
     ),
+    # CIRCUITPY-CHANGE: CircuitPython's Zephyr port (ports/zephyr-cp) is "Zephyr".
+    "Zephyr": (
+        "basics/array_micropython.py",  # no 'O' array typecode
+        "basics/memoryerror.py",  # 32-bit: the list size overflows before malloc fails
+        "basics/nanbox_smallint.py",  # no micropython.heap_unlock()
+    ),
 }
 
 # Tests to skip when MICROPY_ERROR_REPORTING is at a certain level.

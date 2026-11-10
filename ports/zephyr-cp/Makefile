@@ -264,3 +264,12 @@ PYTEST_ARGS ?= tests/
 test: $(TEST_BOARDS:%=test-build-%)
 	pytest cptools/tests
 	pytest -v $(PYTEST_ARGS)
+
+# The core test suite (tests/run-tests.py) on native_sim. Pass test directories
+# or files and the number of simulators in RUN_TESTS_ARGS, for example
+# RUN_TESTS_ARGS="-j 8 -d basics extmod".
+RUN_TESTS_ARGS ?=
+
+.PHONY: test-run-tests
+test-run-tests: test-build-native_native_sim
+	python cptools/run_tests_native_sim.py $(RUN_TESTS_ARGS)

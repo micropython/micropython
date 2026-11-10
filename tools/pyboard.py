@@ -201,8 +201,9 @@ class ProcessToSerial:
 
 
 class ProcessPtyToTerminal:
-    """Execute a process which creates a PTY and prints secondary PTY as
-    first line of its output, and emulate serial connection using
+    # CIRCUITPY-CHANGE: the PTY line need not be the first line of output.
+    """Execute a process which creates a PTY and prints secondary PTY in
+    a line of its startup output, and emulate serial connection using
     this PTY."""
 
     def __init__(self, cmd):
@@ -219,10 +220,17 @@ class ProcessPtyToTerminal:
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
         )
-        pty_line = self.subp.stdout.readline().decode("utf-8")
-        m = re.search(r"/dev/pts/[0-9]+", pty_line)
+        # CIRCUITPY-CHANGE: skip lines printed before the PTY line, such as
+        # warnings Zephyr's native_sim prints at startup.
+        startup_lines = []
+        while True:
+            pty_line = self.subp.stdout.readline().decode("utf-8")
+            startup_lines.append(pty_line)
+            m = re.search(r"/dev/pts/[0-9]+", pty_line)
+            if m or not pty_line:
+                break
         if not m:
-            print("Error: unable to find PTY device in startup line:", pty_line)
+            print("Error: unable to find PTY device in startup output:", "".join(startup_lines))
             self.close()
             sys.exit(1)
         pty = m.group()

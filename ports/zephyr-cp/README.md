@@ -109,6 +109,22 @@ python -m serial.tools.miniterm /dev/pts/1 115200
 If the container has no display (it was created without `DISPLAY` or with `ZCP_NO_DISPLAY=1`),
 run the simulator as `SDL_VIDEODRIVER=dummy make run-sim`.
 
+## Running the core test suite
+
+`make test-run-tests` runs `tests/run-tests.py` against the native simulator. It needs
+mtools and the `lib/micropython-lib` submodule (for `unittest`). By default it runs the
+`basics`, `float`, `misc` and `unicode` tests on several simulators at once. Other
+directories still have tests that fail on the simulator.
+
+```sh
+make test-run-tests
+make test-run-tests RUN_TESTS_ARGS="-j 4 -d basics extmod"
+make test-run-tests RUN_TESTS_ARGS="basics/int1.py"
+```
+
+The results, including the `.exp` and `.out` files of failed tests, are in
+`build-native_native_sim/run-tests/`.
+
 ## Shields
 
 Board defaults can be set in `boards/<vendor>/<board>/circuitpython.toml`:
