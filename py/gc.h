@@ -93,6 +93,13 @@ uint32_t gc_area_with_attrs(unsigned int attrs);
 // MemoryError, so code that must restore the selection on failure should use
 // m_new_maybe() or an nlr handler.
 uint32_t gc_area_select(uint32_t sel);
+
+// Set the alignment in bytes, a power of two, of the current thread's
+// allocations, and return the previous alignment.  Each allocation also uses
+// a multiple of this many bytes, so an aligned buffer doesn't share a cache
+// line with another object.  An alignment of 0 restores the default, which is
+// MICROPY_BYTES_PER_GC_BLOCK.
+size_t gc_alloc_align(size_t align);
 #else
 // Without area selection, areas have no attributes.
 #define gc_add_ex(start, end, attrs) gc_add(start, end)

@@ -260,6 +260,7 @@ void gc_init(void *start, void *end) {
     MP_STATE_MEM(area).gc_area_attrs = 0;
     MP_STATE_MEM(area).gc_area_index = 0;
     MP_STATE_THREAD(gc_area_sel) = 0;
+    MP_STATE_THREAD(gc_alloc_align) = 0;
     MP_STATE_MEM(gc_area_sel_count) = 0;
     #endif
 
@@ -369,12 +370,13 @@ uint32_t gc_area_with_attrs(unsigned int attrs) {
     return sel;
 }
 
-// Set the current thread's selection, keeping count of the threads that have
-// one.
-static void gc_area_set(uint32_t sel) {
-    bool was_set = MP_STATE_THREAD(gc_area_sel) != 0;
-    bool is_set = sel != 0;
+// Set the current thread's selection and alignment, keeping count of the
+// threads that have either.
+static void gc_area_set(uint32_t sel, size_t align) {
+    bool was_set = MP_STATE_THREAD(gc_area_sel) != 0 || MP_STATE_THREAD(gc_alloc_align) != 0;
+    bool is_set = sel != 0 || align != 0;
     MP_STATE_THREAD(gc_area_sel) = sel;
+    MP_STATE_THREAD(gc_alloc_align) = align;
     if (was_set != is_set) {
         GC_ENTER();
         MP_STATE_MEM(gc_area_sel_count) += is_set ? 1 : -1;
@@ -384,7 +386,13 @@ static void gc_area_set(uint32_t sel) {
 
 uint32_t gc_area_select(uint32_t sel) {
     uint32_t prev = MP_STATE_THREAD(gc_area_sel);
-    gc_area_set(sel);
+    gc_area_set(sel, MP_STATE_THREAD(gc_alloc_align));
+    return prev;
+}
+
+size_t gc_alloc_align(size_t align) {
+    size_t prev = MP_STATE_THREAD(gc_alloc_align);
+    gc_area_set(MP_STATE_THREAD(gc_area_sel), align <= BYTES_PER_BLOCK ? 0 : align);
     return prev;
 }
 #endif
@@ -988,11 +996,14 @@ void gc_weakref_mark(void *ptr) {
 #endif
 
 #if MICROPY_GC_AREA_SELECT
-// Find n_blocks free blocks in the selected areas and then, unless the
-// selection is strict, in the other areas.  Returns the area, with *end_block
-// set to the last block found, or NULL.  Must be called with the GC mutex held.
-static mp_state_mem_area_t *gc_alloc_find_in_selection(uint32_t sel, size_t n_blocks, size_t *end_block, size_t *n_free_out) {
-    uint32_t search_sel = sel & GC_AREA_SEL_MASK;
+// Find n_blocks free blocks starting at an address that's a multiple of align
+// (if not 0), in the selected areas (all areas if sel is 0) and then, unless
+// the selection is strict, in the other areas.  Returns the area, with
+// *end_block set to the last block found, or NULL.  Must be called with the GC
+// mutex held.
+static mp_state_mem_area_t *gc_alloc_find_in_selection(uint32_t sel, size_t align, size_t n_blocks, size_t *end_block, size_t *n_free_out) {
+    uint32_t search_sel = sel != 0 ? sel & GC_AREA_SEL_MASK : GC_AREA_SEL_MASK;
+    uintptr_t align_mask = align != 0 ? align - 1 : 0;
     for (;;) {
         for (mp_state_mem_area_t *area = &MP_STATE_MEM(area); area != NULL; area = NEXT_AREA(area)) {
             if (!(search_sel & AREA_SEL_BIT(area))) {
@@ -1004,17 +1015,19 @@ static mp_state_mem_area_t *gc_alloc_find_in_selection(uint32_t sel, size_t n_bl
                 MICROPY_GC_HOOK_LOOP(block);
                 if (ATB_GET_KIND(area, block) != AT_FREE) {
                     n_free = 0;
+                } else if (n_free == 0 && (PTR_FROM_BLOCK(area, block) & align_mask) != 0) {
+                    // A run can only start at an aligned address.
                 } else if (++n_free >= n_blocks) {
                     *end_block = block;
                     *n_free_out = n_free;
                     return area;
                 }
             }
-            if (n_blocks == 1) {
+            if (n_blocks == 1 && align == 0) {
                 area->gc_last_free_atb_index = area->gc_alloc_table_byte_len;
             }
         }
-        if ((sel & GC_AREA_SEL_STRICT) || search_sel != (sel & GC_AREA_SEL_MASK)) {
+        if (sel == 0 || (sel & GC_AREA_SEL_STRICT) || search_sel != (sel & GC_AREA_SEL_MASK)) {
             return NULL;
         }
         search_sel = ~sel & GC_AREA_SEL_MASK;
@@ -1060,16 +1073,23 @@ void *gc_alloc(size_t n_bytes, unsigned int alloc_flags) {
 
     #if MICROPY_GC_AREA_SELECT
     uint32_t sel = 0;
+    size_t align = 0;
     if (MP_STATE_MEM(gc_area_sel_count) != 0) {
         sel = MP_STATE_THREAD(gc_area_sel);
+        align = MP_STATE_THREAD(gc_alloc_align);
+        if (align != 0) {
+            // Use a whole number of alignment units.
+            size_t align_blocks = align / BYTES_PER_BLOCK;
+            n_blocks = (n_blocks + align_blocks - 1) & ~(align_blocks - 1);
+        }
     }
     #endif
 
     for (;;) {
 
         #if MICROPY_GC_AREA_SELECT
-        if (sel != 0) {
-            area = gc_alloc_find_in_selection(sel, n_blocks, &i, &n_free);
+        if (sel != 0 || align != 0) {
+            area = gc_alloc_find_in_selection(sel, align, n_blocks, &i, &n_free);
             if (area != NULL) {
                 goto found;
             }
@@ -1146,7 +1166,8 @@ found:
     // before this one.  Also, whenever we free or shink a block we must check
     // if this index needs adjusting (see gc_realloc and gc_free).
     #if MICROPY_GC_AREA_SELECT
-    if (n_free == 1) {
+    // An aligned search may skip free blocks, so it can't move these hints.
+    if (n_free == 1 && align == 0) {
         // A selection may skip areas with free blocks, so it can't move this.
         if (sel == 0) {
             MP_STATE_MEM(gc_last_free_area) = area;

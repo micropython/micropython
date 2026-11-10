@@ -152,7 +152,7 @@ typedef struct _mp_state_mem_t {
     uint16_t gc_auto_collect_enabled;
 
     #if MICROPY_GC_AREA_SELECT
-    // Number of threads with a heap area selection, so gc_alloc()
+    // Number of threads with a heap area selection or alignment, so gc_alloc()
     // can skip reading the per-thread values when there are none.
     uint16_t gc_area_sel_count;
     #endif
@@ -314,8 +314,10 @@ typedef struct _mp_state_thread_t {
     uint16_t gc_lock_depth;
 
     #if MICROPY_GC_AREA_SELECT
-    // Heap areas that allocations by this thread go in, see gc_area_select().
+    // Heap areas that allocations by this thread go in, see gc_area_select(),
+    // and their alignment, see gc_alloc_align().
     uint32_t gc_area_sel;
+    uint32_t gc_alloc_align;
     #endif
 
     ////////////////////////////////////////////////////////////

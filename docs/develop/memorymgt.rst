@@ -228,5 +228,11 @@ a buffer that DMA can access:
 ``m_new()`` raises ``MemoryError`` when it fails, so code that uses it between
 the two calls must restore the selection in an ``nlr`` handler.
 
+``gc_alloc_align(align)`` similarly sets the alignment, a power of two, of the
+current thread's allocations and returns the previous one. Each allocation
+then starts at a multiple of ``align`` and uses a whole number of ``align``
+bytes, which suits buffers that DMA accesses on a CPU with a data cache when
+``align`` is the cache line size. An alignment of 0 restores the default.
+
 When ``gc_realloc()`` has to move a block and the thread has no selection, it
 prefers the area that the block is already in.
