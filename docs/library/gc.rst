@@ -190,8 +190,23 @@ allocations go in the first area with enough free memory, as before.
 
 .. data:: AREA_DMA
 
-   Attribute of areas that the port's DMA controllers can access. Ports only
-   set this where they know it to be true, so not every port sets it.
+   Attribute of areas that the port's general-purpose DMA controllers can
+   access. Ports only set it where the microcontroller's reference manual
+   confirms it:
+
+   - stm32: all heap areas except CCM RAM and the TCMs (DTCM is DMA-capable on
+     the STM32F7, but not on the STM32H7 or STM32N6). On the STM32H7, some
+     peripherals with their own DMA, such as SDMMC1 and LTDC, can't access the
+     D2 SRAM even though DMA1 and DMA2 can.
+   - rp2: the internal SRAM. PSRAM isn't marked: DMA can access it, but faults
+     while the flash is being written.
+   - mimxrt: all heap areas, including SDRAM and PSRAM.
+   - esp32: areas in internal RAM that ESP-IDF considers DMA-capable. PSRAM
+     isn't marked.
+
+   On microcontrollers with a data cache, buffers that DMA accesses also need
+   cache maintenance, and usually an alignment to the cache line size (see the
+   *align* argument of `area()`).
 
 Example
 -------

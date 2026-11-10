@@ -119,7 +119,10 @@ int main(void) {
         if (psram_size) {
             #if MICROPY_GC_SPLIT_HEAP
             gc_init(&_gc_heap_start, &_gc_heap_end);
-            gc_add_ex((void *)PSRAM_BASE, (void *)(PSRAM_BASE + psram_size), GC_AREA_ATTR_EXTERNAL);
+            // The heap is in OCRAM, or SDRAM at 0x80000000; eDMA can access both, and PSRAM.
+            gc_area_set_attrs(0, GC_AREA_ATTR_DMA
+                | ((uintptr_t)&_gc_heap_start >= 0x60000000 ? GC_AREA_ATTR_EXTERNAL : 0));
+            gc_add_ex((void *)PSRAM_BASE, (void *)(PSRAM_BASE + psram_size), GC_AREA_ATTR_EXTERNAL | GC_AREA_ATTR_DMA);
             #else
             gc_init((void *)PSRAM_BASE, (void *)(PSRAM_BASE + psram_size));
             #endif

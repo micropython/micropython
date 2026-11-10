@@ -598,6 +598,7 @@ soft_reset:
 
     // Add additional GC blocks (if enabled).
     #if MICROPY_GC_SPLIT_HEAP
+    gc_area_set_attrs(0, MICROPY_HW_GC_AREA_ATTRS(MICROPY_HEAP_START));
     typedef struct {
         uint8_t *addr;
         uint32_t size;
