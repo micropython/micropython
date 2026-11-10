@@ -19,6 +19,8 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self, const mcu_pin_obj_t *
     const mcu_pin_obj_t *mosi, const mcu_pin_obj_t *miso, bool half_duplex) {
     int port = -1;
 
+    common_hal_busio_spi_mark_deinit(self);
+
     if (half_duplex) {
         mp_raise_NotImplementedError_varg(MP_ERROR_TEXT("%q"), MP_QSTR_half_duplex);
     }
@@ -39,14 +41,24 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self, const mcu_pin_obj_t *
         raise_ValueError_invalid_pins();
     }
 
+    struct spi_dev_s *spi_dev = cxd56_spibus_initialize(port);
+    if (spi_dev == NULL) {
+        mp_raise_RuntimeError_varg(MP_ERROR_TEXT("%q init failed"), MP_QSTR_SPI);
+    }
+
+    // MOSI or MISO may be None.
     claim_pin(clock);
-    claim_pin(mosi);
-    claim_pin(miso);
+    if (mosi != NULL) {
+        claim_pin(mosi);
+    }
+    if (miso != NULL) {
+        claim_pin(miso);
+    }
 
     self->clock_pin = clock;
     self->mosi_pin = mosi;
     self->miso_pin = miso;
-    self->spi_dev = cxd56_spibus_initialize(port);
+    self->spi_dev = spi_dev;
 }
 
 void common_hal_busio_spi_deinit(busio_spi_obj_t *self) {
@@ -57,8 +69,12 @@ void common_hal_busio_spi_deinit(busio_spi_obj_t *self) {
     common_hal_busio_spi_mark_deinit(self);
 
     reset_pin_number(self->clock_pin->number);
-    reset_pin_number(self->mosi_pin->number);
-    reset_pin_number(self->miso_pin->number);
+    if (self->mosi_pin != NULL) {
+        reset_pin_number(self->mosi_pin->number);
+    }
+    if (self->miso_pin != NULL) {
+        reset_pin_number(self->miso_pin->number);
+    }
 }
 
 bool common_hal_busio_spi_deinited(busio_spi_obj_t *self) {

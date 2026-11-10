@@ -33,6 +33,10 @@ static busio_uart_dev_t busio_uart_dev[] = {
     {"/dev/ttyS2", &pin_UART2_TXD, &pin_UART2_RXD, -1},
 };
 
+static void mark_deinit(busio_uart_obj_t *self) {
+    self->tx_pin = NULL;
+}
+
 void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     const mcu_pin_obj_t *tx, const mcu_pin_obj_t *rx,
     const mcu_pin_obj_t *rts, const mcu_pin_obj_t *cts,
@@ -45,6 +49,8 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     char tmp;
     struct termios tio;
 
+    mark_deinit(self);
+
     if ((rts != NULL) || (cts != NULL) || (rs485_dir != NULL) || (rs485_invert)) {
         mp_raise_NotImplementedError(MP_ERROR_TEXT("RS485"));
     }
@@ -52,6 +58,11 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     mp_arg_validate_int(bits, 8, MP_QSTR_bits);
     mp_arg_validate_int(parity, BUSIO_UART_PARITY_NONE, MP_QSTR_parity);
     mp_arg_validate_int(stop, 1, MP_QSTR_stop);
+
+    // The one UART needs both TX and RX.
+    if (tx == NULL || rx == NULL) {
+        mp_raise_NotImplementedError(MP_ERROR_TEXT("UART needs TX & RX"));
+    }
 
     self->number = -1;
 
@@ -106,10 +117,12 @@ void common_hal_busio_uart_deinit(busio_uart_obj_t *self) {
 
     reset_pin_number(self->tx_pin->number);
     reset_pin_number(self->rx_pin->number);
+    mark_deinit(self);
 }
 
+// Per object: the device's fd may now belong to a newer UART.
 bool common_hal_busio_uart_deinited(busio_uart_obj_t *self) {
-    return busio_uart_dev[self->number].fd < 0;
+    return self->tx_pin == NULL;
 }
 
 size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t len, int *errcode) {

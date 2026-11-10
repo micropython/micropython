@@ -11,7 +11,13 @@
 #include "shared-bindings/digitalio/DigitalInOut.h"
 #include "shared-bindings/microcontroller/Pin.h"
 
+static void mark_deinit(digitalio_digitalinout_obj_t *self) {
+    self->pin = NULL;
+}
+
 digitalinout_result_t common_hal_digitalio_digitalinout_construct(digitalio_digitalinout_obj_t *self, const mcu_pin_obj_t *pin) {
+    mark_deinit(self);
+
     if (pin->analog) {
         raise_ValueError_invalid_pin();
     }
@@ -37,7 +43,7 @@ void common_hal_digitalio_digitalinout_deinit(digitalio_digitalinout_obj_t *self
     board_gpio_config(self->pin->number, 0, false, true, PIN_FLOAT);
 
     reset_pin_number(self->pin->number);
-    self->pin = NULL;
+    mark_deinit(self);
 }
 
 bool common_hal_digitalio_digitalinout_deinited(digitalio_digitalinout_obj_t *self) {
