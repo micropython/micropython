@@ -18,9 +18,5 @@
 #define DEFAULT_I2C_BUS_SCL         (&pin_GPIO54)
 #define DEFAULT_I2C_BUS_SDA         (&pin_GPIO53)
 
-// Use the second USB device (numbered 0 and 1) -- HS PHY routed to J1.
-#define CIRCUITPY_USB_DEVICE_INSTANCE 1
-#define CIRCUITPY_USB_DEVICE_HIGH_SPEED (1)
-
 // FS USB on GPIO24/25 routed to J2.
 #define CIRCUITPY_USB_HOST_INSTANCE 0

@@ -24,6 +24,4 @@
 #define DEFAULT_SPI_BUS_MOSI        (&pin_GPIO18)
 #define DEFAULT_SPI_BUS_MISO        (&pin_GPIO19)
 
-// Use the second USB device (numbered 0 and 1)
-#define CIRCUITPY_USB_DEVICE_INSTANCE 0
 #define CIRCUITPY_ESP32P4_SWAP_LSFS (1)
