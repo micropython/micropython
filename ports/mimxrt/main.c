@@ -119,7 +119,7 @@ int main(void) {
         if (psram_size) {
             #if MICROPY_GC_SPLIT_HEAP
             gc_init(&_gc_heap_start, &_gc_heap_end);
-            gc_add((void *)PSRAM_BASE, (void *)(PSRAM_BASE + psram_size));
+            gc_add_ex((void *)PSRAM_BASE, (void *)(PSRAM_BASE + psram_size), GC_AREA_ATTR_EXTERNAL);
             #else
             gc_init((void *)PSRAM_BASE, (void *)(PSRAM_BASE + psram_size));
             #endif

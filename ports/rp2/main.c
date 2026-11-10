@@ -157,7 +157,7 @@ int main(int argc, char **argv) {
         void *psram_heap_end = &__psram_start__ + psram_size;
         #if MICROPY_GC_SPLIT_HEAP
         gc_init(&__GcHeapStart, &__GcHeapEnd);
-        gc_add(psram_heap_start, psram_heap_end);
+        gc_add_ex(psram_heap_start, psram_heap_end, GC_AREA_ATTR_EXTERNAL);
         #else
         gc_init(psram_heap_start, psram_heap_end);
         #endif
