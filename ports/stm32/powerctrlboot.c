@@ -481,17 +481,61 @@ void SystemClock_Config(void) {
     while (!LL_RCC_PLL1_IsReady()) {
     }
 
-    // Configure IC1, IC2, IC6, IC11.
+    #if defined(MICROPY_HW_CLK_PLL2M)
+    // Configure PLL2 for the NPU clock (IC6), which can run faster than the CPU.
+    LL_RCC_PLL2_Disable();
+    while (LL_RCC_PLL2_IsReady()) {
+    }
+    LL_RCC_PLL2_SetSource(LL_RCC_PLLSOURCE_HSE);
+    LL_RCC_PLL2_DisableBypass();
+    LL_RCC_PLL2_DisableFractionalModulationSpreadSpectrum();
+    LL_RCC_PLL2_SetM(MICROPY_HW_CLK_PLL2M);
+    LL_RCC_PLL2_SetN(MICROPY_HW_CLK_PLL2N);
+    LL_RCC_PLL2_SetP1(MICROPY_HW_CLK_PLL2P1);
+    LL_RCC_PLL2_SetP2(MICROPY_HW_CLK_PLL2P2);
+    LL_RCC_PLL2_SetFRACN(MICROPY_HW_CLK_PLL2FRAC);
+    LL_RCC_PLL2P_Enable();
+    LL_RCC_PLL2_Enable();
+    while (!LL_RCC_PLL2_IsReady()) {
+    }
+    #define NPU_ICCLKSOURCE LL_RCC_ICCLKSOURCE_PLL2
+    #else
+    #define NPU_ICCLKSOURCE LL_RCC_ICCLKSOURCE_PLL1
+    #endif
+
+    #if defined(MICROPY_HW_CLK_PLL3M)
+    // Configure PLL3 for the AXISRAM3-6 clock (IC11), which can run faster than the CPU.
+    LL_RCC_PLL3_Disable();
+    while (LL_RCC_PLL3_IsReady()) {
+    }
+    LL_RCC_PLL3_SetSource(LL_RCC_PLLSOURCE_HSE);
+    LL_RCC_PLL3_DisableBypass();
+    LL_RCC_PLL3_DisableFractionalModulationSpreadSpectrum();
+    LL_RCC_PLL3_SetM(MICROPY_HW_CLK_PLL3M);
+    LL_RCC_PLL3_SetN(MICROPY_HW_CLK_PLL3N);
+    LL_RCC_PLL3_SetP1(MICROPY_HW_CLK_PLL3P1);
+    LL_RCC_PLL3_SetP2(MICROPY_HW_CLK_PLL3P2);
+    LL_RCC_PLL3_SetFRACN(MICROPY_HW_CLK_PLL3FRAC);
+    LL_RCC_PLL3P_Enable();
+    LL_RCC_PLL3_Enable();
+    while (!LL_RCC_PLL3_IsReady()) {
+    }
+    #define AXISRAM_ICCLKSOURCE LL_RCC_ICCLKSOURCE_PLL3
+    #else
+    #define AXISRAM_ICCLKSOURCE LL_RCC_ICCLKSOURCE_PLL1
+    #endif
+
+    // Configure IC1 (CPU), IC2 (AXI bus), IC6 (NPU) and IC11 (AXISRAM3-6).
     LL_RCC_IC1_SetSource(LL_RCC_ICCLKSOURCE_PLL1);
     LL_RCC_IC1_SetDivider(1);
     LL_RCC_IC1_Enable();
     LL_RCC_IC2_SetSource(LL_RCC_ICCLKSOURCE_PLL1);
     LL_RCC_IC2_SetDivider(2);
     LL_RCC_IC2_Enable();
-    LL_RCC_IC6_SetSource(LL_RCC_ICCLKSOURCE_PLL1);
+    LL_RCC_IC6_SetSource(NPU_ICCLKSOURCE);
     LL_RCC_IC6_SetDivider(1);
     LL_RCC_IC6_Enable();
-    LL_RCC_IC11_SetSource(LL_RCC_ICCLKSOURCE_PLL1);
+    LL_RCC_IC11_SetSource(AXISRAM_ICCLKSOURCE);
     LL_RCC_IC11_SetDivider(1);
     LL_RCC_IC11_Enable();
 

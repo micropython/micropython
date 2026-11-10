@@ -25,6 +25,19 @@
 #define MICROPY_HW_CLK_PLLP2                    (1)
 #define MICROPY_HW_CLK_PLLFRAC                  (0)
 
+// PLL2 gives an NPU frequency of 1GHz, and PLL3 an AXISRAM3-6 frequency of 900MHz.
+// These need the VDDCORE overdrive selected in board.c.
+#define MICROPY_HW_CLK_PLL2M                    (6)
+#define MICROPY_HW_CLK_PLL2N                    (125)
+#define MICROPY_HW_CLK_PLL2P1                   (1)
+#define MICROPY_HW_CLK_PLL2P2                   (1)
+#define MICROPY_HW_CLK_PLL2FRAC                 (0)
+#define MICROPY_HW_CLK_PLL3M                    (4)
+#define MICROPY_HW_CLK_PLL3N                    (150)
+#define MICROPY_HW_CLK_PLL3P1                   (2)
+#define MICROPY_HW_CLK_PLL3P2                   (1)
+#define MICROPY_HW_CLK_PLL3FRAC                 (0)
+
 // The LSE is a 32kHz crystal.
 #define MICROPY_HW_RTC_USE_LSE                  (1)
 #define MICROPY_HW_RTC_USE_US                   (1)
