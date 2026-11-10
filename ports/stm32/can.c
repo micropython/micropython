@@ -314,6 +314,11 @@ int can_receive(CAN_HandleTypeDef *can, can_rx_fifo_t fifo, CanRxMsgTypeDef *msg
     }
     msg->RTR = box->RIR & 2;
     msg->DLC = box->RDTR & 0xf;
+    // Classic CAN allows DLC values 9 to 15 on the wire and defines them as
+    // eight data bytes. The frame has already passed CRC, so it is valid.
+    if (msg->DLC > 8) {
+        msg->DLC = 8;
+    }
     msg->FMI = box->RDTR >> 8 & 0xff;
     uint32_t rdlr = box->RDLR;
     data[0] = rdlr;
