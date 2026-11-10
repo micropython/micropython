@@ -356,6 +356,27 @@ function ci_nrf_build {
 }
 
 ########################################################################################
+# ports/pic16bit
+
+function ci_pic16bit_setup {
+    # cribbed from https://github.com/marketplace/actions/setup-microchip-xc-compiler
+    sudo dpkg --add-architecture i386
+    sudo apt-get update
+    sudo apt-get install libc6:i386 libx11-6:i386 libxext6:i386 libstdc++6:i386 libexpat1:i386
+    INSTALLER=xc16-v2.10-full-install-linux64-installer.run
+    # cache action is used to keep a copy of the installer, save on download traffic
+    [ -e ./${INSTALLER} ] || wget --no-verbose https://ww1.microchip.com/downloads/aemDocuments/documents/DEV/ProductDocuments/SoftwareTools/${INSTALLER}
+    chmod +x ./${INSTALLER}
+    sudo ./${INSTALLER} --mode unattended --netservername localhost --prefix /opt/microchip/xc16/v2.10
+}
+
+function ci_pic16bit_build {
+    make ${MAKEOPTS} -C mpy-cross
+    make ${MAKEOPTS} -C ports/pic16bit submodules
+    make ${MAKEOPTS} -C ports/pic16bit
+}
+
+########################################################################################
 # ports/psoc-edge
 
 function ci_psoc_edge_setup {
