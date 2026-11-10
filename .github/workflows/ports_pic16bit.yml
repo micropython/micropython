@@ -1,0 +1,32 @@
+name: pic16bit port
+
+on:
+  push:
+  pull_request:
+    paths:
+      - '.github/workflows/*.yml'
+      - 'tools/**'
+      - 'py/**'
+      - 'extmod/**'
+      - 'shared/**'
+      - 'ports/pic16bit/**'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v7
+    - name: Cached toolchain
+      uses: actions/cache@v6
+      with:
+        path: ./xc16*.run
+        key: xc16_toolchain_installer
+    - name: Setup
+      run: tools/ci.sh pic16bit_setup
+    - name: Build
+      run: tools/ci.sh pic16bit_build
+
