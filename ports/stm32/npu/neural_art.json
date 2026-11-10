@@ -1,0 +1,9 @@
+{
+    "Globals": {},
+    "Profiles": {
+        "micropython": {
+            "memory_pool": "stm32n6.mpool",
+            "options": "--native-float --cache-maintenance --Ocache-opt --enable-virtual-mem-pools --Os --optimization 3 --Oauto-sched --all-buffers-info --enable-epoch-controller"
+        }
+    }
+}

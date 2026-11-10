@@ -1,0 +1,174 @@
+{
+  "params": {
+    "param": [
+      {
+        "paramname": "max_onchip_sram_size",
+        "value": "1792",
+        "magnitude": "KBYTES"
+      }
+    ]
+  },
+  "memory": {
+    "cacheinfo": [
+      {
+        "nlines": 512,
+        "linesize": 64,
+        "associativity": 8,
+        "bypass_enable": 1,
+        "prop": {
+          "rights": "ACC_WRITE",
+          "throughput": "MID",
+          "latency": "MID",
+          "byteWidth": 8,
+          "freqRatio": 2.5,
+          "read_power": 13.584,
+          "write_power": 12.645
+        }
+      }
+    ],
+    "mem_file_prefix": "atonbuf",
+    "mempools": [
+      {
+        "fname": "AXISRAM3",
+        "name": "npuRAM3",
+        "fformat": "FORMAT_RAW",
+        "prop": {
+          "rights": "ACC_WRITE",
+          "throughput": "HIGH",
+          "latency": "LOW",
+          "byteWidth": 8,
+          "freqRatio": 1.25,
+          "cacheable": "CACHEABLE_OFF",
+          "read_power": 18.531,
+          "write_power": 16.201
+        },
+        "offset": {
+          "value": "0x34200000",
+          "magnitude": "BYTES"
+        },
+        "size": {
+          "value": "448",
+          "magnitude": "KBYTES"
+        }
+      },
+      {
+        "fname": "AXISRAM4",
+        "name": "npuRAM4",
+        "fformat": "FORMAT_RAW",
+        "prop": {
+          "rights": "ACC_WRITE",
+          "throughput": "HIGH",
+          "latency": "LOW",
+          "byteWidth": 8,
+          "freqRatio": 1.25,
+          "cacheable": "CACHEABLE_OFF",
+          "read_power": 18.531,
+          "write_power": 16.201
+        },
+        "offset": {
+          "value": "0x34270000",
+          "magnitude": "BYTES"
+        },
+        "size": {
+          "value": "448",
+          "magnitude": "KBYTES"
+        }
+      },
+      {
+        "fname": "AXISRAM5",
+        "name": "npuRAM5",
+        "fformat": "FORMAT_RAW",
+        "prop": {
+          "rights": "ACC_WRITE",
+          "throughput": "HIGH",
+          "latency": "LOW",
+          "byteWidth": 8,
+          "freqRatio": 1.25,
+          "cacheable": "CACHEABLE_OFF",
+          "read_power": 18.531,
+          "write_power": 16.201
+        },
+        "offset": {
+          "value": "0x342e0000",
+          "magnitude": "BYTES"
+        },
+        "size": {
+          "value": "448",
+          "magnitude": "KBYTES"
+        }
+      },
+      {
+        "fname": "AXISRAM6",
+        "name": "npuRAM6",
+        "fformat": "FORMAT_RAW",
+        "prop": {
+          "rights": "ACC_WRITE",
+          "throughput": "HIGH",
+          "latency": "LOW",
+          "byteWidth": 8,
+          "freqRatio": 1.25,
+          "cacheable": "CACHEABLE_OFF",
+          "read_power": 18.531,
+          "write_power": 16.201
+        },
+        "offset": {
+          "value": "0x34350000",
+          "magnitude": "BYTES"
+        },
+        "size": {
+          "value": "448",
+          "magnitude": "KBYTES"
+        }
+      },
+      {
+        "fname": "xSPI1",
+        "name": "psRAM",
+        "fformat": "FORMAT_RAW",
+        "prop": {
+          "rights": "ACC_WRITE",
+          "throughput": "MID",
+          "latency": "HIGH",
+          "byteWidth": 2,
+          "freqRatio": 5.0,
+          "cacheable": "CACHEABLE_ON",
+          "read_power": 380,
+          "write_power": 340.0
+        },
+        "offset": {
+          "value": "0x90000000",
+          "magnitude": "BYTES"
+        },
+        "size": {
+          "value": "16",
+          "magnitude": "MBYTES"
+        },
+        "mode": "USEMODE_RELATIVE"
+      },
+      {
+        "fname": "xSPI2",
+        "name": "octoFlash",
+        "fformat": "FORMAT_RAW",
+        "prop": {
+          "rights": "ACC_READ",
+          "throughput": "MID",
+          "latency": "HIGH",
+          "byteWidth": 1,
+          "freqRatio": 6.0,
+          "cacheable": "CACHEABLE_ON",
+          "read_power": 110,
+          "write_power": 400.0,
+          "constants_preferred": "true"
+        },
+        "offset": {
+          "value": "0x70000000",
+          "magnitude": "BYTES"
+        },
+        "size": {
+          "value": "16",
+          "magnitude": "MBYTES"
+        },
+        "mode": "USEMODE_RELATIVE"
+      }
+    ]
+  }
+}

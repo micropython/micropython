@@ -493,6 +493,55 @@ ifeq ($(MICROPY_SSL_MBEDTLS),1)
 LIB_SRC_C += mbedtls/mbedtls_port.c
 endif
 
+# The npu module for the STM32N6's NPU.  ST's NPU runtime is built from an install of
+# ST Edge AI Core, which must be the same version as the one that compiles the models.
+ifeq ($(MICROPY_PY_NPU),1)
+STEDGEAI_DIR ?= $(HOME)/STEdgeAI/4.0
+STEDGEAI_NPU_DIR = $(STEDGEAI_DIR)/Middlewares/ST/AI/Npu
+ifeq ($(wildcard $(STEDGEAI_NPU_DIR)/ll_aton/ll_aton.h),)
+$(error The npu module needs ST Edge AI Core: set STEDGEAI_DIR to where it is installed)
+endif
+SRC_C += modnpu.c
+CFLAGS += -DMICROPY_PY_NPU=1
+CFLAGS += -I$(STEDGEAI_NPU_DIR)/ll_aton -I$(STEDGEAI_NPU_DIR)/Devices/STM32N6xx
+# The runtime configuration that stedgeai --relocatable models need.
+CFLAGS += \
+	-DLL_ATON_PLATFORM=LL_ATON_PLAT_STM32N6 \
+	-DLL_ATON_OSAL=LL_ATON_OSAL_BARE_METAL \
+	-DLL_ATON_RT_MODE=LL_ATON_RT_ASYNC \
+	-DLL_ATON_RT_RELOC \
+	-DLL_ATON_SW_FALLBACK \
+	-DLL_ATON_EB_DBG_INFO \
+	-DLL_ATON_DBG_BUFFER_INFO_EXCLUDED=1
+STEDGEAI_SRC_C = \
+	ll_aton/ecloader.c \
+	ll_aton/ll_aton.c \
+	ll_aton/ll_aton_cipher.c \
+	ll_aton/ll_aton_dbgtrc.c \
+	ll_aton/ll_aton_debug.c \
+	ll_aton/ll_aton_lib.c \
+	ll_aton/ll_aton_lib_sw_operators.c \
+	ll_aton/ll_aton_profiler.c \
+	ll_aton/ll_aton_reloc_network.c \
+	ll_aton/ll_aton_runtime.c \
+	ll_aton/ll_aton_util.c \
+	ll_aton/ll_sw_float.c \
+	ll_aton/ll_sw_integer.c \
+	Devices/STM32N6xx/mcu_cache.c \
+	Devices/STM32N6xx/npu_cache.c
+STEDGEAI_OBJ = $(addprefix $(BUILD)/stedgeai/, $(STEDGEAI_SRC_C:.c=.o))
+OBJ += $(STEDGEAI_OBJ)
+HAL_SRC_C += $(STM32LIB_HAL_BASE)/Src/stm32$(MCU_SERIES)xx_hal_cacheaxi.c
+# The CPU runs in the secure state, as do the models.
+$(STEDGEAI_OBJ): CFLAGS += -I$(STEDGEAI_DIR)/Middlewares/ST/AI/Inc -mcmse -w -Wno-error
+$(BUILD)/stedgeai/%.o: $(STEDGEAI_NPU_DIR)/%.c
+	$(call compile_c)
+# The runtime's software operators use single precision maths functions.
+ifeq ($(MICROPY_FLOAT_IMPL),double)
+LIBM_SRC_C += $(SRC_LIB_LIBM_C) $(SRC_LIB_LIBM_SQRT_HW_C)
+endif
+endif
+
 ifeq ($(MICROPY_PY_BLUETOOTH),1)
 SRC_C += mpbthciport.c
 

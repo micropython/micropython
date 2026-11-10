@@ -85,6 +85,9 @@
 #include "storage.h"
 #include "sdcard.h"
 #include "sdram.h"
+#if MICROPY_PY_NPU
+#include "modnpu.h"
+#endif
 #include "rng.h"
 #include "accel.h"
 #include "servo.h"
@@ -325,11 +328,17 @@ static void risaf_init(void) {
     HAL_RIF_RIMC_ConfigMasterAttributes(RIF_MASTER_INDEX_SDMMC1, &rimc_master);
     HAL_RIF_RIMC_ConfigMasterAttributes(RIF_MASTER_INDEX_SDMMC2, &rimc_master);
     HAL_RIF_RIMC_ConfigMasterAttributes(RIF_MASTER_INDEX_ETH1, &rimc_master);
+    #if MICROPY_PY_NPU
+    HAL_RIF_RIMC_ConfigMasterAttributes(RIF_MASTER_INDEX_NPU, &rimc_master);
+    #endif
 
     HAL_RIF_RISC_SetSlaveSecureAttributes(RIF_RISC_PERIPH_INDEX_ADC12, RIF_ATTRIBUTE_SEC | RIF_ATTRIBUTE_PRIV);
     HAL_RIF_RISC_SetSlaveSecureAttributes(RIF_RISC_PERIPH_INDEX_SDMMC1, RIF_ATTRIBUTE_SEC | RIF_ATTRIBUTE_PRIV);
     HAL_RIF_RISC_SetSlaveSecureAttributes(RIF_RISC_PERIPH_INDEX_SDMMC2, RIF_ATTRIBUTE_SEC | RIF_ATTRIBUTE_PRIV);
     HAL_RIF_RISC_SetSlaveSecureAttributes(RIF_RISC_PERIPH_INDEX_ETH1, RIF_ATTRIBUTE_SEC | RIF_ATTRIBUTE_PRIV);
+    #if MICROPY_PY_NPU
+    HAL_RIF_RISC_SetSlaveSecureAttributes(RIF_RISC_PERIPH_INDEX_NPU, RIF_ATTRIBUTE_SEC | RIF_ATTRIBUTE_PRIV);
+    #endif
 }
 #endif
 
@@ -607,6 +616,12 @@ soft_reset:
     extern const gc_blocks_table_t _gc_blocks_table_end;
 
     for (gc_blocks_table_t const *block = &_gc_blocks_table_start; block < &_gc_blocks_table_end; block++) {
+        #if MICROPY_PY_NPU
+        if (block->addr >= (uint8_t *)SRAM3_AXI_BASE_S && block->addr < (uint8_t *)CACHEAXI_RAM_BASE_S + CACHEAXI_RAM_SIZE) {
+            // AXISRAM3-6 and the NPU cache's RAM are reserved for the NPU.
+            continue;
+        }
+        #endif
         if (block->size) {
             gc_add(block->addr, block->addr + block->size);
         }
@@ -777,6 +792,9 @@ soft_reset_exit:
     #endif
     #if MICROPY_PY_NETWORK_HALOW
     network_halow_deinit_all();
+    #endif
+    #if MICROPY_PY_NPU
+    npu_deinit();
     #endif
     soft_timer_deinit();
     timer_deinit();
