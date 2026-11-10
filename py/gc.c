@@ -256,6 +256,13 @@ void gc_init(void *start, void *end) {
     // unlock the GC
     MP_STATE_THREAD(gc_lock_depth) = 0;
 
+    #if MICROPY_GC_AREA_SELECT
+    MP_STATE_MEM(area).gc_area_attrs = 0;
+    MP_STATE_MEM(area).gc_area_index = 0;
+    MP_STATE_THREAD(gc_area_sel) = 0;
+    MP_STATE_MEM(gc_area_sel_count) = 0;
+    #endif
+
     // allow auto collection
     MP_STATE_MEM(gc_auto_collect_enabled) = 1;
 
@@ -285,10 +292,102 @@ void gc_add(void *start, void *end) {
     while (prev_area->next != NULL) {
         prev_area = prev_area->next;
     }
+    #if MICROPY_GC_AREA_SELECT
+    area->gc_area_attrs = 0;
+    area->gc_area_index = MIN(prev_area->gc_area_index + 1, GC_AREA_INDEX_MAX);
+    #endif
 
     // Add this area to the linked list
     prev_area->next = area;
 }
+
+#if MICROPY_GC_AREA_SELECT
+#define AREA_SEL_BIT(area) (1u << (area)->gc_area_index)
+
+void gc_add_ex(void *start, void *end, unsigned int attrs) {
+    gc_add(start, end);
+    // gc_add() puts the area struct at the start of the area.
+    ((mp_state_mem_area_t *)start)->gc_area_attrs = attrs;
+}
+
+// Return the area at the given index, or NULL if there is no such area.
+static mp_state_mem_area_t *gc_area_at(size_t index) {
+    mp_state_mem_area_t *area = &MP_STATE_MEM(area);
+    for (; area != NULL && index > 0; area = NEXT_AREA(area), --index) {
+    }
+    return area;
+}
+
+void gc_area_set_attrs(size_t index, unsigned int attrs) {
+    mp_state_mem_area_t *area = gc_area_at(index);
+    if (area != NULL) {
+        area->gc_area_attrs = attrs;
+    }
+}
+
+bool gc_area_info(size_t index, gc_area_info_t *info) {
+    GC_ENTER();
+    mp_state_mem_area_t *area = gc_area_at(index);
+    if (area != NULL) {
+        info->start = area->gc_pool_start;
+        info->total = area->gc_pool_end - area->gc_pool_start;
+        info->attrs = area->gc_area_attrs;
+        size_t n_free = 0, run = 0, max_run = 0;
+        for (size_t block = 0; block < area->gc_alloc_table_byte_len * BLOCKS_PER_ATB; block++) {
+            MICROPY_GC_HOOK_LOOP(block);
+            if (ATB_GET_KIND(area, block) == AT_FREE) {
+                n_free += 1;
+                run += 1;
+                max_run = MAX(max_run, run);
+            } else {
+                run = 0;
+            }
+        }
+        info->free = n_free * BYTES_PER_BLOCK;
+        info->max_free = max_run * BYTES_PER_BLOCK;
+    }
+    GC_EXIT();
+    return area != NULL;
+}
+
+int gc_area_index(const void *ptr) {
+    for (mp_state_mem_area_t *area = &MP_STATE_MEM(area); area != NULL; area = NEXT_AREA(area)) {
+        if ((const byte *)ptr >= area->gc_pool_start && (const byte *)ptr < area->gc_pool_end) {
+            return area->gc_area_index;
+        }
+    }
+    return -1;
+}
+
+uint32_t gc_area_with_attrs(unsigned int attrs) {
+    uint32_t sel = 0;
+    for (mp_state_mem_area_t *area = &MP_STATE_MEM(area); area != NULL; area = NEXT_AREA(area)) {
+        if ((area->gc_area_attrs & attrs) == attrs) {
+            sel |= AREA_SEL_BIT(area);
+        }
+    }
+    return sel;
+}
+
+// Set the current thread's selection, keeping count of the threads that have
+// one.
+static void gc_area_set(uint32_t sel) {
+    bool was_set = MP_STATE_THREAD(gc_area_sel) != 0;
+    bool is_set = sel != 0;
+    MP_STATE_THREAD(gc_area_sel) = sel;
+    if (was_set != is_set) {
+        GC_ENTER();
+        MP_STATE_MEM(gc_area_sel_count) += is_set ? 1 : -1;
+        GC_EXIT();
+    }
+}
+
+uint32_t gc_area_select(uint32_t sel) {
+    uint32_t prev = MP_STATE_THREAD(gc_area_sel);
+    gc_area_set(sel);
+    return prev;
+}
+#endif
 
 #if MICROPY_GC_SPLIT_HEAP_AUTO
 // Try to automatically add a heap area large enough to fulfill 'failed_alloc'.
@@ -377,7 +476,7 @@ static bool gc_try_add_heap(size_t failed_alloc) {
         return false;
     }
 
-    gc_add(new_heap, (void *)new_heap + to_alloc);
+    gc_add_ex(new_heap, (void *)new_heap + to_alloc, MP_PLAT_ALLOC_HEAP_ATTRS(new_heap, to_alloc));
 
     return true;
 }
@@ -888,6 +987,41 @@ void gc_weakref_mark(void *ptr) {
 }
 #endif
 
+#if MICROPY_GC_AREA_SELECT
+// Find n_blocks free blocks in the selected areas and then, unless the
+// selection is strict, in the other areas.  Returns the area, with *end_block
+// set to the last block found, or NULL.  Must be called with the GC mutex held.
+static mp_state_mem_area_t *gc_alloc_find_in_selection(uint32_t sel, size_t n_blocks, size_t *end_block, size_t *n_free_out) {
+    uint32_t search_sel = sel & GC_AREA_SEL_MASK;
+    for (;;) {
+        for (mp_state_mem_area_t *area = &MP_STATE_MEM(area); area != NULL; area = NEXT_AREA(area)) {
+            if (!(search_sel & AREA_SEL_BIT(area))) {
+                continue;
+            }
+            size_t n_free = 0;
+            size_t n_total = area->gc_alloc_table_byte_len * BLOCKS_PER_ATB;
+            for (size_t block = area->gc_last_free_atb_index * BLOCKS_PER_ATB; block < n_total; block++) {
+                MICROPY_GC_HOOK_LOOP(block);
+                if (ATB_GET_KIND(area, block) != AT_FREE) {
+                    n_free = 0;
+                } else if (++n_free >= n_blocks) {
+                    *end_block = block;
+                    *n_free_out = n_free;
+                    return area;
+                }
+            }
+            if (n_blocks == 1) {
+                area->gc_last_free_atb_index = area->gc_alloc_table_byte_len;
+            }
+        }
+        if ((sel & GC_AREA_SEL_STRICT) || search_sel != (sel & GC_AREA_SEL_MASK)) {
+            return NULL;
+        }
+        search_sel = ~sel & GC_AREA_SEL_MASK;
+    }
+}
+#endif
+
 void *gc_alloc(size_t n_bytes, unsigned int alloc_flags) {
     bool has_finaliser = alloc_flags & GC_ALLOC_FLAG_HAS_FINALISER;
     size_t n_blocks = ((n_bytes + BYTES_PER_BLOCK - 1) & (~(BYTES_PER_BLOCK - 1))) / BYTES_PER_BLOCK;
@@ -924,7 +1058,24 @@ void *gc_alloc(size_t n_bytes, unsigned int alloc_flags) {
     }
     #endif
 
+    #if MICROPY_GC_AREA_SELECT
+    uint32_t sel = 0;
+    if (MP_STATE_MEM(gc_area_sel_count) != 0) {
+        sel = MP_STATE_THREAD(gc_area_sel);
+    }
+    #endif
+
     for (;;) {
+
+        #if MICROPY_GC_AREA_SELECT
+        if (sel != 0) {
+            area = gc_alloc_find_in_selection(sel, n_blocks, &i, &n_free);
+            if (area != NULL) {
+                goto found;
+            }
+            goto not_found;
+        }
+        #endif
 
         #if MICROPY_GC_SPLIT_HEAP
         area = MP_STATE_MEM(gc_last_free_area);
@@ -957,10 +1108,19 @@ void *gc_alloc(size_t n_bytes, unsigned int alloc_flags) {
             #endif
         }
 
+        #if MICROPY_GC_AREA_SELECT
+    not_found:
+        #endif
         GC_EXIT();
         // nothing found!
         if (collected) {
             #if MICROPY_GC_SPLIT_HEAP_AUTO
+            #if MICROPY_GC_AREA_SELECT
+            // A new area can't help a strict selection, since it isn't selected.
+            if (sel & GC_AREA_SEL_STRICT) {
+                return NULL;
+            }
+            #endif
             if (!added && gc_try_add_heap(n_bytes)) {
                 added = true;
                 continue;
@@ -985,12 +1145,22 @@ found:
     // for a single free block, which guarantees that there are no free blocks
     // before this one.  Also, whenever we free or shink a block we must check
     // if this index needs adjusting (see gc_realloc and gc_free).
+    #if MICROPY_GC_AREA_SELECT
+    if (n_free == 1) {
+        // A selection may skip areas with free blocks, so it can't move this.
+        if (sel == 0) {
+            MP_STATE_MEM(gc_last_free_area) = area;
+        }
+        area->gc_last_free_atb_index = (i + 1) / BLOCKS_PER_ATB;
+    }
+    #else
     if (n_free == 1) {
         #if MICROPY_GC_SPLIT_HEAP
         MP_STATE_MEM(gc_last_free_area) = area;
         #endif
         area->gc_last_free_atb_index = (i + 1) / BLOCKS_PER_ATB;
     }
+    #endif
 
     area->gc_last_used_block = MAX(area->gc_last_used_block, end_block);
 
@@ -1322,7 +1492,20 @@ void *gc_realloc(void *ptr_in, size_t n_bytes, bool allow_move) {
     }
 
     // can't resize inplace; try to find a new contiguous chain
+    #if MICROPY_GC_AREA_SELECT
+    // Without a selection, prefer to keep the block in its area.  The default
+    // search already starts in gc_last_free_area.
+    bool prefer_area = area != MP_STATE_MEM(gc_last_free_area) && MP_STATE_THREAD(gc_area_sel) == 0;
+    if (prefer_area) {
+        gc_area_select(AREA_SEL_BIT(area));
+    }
     void *ptr_out = gc_alloc(n_bytes, alloc_flags);
+    if (prefer_area) {
+        gc_area_select(0);
+    }
+    #else
+    void *ptr_out = gc_alloc(n_bytes, alloc_flags);
+    #endif
 
     // check that the alloc succeeded
     if (ptr_out == NULL) {

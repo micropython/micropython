@@ -176,3 +176,57 @@ can have different properties:
 - *TAIL:* In the tail of a chain of blocks
 - *MARK :* Marked head block
 - *FTB(finaliser table byte):* If set, then the block has a finaliser
+
+Heap areas
+----------
+
+With ``MICROPY_GC_SPLIT_HEAP`` enabled, a port can give the heap several areas
+of memory. ``gc_init()`` sets up area 0, and each call to ``gc_add()`` or
+``gc_add_ex()`` adds the next area. ``gc_add_ex(start, end, attrs)`` also gives
+the area a set of ``GC_AREA_ATTR_xxx`` attributes:
+
+- ``GC_AREA_ATTR_EXTERNAL`` for memory outside the microcontroller, such as
+  PSRAM or SDRAM.
+- ``GC_AREA_ATTR_DMA`` for memory that the port's DMA controllers can access.
+- ``GC_AREA_ATTR_PORT_FIRST`` and the bits above it are free for port-specific
+  attributes.
+
+``gc_init()`` creates area 0 without attributes, and ``gc_area_set_attrs(0,
+attrs)`` gives it attributes. With ``MICROPY_GC_SPLIT_HEAP_AUTO``, areas that
+the GC adds are given the attributes ``MP_PLAT_ALLOC_HEAP_ATTRS(ptr, size)``,
+which a port can define to describe the memory that ``MP_PLAT_ALLOC_HEAP()``
+returned. Only mark an area ``GC_AREA_ATTR_DMA`` if the reference manual
+confirms that the general-purpose DMA controllers can access all of it.
+
+``gc_area_index(ptr)`` returns the index of the area that holds ``ptr``, or -1
+if it isn't in the heap, and ``gc_area_info()`` returns an area's size, free
+memory and attributes.
+
+Attributes are only kept when ``MICROPY_GC_AREA_SELECT`` is enabled. Without
+it, a port can still call ``gc_add_ex()`` and ``gc_area_set_attrs()``, which
+then ignore the attributes, but the other functions in this section aren't
+available.
+
+With ``MICROPY_GC_AREA_SELECT`` enabled, C code can choose which areas the
+current thread's allocations go in. ``gc_area_select(sel)`` sets the selection
+and returns the previous one, so it can be restored. Bit *n* of ``sel``
+selects area *n*, ``gc_area_with_attrs(attrs)`` returns the bits of the areas
+that have all of the given attributes, and ``GC_AREA_SEL_STRICT`` makes
+allocations fail rather than use other areas. A selection of 0 restores the
+default, which is to try the areas in order. For example, a driver that needs
+a buffer that DMA can access:
+
+.. code-block:: c
+
+    uint32_t prev = gc_area_select(gc_area_with_attrs(GC_AREA_ATTR_DMA) | GC_AREA_SEL_STRICT);
+    uint8_t *buf = m_new_maybe(uint8_t, len);
+    gc_area_select(prev);
+    if (buf == NULL) {
+        mp_raise_type(&mp_type_MemoryError);
+    }
+
+``m_new()`` raises ``MemoryError`` when it fails, so code that uses it between
+the two calls must restore the selection in an ``nlr`` handler.
+
+When ``gc_realloc()`` has to move a block and the thread has no selection, it
+prefers the area that the block is already in.
