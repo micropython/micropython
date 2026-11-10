@@ -176,3 +176,36 @@ can have different properties:
 - *TAIL:* In the tail of a chain of blocks
 - *MARK :* Marked head block
 - *FTB(finaliser table byte):* If set, then the block has a finaliser
+- *STB(scan table byte):* If set, then the block may contain heap pointers
+  and is scanned during marking
+
+.. _gc-skip-no-pointer:
+
+Skipping the scan of pure-data buffers
+--------------------------------------
+
+During the mark phase the GC scans the contents of every reachable block for
+words that look like pointers into the heap.  For large data buffers, such as
+a framebuffer stored in a `bytearray`, this is wasted work: they never hold
+heap pointers, but every word must still be checked.
+
+When ``MICROPY_GC_ENABLE_CONTAINS_NO_GC_POINTERS`` is enabled, the GC keeps a
+scan table with one bit per block.  A head block with its bit clear is still
+marked, keeping it alive, but its contents are not scanned.  The cost is one
+bit of RAM per block, about 0.8% of the heap on a 32-bit machine.
+
+The storage of `bytearray`, `array.array`, `str` and `bytes` objects, and of
+``vstr_t`` buffers, is allocated this way.  The exceptions are the ``'O'``,
+``'P'`` and ``'S'`` typecodes, which store pointers.
+
+C code allocates such buffers with ``m_new_with_no_gc_pointers()``, or by
+passing ``GC_ALLOC_FLAG_CONTAINS_NO_GC_POINTERS`` to ``gc_alloc()``.  Only use
+these for memory that will never hold a pointer to a heap object.
+
+If a pure-data buffer is later used to hold heap pointers, it must be marked
+for scanning, otherwise the objects it points to may be freed while still in
+use.  From C, call ``gc_buf_contains_ptrs(ptr)``, where *ptr* may point anywhere
+within the allocation.  From Python, call `micropython.buf_contains_ptrs()`.
+This is necessary only when addresses of heap objects are stored manually: for
+example via :mod:`uctypes`, `machine.mem32`, viper or inline assembler, or from
+C code that stores ``mp_obj_t`` values into a buffer it did not allocate.
