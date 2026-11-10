@@ -176,7 +176,7 @@ Tier 3 Ports
 ============
 
 Ports in [Tier 3](https://docs.micropython.org/en/latest/develop/support_tiers.html)
-are built in CI but not regularly tested by the MicroPython maintainers:
+are built in CI where possible but not regularly tested by the MicroPython maintainers:
 
 | Port                       | Target                                                            | Quick Reference                                                         |
 |----------------------------|-------------------------------------------------------------------|-------------------------------------------------------------------------|
