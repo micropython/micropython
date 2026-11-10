@@ -188,14 +188,14 @@ Functions
    other heap objects, so the garbage collector scans it.  *buf* can be any
    object supporting the buffer protocol.
 
-   Some ports skip scanning pure-data buffers such as `bytearray` and
-   `array.array`.  If such a buffer is used to store object addresses, for
-   example via :mod:`uctypes`, `machine.mem32`, viper or inline assembler,
-   call this function on it so those objects are not freed while still
-   referenced.
+   This function relates to the :ref:`GC optimisation that skips scanning
+   pure-data buffers <gc-skip-no-pointer>`, and is a no-op if that optimisation
+   is disabled or *buf* is not on the heap.
 
-   Has no effect if *buf* is not on the heap, or if the port always scans these
-   buffers.
+   Calling this function is necessary only if Python code is manually storing
+   addresses of heap objects: for example via :mod:`uctypes`, `machine.mem32`,
+   viper or inline assembler.  Generic Python code does not need to ever call
+   this function.
 
 .. function:: kbd_intr(chr)
 
