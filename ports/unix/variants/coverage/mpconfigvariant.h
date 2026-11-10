@@ -36,6 +36,8 @@
 // Enable testing of split heap.
 #define MICROPY_GC_SPLIT_HEAP          (1)
 #define MICROPY_GC_SPLIT_HEAP_N_HEAPS  (4)
+// Give two of the areas attributes, to test choosing areas by attribute.
+#define MICROPY_GC_SPLIT_HEAP_ATTRS(i) ((i) == 2 ? GC_AREA_ATTR_DMA : (i) == 3 ? GC_AREA_ATTR_EXTERNAL : 0)
 
 // Enable additional features.
 #define MICROPY_DEBUG_PARSE_RULE_NAME  (1)
