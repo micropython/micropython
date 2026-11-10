@@ -54,13 +54,22 @@ static mp_obj_t socketpool_socket___exit__(size_t n_args, const mp_obj_t *args) 
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(socketpool_socket___exit___obj, 4, 4, socketpool_socket___exit__);
 
+// Raises EBADF (bad file number) if the socket is closed.
+static socketpool_socket_obj_t *get_open_socket(mp_obj_t self_in) {
+    socketpool_socket_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    if (common_hal_socketpool_socket_get_closed(self)) {
+        mp_raise_OSError(MP_EBADF);
+    }
+    return self;
+}
+
 //|     def accept(self) -> Tuple[Socket, Tuple[str, int]]:
 //|         """Accept a connection on a listening socket of type SOCK_STREAM,
 //|         creating a new socket of type SOCK_STREAM.
 //|         Returns a tuple of (new_socket, remote_address)"""
 //|
 static mp_obj_t _socketpool_socket_accept(mp_obj_t self_in) {
-    socketpool_socket_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    socketpool_socket_obj_t *self = get_open_socket(self_in);
 
     mp_obj_t tuple_contents[2];
     tuple_contents[0] = MP_OBJ_FROM_PTR(common_hal_socketpool_socket_accept(self, &tuple_contents[1]));
@@ -159,7 +168,7 @@ static MP_DEFINE_CONST_FUN_OBJ_2(socketpool_socket_listen_obj, socketpool_socket
 //|         ...
 //|
 static mp_obj_t socketpool_socket_recvfrom_into(mp_obj_t self_in, mp_obj_t data_in) {
-    socketpool_socket_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    socketpool_socket_obj_t *self = get_open_socket(self_in);
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(data_in, &bufinfo, MP_BUFFER_WRITE);
 
@@ -185,11 +194,7 @@ static MP_DEFINE_CONST_FUN_OBJ_2(socketpool_socket_recvfrom_into_obj, socketpool
 //|         ...
 //|
 static mp_obj_t _socketpool_socket_recv_into(size_t n_args, const mp_obj_t *args) {
-    socketpool_socket_obj_t *self = MP_OBJ_TO_PTR(args[0]);
-    if (common_hal_socketpool_socket_get_closed(self)) {
-        // Bad file number.
-        mp_raise_OSError(MP_EBADF);
-    }
+    socketpool_socket_obj_t *self = get_open_socket(args[0]);
     // if (!common_hal_socketpool_socket_get_connected(self)) {
     //     // not connected
     //     mp_raise_OSError(MP_ENOTCONN);
@@ -224,11 +229,7 @@ static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(socketpool_socket_recv_into_obj, 2, 3
 //|         ...
 //|
 static mp_obj_t _socketpool_socket_send(mp_obj_t self_in, mp_obj_t buf_in) {
-    socketpool_socket_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    if (common_hal_socketpool_socket_get_closed(self)) {
-        // Bad file number.
-        mp_raise_OSError(MP_EBADF);
-    }
+    socketpool_socket_obj_t *self = get_open_socket(self_in);
     if (!common_hal_socketpool_socket_get_connected(self)) {
         mp_raise_BrokenPipeError();
     }
@@ -254,11 +255,7 @@ static MP_DEFINE_CONST_FUN_OBJ_2(socketpool_socket_send_obj, _socketpool_socket_
 //|         ...
 //|
 static mp_obj_t _socketpool_socket_sendall(mp_obj_t self_in, mp_obj_t buf_in) {
-    socketpool_socket_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    if (common_hal_socketpool_socket_get_closed(self)) {
-        // Bad file number.
-        mp_raise_OSError(MP_EBADF);
-    }
+    socketpool_socket_obj_t *self = get_open_socket(self_in);
     if (!common_hal_socketpool_socket_get_connected(self)) {
         mp_raise_BrokenPipeError();
     }

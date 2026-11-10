@@ -68,6 +68,20 @@ StaticTask_t socket_select_task_buffer;
 TaskHandle_t socket_select_task_handle;
 static int socket_change_fd = -1;
 
+// lwip reports "nothing yet" on a non-blocking socket with EAGAIN or EWOULDBLOCK; any other errno is a real error.
+static bool would_block(int err) {
+    return err == EAGAIN || err == EWOULDBLOCK;
+}
+
+// Returns lwip's errno as a negative error code; a reset or unconnected socket is no longer connected.
+static int socket_error(socketpool_socket_obj_t *self) {
+    int err = errno;
+    if (err == ECONNRESET || err == ENOTCONN) {
+        self->connected = false;
+    }
+    return -err;
+}
+
 static void socket_select_task(void *arg) {
     uint64_t signal;
     fd_set readfds;
@@ -285,18 +299,21 @@ int socketpool_socket_accept(socketpool_socket_obj_t *self, mp_obj_t *peer_out, 
         }
         RUN_BACKGROUND_TASKS;
         newsoc = lwip_accept(self->num, (struct sockaddr *)&peer_addr, &socklen);
-        // In non-blocking mode, fail instead of timing out
-        if (newsoc == -1 && (self->timeout_ms == 0 || mp_hal_is_interrupted())) {
-            return -MP_EAGAIN;
+        if (newsoc == -1) {
+            int err = errno;
+            if (!would_block(err)) {
+                return -err;
+            }
+            // In non-blocking mode, fail instead of timing out
+            if (self->timeout_ms == 0 || mp_hal_is_interrupted()) {
+                return -MP_EAGAIN;
+            }
         }
     }
 
-    if (timed_out) {
-        return -ETIMEDOUT;
-    }
-
+    // Without a socket, the loop ended because it timed out.
     if (newsoc < 0) {
-        return -MP_EBADF;
+        return -ETIMEDOUT;
     }
 
     // We got a socket. New client socket will not be non-blocking by default, so make it non-blocking.
@@ -526,20 +543,21 @@ mp_uint_t common_hal_socketpool_socket_recvfrom_into(socketpool_socket_obj_t *se
         }
         RUN_BACKGROUND_TASKS;
         received = lwip_recvfrom(self->num, buf, len, 0, (struct sockaddr *)&source_addr, &socklen);
-
-        // In non-blocking mode, fail instead of looping
-        if (received == -1 && self->timeout_ms == 0) {
-            mp_raise_OSError(MP_EAGAIN);
+        if (received == -1) {
+            int err = errno;
+            if (!would_block(err)) {
+                mp_raise_OSError(err);
+            }
+            // In non-blocking mode, fail instead of looping
+            if (self->timeout_ms == 0) {
+                mp_raise_OSError(MP_EAGAIN);
+            }
         }
     }
 
-    if (timed_out) {
-        mp_raise_OSError(ETIMEDOUT);
-    }
-
+    // Without data, the loop ended because it timed out or was interrupted.
     if (received < 0) {
-        mp_raise_BrokenPipeError();
-        return 0;
+        mp_raise_OSError(timed_out ? ETIMEDOUT : MP_EAGAIN);
     }
 
     if (source_out) {
@@ -565,9 +583,12 @@ int socketpool_socket_recv_into(socketpool_socket_obj_t *self,
             }
             RUN_BACKGROUND_TASKS;
             received = lwip_recv(self->num, (void *)buf, len, 0);
+            if (received == -1 && !would_block(errno)) {
+                return socket_error(self);
+            }
             // In non-blocking mode, fail instead of looping
             if (received < 1 && self->timeout_ms == 0) {
-                if ((received == 0) || (errno == ENOTCONN)) {
+                if (received == 0) {
                     self->connected = false;
                     return -MP_ENOTCONN;
                 }
@@ -586,7 +607,8 @@ int socketpool_socket_recv_into(socketpool_socket_obj_t *self,
         return -MP_EBADF;
     }
 
-    if (timed_out) {
+    // Without data, the loop ended because it timed out.
+    if (received < 0) {
         return -ETIMEDOUT;
     }
     return received;
@@ -607,14 +629,11 @@ int socketpool_socket_send(socketpool_socket_obj_t *self, const uint8_t *buf, ui
         // TODO: deal with potential failure/add timeout?
         sent = lwip_send(self->num, buf, len, 0);
     } else {
-        sent = -MP_EBADF;
+        return -MP_EBADF;
     }
 
     if (sent < 0) {
-        if (errno == ECONNRESET || errno == ENOTCONN) {
-            self->connected = false;
-        }
-        return -errno;
+        return socket_error(self);
     }
 
     return sent;
@@ -637,8 +656,7 @@ mp_uint_t common_hal_socketpool_socket_sendto(socketpool_socket_obj_t *self,
 
     int bytes_sent = lwip_sendto(self->num, buf, len, 0, (struct sockaddr *)&addr, addr.s2_len);
     if (bytes_sent < 0) {
-        mp_raise_BrokenPipeError();
-        return 0;
+        mp_raise_OSError(errno);
     }
     return bytes_sent;
 }
