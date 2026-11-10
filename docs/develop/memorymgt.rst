@@ -235,4 +235,5 @@ bytes, which suits buffers that DMA accesses on a CPU with a data cache when
 ``align`` is the cache line size. An alignment of 0 restores the default.
 
 When ``gc_realloc()`` has to move a block and the thread has no selection, it
-prefers the area that the block is already in.
+prefers the area that the block is already in. The Python ``gc.area()``
+context manager uses the same functions.
