@@ -30,12 +30,19 @@ class PreprocessorError(Exception):
     pass
 
 
-def is_c_source(fname):
-    return os.path.splitext(fname)[1] in [".c"]
+def is_c_source(fname: str) -> bool:
+    ext = fname.rsplit(".", 1)[-1]
+    return ext in {"c"}
 
 
-def is_cxx_source(fname):
-    return os.path.splitext(fname)[1] in [".cc", ".cp", ".cxx", ".cpp", ".CPP", ".c++", ".C"]
+def is_cxx_source(fname: str) -> bool:
+    ext = fname.rsplit(".", 1)[-1]
+    return ext in {"cc", "cp", "cxx", "cpp", "CPP", "c++", "C"}
+
+
+def is_any_source_bytes(fname: bytes) -> bool:
+    ext = fname.rsplit(b".", 1)[-1]
+    return ext in {b"c", b"cc", b"cp", b"cxx", b"cpp", b"CPP", b"c++", b"C"}
 
 
 def preprocess():
@@ -61,7 +68,7 @@ def preprocess():
     # that are subsequently needed by the `process_file` step.  The regexs are kept
     # short so they are as efficient as possible. (The stm32 port needs symbols of the
     # form `micropy_hw_xxx` so they are also kept.)
-    re_line_file = re.compile(rb"^#(?:line)?\s+\d+\s\"")
+    re_line_file = re.compile(rb"^#(?:line)?\s+\d+\s\"([^\"]+)")
     re_mp_info = re.compile(rb"MP_COMP|MP_QSTR|MP_REGI|micropy_hw")
 
     def pp(flags):
@@ -70,16 +77,20 @@ def preprocess():
                 filtered_lines = []
                 cmd = args.pp + flags + files
                 with subprocess.Popen(cmd, stdout=subprocess.PIPE) as proc:
-                    recent_file = None
+                    recent_line_directive = None
                     for line in proc.stdout:
                         if line.isspace():
-                            pass
-                        elif re_line_file.match(line):
-                            recent_file = line
+                            continue
+                        m = re_line_file.match(line)
+                        if m:
+                            fname = m.group(1)
+                            if is_any_source_bytes(fname):
+                                # Associate matched lines with sources, never headers
+                                recent_line_directive = line
                         elif re_mp_info.search(line):
-                            if recent_file:
-                                filtered_lines.append(recent_file)
-                                recent_file = None
+                            if recent_line_directive:
+                                filtered_lines.append(recent_line_directive)
+                                recent_line_directive = None
                             filtered_lines.append(line)
                     proc.wait()
                     if proc.returncode:
@@ -135,8 +146,6 @@ def process_file(f):
         m = re_line.match(line)
         if m:
             fname = m.group(1)
-            if not is_c_source(fname) and not is_cxx_source(fname):
-                continue
             if fname != last_fname:
                 write_out(last_fname, output)
                 output = []
