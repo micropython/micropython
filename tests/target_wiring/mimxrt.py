@@ -27,3 +27,10 @@ encoder_loopback_in_pins = ("D1", "D3")
 # CAN args assume no connection for single device tests
 can_args = (1,)
 can_kwargs = {}
+
+if "Teensy" in sys.implementation._machine:
+    i2c_loopback_controller_kwargs = {"scl": "A6", "sda": "A3"}  # D20/D17
+else:
+    i2c_loopback_controller_kwargs = {"scl": "D0", "sda": "D1"}
+i2c_loopback_target_args = (0,)  # pins 19/18 On Teensy 4.x
+i2c_loopback_target_kwargs = {}

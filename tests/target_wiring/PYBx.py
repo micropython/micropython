@@ -1,7 +1,9 @@
 # Target wiring for PYBV10, PYBV11, PYBLITEV10, PYBD_SF2, PYBD_SF3, PYBD_SF6.
 #
 # Connect:
-# - X1 to X2
+# - X1 to X2 (uart,pwm)
+# - X3 to X9 (i2c scl)
+# - X4 to X10 (i2c sda)
 
 # UART("XA") is on X1/X2  (usually UART(4) on PA0/PA1).
 uart_loopback_args = ("XA",)
@@ -14,3 +16,7 @@ can_args = (1,)
 can_kwargs = {}
 
 pwm_loopback_pins = [("X1", "X2")]
+
+i2c_loopback_controller_kwargs = {"scl": "X3", "sda": "X4"}
+i2c_loopback_target_args = ("X",)
+i2c_loopback_target_kwargs = {}
