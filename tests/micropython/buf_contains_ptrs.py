@@ -28,7 +28,8 @@ class A:
 
 def store(buf, offset):
     a = A()
-    addr = id(a) & ((1 << (8 * ptr_size)) - 1)
+    # id() isn't the address if the address doesn't fit in a small int.
+    addr = int(repr(a).split(" at ")[1][:-1], 16)
     buf[offset : offset + ptr_size] = addr.to_bytes(ptr_size, sys.byteorder)
     return weakref.ref(a)
 
