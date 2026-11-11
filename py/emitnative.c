@@ -2359,7 +2359,7 @@ static void emit_native_unary_op(emit_t *emit, mp_unary_op_t op) {
             emit_post_push_reg(emit, vtype, REG_RET);
         } else {
             EMIT_NATIVE_VIPER_TYPE_ERROR(emit,
-                MP_ERROR_TEXT("'not' not implemented"), mp_binary_op_method_name[op]);
+                MP_ERROR_TEXT("'not' not implemented"));
         }
     } else if (vtype == VTYPE_PYOBJ) {
         emit_pre_pop_reg(emit, &vtype, REG_ARG_2);
@@ -2409,7 +2409,7 @@ static void emit_native_binary_op(emit_t *emit, mp_binary_op_t op) {
             emit_pre_pop_reg_reg(emit, &vtype_rhs, REG_ARG_2, &vtype_lhs, REG_ARG_1);
             if (vtype_lhs != VTYPE_INT) {
                 EMIT_NATIVE_VIPER_TYPE_ERROR(emit,
-                    MP_ERROR_TEXT("div/mod not implemented for uint"), mp_binary_op_method_name[op]);
+                    MP_ERROR_TEXT("div/mod not implemented for uint"));
             }
             if (op == MP_BINARY_OP_FLOOR_DIVIDE) {
                 emit_call(emit, MP_F_SMALL_INT_FLOOR_DIVIDE);
@@ -2639,7 +2639,7 @@ static void emit_native_binary_op(emit_t *emit, mp_binary_op_t op) {
             // TODO other ops not yet implemented
             adjust_stack(emit, 1);
             EMIT_NATIVE_VIPER_TYPE_ERROR(emit,
-                MP_ERROR_TEXT("binary op %q not implemented"), mp_binary_op_method_name[op]);
+                MP_ERROR_TEXT("binary op %q not implemented"), (qstr)mp_binary_op_method_name[op]);
         }
     } else if (vtype_lhs == VTYPE_PYOBJ && vtype_rhs == VTYPE_PYOBJ) {
         emit_pre_pop_reg_reg(emit, &vtype_rhs, REG_ARG_3, &vtype_lhs, REG_ARG_2);
