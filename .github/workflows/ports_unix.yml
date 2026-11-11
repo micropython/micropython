@@ -275,7 +275,9 @@ jobs:
     - uses: actions/checkout@v7
     - uses: actions/setup-python@v7
       with:
-        python-version: '3.8'
+        # This is the only place where a similar version to the minimum noted in tests/README.md is currently
+        # tested. Actually specifying 3.8.2 here fails because macOS arm64 builds only start with 3.8.10.
+        python-version: '3.8.10'
     - name: Build
       run: tools/ci.sh unix_macos_build
     - name: Run tests
