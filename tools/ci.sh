@@ -363,8 +363,8 @@ function ci_psoc_edge_setup {
     # installing edgeprotecttools requires uninstalling some default Python packages
     # from the system, but then we need to reinstall pip so the binary is available
     # (as on recent Ubuntu it's uninstalled with python3-packaging.)
-    sudo apt remove python3-packaging python3-jsonschema python3-cryptography
-    sudo apt install python3-pip
+    sudo apt-get remove python3-packaging python3-jsonschema python3-cryptography
+    sudo apt-get install python3-pip
     sudo pip3 install edgeprotecttools
 
 }
