@@ -15,8 +15,8 @@ garbage collector.  This provides a safe way to clean up when objects are no lon
 needed.
 
 **Availability:** the weakref module requires ``MICROPY_PY_WEAKREF`` to be enabled
-at compile time.  It is enabled on the unix coverage variant and the webassembly
-pyscript variant.
+at compile time.  It is enabled on the unix port (except the minimal variant)
+and the webassembly pyscript variant.
 
 ref objects
 -----------
