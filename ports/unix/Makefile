@@ -193,6 +193,20 @@ CFLAGS += $(LIBFFI_CFLAGS) -DMICROPY_PY_FFI=1
 LDFLAGS += $(LIBFFI_LDFLAGS)
 endif
 
+# ---------------------------------------------------------------------
+# Optional: use system-provided MbedTLS instead of the bundled one
+# ---------------------------------------------------------------------
+ifeq ($(MICROPY_USE_SYSTEM_MBEDTLS),1)
+    MBEDTLS_CFLAGS := $(shell pkg-config --cflags mbedtls)
+    MBEDTLS_LDFLAGS := $(shell pkg-config --libs mbedtls)
+    CFLAGS += $(MBEDTLS_CFLAGS) -DMICROPY_USE_SYSTEM_MBEDTLS=1
+    LDFLAGS += $(MBEDTLS_LDFLAGS)
+else
+    MBEDTLS_DIR = $(TOP)/lib/mbedtls
+    include $(MBEDTLS_DIR)/Makefile
+endif
+
+
 ifeq ($(MICROPY_PY_JNI),1)
 # Path for 64-bit OpenJDK, should be adjusted for other JDKs
 CFLAGS += -I/usr/lib/jvm/java-7-openjdk-amd64/include -DMICROPY_PY_JNI=1
