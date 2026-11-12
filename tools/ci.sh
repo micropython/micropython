@@ -931,6 +931,16 @@ function ci_unix_32bit_setup {
     python3 --version
 }
 
+function ci_unix_coverage_gc_bitmap_build {
+    # Test the bitmap GC, using 32-bit table words to exercise the code used on 32-bit MCUs.
+    ci_unix_build_helper VARIANT=coverage CFLAGS_EXTRA="-DMICROPY_GC_IMPL=MICROPY_GC_IMPL_BITMAP -DMICROPY_GC_BITMAP_WORD_TYPE=uint32_t"
+    ci_unix_build_ffi_lib_helper gcc
+}
+
+function ci_unix_coverage_gc_bitmap_run_tests {
+    MICROPY_TEST_TIMEOUT=60 ci_unix_run_tests_full_helper coverage CFLAGS_EXTRA="-DMICROPY_GC_IMPL=MICROPY_GC_IMPL_BITMAP -DMICROPY_GC_BITMAP_WORD_TYPE=uint32_t"
+}
+
 function ci_unix_coverage_32bit_build {
     ci_unix_build_helper VARIANT=coverage "${CI_UNIX_OPTS_X86[@]}"
     ci_unix_build_ffi_lib_helper i686-linux-gnu-gcc

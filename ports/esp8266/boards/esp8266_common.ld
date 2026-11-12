@@ -99,6 +99,7 @@ SECTIONS
         *py/formatfloat.o*(.literal* .text*)
         *py/frozenmod.o*(.literal* .text*)
         *py/gc.o*(.literal* .text*)
+        *py/gc_common.o*(.literal* .text*)
         *py/reader*.o*(.literal* .text*)
         *py/lexer*.o*(.literal* .text*)
         *py/malloc*.o*(.literal* .text*)

@@ -700,6 +700,13 @@ typedef uint64_t mp_uint_t;
 #define MICROPY_OPT_MAP_LOOKUP_CACHE_SIZE (128)
 #endif
 
+// Allow allocations that contain no GC pointers (e.g. bytearray/array buffers)
+// to be tagged so the GC mark phase skips scanning their contents. Costs one
+// bit per heap block, and saves scanning large data buffers on every collection.
+#ifndef MICROPY_GC_ENABLE_CONTAINS_NO_GC_POINTERS
+#define MICROPY_GC_ENABLE_CONTAINS_NO_GC_POINTERS (0)
+#endif
+
 // Whether to use fast versions of bitwise operations (and, or, xor) when the
 // arguments are both positive.  Increases Thumb2 code size by about 250 bytes.
 #ifndef MICROPY_OPT_MPZ_BITWISE
@@ -768,6 +775,26 @@ typedef uint64_t mp_uint_t;
 // Whether to include the garbage collector
 #ifndef MICROPY_ENABLE_GC
 #define MICROPY_ENABLE_GC (0)
+#endif
+
+// Garbage collector implementation.  All implementations provide the API in
+// py/gc.h and are conservative, non-moving mark-sweep collectors, so they are
+// interchangeable without changes to any other code.
+// - CLASSIC (py/gc.c): 2-bit allocation table processed a block at a time.
+//   Smallest code and table size; best for small heaps.
+// - BITMAP (py/gc_bitmap.c): 1-bit-per-block tables processed a machine word
+//   at a time, with an overflow-free mark stack and heap area placement.
+//   Larger code; best for large heaps (e.g. megabytes of external RAM).
+#define MICROPY_GC_IMPL_CLASSIC (0)
+#define MICROPY_GC_IMPL_BITMAP (1)
+#ifndef MICROPY_GC_IMPL
+#define MICROPY_GC_IMPL (MICROPY_GC_IMPL_CLASSIC)
+#endif
+
+// With the BITMAP GC and a split heap, allocations of at least this many bytes
+// that contain no GC pointers are placed in GC_AREA_FLAG_EXTERNAL areas first.
+#ifndef MICROPY_GC_EXTERNAL_ALLOC_THRESHOLD
+#define MICROPY_GC_EXTERNAL_ALLOC_THRESHOLD (1024)
 #endif
 
 // Whether the garbage-collected heap can be split over multiple memory areas.
