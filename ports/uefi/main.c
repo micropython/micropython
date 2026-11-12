@@ -166,7 +166,8 @@ static bool char16_eq_ascii(const CHAR16 *w, const char *a) {
 // Arguments the app was launched with, as a CHAR16 argv where argv[0] is the script.
 // The EFI shell pre-parses them into ShellParameters (with argv[0] = our image name,
 // which we skip); the boot manager instead passes them raw in LoadedImage->LoadOptions
-// (a CHAR16 command line, script first) — which the shell path never sees.
+// (a CHAR16 command line, script first), which we only parse when there are no
+// ShellParameters.
 //
 // Leading `--serial`/`--console`/`--raw`/`--faux-soft` options are consumed here so
 // they don't reach sys.argv or get mistaken for a script:
@@ -186,9 +187,12 @@ static UINTN uefi_launch_argv(CHAR16 ***argv_out, bool *serial_out) {
     CHAR16 **argv;
     UINTN argc;
     EFI_SHELL_PARAMETERS_PROTOCOL *sp = uefi_shell_params();
-    if (sp != NULL && sp->Argc >= 2) {
+    if (sp != NULL) {
+        // Launched by the shell: its Argv is authoritative even with no arguments. The
+        // shell also puts the whole command line, our own image path included, in
+        // LoadOptions, so falling through to parse that would run the .efi as a script.
         argv = &sp->Argv[1];            // skip Argv[0] (our image name)
-        argc = sp->Argc - 1;
+        argc = sp->Argc > 0 ? sp->Argc - 1 : 0;
     } else {
         EFI_LOADED_IMAGE_PROTOCOL *li = NULL;
         static const EFI_GUID g_li = EFI_LOADED_IMAGE_PROTOCOL_GUID;

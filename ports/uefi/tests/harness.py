@@ -321,7 +321,10 @@ def run_repl(arch: str, timeout: int = 90) -> int:
 
 def run_runfile(arch: str, timeout: int = 60) -> int:
     """Launch the app from the shell with a script argument (`app.efi foo.py a b`)
-    and check the script runs with sys.argv set — the `python foo.py` path.
+    and check the script runs with sys.argv set — the `python foo.py` path. Then
+    launch it from the shell with no arguments and check it reaches the REPL (the
+    shell also passes its whole command line in LoadOptions, which must not be
+    mistaken for a script argument).
 
     Relies on the shell launching us (which installs EFI_SHELL_PARAMETERS_PROTOCOL);
     that's the aa64 auto-boot path (via startup.nsh). BootOrder isn't guaranteed to
@@ -345,24 +348,38 @@ def run_runfile(arch: str, timeout: int = 60) -> int:
     transcript = []
     try:
         ensure_shell_first(arch, tv.name, timeout)
-        (ESP / "startup.nsh").write_text(
-            "@echo -off\r\nFS0:\r\n\\EFI\\BOOT\\%s argtest.py alpha beta\r\n" % efi
-        )
-        cmd = _cmd_with_vars(arch, tv.name)
-        child = pexpect.spawn(
-            cmd[0], cmd[1:], timeout=timeout, encoding="utf-8", codec_errors="replace"
-        )
-        child.logfile_read = type(
-            "W", (), {"write": lambda _self, s: transcript.append(s), "flush": lambda _self: None}
-        )()
-        try:
-            child.expect_exact("ARGV ['argtest.py', 'alpha', 'beta']")
-            ok = True
-        except (pexpect.TIMEOUT, pexpect.EOF):
-            ok = False
-        finally:
-            if child.isalive():
-                child.terminate(force=True)
+        # (shell command line, what must appear, what must not appear first)
+        cases = [
+            (
+                "\\EFI\\BOOT\\%s argtest.py alpha beta" % efi,
+                "ARGV ['argtest.py', 'alpha', 'beta']",
+                None,
+            ),
+            ("\\EFI\\BOOT\\%s" % efi, ">>> ", "Traceback"),
+        ]
+        ok = True
+        for line, want, bad in cases:
+            (ESP / "startup.nsh").write_text("@echo -off\r\nFS0:\r\n%s\r\n" % line)
+            cmd = _cmd_with_vars(arch, tv.name)
+            child = pexpect.spawn(
+                cmd[0], cmd[1:], timeout=timeout, encoding="utf-8", codec_errors="replace"
+            )
+            child.logfile_read = type(
+                "W",
+                (),
+                {"write": lambda _self, s: transcript.append(s), "flush": lambda _self: None},
+            )()
+            try:
+                pats = [want] + ([bad] if bad else [])
+                if child.expect_exact(pats) != 0:
+                    print(f"runfile: `{line}` produced {bad!r}")
+                    ok = False
+            except (pexpect.TIMEOUT, pexpect.EOF):
+                print(f"runfile: `{line}` never produced {want!r}")
+                ok = False
+            finally:
+                if child.isalive():
+                    child.terminate(force=True)
     finally:
         (ESP / "startup.nsh").write_text(normal_nsh)  # restore normal auto-launch
         try:
@@ -375,7 +392,7 @@ def run_runfile(arch: str, timeout: int = 60) -> int:
             pass
 
     if ok:
-        print(f"PASS (runfile {arch}): script ran with sys.argv")
+        print(f"PASS (runfile {arch}): script ran with sys.argv; bare launch reached the REPL")
         return 0
     print(f"FAIL (runfile {arch}): script did not run as expected")
     print(_tail("".join(transcript), 40))
