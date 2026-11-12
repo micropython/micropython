@@ -73,13 +73,13 @@ def mount_all_filesystems():
     for fs_str in FileSystem.fstab():
         if fs_str == _FLASH:
             continue
-        fs = FileSystem(fs_str)
         try:
+            fs = FileSystem(fs_str)
             vfs.mount(fs, fs_str)
             sys.path.append(f"{fs_str}/lib")
             os.chdir(fs_str)
             retval = True
-        except OSError as e:
+        except (OSError, RuntimeError) as e:
             print(f"Error mounting {fs_str}: {e}")
     return retval
 
@@ -89,13 +89,13 @@ def mount_all_disks():
     retval = False
     for da_name in DiskAccess.disks:
         mount_name = f"/{da_name.lower()}"
-        da = DiskAccess(da_name)
         try:
+            da = DiskAccess(da_name)
             vfs.mount(da, mount_name)
             sys.path.append(f"{mount_name}/lib")
             os.chdir(mount_name)
             retval = True
-        except OSError as e:
+        except (OSError, ValueError) as e:
             print(f"Error mounting {da_name}: {e}")
     return retval
 

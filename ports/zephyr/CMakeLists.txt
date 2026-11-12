@@ -184,6 +184,10 @@ zephyr_library_compile_definitions(
 zephyr_library_sources(${MICROPY_SOURCE_QSTR})
 zephyr_library_link_libraries(kernel)
 
+if (CONFIG_MICROPY_ROM_TEXT_COMPRESSION)
+    set(MICROPY_ROM_TEXT_COMPRESSION ON)
+endif()
+
 include(${MICROPY_DIR}/py/mkrules.cmake)
 
 add_dependencies(BUILD_VERSION_HEADER zephyr_generated_headers)
