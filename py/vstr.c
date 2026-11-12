@@ -111,7 +111,11 @@ static void vstr_ensure_extra(vstr_t *vstr, size_t size) {
             // be there, so the only safe option is to raise an exception.
             mp_raise_msg(&mp_type_RuntimeError, NULL);
         }
-        size_t new_alloc = ROUND_ALLOC((vstr->len + size) + 16);
+        size_t needed = (vstr->len + size) + 16;
+        #if MICROPY_ALLOC_VSTR_GROWTH_SHIFT > 0
+        needed = MAX(needed, vstr->alloc + (vstr->alloc >> MICROPY_ALLOC_VSTR_GROWTH_SHIFT));
+        #endif
+        size_t new_alloc = ROUND_ALLOC(needed);
         char *new_buf = m_renew(char, vstr->buf, vstr->alloc, new_alloc);
         vstr->alloc = new_alloc;
         vstr->buf = new_buf;
