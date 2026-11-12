@@ -1,0 +1,22 @@
+{
+    "deploy": [
+        "../deploy_nativeusb.md"
+    ],
+    "deploy_options": {
+        "flash_offset": "0"
+    },
+    "docs": "",
+    "features": [
+        "BLE",
+        "CAN",
+        "External Flash",
+        "External RAM",
+        "USB-C",
+        "WiFi"
+    ],
+    "mcu": "esp32s3",
+    "product": "T-2CAN",
+    "thumbnail": "",
+    "url": "https://lilygo.cc/products/t-2can",
+    "vendor": "LILYGO"
+}

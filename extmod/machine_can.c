@@ -28,6 +28,7 @@
 
 #if MICROPY_PY_MACHINE_CAN
 
+#include <limits.h>
 #include <stdlib.h>
 #include <string.h>
 #include "extmod/modmachine.h"
@@ -69,6 +70,18 @@
 #endif
 #ifndef CAN_SJW_MAX
 #define CAN_SJW_MAX 4
+#endif
+// The calculated prescaler must be a multiple of this. Ports whose hardware only
+// supports certain prescaler steps (e.g. even values on esp32) override this.
+#ifndef CAN_BRP_GRANULARITY
+#define CAN_BRP_GRANULARITY 1
+#endif
+
+MP_STATIC_ASSERT(CAN_BRP_MAX <= UINT16_MAX);
+
+// Some ports use task-only driver APIs to recreate or reconfigure a node.
+#ifndef CAN_CHECK_RECONFIGURE
+#define CAN_CHECK_RECONFIGURE() ((void)0)
 #endif
 
 #if MICROPY_HW_ENABLE_FDCAN
@@ -131,11 +144,23 @@ static int calculate_brp(int bitrate_nom, int f_clock, int *tseg1, int *tseg2, i
     (void)is_fd_brs;
     #endif
 
+    // Explicit segments must not let an impossible bitrate silently clamp to
+    // the nearest prescaler. Use the hardware's achievable timing envelope.
+    int ts_min = find_tseg ? 1 + tseg1_min + tseg2_min : 1 + *tseg1 + *tseg2;
+    int ts_max = find_tseg ? 1 + tseg1_max + tseg2_max : ts_min;
+    if (bitrate_nom < f_clock / brp_max / ts_max
+        || bitrate_nom > f_clock / brp_min / ts_min) {
+        mp_raise_ValueError(MP_ERROR_TEXT("bitrate out of range"));
+    }
+
     int brp_best = brp_min;
     int best_bitrate_err = bitrate_nom; // best case deviation from bitrate_nom, start at max
     int best_sample_err = 10000; // Units of .01%, start at max
 
     for (int brp = brp_max; brp >= brp_min; brp--) {
+        if (brp % CAN_BRP_GRANULARITY) {
+            continue; // prescaler value not supported by the hardware
+        }
         unsigned scaled_clock = f_clock / brp;
 
         if (find_tseg) {
@@ -207,6 +232,7 @@ static int machine_can_get_actual_bitrate(machine_can_obj_t *self) {
 }
 
 static mp_obj_t machine_can_deinit(mp_obj_t self_in) {
+    CAN_CHECK_RECONFIGURE();
     machine_can_obj_t *self = MP_OBJ_TO_PTR(self_in);
     // Each CAN instance should have at most one peripheral object
     assert(self == MP_STATE_PORT(machine_can_objs)[self->can_idx]);
@@ -222,6 +248,7 @@ static mp_obj_t machine_can_deinit(mp_obj_t self_in) {
 static MP_DEFINE_CONST_FUN_OBJ_1(machine_can_deinit_obj, machine_can_deinit);
 
 static void machine_can_init_helper(machine_can_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    CAN_CHECK_RECONFIGURE();
     enum { ARG_bitrate, ARG_mode, ARG_sample_point, ARG_sjw, ARG_tseg1, ARG_tseg2};
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_bitrate, MP_ARG_INT | MP_ARG_REQUIRED },
@@ -237,7 +264,11 @@ static void machine_can_init_helper(machine_can_obj_t *self, size_t n_args, cons
 
     // Verify arguments
 
-    int bitrate_nom = args[ARG_bitrate].u_int;
+    mp_int_t bitrate_arg = args[ARG_bitrate].u_int;
+    if (bitrate_arg <= 0 || bitrate_arg > INT_MAX) {
+        mp_raise_ValueError(MP_ERROR_TEXT("bitrate out of range"));
+    }
+    int bitrate_nom = bitrate_arg;
 
     machine_can_mode_t mode = args[ARG_mode].u_int;
     if (mode >= MP_CAN_MODE_MAX || !machine_can_port_supports_mode(self, mode)) {
@@ -521,6 +552,7 @@ static mp_obj_t machine_can_recv(size_t n_args, const mp_obj_t *args) {
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_can_recv_obj, 1, 2, machine_can_recv);
 
 static mp_obj_t machine_can_set_filters(mp_obj_t self_in, mp_obj_t filters) {
+    CAN_CHECK_RECONFIGURE();
     machine_can_obj_t *self = MP_OBJ_TO_PTR(self_in);
     machine_can_check_initialised(self);
     mp_obj_iter_buf_t iter_buf;
@@ -631,6 +663,7 @@ static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_can_get_timings_obj, 1, 2, ma
 
 
 static mp_obj_t machine_can_restart(mp_obj_t self_in) {
+    CAN_CHECK_RECONFIGURE();
     machine_can_obj_t *self = MP_OBJ_TO_PTR(self_in);
     machine_can_check_initialised(self);
     machine_can_port_restart(self);
