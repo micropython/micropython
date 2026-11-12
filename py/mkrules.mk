@@ -273,6 +273,22 @@ clean-prog:
 .PHONY: clean-prog
 endif
 
+# "make sbom" writes SPDX and CycloneDX SBOMs for the linked image (tools/sbom.py).
+# Ports with other image names or several images per build dir set SBOM_IMAGE and SBOM_DIR.
+SBOM_IMAGE ?= $(BUILD)/$(if $(PROG),$(PROG),firmware.elf)
+SBOM_DIR ?= $(BUILD)
+SBOM_TOOL ?= uv run --script $(TOP)/tools/sbom.py
+
+# User C module objects are built as $(BUILD)/<module dir name>/<file>.o
+sbom: $(SBOM_IMAGE)
+	$(ECHO) "SBOM $(SBOM_DIR)/sbom.*.json"
+	$(Q)$(SBOM_TOOL) $(or $(firstword $(wildcard $(SBOM_IMAGE).map $(patsubst %.elf,%.map,$(filter %.elf,$(SBOM_IMAGE))))),$(error no linker map for $(SBOM_IMAGE))) \
+		--spdx $(SBOM_DIR)/sbom.spdx.json --cyclonedx $(SBOM_DIR)/sbom.cdx.json \
+		$(addprefix --src-root ,$(USERMOD_DIR_PARENTS) $(USERMOD_DIRS)) $(SBOM_FLAGS) \
+		$(if $(FROZEN_MANIFEST),--frozen $(FROZEN_MANIFEST) $(MANIFEST_VARIABLES))
+
+.PHONY: sbom
+
 # If available, do blobless partial clones of submodules to save time and space.
 # A blobless partial clone lazily fetches data as needed, but has all the metadata available (tags, etc.).
 # Fallback to standard submodule update if blobless isn't available (earlier than 2.36.0)
