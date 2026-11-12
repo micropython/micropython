@@ -106,6 +106,7 @@ the following libraries.
    micropython.rst
    neopixel.rst
    network.rst
+   npu.rst
    openamp.rst
    uctypes.rst
    vfs.rst

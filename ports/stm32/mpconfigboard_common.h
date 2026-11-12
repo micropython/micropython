@@ -724,6 +724,11 @@ void mp_usbd_ll_init(void);
 #define MICROPY_HW_SPIFLASH_ENABLE_CACHE (0)
 #endif
 
+// How much PSRAM, at its top, to reserve for the npu module's models.
+#ifndef MICROPY_HW_NPU_PSRAM_SIZE
+#define MICROPY_HW_NPU_PSRAM_SIZE (16 * 1024 * 1024)
+#endif
+
 // Enable the storage sub-system if a block device is defined
 #if defined(MICROPY_HW_BDEV_IOCTL)
 #define MICROPY_HW_ENABLE_STORAGE (1)

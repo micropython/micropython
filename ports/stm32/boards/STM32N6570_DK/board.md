@@ -91,3 +91,13 @@ firmware at 0x70080000 (512KB into the flash, immediately after mboot).
 This approach works regardless of whether the USB DFU device enumerates correctly, and
 is especially useful on Rev code B boards where the signing header version or alignment
 settings may need to be adjusted first.
+
+## NPU variant
+
+Building with `BOARD_VARIANT=NPU` enables the `npu` module for the STM32N6's NPU, which
+needs ST Edge AI Core (see the `npu` module's documentation).  AXISRAM3-6 and the NPU
+cache RAM are then reserved for the NPU instead of being part of the heap.  This variant
+also has a 32MB ROMFS partition at the top of the SPI flash, so models can be used in
+place from flash, and the filesystem shrinks from 124MB to 92MB.  Switching to or from
+this variant changes the filesystem's size, so back up its files first, then format the
+filesystem after flashing and copy them back.

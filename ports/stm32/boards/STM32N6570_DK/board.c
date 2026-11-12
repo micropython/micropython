@@ -33,6 +33,18 @@
 #define BSEC_HW_CONFIG_ID       (124U)
 #define BSEC_HWS_HSLV_VDDIO3    (1U << 15)
 
+// Select the VDDCORE SMPS's overdrive voltage (PF4 high), which the 800MHz CPU clock needs.
+// Inlined so that it runs from RAM in board_leave_standby().
+static inline MP_ALWAYSINLINE void board_vddcore_overdrive(void) {
+    LL_AHB4_GRP1_EnableClock(LL_AHB4_GRP1_PERIPH_GPIOF);
+    GPIOF->BSRR = 1 << 4;
+    GPIOF->MODER = (GPIOF->MODER & ~GPIO_MODER_MODE4_Msk) | GPIO_MODER_MODE4_0;
+    LL_PWR_SetRegulVoltageScaling(LL_PWR_REGU_VOLTAGE_SCALE0);
+    // Wait for VOSRDY, but don't hang if it never comes (SysTick may not be running yet).
+    for (volatile uint32_t i = 0; i < 1000000 && !LL_PWR_IsActiveFlag_VOSRDY(); ++i) {
+    }
+}
+
 static void board_config_vdd(void) {
     // TODO: move some of the below code to a common location for all N6 boards?
 
@@ -40,6 +52,7 @@ static void board_config_vdd(void) {
     LL_AHB4_GRP1_EnableClock(LL_AHB4_GRP1_PERIPH_PWR);
     LL_APB4_GRP2_EnableClock(LL_APB4_GRP2_PERIPH_BSEC);
     LL_APB4_GRP2_EnableClock(LL_APB4_GRP2_PERIPH_SYSCFG);
+    board_vddcore_overdrive();
 
     // Program high speed IO optimization fuses if they aren't already set.
     uint32_t fuse;
@@ -101,6 +114,7 @@ void board_leave_standby(void) {
     LL_AHB4_GRP1_EnableClock(LL_AHB4_GRP1_PERIPH_PWR);
     LL_APB4_GRP2_EnableClock(LL_APB4_GRP2_PERIPH_BSEC);
     LL_APB4_GRP2_EnableClock(LL_APB4_GRP2_PERIPH_SYSCFG);
+    board_vddcore_overdrive();
 
     // Configure VDDIO2.
     LL_PWR_EnableVddIO2();
