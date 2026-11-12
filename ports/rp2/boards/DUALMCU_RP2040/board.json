@@ -1,0 +1,19 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "Dual-core",
+        "External Flash",
+        "USB"
+    ],
+    "images": [
+        "https://uelectronics.com/wp-content/uploads/2023/03/AR3578-UNIT-DualMCU-ESP32-RP2040-6.jpg"
+    ],
+    "mcu": "rp2040",
+    "product": "DualMCU RP2040 + ESP32",
+    "thumbnail": "",
+    "url": "https://uelectronics.com/producto/unit-dualmcu-esp32-rp2040-tarjeta-de-desarrollo/",
+    "vendor": "UNIT Electronics"
+}
