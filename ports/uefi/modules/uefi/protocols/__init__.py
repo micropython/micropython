@@ -15,6 +15,7 @@ from .block_io import BLOCK_IO, BLOCK_IO_MEDIA
 from .simple_fs import SIMPLE_FS
 from .gop import GOP, GOP_MODE, GOP_INFO
 from .pci_io import PCI_IO
+from .cpu_io2 import CPU_IO2
 from .serial_io import SERIAL_IO, SERIAL_IO_MODE
 from .timestamp import TIMESTAMP
 from .component_name import COMPONENT_NAME, COMPONENT_NAME2

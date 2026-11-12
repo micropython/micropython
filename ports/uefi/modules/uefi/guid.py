@@ -57,6 +57,7 @@ _NAME_TO_GUID = {
     "DEVICE_PATH_UTILITIES_PROTOCOL": GUID("0379be4e-d706-437d-b037-edb82fb772a4"),
     "PCI_IO_PROTOCOL": GUID("4cf5b200-68b8-4ca5-9eec-b23e3f50029a"),
     "PCI_ROOT_BRIDGE_IO_PROTOCOL": GUID("2f707ebb-4a1a-11d4-9a38-0090273fc14d"),
+    "CPU_IO2_PROTOCOL": GUID("ad61f191-ae5f-4c0e-b9fa-e869d288c64f"),
     "USB_IO_PROTOCOL": GUID("2b2f68d6-0cd2-44cf-8e8b-bba20b1b5b75"),
     "USB2_HC_PROTOCOL": GUID("3e745226-9818-45b6-a2ac-d7cd0e8ba2bc"),
     # Image & driver model (the GUIDs `dh`/`drivers`/`devices` key on)

@@ -115,7 +115,18 @@ Importable from ``uefi.protocols``:
 
 .. data:: PCI_IO
 
-    ``EFI_PCI_IO_PROTOCOL``.
+    ``EFI_PCI_IO_PROTOCOL``.  ``poll_mem``/``poll_io`` take ``(width, bar, offset,
+    mask, value, delay)`` (``delay`` in 100 ns units) and return the last value read;
+    a poll that never matches raises :exc:`uefi.Error` with ``EFI_TIMEOUT``.
+
+.. data:: CPU_IO2
+
+    ``EFI_CPU_IO2_PROTOCOL``: firmware-arbitrated memory and port I/O.  Each of
+    ``mem_read``, ``mem_write``, ``io_read`` and ``io_write`` takes ``(width, address,
+    count, buffer)``, with ``width`` 0-3 for 8/16/32/64-bit access (add 4 for the
+    *Fifo* form, which repeats one address, or 8 for the *Fill* form).  This is the
+    route to x86 port I/O; for plain MMIO, :data:`machine.mem32` and friends are a
+    bare load or store and much cheaper.
 
 .. data:: SERIAL_IO
           SERIAL_IO_MODE
