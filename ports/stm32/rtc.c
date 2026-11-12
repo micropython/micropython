@@ -895,7 +895,7 @@ mp_obj_t pyb_rtc_wakeup(size_t n_args, const mp_obj_t *args) {
         #if defined(STM32G0) || defined(STM32G4) || defined(STM32H5) || defined(STM32L4) || defined(STM32N6) || defined(STM32U5) || defined(STM32WB) || defined(STM32WL)
         EXTI->IMR1 &= ~(1 << EXTI_RTC_WAKEUP);
         #elif defined(STM32H7)
-        EXTI_D1->IMR1 |= 1 << EXTI_RTC_WAKEUP;
+        EXTI_D1->IMR1 &= ~(1 << EXTI_RTC_WAKEUP);
         #else
         EXTI->IMR &= ~(1 << EXTI_RTC_WAKEUP);
         #endif
