@@ -188,7 +188,7 @@ int mp_os_dupterm_tx_strn(const char *str, size_t len) {
             int errcode = 0;
             const mp_stream_p_t *stream_p = mp_get_stream(MP_STATE_VM(dupterm_objs[idx]));
             mp_uint_t written = stream_p->write(MP_STATE_VM(dupterm_objs[idx]), str, len, &errcode);
-            int write_res = MAX(0, written);
+            int write_res = (written == MP_STREAM_ERROR) ? 0 : (int)written;
             ret = MIN(write_res, ret);
             continue;
         }
