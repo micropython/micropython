@@ -1,0 +1,7 @@
+--- instance0 ---
+server running
+recv: b'hello drain'
+done
+--- instance1 ---
+wrote
+drained
