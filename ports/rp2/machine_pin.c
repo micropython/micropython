@@ -272,6 +272,10 @@ static mp_obj_t machine_pin_obj_init_helper(const machine_pin_obj_t *self, size_
         mp_int_t mode = mp_obj_get_int(args[ARG_mode].u_obj);
         if (is_ext_pin(self)) {
             #if MICROPY_HW_PIN_EXT_COUNT
+            #if MICROPY_PY_NETWORK_CYW43
+            // Bring the cyw43 up before configuring one of its GPIOs.
+            rp2_cyw43_ensure_init();
+            #endif
             // The regular Pins are const, but the external pins are mutable.
             machine_pin_obj_t *mutable_self = (machine_pin_obj_t *)self;
             machine_pin_ext_config(mutable_self, mode, value);
