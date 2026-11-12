@@ -289,6 +289,14 @@ typedef uint64_t mp_uint_t;
 #define MICROPY_ALLOC_QSTR_CHUNK_INIT (128)
 #endif
 
+// A vstr that outgrows its buffer grows to at least alloc + (alloc >> shift):
+// 3 is +12.5% per growth, so building a large string (json.dumps, formatting)
+// takes O(log n) reallocations instead of one per 16 bytes. 0 keeps exact
+// growth of what is needed plus 16 bytes, which uses the least RAM.
+#ifndef MICROPY_ALLOC_VSTR_GROWTH_SHIFT
+#define MICROPY_ALLOC_VSTR_GROWTH_SHIFT (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES ? 3 : 0)
+#endif
+
 // Initial amount for lexer indentation level
 #ifndef MICROPY_ALLOC_LEXER_INDENT_INIT
 #define MICROPY_ALLOC_LEXER_INDENT_INIT (10)
