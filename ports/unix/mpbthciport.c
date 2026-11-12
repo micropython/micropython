@@ -44,6 +44,7 @@
 #include <fcntl.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 
 #define DEBUG_printf(...) // printf(__VA_ARGS__)
 
@@ -147,7 +148,12 @@ static int configure_uart(void) {
     toptions.c_cflag |= CRTSCTS;
 
     // 1Mbit (TODO: make this configurable).
+    #ifdef B1000000
     speed_t brate = B1000000;
+    #else
+    // macOS doesn't have B1000000, use B230400 as fallback
+    speed_t brate = B230400;
+    #endif
     cfsetospeed(&toptions, brate);
     cfsetispeed(&toptions, brate);
 
