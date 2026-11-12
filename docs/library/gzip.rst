@@ -31,42 +31,41 @@ file format.
 Functions
 ---------
 
-.. function:: open(filename, mode, /)
+.. function:: open(filename, mode='rb')
 
    Wrapper around built-in :func:`open` returning a GzipFile instance.
 
-.. function:: decompress(data, /)
+.. function:: decompress(data)
 
    Decompresses *data* into a bytes object.
 
-.. function:: compress(data, /)
+.. function:: compress(data)
 
    Compresses *data* into a bytes object.
 
 Classes
 -------
 
-.. class:: GzipFile(*, fileobj, mode)
+.. class:: GzipFile(fileobj)
 
    This class can be used to wrap a *fileobj* which is any
    :term:`stream-like <stream>` object such as a file, socket, or stream
    (including :class:`io.BytesIO`). It is itself a stream and implements the
    standard read/readinto/write/close methods.
 
-   When the *mode* argument is ``"rb"``, reads from the GzipFile instance will
-   decompress the data in the underlying stream and return decompressed data.
+   Reads from the GzipFile instance will decompress the data in the
+   underlying stream and return decompressed data.
 
-   If compression support is enabled then the *mode* argument can be set to
-   ``"wb"``, and writes to the GzipFile instance will be compressed and written
-   to the underlying stream.
+   If compression support is enabled, writes to the GzipFile instance will
+   be compressed and written to the underlying stream.
 
    By default the GzipFile class will read and write data using the gzip file
    format, including a header and footer with checksum and a window size of 512
    bytes.
 
    The **file**, **compresslevel**, and **mtime** arguments are not
-   supported. **fileobj** and **mode** must always be specified as keyword
-   arguments.
+   supported. There is no **mode** argument; the GzipFile instance supports
+   both reading and writing, depending on how it is used.
 
 Examples
 --------
@@ -80,7 +79,7 @@ file from storage:
 
    # Reading:
    with open("data.gz", "rb") as f:
-       with gzip.GzipFile(fileobj=f, mode="rb") as g:
+       with gzip.GzipFile(fileobj=f) as g:
            # Use g.read(), g.readinto(), etc.
 
     # Same, but using gzip.open:
@@ -89,7 +88,7 @@ file from storage:
 
    # Writing:
    with open("data.gz", "wb") as f:
-       with gzip.GzipFile(fileobj=f, mode="wb") as g:
+       with gzip.GzipFile(fileobj=f) as g:
            # Use g.write(...) etc
 
    # Same, but using gzip.open:

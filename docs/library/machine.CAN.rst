@@ -346,7 +346,7 @@ Methods
    the `CAN.STATE_BUS_OFF` state can only be recovered by calling
    :func:`CAN.restart()`.
 
-.. method:: CAN.get_counters(list=None /)
+.. method:: CAN.get_counters(list=None, /)
 
    Returns controller's error counter values. The result is a list of eight
    values. If the optional *list* parameter is specified then the provided
@@ -373,7 +373,7 @@ Methods
             number of pending RX messages. They will report a
             number > 0, if messages are pending.
 
-.. method:: CAN.get_timings(list=None /)
+.. method:: CAN.get_timings(list=None, /)
 
    Returns a list of elements indicating the current timings configured in the
    CAN controller. This can be used to verify timings for debugging purposes.
