@@ -1,4 +1,4 @@
-# Target wiring for general esp32 board.
+# Target wiring for esp32 boards.
 #
 # Connect:
 # - pin_1a to pin_1b (uart, pwm, encoder, i2c_scl)
@@ -11,10 +11,45 @@ if ("ESP32-C" in sys.implementation._machine) or ("ESP32-H2" in sys.implementati
 else:
     spi_standalone_args_list = [(1,), (2,)]
 
+
+# For example: build="ESP32_GENERIC" for "ESP32_GENERIC-SPIRAM"
+_build, _, _variant = sys.implementation._build.partition("-")
+if (
+    _build
+    in (
+        "ESP32_GENERIC",  # ESP32-DevKitC V4, https://docs.espressif.com/projects/esp-dev-kits/en/latest/esp32/_images/esp32_devkitC_v4_pinlayout.png
+    )
+):
+    pin_2a = 12
+    pin_2b = 13
+elif (
+    _build
+    in (
+        "ESP32_GENERIC_H2",  # ESP32-H2-DevKitM-1-N4S, https://docs.espressif.com/projects/esp-dev-kits/en/latest/esp32h2/_images/esp32-h2-devkitm-1-v1.2_pinlayout.png
+        "ESP32_GENERIC_S2",  # ESP32-S2-DevKitC-1-N8R2, https://docs.espressif.com/projects/esp-dev-kits/en/latest/esp32s2/_images/esp32-s2-devkitc-1-v1-pinout.png
+        "ESP32_GENERIC_S3",  # ESP32-S3-DevKitC-1-N8R8, https://docs.espressif.com/projects/esp-dev-kits/en/latest/esp32s3/_images/ESP32-S3_DevKitC-1_pinlayout_v1.1.jpg
+    )
+):
+    pin_2a = 10
+    pin_2b = 11
+elif (
+    _build
+    in (
+        "ESP32_GENERIC_C2",  # ESP8684-DevKitC-02, https://docs.espressif.com/projects/esp-dev-kits/en/latest/esp32c2/_images/esp8684-devkitc-02-pinout_v1.0.png
+        "ESP32_GENERIC_C3",  # ESP32-C3-DevKitC-02, https://docs.espressif.com/projects/esp-idf/en/v5.2/esp32c3/_images/esp32-c3-devkitc-02-v1-pinout.png
+        "ESP32_GENERIC_C5",  # ESP32-C5-DevKitC-1-N8R8, https://docs.espressif.com/projects/esp-dev-kits/en/latest/esp32c5/_images/esp32-c5-devkitc-1-pin-layout_v1.2.png
+        "ESP32_GENERIC_C6",  # ESP32-C6-DevKitC-1-N8, https://docs.espressif.com/projects/esp-dev-kits/en/latest/esp32c6/_images/esp32-c6-devkitc-1-pin-layout.png
+    )
+):
+    pin_2a = 6
+    pin_2b = 7
+else:
+    pin_2a = 6
+    pin_2b = 7
+
 pin_1a = 4
 pin_1b = 5
-pin_2a = 6
-pin_2b = 7
+
 
 uart_loopback_args = (1,)
 uart_loopback_kwargs = {"tx": pin_1a, "rx": pin_1b}
