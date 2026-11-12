@@ -1,0 +1,15 @@
+reader waiting
+writer waiting
+writer timed out
+reader got: b'pong'
+case 1 ok: b'pong'
+writer waiting
+reader waiting
+reader timed out
+writer drained
+case 2 ok: b'hello'
+reader waiting
+writer waiting
+writer cancelled
+reader got: b'ping'
+case 3 ok: b'ping'
