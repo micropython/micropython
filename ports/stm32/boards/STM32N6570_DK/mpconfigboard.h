@@ -13,6 +13,7 @@
 #define MICROPY_HW_ENABLE_RTC                   (1)
 #define MICROPY_HW_ENABLE_DAC                   (0)
 #define MICROPY_HW_ENABLE_USB                   (1)
+#define MICROPY_HW_ENABLE_SDCARD                (1)
 #define MICROPY_PY_PYB_LEGACY                   (0)
 
 #define MICROPY_BOARD_EARLY_INIT                board_early_init
@@ -42,14 +43,22 @@
 // UART buses
 #define MICROPY_HW_UART1_TX                     (pyb_pin_UART1_TX)
 #define MICROPY_HW_UART1_RX                     (pyb_pin_UART1_RX)
+#define MICROPY_HW_UART2_TX                     (pyb_pin_UART2_TX) // Arduino D1
+#define MICROPY_HW_UART2_RX                     (pyb_pin_UART2_RX) // Arduino D0
 #define MICROPY_HW_UART_REPL                    (PYB_UART_1)
 #define MICROPY_HW_UART_REPL_BAUD               (115200)
 
 // I2C buses
-#define MICROPY_HW_I2C1_SCL                     (pyb_pin_I2C1_SCL)
-#define MICROPY_HW_I2C1_SDA                     (pyb_pin_I2C1_SDA)
+#define MICROPY_HW_I2C1_SCL                     (pyb_pin_I2C1_SCL) // Arduino D15
+#define MICROPY_HW_I2C1_SDA                     (pyb_pin_I2C1_SDA) // Arduino D14
 #define MICROPY_HW_I2C2_SCL                     (pyb_pin_I2C2_SCL)
 #define MICROPY_HW_I2C2_SDA                     (pyb_pin_I2C2_SDA)
+
+// SPI buses
+#define MICROPY_HW_SPI5_NSS                     (pyb_pin_SPI5_CS)   // Arduino D10
+#define MICROPY_HW_SPI5_SCK                     (pyb_pin_SPI5_SCK)  // Arduino D13
+#define MICROPY_HW_SPI5_MISO                    (pyb_pin_SPI5_MISO) // Arduino D12
+#define MICROPY_HW_SPI5_MOSI                    (pyb_pin_SPI5_MOSI) // Arduino D11
 
 // Pressing the USER1 button makes the input go high.
 #define MICROPY_HW_USRSW_PIN                    (pyb_pin_BUTTON)
@@ -63,10 +72,44 @@
 #define MICROPY_HW_LED_ON(pin)                  ((pin) == pyb_pin_LED_GREEN ? mp_hal_pin_high(pin) : mp_hal_pin_low(pin))
 #define MICROPY_HW_LED_OFF(pin)                 ((pin) == pyb_pin_LED_GREEN ? mp_hal_pin_low(pin) : mp_hal_pin_high(pin))
 
+// SD card on SDMMC2, with its pins in the VDDIO5 domain, which SD_SEL switches to 1.8V.
+#define MICROPY_HW_SDCARD_SDMMC                 (2)
+#define MICROPY_HW_SDCARD_VSELECT_PIN           (pyb_pin_SD_SEL)
+#define MICROPY_HW_SDCARD_RESET_PIN             (pyb_pin_PWR_SD_EN)
+#define MICROPY_HW_SDCARD_UHS_SWITCH_PATTERN    (SDMMC_SDR104_SWITCH_PATTERN)
+#define MICROPY_HW_SDCARD_UHS_CLK_DIV           (0)
+#define MICROPY_HW_SDCARD_CK                    (pyb_pin_SD_SDIO_CK)
+#define MICROPY_HW_SDCARD_CMD                   (pyb_pin_SD_SDIO_CMD)
+#define MICROPY_HW_SDCARD_D0                    (pyb_pin_SD_SDIO_D0)
+#define MICROPY_HW_SDCARD_D1                    (pyb_pin_SD_SDIO_D1)
+#define MICROPY_HW_SDCARD_D2                    (pyb_pin_SD_SDIO_D2)
+#define MICROPY_HW_SDCARD_D3                    (pyb_pin_SD_SDIO_D3)
+#define MICROPY_HW_SDCARD_DETECT_PIN            (pyb_pin_SD_DETECT)
+#define MICROPY_HW_SDCARD_DETECT_PULL           (GPIO_NOPULL)
+#define MICROPY_HW_SDCARD_DETECT_PRESENT        (GPIO_PIN_RESET)
+
 // USB config
 #define MICROPY_HW_USB_HS                       (1)
 #define MICROPY_HW_USB_HS_IN_FS                 (1)
 #define MICROPY_HW_USB_MAIN_DEV                 (USB_PHY_HS_ID)
+
+// Ethernet via RGMII, to a RTL8211F PHY.
+#define NETWORK_LAN_PHY                         (ETH_PHY_RTL8211)
+#define MICROPY_HW_ETH_MDC                      (pin_D1)
+#define MICROPY_HW_ETH_MDIO                     (pin_D12)
+#define MICROPY_HW_ETH_RGMII_CLK125             (pin_F2)
+#define MICROPY_HW_ETH_RGMII_GTX_CLK            (pin_F0)
+#define MICROPY_HW_ETH_RGMII_TXD0               (pin_F12)
+#define MICROPY_HW_ETH_RGMII_TXD1               (pin_F13)
+#define MICROPY_HW_ETH_RGMII_TXD2               (pin_G3)
+#define MICROPY_HW_ETH_RGMII_TXD3               (pin_G4)
+#define MICROPY_HW_ETH_RGMII_TX_CTL             (pin_F11)
+#define MICROPY_HW_ETH_RGMII_RX_CLK             (pin_F7)
+#define MICROPY_HW_ETH_RGMII_RXD0               (pin_F14)
+#define MICROPY_HW_ETH_RGMII_RXD1               (pin_F15)
+#define MICROPY_HW_ETH_RGMII_RXD2               (pin_F8)
+#define MICROPY_HW_ETH_RGMII_RXD3               (pin_F9)
+#define MICROPY_HW_ETH_RGMII_RX_CTL             (pin_F10)
 
 /******************************************************************************/
 // Bootloader configuration
