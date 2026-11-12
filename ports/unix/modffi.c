@@ -484,10 +484,8 @@ static ffi_union_t ffi_int_obj_to_ffi_union(mp_obj_t o, const char argtype) {
 }
 
 static mp_obj_t ffifunc_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    (void)n_kw;
     mp_obj_ffifunc_t *self = MP_OBJ_TO_PTR(self_in);
-    assert(n_kw == 0);
-    assert(n_args == self->cif.nargs);
+    mp_arg_check_num(n_args, n_kw, self->cif.nargs, self->cif.nargs, false);
 
     ffi_union_t values[n_args];
     void *valueptrs[n_args];
