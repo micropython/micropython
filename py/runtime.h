@@ -171,6 +171,10 @@ static inline void mp_thread_init_state(mp_state_thread_t *ts, size_t stack_size
 
     // GC starts off unlocked
     ts->gc_lock_depth = 0;
+    #if MICROPY_GC_AREA_SELECT
+    ts->gc_area_sel = 0;
+    ts->gc_alloc_align = 0;
+    #endif
 
     // There are no pending jump callbacks or exceptions yet
     ts->nlr_top = NULL;

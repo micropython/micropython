@@ -118,6 +118,11 @@ typedef struct _mp_state_mem_area_t {
 
     size_t gc_last_free_atb_index;
     size_t gc_last_used_block; // The block ID of the highest block allocated in the area
+
+    #if MICROPY_GC_AREA_SELECT
+    uint16_t gc_area_attrs; // GC_AREA_ATTR_xxx
+    uint8_t gc_area_index; // Position in the list of areas, at most 31
+    #endif
 } mp_state_mem_area_t;
 
 // This structure hold information about the memory allocation system.
@@ -145,6 +150,12 @@ typedef struct _mp_state_mem_t {
     // GC won't automatically run when gc_alloc can't find enough blocks.  But
     // you can still allocate/free memory and also explicitly call gc_collect.
     uint16_t gc_auto_collect_enabled;
+
+    #if MICROPY_GC_AREA_SELECT
+    // Number of threads with a heap area selection or alignment, so gc_alloc()
+    // can skip reading the per-thread values when there are none.
+    uint16_t gc_area_sel_count;
+    #endif
 
     #if MICROPY_GC_ALLOC_THRESHOLD
     size_t gc_alloc_amount;
@@ -301,6 +312,13 @@ typedef struct _mp_state_thread_t {
     // Locking of the GC is done per thread.
     // See GC_LOCK_DEPTH_SHIFT for an explanation of this field.
     uint16_t gc_lock_depth;
+
+    #if MICROPY_GC_AREA_SELECT
+    // Heap areas that allocations by this thread go in, see gc_area_select(),
+    // and their alignment, see gc_alloc_align().
+    uint32_t gc_area_sel;
+    uint32_t gc_alloc_align;
+    #endif
 
     ////////////////////////////////////////////////////////////
     // START ROOT POINTER SECTION

@@ -101,6 +101,29 @@
 #define MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE (1)
 #endif
 
+// Whether the general-purpose DMA controllers (DMA1/2, GPDMA, HPDMA) can access
+// RAM at addr.  They can't access CCM RAM or the TCMs at addresses below
+// 0x20000000, nor the DTCM of the H7 (only its MDMA can) or of the N6.
+#ifndef MICROPY_HW_RAM_IS_DMA_CAPABLE
+#if defined(STM32H7)
+#define MICROPY_HW_RAM_IS_DMA_CAPABLE(addr) ((uintptr_t)(addr) >= 0x24000000)
+#elif defined(STM32N6)
+#define MICROPY_HW_RAM_IS_DMA_CAPABLE(addr) \
+    ((uintptr_t)(addr) >= 0x24000000 && ((uintptr_t)(addr) < 0x30000000 || (uintptr_t)(addr) >= 0x34000000))
+#else
+#define MICROPY_HW_RAM_IS_DMA_CAPABLE(addr) ((uintptr_t)(addr) >= 0x20000000)
+#endif
+#endif
+
+// The GC_AREA_ATTR_xxx attributes of a heap area at addr.  By default, memory
+// in the Cortex-M external RAM and device regions (FMC, SDRAM, OCTOSPI, XSPI)
+// is external.
+#ifndef MICROPY_HW_GC_AREA_ATTRS
+#define MICROPY_HW_GC_AREA_ATTRS(addr) \
+    (((uintptr_t)(addr) >= 0x60000000 && (uintptr_t)(addr) < 0xe0000000 ? GC_AREA_ATTR_EXTERNAL : 0) \
+    | (MICROPY_HW_RAM_IS_DMA_CAPABLE(addr) ? GC_AREA_ATTR_DMA : 0))
+#endif
+
 // If internal flash storage is enabled, whether to use a second segment of flash.
 #ifndef MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE
 #define MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE_SEGMENT2 (0)
