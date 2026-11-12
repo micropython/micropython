@@ -1,0 +1,34 @@
+name: MemBrowse PR Comment
+# Posts PR comments after MemBrowse Memory Report workflow completes.
+# Uses workflow_run trigger to have elevated permissions for fork PRs.
+
+on:
+  workflow_run:
+    workflows: [MemBrowse Memory Report]
+    types: [completed]
+
+permissions:
+  contents: read
+  actions: read
+  pull-requests: write
+
+jobs:
+  comment:
+    runs-on: ubuntu-22.04
+    # Run even if some builds failed — only skip if the run was cancelled.
+    if: >
+      github.event.workflow_run.event == 'pull_request' &&
+      github.event.workflow_run.conclusion != 'cancelled'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Post combined PR comment
+        if: ${{ env.MEMBROWSE_API_KEY != '' }}
+        uses: membrowse/membrowse-action/comment-action@v1
+        with:
+          api_key: ${{ secrets.MEMBROWSE_API_KEY }}
+          commit: ${{ github.event.workflow_run.head_sha }}
+        env:
+          MEMBROWSE_API_KEY: ${{ secrets.MEMBROWSE_API_KEY }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
