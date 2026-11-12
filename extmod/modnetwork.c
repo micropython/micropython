@@ -40,7 +40,7 @@
 #if MICROPY_PY_NETWORK_CYW43
 // So that CYW43_LINK_xxx constants are available to MICROPY_PORT_NETWORK_INTERFACES.
 #include "lib/cyw43-driver/src/cyw43.h"
-extern const struct _mp_obj_type_t mp_network_cyw43_type;
+#include "extmod/network_cyw43.h"
 #endif
 
 #if MICROPY_PY_NETWORK_HALOW
@@ -163,6 +163,9 @@ mp_obj_t mod_network_hostname(size_t n_args, const mp_obj_t *args) {
         }
         memcpy(mod_network_hostname_data, str, len);
         mod_network_hostname_data[len] = 0;
+        #if MICROPY_PY_NETWORK_CYW43
+        network_cyw43_hostname_changed();
+        #endif
         return mp_const_none;
     }
 }

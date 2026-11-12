@@ -33,6 +33,9 @@
 #if MICROPY_PY_NETWORK_CYW43
 
 #include "lwip/netif.h"
+#if LWIP_MDNS_RESPONDER == 1
+#include "lwip/apps/mdns.h"
+#endif
 #include "extmod/network_cyw43.h"
 #include "modnetwork.h"
 
@@ -128,6 +131,19 @@ static MP_DEFINE_CONST_FUN_OBJ_3(network_cyw43_ioctl_obj, network_cyw43_ioctl);
 
 static uint32_t get_country_code(void) {
     return CYW43_COUNTRY(mod_network_country_code[0], mod_network_country_code[1], 0);
+}
+
+void network_cyw43_hostname_changed(void) {
+    #if LWIP_MDNS_RESPONDER == 1
+    MICROPY_PY_LWIP_ENTER
+    for (int itf = CYW43_ITF_STA; itf <= CYW43_ITF_AP; ++itf) {
+        struct netif *netif = &cyw43_state.netif[itf];
+        if (mdns_resp_netif_active(netif)) {
+            mdns_resp_rename_netif(netif, mod_network_hostname_data);
+        }
+    }
+    MICROPY_PY_LWIP_EXIT
+    #endif
 }
 
 static mp_obj_t network_cyw43_deinit(mp_obj_t self_in) {
