@@ -1,4 +1,6 @@
+#ifndef MICROPY_HW_BOARD_NAME
 #define MICROPY_HW_BOARD_NAME               "ProS3"
+#endif
 #define MICROPY_HW_MCU_NAME                 "ESP32-S3"
 #define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT "ProS3"
 

@@ -26,5 +26,9 @@
     "product": "FeatherS3",
     "thumbnail": "",
     "url": "https://feathers3.io",
+    "variants": {
+        "FEATHERS3": "FeatherS3",
+        "FEATHERS3D": "FeatherS3[D]"
+    },
     "vendor": "Unexpected Maker"
 }
