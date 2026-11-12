@@ -62,6 +62,7 @@ library.
    builtins.rst
    cmath.rst
    collections.rst
+   enum.rst
    errno.rst
    gc.rst
    gzip.rst
