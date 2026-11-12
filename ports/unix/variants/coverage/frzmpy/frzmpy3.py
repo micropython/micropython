@@ -4,3 +4,8 @@ print("\\")
 print("\nX")
 print(repr("\x1b"))
 print(b"\x00\xff")
+
+# Float constants that have no C literal (nan, inf).
+import math
+
+print(math.isnan(math.nan), math.isinf(math.inf), -math.inf)
