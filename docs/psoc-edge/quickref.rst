@@ -171,6 +171,26 @@ There's a higher-level abstraction :ref:`machine.Signal <machine.Signal>`
 which can be used to invert a pin. Useful for illuminating active-low LEDs
 using ``Signal.on()`` or ``Signal.value(1)``.
 
+Bitstream
+------------------------------------------------
+
+Use :func:`machine.bitstream` directly for timing-sensitive one-wire protocols::
+
+    import machine
+
+    pin = machine.Pin('P20_5', machine.Pin.OUT)
+    # Example timings for 800 kHz class LEDs (T0H, T0L, T1H, T1L) in ns.
+    timing = (400, 850, 800, 450)
+    data = bytes([0x10, 0x00, 0x00])
+
+    machine.bitstream(pin, 0, timing, data)
+
+.. note::
+    Port-specific behavior and limits on PSOC™ Edge:
+    
+    - Each timing value must be at least 300 ns; smaller values raise ``ValueError``.
+    - If the runtime core clock is invalid (0 Hz), transmission raises ``ValueError``.
+
 Real time clock (RTC)
 ---------------------
 
