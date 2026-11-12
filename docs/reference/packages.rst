@@ -38,6 +38,12 @@ install third-party libraries. The simplest way is to download a file directly::
 When installing a file directly, the ``target`` argument is still supported to set
 the destination path, but ``mpy`` and ``version`` are ignored.
 
+``mip`` can also install .mpy modules that contain native code.
+Since native modules need to match the target architecture and ABI, mip supports
+substituting ``MPY_ARCH`` and ``MPY_VERSION`` in the provided URL.
+
+    >>> mip.install("https://example.com/{MPY_ARCH}_{MPY_VERSION}/emlearn_iir.mpy")
+
 The URL can also start with ``github:``, ``gitlab:``, or ``codeberg:`` as a simple
 way of pointing to content hosted on GitHub, GitLab, or Codeberg::
 

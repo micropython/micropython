@@ -28,6 +28,34 @@ _HOSTS = {
 _ALLOWED_MIP_URL_PREFIXES = ("http://", "https://", "codeberg:", "github:", "gitlab:")
 
 
+# NB: Must be in the correct order wrt sys.implementation._mpy
+MPY_ARCHITECTURES = [
+    None,
+    "x86",
+    "x64",
+    "armv6",
+    "armv6m",
+    "armv7m",
+    "armv7em",
+    "armv7emsp",
+    "armv7emdp",
+    "xtensa",
+    "xtensawin",
+    "rv32imc",
+    "rv64imc",
+]
+
+
+def _parse_mpy_arch_version(sys_mpy):
+    sys_arch = (sys_mpy >> 10) & 0x0F
+
+    mpy_major = sys_mpy & 0xFF
+    mpy_minor = sys_mpy >> 8 & 3
+    mpy_arch = MPY_ARCHITECTURES[sys_arch]
+
+    return mpy_arch, mpy_major, mpy_minor
+
+
 # This implements os.makedirs(os.dirname(path))
 def _ensure_path_exists(transport, path):
     split = path.split("/")
@@ -54,7 +82,13 @@ def _check_exists(transport, path, short_hash):
     return remote_hash.hex()[: len(short_hash)] == short_hash
 
 
-def _rewrite_url(url, branch=None):
+def _rewrite_url(url, sys_mpy, branch=None):
+    # substitute markers for native modules (if present)
+    mpy_arch, mpy_major, mpy_minor = _parse_mpy_arch_version(sys_mpy)
+    mpy_version = f"{mpy_major}.{mpy_minor}"
+    url = url.replace("{MPY_VERSION}", mpy_version)
+    url = url.replace("{MPY_ARCH}", mpy_arch)
+
     for provider, url_format in _HOSTS.items():
         if not url.startswith(provider):
             continue
@@ -92,11 +126,13 @@ def _download_file(transport, url, dest):
     transport.fs_writefile(dest, data, progress_callback=show_progress_bar)
 
 
-def _install_json(transport, package_json_url, index, target, version, mpy):
+def _install_json(transport, package_json_url, index, target, version, mpy, sys_mpy):
     base_url = ""
     if package_json_url.startswith(_ALLOWED_MIP_URL_PREFIXES):
         try:
-            with urllib.request.urlopen(_rewrite_url(package_json_url, version)) as response:
+            with urllib.request.urlopen(
+                _rewrite_url(package_json_url, branch=version, sys_mpy=sys_mpy)
+            ) as response:
                 package_json = json.load(response)
         except urllib.error.HTTPError as e:
             if e.status == 404:
@@ -126,17 +162,26 @@ def _install_json(transport, package_json_url, index, target, version, mpy):
         fs_target_path = target + "/" + target_path
         if base_url and not url.startswith(_ALLOWED_MIP_URL_PREFIXES):
             url = f"{base_url}/{url}"  # Relative URLs
-        _download_file(transport, _rewrite_url(url, version), fs_target_path)
+        _download_file(
+            transport, _rewrite_url(url, branch=version, sys_mpy=sys_mpy), fs_target_path
+        )
     for dep, dep_version in package_json.get("deps", ()):
         _install_package(transport, dep, index, target, dep_version, mpy)
 
 
 def _install_package(transport, package, index, target, version, mpy):
+
+    # Get target information
+    transport.exec("import sys")
+    sys_mpy = transport.eval("getattr(sys.implementation, '_mpy', 0)")
+
     if package.startswith(_ALLOWED_MIP_URL_PREFIXES):
         if package.endswith(".py") or package.endswith(".mpy"):
             print(f"Downloading {package} to {target}")
             _download_file(
-                transport, _rewrite_url(package, version), target + "/" + package.rsplit("/")[-1]
+                transport,
+                _rewrite_url(package, branch=version, sys_mpy=sys_mpy),
+                target + "/" + package.rsplit("/")[-1],
             )
             return
         else:
@@ -154,12 +199,11 @@ def _install_package(transport, package, index, target, version, mpy):
 
         mpy_version = "py"
         if mpy:
-            transport.exec("import sys")
-            mpy_version = transport.eval("getattr(sys.implementation, '_mpy', 0) & 0xFF") or "py"
+            mpy_version = (sys_mpy & 0xFF) or "py"  # NOTE: major only
 
         package = f"{index}/package/{mpy_version}/{package}/{version}.json"
 
-    _install_json(transport, package, index, target, version, mpy)
+    _install_json(transport, package, index, target, version, mpy, sys_mpy)
 
 
 def do_mip(state, args):
