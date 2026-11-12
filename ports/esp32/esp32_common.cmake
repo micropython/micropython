@@ -107,10 +107,14 @@ if(MICROPY_PY_TINYUSB)
         ${MICROPY_BOARD_DIR})
 endif()
 
+# Only include main.c for standalone builds, not when used as ESP-IDF component
+if(NOT MICROPY_COMPONENT_BUILD)
+    list(APPEND MICROPY_SOURCE_PORT main.c)
+endif()
+
 list(APPEND MICROPY_SOURCE_PORT
     panichandler.c
     adc.c
-    main.c
     ppp_set_auth.c
     uart.c
     usb.c
