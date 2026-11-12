@@ -126,7 +126,17 @@ void mp_obj_print_helper(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t
     #endif
     const mp_obj_type_t *type = mp_obj_get_type(o_in);
     if (MP_OBJ_TYPE_HAS_SLOT(type, print)) {
-        MP_OBJ_TYPE_GET_SLOT(type, print)((mp_print_t *)print, o_in, kind);
+        if (!mp_obj_is_native_type(type) && kind == PRINT_JSON) {
+            mp_print_ext_t *print_ext = (mp_print_ext_t *)print;
+            if (print_ext->default_cb != NULL) {
+                mp_obj_t ret = mp_call_function_1((mp_obj_t)(uintptr_t)print_ext->default_cb, o_in);
+                mp_obj_print_helper(print, ret, kind);
+            } else {
+                mp_raise_msg_varg(&mp_type_TypeError, MP_ERROR_TEXT("Object of type %q is not JSON serializable"), (qstr)type->name);
+            }
+        } else {
+            MP_OBJ_TYPE_GET_SLOT(type, print)((mp_print_t *)print, o_in, kind);
+        }
     } else {
         mp_printf(print, "<%q>", (qstr)type->name);
     }
