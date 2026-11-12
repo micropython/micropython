@@ -312,6 +312,8 @@ if(MICROPY_FROZEN_MANIFEST)
     )
 endif()
 
+include(${MICROPY_DIR}/py/sbom.cmake)
+
 # Update submodules, this is invoked on some ports via 'make submodules'.
 #
 # Note: This logic has a Makefile equivalent in py/mkrules.mk
