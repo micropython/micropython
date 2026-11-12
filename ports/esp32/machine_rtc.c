@@ -58,10 +58,14 @@ typedef struct _machine_rtc_obj_t {
 */
 // A board can enable MICROPY_HW_RTC_MEM_INIT_ALWAYS to always clear out RTC memory on boot.
 // Defaults to RTC_NOINIT_ATTR so the user memory survives WDT resets and the like.
+// Chips without RTC slow memory (eg ESP32-C2) static-assert on RTC_NOINIT_ATTR from
+// IDF v6, so fall back to DRAM there (user memory then does not survive resets).
 #if MICROPY_HW_RTC_MEM_INIT_ALWAYS
 #define _USER_MEM_ATTR RTC_DATA_ATTR
-#else
+#elif SOC_RTC_MEM_SUPPORTED
 #define _USER_MEM_ATTR RTC_NOINIT_ATTR
+#else
+#define _USER_MEM_ATTR DRAM_ATTR
 #endif
 
 // Optionally compile user memory functionality if the size of memory is greater than 0

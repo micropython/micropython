@@ -3,6 +3,8 @@ list(APPEND SDKCONFIG_DEFAULTS
     boards/ESP32_GENERIC/sdkconfig.d2wd
 )
 
+set(MICROPY_FROZEN_MANIFEST ${MICROPY_BOARD_DIR}/manifest_d2wd.py)
+
 list(APPEND MICROPY_DEF_BOARD
     MICROPY_HW_MCU_NAME="ESP32-D2WD"
     # Disable some options to reduce firmware size.
