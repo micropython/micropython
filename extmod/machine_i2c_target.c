@@ -70,6 +70,7 @@ typedef struct _machine_i2c_target_data_t {
     uint32_t mem_addr;
     uint32_t mem_len;
     uint8_t *mem_buf;
+    uint32_t num_bytes;
 } machine_i2c_target_data_t;
 
 typedef struct _machine_i2c_target_irq_obj_t {
@@ -127,6 +128,7 @@ static void machine_i2c_target_data_init(machine_i2c_target_data_t *data, mp_obj
     data->mem_addr = 0;
     data->mem_len = 0;
     data->mem_buf = NULL;
+    data->num_bytes = 0;
     if (mem_obj != mp_const_none) {
         mp_buffer_info_t bufinfo;
         mp_get_buffer_raise(mem_obj, &bufinfo, MP_BUFFER_RW);
@@ -150,6 +152,7 @@ static void machine_i2c_target_data_reset_helper(machine_i2c_target_data_t *data
 
 static void machine_i2c_target_data_addr_match(machine_i2c_target_data_t *data, bool read) {
     machine_i2c_target_data_reset_helper(data);
+    data->num_bytes = 0;
     if (read) {
         handle_event(data, I2C_TARGET_IRQ_ADDR_MATCH_READ);
         data->state = STATE_ADDR_MATCH_READ;
@@ -162,6 +165,7 @@ static void machine_i2c_target_data_addr_match(machine_i2c_target_data_t *data, 
 static void machine_i2c_target_data_read_request(machine_i2c_target_obj_t *self, machine_i2c_target_data_t *data) {
     // Let the user handle the read request.
     bool event_handled = handle_event(data, I2C_TARGET_IRQ_READ_REQ);
+    bool is_data = false;
     if (data->mem_buf == NULL) {
         data->state = STATE_READING;
         if (!event_handled) {
@@ -178,12 +182,17 @@ static void machine_i2c_target_data_read_request(machine_i2c_target_obj_t *self,
         }
         if (data->state != STATE_READING) {
             data->state = STATE_READING;
+        } else {
+            is_data = true;
         }
         uint8_t val = data->mem_buf[data->mem_addr++];
         if (data->mem_addr >= data->mem_len) {
             data->mem_addr = 0;
         }
-        mp_machine_i2c_target_write_bytes(self, 1, &val);
+        size_t n = mp_machine_i2c_target_write_bytes(self, 1, &val);
+        if (is_data) {
+            data->num_bytes += n;
+        }
     }
 }
 
@@ -223,6 +232,7 @@ static void machine_i2c_target_data_write_request(machine_i2c_target_obj_t *self
                 if (data->mem_addr >= data->mem_len) {
                     data->mem_addr = 0;
                 }
+                data->num_bytes += n;
             }
         }
     }
@@ -247,6 +257,8 @@ static void machine_i2c_target_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest)
         // Load attribute.
         if (attr == MP_QSTR_memaddr) {
             dest[0] = mp_obj_new_int(data->mem_addr_last);
+        } else if (attr == MP_QSTR_numbytes) {
+            dest[0] = mp_obj_new_int(data->num_bytes);
         } else {
             // Continue lookup in locals_dict.
             dest[1] = MP_OBJ_SENTINEL;
