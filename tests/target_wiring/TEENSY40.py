@@ -1,6 +1,6 @@
 # Target wiring for TEENSY40.
 # https://www.pjrc.com/store/teensy40.html
-# https://raw.githubusercontent.com/KurtE/TeensyDocuments/master/Teensy4%20Pins.pdf?utm_source=chatgpt.com
+# https://github.com/KurtE/TeensyDocuments/blob/master/Teensy4%20Pins.pdf
 #
 # Connect:
 # - D0 to D1 (uart1, pwd, encoder)
@@ -8,8 +8,6 @@
 # - D11 to D12 (pwm)
 # - A3 to A4 (i2c sda)
 # - A5 to A6 (i2c scl)
-
-import sys
 
 uart_loopback_args = (1,)
 uart_loopback_kwargs = {}
