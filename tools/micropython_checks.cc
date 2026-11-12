@@ -27,12 +27,13 @@ int plugin_is_GPL_compatible;
 
 static struct plugin_info micropython_gcc_plugin_info = {
     "1.0",
-    "Validate MicroPython mp_printf argument types against format string"};
+    "Validate MicroPython mp_printf argument types against format string"
+};
 
 namespace {
 const pass_data micropython_checks_data = {
     GIMPLE_PASS,
-    "micropython_checks", /* name */
+    "micropython_checks",     /* name */
     OPTGROUP_NONE,        /* optinfo_flags */
     TV_NONE,              /* tv_id */
     PROP_gimple_any,      /* properties_required */
@@ -45,14 +46,15 @@ static void handle_supportll(struct cpp_reader *unused) {
 }
 
 static void
-register_pragma (void *event_data, void *data) {
+register_pragma(void *event_data, void *data) {
     c_register_pragma_with_expansion("MPCHECKS", "mpprint_support_ll", handle_supportll);
 }
 
 
 struct micropython_checks : gimple_opt_pass {
     micropython_checks(gcc::context *ctx)
-        : gimple_opt_pass(micropython_checks_data, ctx) {}
+        : gimple_opt_pass(micropython_checks_data, ctx) {
+    }
 
     virtual unsigned int execute(function *fun) override {
         walk(fun);
@@ -60,38 +62,111 @@ struct micropython_checks : gimple_opt_pass {
         return 0;
     }
 
-    static bool is_mpprint_call(const tree fn) {
-        if (!fn)
-            return false;
-        if (fn->base.code != ADDR_EXPR)
-            return false;
-        if (!fn->base.constant_flag)
-            return false;
+    static const char *fun_name(const tree fn) {
+        if (!fn) {
+            return nullptr;
+        }
+        if (fn->base.code != ADDR_EXPR) {
+            return nullptr;
+        }
+        if (!fn->base.constant_flag) {
+            return nullptr;
+        }
         const tree op = fn->exp.operands[0];
-        if (op->base.code != FUNCTION_DECL)
-            return false;
+        if (op->base.code != FUNCTION_DECL) {
+            return nullptr;
+        }
         const tree name = op->decl_minimal.name;
-        if (name->base.code != IDENTIFIER_NODE)
-            return false;
-        return strcmp((const char *)name->identifier.id.str, "mp_printf") == 0;
+        if (name->base.code != IDENTIFIER_NODE) {
+            return nullptr;
+        }
+        return (const char *)name->identifier.id.str;
     }
 
-    static const char *mpprint_format_arg(gimple *stmt) {
+    static const char *format_arg_from_stmt(gimple *stmt) {
         tree fn = gimple_call_fn(stmt);
-        if (!is_mpprint_call(fn))
-            return NULL;
+        auto name = fun_name(fn);
+        if (!name) {
+            return nullptr;
+        }
+        if (strcmp(name, "MP_COMPRESSED_ROM_TEXT")) {
+            return nullptr;
+        }
         unsigned nargs = gimple_call_num_args(stmt);
-        if (nargs < 2)
-            return NULL;
-        tree arg = gimple_call_arg(stmt, 1);
-        if (!arg->base.constant_flag)
-            return NULL;
-        if (arg->base.code != ADDR_EXPR)
-            return NULL;
+        if (nargs < 1) {
+            return nullptr;
+        }
+        tree arg = gimple_call_arg(stmt, 0);
+        if (!arg->base.constant_flag) {
+            return nullptr;
+        }
+        if (arg->base.code != ADDR_EXPR) {
+            return nullptr;
+        }
         tree op = arg->exp.operands[0];
-        if (op->base.code != STRING_CST)
-            return NULL;
+        if (op->base.code != STRING_CST) {
+            return nullptr;
+        }
         return op->string.str;
+    }
+
+    static const char *mpprint_format_arg(gimple *stmt, unsigned &argno) {
+        tree fn = gimple_call_fn(stmt);
+        auto name = fun_name(fn);
+        if (!name) {
+            return nullptr;
+        }
+        if (!strcmp(name, "mp_printf") || !strcmp(name, "vstr_printf") || !strcmp(name, "mp_warning")) {
+            unsigned nargs = gimple_call_num_args(stmt);
+            if (nargs < 2) {
+                return nullptr;
+            }
+            tree arg = gimple_call_arg(stmt, 1);
+            if (!arg->base.constant_flag) {
+                return nullptr;
+            }
+            if (arg->base.code != ADDR_EXPR) {
+                return nullptr;
+            }
+            tree op = arg->exp.operands[0];
+            if (op->base.code != STRING_CST) {
+                return nullptr;
+            }
+            argno = 2;
+            return op->string.str;
+        }
+        if (!strcmp(name, "DEBUG_printf")) {
+            unsigned nargs = gimple_call_num_args(stmt);
+            if (nargs < 1) {
+                return nullptr;
+            }
+            tree arg = gimple_call_arg(stmt, 0);
+            if (!arg->base.constant_flag) {
+                return nullptr;
+            }
+            if (arg->base.code != ADDR_EXPR) {
+                return nullptr;
+            }
+            tree op = arg->exp.operands[0];
+            if (op->base.code != STRING_CST) {
+                return nullptr;
+            }
+            argno = 1;
+            return op->string.str;
+        }
+        if (!strcmp(name, "mp_raise_msg_varg") || !strcmp(name, "mp_obj_new_exception_msg_varg")) {
+            unsigned nargs = gimple_call_num_args(stmt);
+            if (nargs < 2) {
+                return nullptr;
+            }
+            tree arg = gimple_call_arg(stmt, 1);
+            if (TREE_CODE(arg) != SSA_NAME) {
+                return nullptr;
+            }
+            argno = 2;
+            return format_arg_from_stmt(SSA_NAME_CHECK(arg)->ssa_name.def_stmt);
+        }
+        return nullptr;
     }
 
     void walk(function *fun) {
@@ -103,242 +178,263 @@ struct micropython_checks : gimple_opt_pass {
 
                 // location_t loc = gimple_location (stmt);
                 switch (gimple_code(stmt)) {
-                case GIMPLE_CALL: {
-                    const char *fmt = mpprint_format_arg(stmt),
-                               *fmt_start = nullptr;
+                    case GIMPLE_CALL: {
+                        unsigned argno;
+                        const char *fmt = mpprint_format_arg(stmt, argno),
+                                   *fmt_start = nullptr;
 
-                    if (!fmt) {
-                        break;
-                    }
-
-                    unsigned nargs = gimple_call_num_args(stmt);
-                    unsigned argno = 2;
-
-                    auto require_arg = [&](unsigned argno) -> tree_node*{
-                        if (argno < nargs) {
-                            return gimple_call_arg(stmt, argno);
-                        }
-                        location_t loc = gimple_location(stmt);
-                        warning_at(loc, OPT_Wformat_,
-                                   "argument %d: Format %q.*s requires an argmuent",
-                                   argno + 1, (int)(fmt - fmt_start + 1), fmt_start);
-                        return nullptr;
-                    };
-
-                    auto require_double = [&](unsigned argno) {
-                        auto arg = require_arg(argno);
-                        if (!arg) {
-                            return;
-                        }
-
-                        auto tp = arg ? arg->exp.typed.type : 0;
-                        if (tp)
-                            tp = TYPE_CANONICAL(tp);
-                        if (!tp
-                                || tp->base.code != REAL_TYPE
-                                || tp->type_common.precision != double_type_node->type_common.precision) {
-                            location_t loc = gimple_location(stmt);
-                            warning_at(loc, OPT_Wformat_,
-                                       "argument %d: Format %q.*s requires a "
-                                       "%<double%> argument, not %qE",
-                                       argno + 1, (int)(fmt - fmt_start + 1),
-                                       fmt_start, arg);
-                        }
-                    };
-
-                    auto require_ptr = [&](unsigned argno) {
-                        auto arg = require_arg(argno);
-                        if (!arg) {
-                            return;
-                        }
-                        if (arg->exp.typed.type->base.code != POINTER_TYPE) {
-                            location_t loc = gimple_location(stmt);
-                            warning_at(
-                                loc, OPT_Wformat_,
-                                "argument %d: Format %q.*s requires a pointer "
-                                "argument, not %qE",
-                                argno + 1, (int)(fmt - fmt_start + 1),
-                                fmt_start, arg);
-                        }
-                    };
-
-                    auto require_sized_int = [&](unsigned argno, tree type1,
-                                                 tree type2) {
-                        auto arg = require_arg(argno);
-                        if (!arg) {
-                            return;
-                        }
-                        location_t loc = gimple_location(stmt);
-
-                        auto tp = arg ? arg->exp.typed.type : 0;
-                        if (tp && (tp->base.code != INTEGER_TYPE ||
-                                   tp->type_common.precision !=
-                                       type1->type_common.precision)) {
-                            warning_at(
-                                loc, OPT_Wformat_,
-                                "argument %d: Format %q.*s requires a %qT or "
-                                "%qT (%d bits), not %qT [size %d]",
-                                argno + 1, (int)(fmt - fmt_start + 1),
-                                fmt_start, type1, type2,
-                                type2->type_common.precision, tp,
-                                tp->type_common.precision);
-                        }
-                    };
-
-                    auto require_int = [&require_sized_int](unsigned argno) {
-                        require_sized_int(argno, integer_type_node,
-                                          unsigned_type_node);
-                    };
-                    auto require_long = [&require_sized_int](unsigned argno) {
-                        require_sized_int(argno, long_integer_type_node,
-                                          long_unsigned_type_node);
-                    };
-                    auto require_long_long = [&](unsigned argno) {
-                        if (mpprint_support_ll) {
-                            require_sized_int(argno, long_long_integer_type_node,
-                                              long_long_unsigned_type_node);
-                        } else {
-                            location_t loc = gimple_location(stmt);
-                            warning_at(
-                                loc, OPT_Wformat_,
-                                "argument %d: Format %q.*s not supported in this configuration",
-                                argno + 1, (int)(fmt - fmt_start + 1),
-                                fmt_start);
-                        }
-                    };
-                    auto require_qstr = [&require_sized_int](unsigned argno) {
-                        require_sized_int(argno, size_type_node,
-                                          signed_size_type_node);
-                    };
-
-                    for (;;) {
-                        while (*fmt != '\0' && *fmt != '%') {
-                            ++fmt;
-                        }
-
-                        if (*fmt == '\0') {
+                        if (!fmt) {
                             break;
                         }
 
-                        fmt_start = fmt;
+                        // printf("Checking arguments %s\n", fmt);
+                        unsigned nargs = gimple_call_num_args(stmt);
 
-                        // move past % character
-                        ++fmt;
-
-                        if (*fmt == '%') {
-                            ++fmt;
-                            continue;
-                        }
-
-                        // parse flags, if they exist
-                        while (*fmt != '\0') {
-                            if (*fmt == '-') {
-                            } else if (*fmt == '+') {
-                            } else if (*fmt == ' ') {
-                            } else if (*fmt == '0') {
-                            } else {
-                                break;
-                            }
-                            ++fmt;
-                        }
-
-                        // parse width, if it exists
-                        int width = 0;
-                        for (; '0' <= *fmt && *fmt <= '9'; ++fmt) {
-                            width = width * 10 + *fmt - '0';
-                        }
-
-                        // parse precision, if it exists
-                        int prec = -1;
-                        if (*fmt == '.') {
-                            ++fmt;
-                            if (*fmt == '*') {
-                                ++fmt;
-                                require_int(argno++);
-                            } else {
-                                prec = 0;
-                                for (; '0' <= *fmt && *fmt <= '9'; ++fmt) {
-                                    prec = prec * 10 + *fmt - '0';
+                        auto require_arg = [&](unsigned argno)->tree_node * {
+                                if (argno < nargs) {
+                                    return gimple_call_arg(stmt, argno);
                                 }
-                            }
-                            if (prec < 0) {
-                                prec = 0;
-                            }
-                        }
-
-                        // parse long specifiers
-
-                        bool long_arg = false;
-                        if (*fmt == 'l') {
-                            ++fmt;
-                            long_arg = true;
-                        }
-                        switch (*fmt) {
-                        case 'b':
-                        case 'B':
-                        case 'i':
-                        case 'u':
-                        case 'd':
-                        case 'x':
-                        case 'X':
-                        case 'o':
-                        case 'O':
-                            if (long_arg)
-                                require_long(argno++);
-                            else
-                                require_int(argno++);
-                            break;
-
-                        case 'c':
-                            require_int(argno++);
-                            break;
-
-                        case 'q':
-                            require_qstr(argno++);
-                            break;
-
-                        case 's':
-                        case 'p':
-                        case 'P':
-                            require_ptr(argno++);
-                            break;
-
-                        case 'e':
-                        case 'E':
-                        case 'f':
-                        case 'F':
-                        case 'g':
-                        case 'G':
-                            require_double(argno++);
-                            break;
-
-                        case 'l':
-                            ++fmt;
-                            if (*fmt != 'u' && *fmt != 'd' && *fmt != 'x' && *fmt != 'X') {
                                 location_t loc = gimple_location(stmt);
                                 warning_at(loc, OPT_Wformat_,
-                                           "Bad format specification with ll%c",
-                                           *fmt);
+                                    "argument %d: Format %q.*s requires an argmuent",
+                                    argno + 1, (int)(fmt - fmt_start + 1), fmt_start);
+                                return nullptr;
+                            };
+
+                        auto require_double = [&](unsigned argno) {
+                                auto arg = require_arg(argno);
+                                if (!arg) {
+                                    return;
+                                }
+
+                                auto tp = arg ? arg->exp.typed.type : 0;
+                                if (tp) {
+                                    tp = TYPE_CANONICAL(tp);
+                                }
+                                if (!tp
+                                    || tp->base.code != REAL_TYPE
+                                    || tp->type_common.precision != double_type_node->type_common.precision) {
+                                    location_t loc = gimple_location(stmt);
+                                    warning_at(loc, OPT_Wformat_,
+                                        "argument %d: Format %q.*s requires a "
+                                        "%<double%> argument, not %qE",
+                                        argno + 1, (int)(fmt - fmt_start + 1),
+                                        fmt_start, arg);
+                                }
+                            };
+
+                        auto require_ptr = [&](unsigned argno) {
+                                auto arg = require_arg(argno);
+                                if (!arg) {
+                                    return;
+                                }
+                                if (arg->exp.typed.type->base.code != POINTER_TYPE) {
+                                    location_t loc = gimple_location(stmt);
+                                    warning_at(
+                                        loc, OPT_Wformat_,
+                                        "argument %d: Format %q.*s requires a pointer "
+                                        "argument, not %qE",
+                                        argno + 1, (int)(fmt - fmt_start + 1),
+                                        fmt_start, arg);
+                                }
+                            };
+
+                        auto require_sized_int = [&](unsigned argno, tree type1,
+                                                     tree type2) {
+                                auto arg = require_arg(argno);
+                                if (!arg) {
+                                    return;
+                                }
+                                location_t loc = gimple_location(stmt);
+
+                                auto tp = arg ? arg->exp.typed.type : 0;
+                                if (tp && (tp->base.code != INTEGER_TYPE ||
+                                           tp->type_common.precision !=
+                                           type1->type_common.precision)) {
+                                    warning_at(
+                                        loc, OPT_Wformat_,
+                                        "argument %d: Format %q.*s requires a %qT or "
+                                        "%qT (%d bits), not %qT (%d bits)",
+                                        argno + 1, (int)(fmt - fmt_start + 1),
+                                        fmt_start, type1, type2,
+                                        type2->type_common.precision, tp,
+                                        tp->type_common.precision);
+                                }
+                            };
+
+                        auto require_int = [&require_sized_int](unsigned argno) {
+                                require_sized_int(argno, integer_type_node,
+                                    unsigned_type_node);
+                            };
+                        auto require_long = [&require_sized_int](unsigned argno) {
+                                require_sized_int(argno, long_integer_type_node,
+                                    long_unsigned_type_node);
+                            };
+                        auto require_long_long = [&](unsigned argno) {
+                                if (mpprint_support_ll) {
+                                    require_sized_int(argno, long_long_integer_type_node,
+                                        long_long_unsigned_type_node);
+                                } else {
+                                    location_t loc = gimple_location(stmt);
+                                    warning_at(
+                                        loc, OPT_Wformat_,
+                                        "argument %d: Format %q.*s not supported in this configuration",
+                                        argno + 1, (int)(fmt - fmt_start + 1),
+                                        fmt_start);
+                                }
+                            };
+                        auto require_qstr = [&](unsigned argno) {
+                                auto type1 = size_type_node;
+                                auto type2 = signed_size_type_node;
+                                auto arg = require_arg(argno);
+                                if (!arg) {
+                                    return;
+                                }
+                                location_t loc = gimple_location(stmt);
+
+                                auto tp = arg ? arg->exp.typed.type : 0;
+                                if (tp && (tp->base.code != INTEGER_TYPE ||
+                                           tp->type_common.precision !=
+                                           type1->type_common.precision)) {
+                                    warning_at(
+                                        loc, OPT_Wformat_,
+                                        "argument %d: Format %q.*s requires a %qs (%d bits), "
+                                        "not %qT (%d bits)",
+                                        argno + 1, (int)(fmt - fmt_start + 1),
+                                        fmt_start, "qstr", type2->type_common.precision,
+                                        tp, tp->type_common.precision);
+                                }
+                            };
+
+                        for (;;) {
+                            while (*fmt != '\0' && *fmt != '%') {
+                                ++fmt;
                             }
-                            require_long_long(argno++);
-                            break;
-                        default: {
+
+                            if (*fmt == '\0') {
+                                break;
+                            }
+
+                            fmt_start = fmt;
+
+                            // move past % character
+                            ++fmt;
+
+                            if (*fmt == '%') {
+                                ++fmt;
+                                continue;
+                            }
+
+                            // parse flags, if they exist
+                            while (*fmt != '\0') {
+                                if (*fmt == '-') {
+                                } else if (*fmt == '+') {
+                                } else if (*fmt == ' ') {
+                                } else if (*fmt == '0') {
+                                } else {
+                                    break;
+                                }
+                                ++fmt;
+                            }
+
+                            // parse width, if it exists
+                            int width = 0;
+                            for (; '0' <= *fmt && *fmt <= '9'; ++fmt) {
+                                width = width * 10 + *fmt - '0';
+                            }
+
+                            // parse precision, if it exists
+                            int prec = -1;
+                            if (*fmt == '.') {
+                                ++fmt;
+                                if (*fmt == '*') {
+                                    ++fmt;
+                                    require_int(argno++);
+                                } else {
+                                    prec = 0;
+                                    for (; '0' <= *fmt && *fmt <= '9'; ++fmt) {
+                                        prec = prec * 10 + *fmt - '0';
+                                    }
+                                }
+                                if (prec < 0) {
+                                    prec = 0;
+                                }
+                            }
+
+                            // parse long specifiers
+
+                            bool long_arg = false;
+                            if (*fmt == 'l') {
+                                ++fmt;
+                                long_arg = true;
+                            }
+                            switch (*fmt) {
+                                case 'b':
+                                case 'B':
+                                case 'i':
+                                case 'u':
+                                case 'd':
+                                case 'x':
+                                case 'X':
+                                case 'o':
+                                case 'O':
+                                    if (long_arg) {
+                                        require_long(argno++);
+                                    } else {
+                                        require_int(argno++);
+                                    }
+                                    break;
+
+                                case 'c':
+                                    require_int(argno++);
+                                    break;
+
+                                case 'q':
+                                    require_qstr(argno++);
+                                    break;
+
+                                case 's':
+                                case 'p':
+                                case 'P':
+                                    require_ptr(argno++);
+                                    break;
+
+                                case 'e':
+                                case 'E':
+                                case 'f':
+                                case 'F':
+                                case 'g':
+                                case 'G':
+                                    require_double(argno++);
+                                    break;
+
+                                case 'l':
+                                    ++fmt;
+                                    if (*fmt != 'u' && *fmt != 'd' && *fmt != 'x' && *fmt != 'X') {
+                                        location_t loc = gimple_location(stmt);
+                                        warning_at(loc, OPT_Wformat_,
+                                            "Bad format specification with ll%c",
+                                            *fmt);
+                                    }
+                                    require_long_long(argno++);
+                                    break;
+                                default: {
+                                    location_t loc = gimple_location(stmt);
+                                    warning_at(loc, OPT_Wformat_,
+                                        "Bad format specification with %c",
+                                        *fmt);
+                                } break;
+                            }
+                        }
+                        if (argno != nargs) {
                             location_t loc = gimple_location(stmt);
                             warning_at(loc, OPT_Wformat_,
-                                       "Bad format specification with %c",
-                                       *fmt);
-                        } break;
+                                "Wrong # arguments. Supplied %d, used %d",
+                                nargs, argno);
                         }
-                    }
-                    if (argno != nargs) {
-                        location_t loc = gimple_location(stmt);
-                        warning_at(loc, OPT_Wformat_,
-                                   "Wrong # arguments. Supplied %d, used %d",
-                                   nargs, argno);
-                    }
-                } break;
-                default:
-                    break;
+                    } break;
+                    default:
+                        break;
                 }
             }
         }
@@ -350,7 +446,7 @@ struct micropython_checks : gimple_opt_pass {
 __declspec(dllexport)
 #endif
 int plugin_init(struct plugin_name_args *plugin_info,
-                struct plugin_gcc_version *version) {
+    struct plugin_gcc_version *version) {
     // Plugin headers must match running gcc exactly
     if (!plugin_default_version_check(version, &gcc_version)) {
         std::cerr << "This GCC plugin is for version "
@@ -360,11 +456,11 @@ int plugin_init(struct plugin_name_args *plugin_info,
     }
 
     register_callback(plugin_info->base_name,
-                      /* event */ PLUGIN_INFO,
-                      /* callback */ NULL, /* user_data */ &micropython_gcc_plugin_info);
+        /* event */ PLUGIN_INFO,
+        /* callback */ NULL, /* user_data */ &micropython_gcc_plugin_info);
     register_callback(plugin_info->base_name,
-                      /* event */ PLUGIN_PRAGMAS,
-                      /* callback */ register_pragma, /* user_data */ NULL);
+        /* event */ PLUGIN_PRAGMAS,
+        /* callback */ register_pragma, /* user_data */ NULL);
 
     struct register_pass_info pass_info;
 
@@ -374,7 +470,7 @@ int plugin_init(struct plugin_name_args *plugin_info,
     pass_info.pos_op = PASS_POS_INSERT_AFTER;
 
     register_callback(plugin_info->base_name, PLUGIN_PASS_MANAGER_SETUP, NULL,
-                      &pass_info);
+        &pass_info);
 
     return 0;
 }

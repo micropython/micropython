@@ -42,6 +42,7 @@ PATHS = [
     "ports/**/*.[ch]",
     "py/**/*.[ch]",
     "shared/**/*.[ch]",
+    "tools/micropython_checks.cc",
 ]
 
 EXCLUSIONS = [
@@ -169,8 +170,8 @@ def main():
         files = list_files(PATHS, EXCLUSIONS, TOP)
 
     # Run tool on N files at a time (to avoid making the command line too long).
-    def batch(cmd, N=200):
-        files_iter = iter(files)
+    def batch(file_list, cmd, N=200):
+        files_iter = iter(file_list)
         while True:
             file_args = list(itertools.islice(files_iter, N))
             if not file_args:
@@ -179,12 +180,23 @@ def main():
 
     # Format C files with uncrustify.
     if format_c:
-        command = ["uncrustify", "-c", UNCRUSTIFY_CFG, "-lC", "--no-backup"]
-        if not args.v:
-            command.append("-q")
-        batch(command)
-        for file in files:
-            fixup_c(file)
+        cpp_files = [f for f in files if f.endswith(".cc")]
+        c_files = [f for f in files if f not in cpp_files]
+
+        if c_files:
+            command = ["uncrustify", "-c", UNCRUSTIFY_CFG, "-lC", "--no-backup"]
+            if not args.v:
+                command.append("-q")
+            batch(c_files, command)
+
+            for file in c_files:
+                fixup_c(file)
+
+        if cpp_files:
+            command = ["uncrustify", "-c", UNCRUSTIFY_CFG, "-lCPP", "--no-backup"]
+            if not args.v:
+                command.append("-q")
+            batch(cpp_files, command)
 
     # Format Python files with "ruff format" (using config in pyproject.toml).
     if format_py:

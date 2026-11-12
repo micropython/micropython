@@ -1071,12 +1071,12 @@ static mp_obj_t pyb_timer_make_new(const mp_obj_type_t *type, size_t n_args, siz
 
     // check if the timer exists
     if (tim_id <= 0 || tim_id > MICROPY_HW_MAX_TIMER || tim_instance_table[tim_id - 1] == 0) {
-        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("Timer(%d) doesn't exist"), tim_id);
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("Timer(" INT_FMT ") doesn't exist"), tim_id);
     }
 
     // check if the timer is reserved for system use or not
     if (MICROPY_HW_TIM_IS_RESERVED(tim_id)) {
-        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("Timer(%d) is reserved"), tim_id);
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("Timer(" INT_FMT ") is reserved"), tim_id);
     }
 
     pyb_timer_obj_t *tim;
@@ -1229,7 +1229,7 @@ static mp_obj_t pyb_timer_channel(size_t n_args, const mp_obj_t *pos_args, mp_ma
     mp_int_t channel = mp_obj_get_int(pos_args[1]);
 
     if (channel < 1 || channel > 4) {
-        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("invalid channel (%d)"), channel);
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("invalid channel (" INT_FMT ")"), channel);
     }
 
     pyb_timer_channel_obj_t *chan = self->channel;

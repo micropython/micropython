@@ -173,7 +173,7 @@ static mp_obj_t network_esp_hosted_connect(mp_uint_t n_args, const mp_obj_t *pos
         // Initialize WiFi in Station mode.
         if (esp_hosted_wifi_connect(ssid, bssid, security, key, channel) != 0) {
             mp_raise_msg_varg(&mp_type_OSError,
-                MP_ERROR_TEXT("could not connect to ssid=%s, sec=%d, key=%s\n"), ssid, security, key);
+                MP_ERROR_TEXT("could not connect to ssid=%s, sec=%d, key=%s"), ssid, security, key);
         }
     } else {
         // Initialize WiFi in AP mode.

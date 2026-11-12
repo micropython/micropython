@@ -342,7 +342,7 @@ static mp_obj_t pyb_dac_make_new(const mp_obj_type_t *type, size_t n_args, size_
         dac_channel = DAC_CHANNEL_2;
     #endif
     } else {
-        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("DAC(%d) doesn't exist"), dac_id);
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("DAC(" INT_FMT ") doesn't exist"), dac_id);
     }
 
     pyb_dac_obj_t *dac = &pyb_dac_obj[dac_id - 1];
