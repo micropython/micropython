@@ -1,0 +1,24 @@
+{
+    "deploy": [
+        "deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "Breadboard Friendly",
+        "SPI Flash",
+        "USB-C",
+        "WS2812B"
+    ],
+    "images": [
+        "YD-RP2040.jpg"
+    ],
+    "mcu": "rp2040",
+    "product": "YD-RP2040",
+    "url": "http://vcc-gnd.com/",
+    "variants": {
+        "flash_4mb": "4 MiB Flash",
+        "flash_8mb": "8 MiB Flash",
+        "flash_16mb": "16 MiB Flash"
+    },
+    "vendor": "VCC-GND Studio"
+}
