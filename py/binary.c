@@ -32,6 +32,7 @@
 #include <assert.h>
 
 #include "py/binary.h"
+#include "py/gc.h"
 #include "py/smallint.h"
 #include "py/objint.h"
 #include "py/runtime.h"
@@ -434,6 +435,9 @@ void mp_binary_set_val(char struct_type, char val_type, mp_obj_t val_in, byte *p
         #if MICROPY_PY_STRUCT_UNSAFE_TYPECODES
         case 'O':
             val = (mp_uint_t)val_in;
+            #if MICROPY_GC_ENABLE_CONTAINS_NO_GC_POINTERS
+            gc_buf_contains_ptrs(p);
+            #endif
             break;
         #endif
         #if MICROPY_PY_BUILTINS_FLOAT
