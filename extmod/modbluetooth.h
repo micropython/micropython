@@ -358,6 +358,9 @@ int mp_bluetooth_set_preferred_mtu(uint16_t mtu);
 // Initiate pairing on the specified connection.
 int mp_bluetooth_gap_pair(uint16_t conn_handle);
 
+// Remove a specific pairing key from the radio.
+int mp_bluetooth_gap_unpair(uint8_t *key, size_t key_len);
+
 // Respond to a pairing request.
 int mp_bluetooth_gap_passkey(uint16_t conn_handle, uint8_t action, mp_int_t passkey);
 #endif // MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING
