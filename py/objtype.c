@@ -433,6 +433,11 @@ static mp_obj_t instance_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
     };
     mp_obj_class_lookup(&lookup, self->base.type);
     if (member[0] == MP_OBJ_SENTINEL) {
+        #if MICROPY_PY_BUILTINS_FLOAT
+        if (op == MP_UNARY_OP_FLOAT_MAYBE && mp_obj_is_int(self->subobj[0])) {
+            return mp_obj_new_float(mp_obj_get_float(self->subobj[0]));
+        }
+        #endif
         return mp_unary_op(op, self->subobj[0]);
     } else if (member[0] != MP_OBJ_NULL) {
         mp_obj_t val = mp_call_function_1(member[0], self_in);
