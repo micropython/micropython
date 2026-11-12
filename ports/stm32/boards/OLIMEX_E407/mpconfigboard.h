@@ -69,10 +69,10 @@
 #define MICROPY_HW_LED_ON(pin)      (mp_hal_pin_low(pin))
 #define MICROPY_HW_LED_OFF(pin)     (mp_hal_pin_high(pin))
 
-// SD card detect switch
-#define MICROPY_HW_SDCARD_DETECT_PIN        (pin_C11)
-#define MICROPY_HW_SDCARD_DETECT_PULL       (GPIO_PULLUP)
-#define MICROPY_HW_SDCARD_DETECT_PRESENT    (GPIO_PIN_RESET)
+// SD card detect switch (Disabled, as some cards are not correctly detected, with it enabled)
+// #define MICROPY_HW_SDCARD_DETECT_PIN        (pin_C11)
+// #define MICROPY_HW_SDCARD_DETECT_PULL       (GPIO_PULLUP)
+// #define MICROPY_HW_SDCARD_DETECT_PRESENT    (GPIO_PIN_RESET)
 
 // USB config
 #define MICROPY_HW_USB_FS              (1)
