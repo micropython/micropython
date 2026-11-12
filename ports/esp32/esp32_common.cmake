@@ -133,6 +133,7 @@ list(APPEND MICROPY_SOURCE_PORT
     mpnimbleport.c
     modsocket.c
     lwip_patch.c
+    nimble_patch.c
     modesp.c
     esp32_nvs.c
     esp32_partition.c
@@ -310,6 +311,18 @@ target_link_options(${MICROPY_TARGET} PUBLIC
   -Wl,--wrap=esp_panic_handler
   -Wl,--wrap=esp_efuse_rtc_calib_get_ver
 )
+
+# Bluetooth-specific linker options
+# Note: Since we cannot query sdkconfig values such as BT_NIMBLE_HOST_BASED_PRIVACY
+# at this stage, we check for the ESP32 instead, which is the only one that enables
+# host-based privacy by default (other chips use privacy support in the controller)
+if (CONFIG_IDF_TARGET_ESP32 AND (NOT DEFINED MICROPY_PY_BLUETOOTH OR MICROPY_PY_BLUETOOTH))
+    target_link_options(${MICROPY_TARGET} PUBLIC
+        # Patch NimBLE peer RPA resolving (see nimble_patch.c)
+        -Wl,--undefined=ble_rpa_replace_peer_params_with_rl
+        -Wl,--wrap=ble_rpa_replace_peer_params_with_rl
+    )
+endif()
 
 # Collect all of the include directories and compile definitions for the IDF components,
 # including those added by the IDF Component Manager via idf_components.yaml.
