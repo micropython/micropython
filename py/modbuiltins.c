@@ -460,6 +460,11 @@ MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_repr_obj, mp_builtin_repr);
 
 static mp_obj_t mp_builtin_round(size_t n_args, const mp_obj_t *args) {
     mp_obj_t o_in = args[0];
+
+    if (mp_obj_is_bool(o_in)) {
+        o_in = MP_OBJ_NEW_SMALL_INT(o_in == mp_const_true);
+    }
+
     if (mp_obj_is_int(o_in)) {
         if (n_args <= 1) {
             return o_in;
