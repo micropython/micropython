@@ -73,3 +73,13 @@ class Matrix(ATOM):
     # WS2812 number: 25
     def __init__(self):
         super(Matrix, self).__init__(np_n=25)
+
+    def set_pixel_color_x_y(self, x, y, r, g, b):
+        if (0 <= x < 5) and (0 <= y < 5):
+            n = (y * 5) + x
+            self.set_pixel_color(n, r, g, b)
+
+    def get_pixel_color_x_y(self, x, y):
+        if (0 <= x < 5) and (0 <= y < 5):
+            n = (y * 5) + x
+            return self.get_pixel_color(n)
