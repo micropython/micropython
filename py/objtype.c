@@ -585,6 +585,43 @@ static mp_obj_t instance_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t 
     return res;
 }
 
+#if MICROPY_PY_BUILTINS_PROPERTY || MICROPY_PY_DESCRIPTORS
+static void mp_obj_instance_apply_descriptors(mp_obj_t member, mp_obj_t self_obj, mp_obj_t *dest) {
+    #if MICROPY_PY_BUILTINS_PROPERTY
+    if (mp_obj_is_type(member, &mp_type_property)) {
+        // object member is a property; delegate the load to the property
+        // Note: This is an optimisation for code size and execution time.
+        // The proper way to do it is have the functionality just below
+        // in a __get__ method of the property object, and then it would
+        // be called by the descriptor code down below.  But that way
+        // requires overhead for the nested mp_call's and overhead for
+        // the code.
+        const mp_obj_t *proxy = mp_obj_property_get(member);
+        if (proxy[0] == mp_const_none) {
+            mp_raise_msg(&mp_type_AttributeError, MP_ERROR_TEXT("unreadable attribute"));
+        } else {
+            dest[0] = mp_call_function_n_kw(proxy[0], 1, 0, &self_obj);
+        }
+        return;
+    }
+    #endif
+
+    #if MICROPY_PY_DESCRIPTORS
+    // found a class attribute; if it has a __get__ method then call it with the
+    // class instance and class as arguments and return the result
+    // Note that this is functionally correct but very slow: each load_attr
+    // requires an extra mp_load_method_maybe to check for the __get__.
+    mp_obj_t attr_get_method[4];
+    mp_load_method_maybe(member, MP_QSTR___get__, attr_get_method);
+    if (attr_get_method[0] != MP_OBJ_NULL) {
+        attr_get_method[2] = self_obj;
+        attr_get_method[3] = MP_OBJ_FROM_PTR(mp_obj_get_type(self_obj));
+        dest[0] = mp_call_method_n_kw(2, 0, attr_get_method);
+    }
+    #endif
+}
+#endif
+
 static void mp_obj_instance_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     // logic: look in instance members then class locals
     assert(mp_obj_is_instance_type(mp_obj_get_type(self_in)));
@@ -625,37 +662,8 @@ static void mp_obj_instance_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *des
             return;
         }
 
-        #if MICROPY_PY_BUILTINS_PROPERTY
-        if (mp_obj_is_type(member, &mp_type_property)) {
-            // object member is a property; delegate the load to the property
-            // Note: This is an optimisation for code size and execution time.
-            // The proper way to do it is have the functionality just below
-            // in a __get__ method of the property object, and then it would
-            // be called by the descriptor code down below.  But that way
-            // requires overhead for the nested mp_call's and overhead for
-            // the code.
-            const mp_obj_t *proxy = mp_obj_property_get(member);
-            if (proxy[0] == mp_const_none) {
-                mp_raise_msg(&mp_type_AttributeError, MP_ERROR_TEXT("unreadable attribute"));
-            } else {
-                dest[0] = mp_call_function_n_kw(proxy[0], 1, 0, &self_in);
-            }
-            return;
-        }
-        #endif
-
-        #if MICROPY_PY_DESCRIPTORS
-        // found a class attribute; if it has a __get__ method then call it with the
-        // class instance and class as arguments and return the result
-        // Note that this is functionally correct but very slow: each load_attr
-        // requires an extra mp_load_method_maybe to check for the __get__.
-        mp_obj_t attr_get_method[4];
-        mp_load_method_maybe(member, MP_QSTR___get__, attr_get_method);
-        if (attr_get_method[0] != MP_OBJ_NULL) {
-            attr_get_method[2] = self_in;
-            attr_get_method[3] = MP_OBJ_FROM_PTR(mp_obj_get_type(self_in));
-            dest[0] = mp_call_method_n_kw(2, 0, attr_get_method);
-        }
+        #if MICROPY_PY_BUILTINS_PROPERTY || MICROPY_PY_DESCRIPTORS
+        mp_obj_instance_apply_descriptors(member, self_in, dest);
         #endif
         return;
     }
@@ -1403,7 +1411,20 @@ static void super_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
             // Looked up native __init__ so defer to it
             dest[0] = MP_OBJ_FROM_PTR(&mp_native_base_init_wrapper_obj);
             dest[1] = self->obj;
+            return;
         }
+
+        #if MICROPY_PY_BUILTINS_PROPERTY || MICROPY_PY_DESCRIPTORS
+        // Apply descriptor protocol for property/descriptors found in base class,
+        // but only if the type of the object bound to this super() has special
+        // accessors (this flag is inherited from base classes so covers the
+        // entire hierarchy that super() searches).  When super() is bound to a
+        // type, eg in a classmethod, the flag is never set and the member is
+        // returned as-is.
+        if (mp_obj_get_type(self->obj)->flags & MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS) {
+            mp_obj_instance_apply_descriptors(dest[0], self->obj, dest);
+        }
+        #endif
         return;
     }
 

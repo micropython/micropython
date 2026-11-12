@@ -51,3 +51,25 @@ print(I().val)
 # should be able to add a property to the derived class
 I.baz = property(lambda self: print('baz get'))
 I().baz
+
+# test that super() can access a parent property
+class J:
+    @property
+    def p(self):
+        return "AB"
+class K(J):
+    @property
+    def p(self):
+        return super().p+"C"
+print(K().p)
+
+# test that super() in a classmethod returns the property object itself
+class L:
+    @property
+    def p(self):
+        return "DE"
+class M(L):
+    @classmethod
+    def get(cls):
+        return super().p
+print(isinstance(M.get(), property))
