@@ -71,6 +71,10 @@ bool sdram_init(void) {
     HAL_SetFMCMemorySwappingConfig(FMC_SWAPBMAP_SDRAM_SRAM);
     #endif
 
+    // NOR/SRAM bank 1 is enabled at reset but has nothing fitted. A speculative read
+    // of it stalls the FMC for ~26us, holding off all SDRAM accesses until it ends.
+    __FMC_NORSRAM_DISABLE(FMC_NORSRAM_DEVICE, FMC_NORSRAM_BANK1);
+
     #if defined(MICROPY_HW_FMC_SDCKE0)
     mp_hal_pin_config_alt_static_speed(MICROPY_HW_FMC_SDCKE0, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, MP_HAL_PIN_SPEED_VERY_HIGH, STATIC_AF_FMC_SDCKE0);
     mp_hal_pin_config_alt_static_speed(MICROPY_HW_FMC_SDNE0, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, MP_HAL_PIN_SPEED_VERY_HIGH, STATIC_AF_FMC_SDNE0);
