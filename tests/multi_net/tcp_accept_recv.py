@@ -23,14 +23,14 @@ def instance0():
 
             # Call listen with or without argument based on test case
             if listen_arg is None:
-                print(f"Test case {test_num}/8: listen() blocking={blocking_mode}")
+                print("Test case {}/8: listen() blocking={}".format(test_num, blocking_mode))
                 s.listen()
             else:
-                print(f"Test case {test_num}/8: listen({listen_arg}) blocking={blocking_mode}")
+                print("Test case {}/8: listen({}) blocking={}".format(test_num, listen_arg, blocking_mode))
                 s.listen(listen_arg)
 
             # Signal client that server is ready
-            multitest.broadcast(f"server_ready_{test_num}")
+            multitest.broadcast("server_ready_{}".format(test_num))
 
             # Wait for client connection
             c, _ = s.accept()
@@ -49,7 +49,7 @@ def instance0():
             s.close()
 
             # Signal client we're done with this test case
-            multitest.broadcast(f"server_done_{test_num}")
+            multitest.broadcast("server_done_{}".format(test_num))
 
 
 # Client
@@ -61,7 +61,7 @@ def instance1():
         for _ in LISTEN_ARGS:
             test_num += 1
             # Wait for server to be ready
-            multitest.wait(f"server_ready_{test_num}")
+            multitest.wait("server_ready_{}".format(test_num))
 
             # Connect to server
             s = socket.socket()
@@ -70,4 +70,4 @@ def instance1():
             s.close()
 
             # Wait for server to finish this test case
-            multitest.wait(f"server_done_{test_num}")
+            multitest.wait("server_done_{}".format(test_num))
