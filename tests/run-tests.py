@@ -154,6 +154,11 @@ platform_tests_to_skip = {
         "thread/thread_lock3.py",
         "thread/thread_shared2.py",
     ),
+    "win32": (
+        # These tests require physical UART hardware.
+        "extmod/machine_uart_irq_txidle.py",
+        "extmod/machine_uart_tx.py",
+    ),
     "webassembly": (
         "basics/string_format_modulo.py",  # can't print nulls to stdout
         "basics/string_strip.py",  # can't print nulls to stdout
