@@ -281,13 +281,13 @@ if(MICROPY_FROZEN_MANIFEST)
         if(NOT MICROPY_MAKE_EXECUTABLE)
             set(MICROPY_MAKE_EXECUTABLE make)
         endif()
-        # Clear FROZEN_MANIFEST/USER_C_MODULES in the mpy-cross sub-make so a
-        # shell-env FROZEN_MANIFEST=... doesn't leak in and trigger
-        # manifest.mk against the wrong cwd. mkrules.mk does the same for the
-        # make-based port path.
+        # Pin BUILD and clear FROZEN_MANIFEST/USER_C_MODULES in the mpy-cross
+        # sub-make so a command-line BUILD=... or shell-env FROZEN_MANIFEST=...
+        # doesn't leak in (BUILD ?= build won't override a defined empty
+        # BUILD=). mkrules.mk does the same for the make-based port path.
         add_custom_command(
             OUTPUT ${MICROPY_MPYCROSS_DEPENDENCY}
-            COMMAND ${MICROPY_MAKE_EXECUTABLE} -C ${MICROPY_DIR}/mpy-cross USER_C_MODULES= FROZEN_MANIFEST=
+            COMMAND ${MICROPY_MAKE_EXECUTABLE} -C ${MICROPY_DIR}/mpy-cross BUILD=${MICROPY_DIR}/mpy-cross/build USER_C_MODULES= FROZEN_MANIFEST=
         )
     endif()
 
