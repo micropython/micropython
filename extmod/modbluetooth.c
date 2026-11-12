@@ -710,6 +710,21 @@ static mp_obj_t bluetooth_ble_gap_disconnect(mp_obj_t self_in, mp_obj_t conn_han
 static MP_DEFINE_CONST_FUN_OBJ_2(bluetooth_ble_gap_disconnect_obj, bluetooth_ble_gap_disconnect);
 
 #if MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING
+static mp_obj_t bluetooth_indicate_service_changed(size_t n_args, const mp_obj_t *args) {
+    (void)n_args;
+    int16_t handle = -1;
+    if (args[1] != mp_const_none) {
+        handle = mp_obj_get_int(args[1]);
+    }
+
+    uint16_t hdl_start = mp_obj_get_int(args[2]);
+    uint16_t hdl_end = mp_obj_get_int(args[3]);
+
+    mp_bluetooth_indicate_service_changed(handle, hdl_start, hdl_end);
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(bluetooth_indicate_service_changed_obj, 4, 4, bluetooth_indicate_service_changed);
+
 static mp_obj_t bluetooth_ble_gap_pair(mp_obj_t self_in, mp_obj_t conn_handle_in) {
     (void)self_in;
     uint16_t conn_handle = mp_obj_get_int(conn_handle_in);
@@ -944,6 +959,7 @@ static const mp_rom_map_elem_t bluetooth_ble_locals_dict_table[] = {
     #endif
     { MP_ROM_QSTR(MP_QSTR_gap_disconnect), MP_ROM_PTR(&bluetooth_ble_gap_disconnect_obj) },
     #if MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING
+    { MP_ROM_QSTR(MP_QSTR_gap_indicate_service_changed), MP_ROM_PTR(&bluetooth_indicate_service_changed_obj) },
     { MP_ROM_QSTR(MP_QSTR_gap_pair), MP_ROM_PTR(&bluetooth_ble_gap_pair_obj) },
     { MP_ROM_QSTR(MP_QSTR_gap_passkey), MP_ROM_PTR(&bluetooth_ble_gap_passkey_obj) },
     #endif

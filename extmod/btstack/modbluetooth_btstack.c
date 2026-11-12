@@ -1259,6 +1259,11 @@ int mp_bluetooth_gap_disconnect(uint16_t conn_handle) {
 
 #if MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING
 
+void mp_bluetooth_indicate_service_changed(int16_t conn_handle, uint16_t hdl_start, uint16_t hdl_end) {
+    DEBUG_printf("mp_bluetooth_indicate_service_changed\n");
+    // BTstack doesn't provide a direct API for service changed indications.
+}
+
 int mp_bluetooth_gap_pair(uint16_t conn_handle) {
     DEBUG_printf("mp_bluetooth_gap_pair: conn_handle=%d\n", conn_handle);
     sm_request_pairing(conn_handle);
