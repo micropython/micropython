@@ -27,5 +27,9 @@
 // Set base feature level.
 #define MICROPY_CONFIG_ROM_LEVEL (MICROPY_CONFIG_ROM_LEVEL_EXTRA_FEATURES)
 
+#if defined(__linux__)
+#define MICROPY_PY_GPIO (1)
+#endif
+
 // Enable extra Unix features.
 #include "../mpconfigvariant_common.h"
