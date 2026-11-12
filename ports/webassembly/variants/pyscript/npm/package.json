@@ -1,0 +1,19 @@
+{
+  "name": "@micropython/micropython-webassembly-pyscript",
+  "version": "@VERSION@",
+  "description": "MicroPython WebAssembly port, PyScript variant",
+  "main": "micropython.mjs",
+  "files": [
+    "micropython.mjs",
+    "micropython.wasm",
+    "micropython-settrace.wasm"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/micropython/micropython.git"
+  },
+  "keywords": [
+    "MicroPython"
+  ],
+  "license": "MIT"
+}

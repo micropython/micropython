@@ -48,6 +48,9 @@ INC += -I$(VARIANT_DIR)
 CFLAGS += -std=c99 -Wall -Werror -Wdouble-promotion -Wfloat-conversion
 CFLAGS += -Os -DNDEBUG
 CFLAGS += $(INC)
+# Extra flags from the command line, e.g. to enable a feature for one
+# build (the npm settrace sub-variant below uses this).
+CFLAGS += $(CFLAGS_EXTRA)
 
 EXPORTED_FUNCTIONS_EXTRA += ,\
 	_mp_js_do_exec,\
@@ -135,7 +138,7 @@ OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 ################################################################################
 # Main targets.
 
-.PHONY: all repl min test test//% test_min
+.PHONY: all repl min test test//% test_min npm_pack publish
 
 all: $(BUILD)/micropython.mjs
 
@@ -160,6 +163,53 @@ test//%: $(BUILD)/micropython.mjs $(TOP)/tests/run-tests.py
 
 test_min: $(BUILD)/micropython.min.mjs $(TOP)/tests/run-tests.py
 	cd $(TOP)/tests && MICROPY_MICROPYTHON_MJS=../ports/webassembly/$< ./run-tests.py -t webassembly
+
+################################################################################
+# Publishing to npm.
+
+# A variant is publishable when it has an npm/ directory holding a
+# package.json (with @VERSION@ where the version goes) and a README.md.
+# The package holds the minified JS plus two wasm files: the variant as
+# built, and a settrace sub-variant for debuggers.  Both builds share
+# the same JS, which the cmp below checks, so one micropython.mjs serves
+# either wasm.  The version comes from git describe (v1.2.3-45-gabcdef
+# becomes 1.2.3-45); set NPM_VERSION to override it.  npm_pack builds
+# the tarball for inspection, publish uploads it with the credentials of
+# whoever runs it.
+
+# Where the package is assembled, e.g. build-browser/npm.
+NPM_DIR = $(BUILD)/npm
+# Version from the nearest tag, e.g. v1.30.0-preview-264-gc1c4e7b6f
+# becomes 1.30.0-preview-264; override with NPM_VERSION=... on the
+# command line.
+NPM_VERSION ?= $(shell git describe --tags | $(SED) 's/^v//; s/-g[0-9a-f]*$$//')
+# Separate build directory for the settrace sub-variant.
+SETTRACE_BUILD = $(BUILD)-settrace
+
+# Build the settrace sub-variant by re-running make with the flag on.
+$(SETTRACE_BUILD)/micropython.min.mjs:
+	$(MAKE) VARIANT=$(VARIANT) BUILD=$(SETTRACE_BUILD) CFLAGS_EXTRA="-DMICROPY_PY_SYS_SETTRACE=1" min
+
+# Assemble the package once both builds and the variant's npm files exist.
+# The cmp fails unless both builds produced the same JS; the minified JS
+# is shipped under the name the package's "main" uses; and the version is
+# filled into the package.json template.
+$(NPM_DIR)/package.json: $(BUILD)/micropython.min.mjs $(SETTRACE_BUILD)/micropython.min.mjs $(VARIANT_DIR)/npm/package.json $(VARIANT_DIR)/npm/README.md
+	cmp $(BUILD)/micropython.min.mjs $(SETTRACE_BUILD)/micropython.min.mjs
+	$(MKDIR) -p $(NPM_DIR)
+	$(CP) $(BUILD)/micropython.min.mjs $(NPM_DIR)/micropython.mjs
+	$(CP) $(BUILD)/micropython.wasm $(NPM_DIR)/micropython.wasm
+	$(CP) $(SETTRACE_BUILD)/micropython.wasm $(NPM_DIR)/micropython-settrace.wasm
+	$(CP) $(VARIANT_DIR)/npm/README.md $(NPM_DIR)/README.md
+	$(SED) 's/@VERSION@/$(NPM_VERSION)/' $(VARIANT_DIR)/npm/package.json > $@
+
+# Build the tarball for inspection, without uploading.
+npm_pack: $(NPM_DIR)/package.json
+	cd $(NPM_DIR) && npm pack
+
+# Upload, with the npm credentials of whoever runs this.
+publish: $(NPM_DIR)/package.json
+	cd $(NPM_DIR) && npm publish --tag latest --access public
 
 ################################################################################
 # Remaining make rules.
