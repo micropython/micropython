@@ -8,3 +8,5 @@ def g(x):
     f(4 * x)
 
 g(3)
+a = 3
+g((a)) # Making sure the extra parentheses cause no issues
