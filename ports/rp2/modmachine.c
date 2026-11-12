@@ -62,6 +62,9 @@
 #define RP2_RESET_PWRON (1)
 #define RP2_RESET_HARD (2)
 #define RP2_RESET_WDT (3)
+#define RP2_RESET_SOFT (4)
+
+static bool is_soft_reset;
 
 #define MICROPY_PY_MACHINE_EXTRA_GLOBALS \
     { MP_ROM_QSTR(MP_QSTR_Pin),                 MP_ROM_PTR(&machine_pin_type) }, \
@@ -71,6 +74,7 @@
     { MP_ROM_QSTR(MP_QSTR_PWRON_RESET),         MP_ROM_INT(RP2_RESET_PWRON) }, \
     { MP_ROM_QSTR(MP_QSTR_HARD_RESET),          MP_ROM_INT(RP2_RESET_HARD) }, \
     { MP_ROM_QSTR(MP_QSTR_WDT_RESET),           MP_ROM_INT(RP2_RESET_WDT) }, \
+    { MP_ROM_QSTR(MP_QSTR_SOFT_RESET),          MP_ROM_INT(RP2_RESET_SOFT) }, \
 
 static mp_obj_t mp_machine_unique_id(void) {
     pico_unique_board_id_t id;
@@ -86,6 +90,10 @@ MP_NORETURN static void mp_machine_reset(void) {
 }
 
 static mp_int_t mp_machine_reset_cause(void) {
+    if (is_soft_reset) {
+        // The interpreter soft-reset; the chip was not reset.
+        return RP2_RESET_SOFT;
+    }
     int reset_cause;
     // The watchdog REASON register layout is identical on RP2040 and RP2350
     // (bit 0 TIMER, bit 1 FORCE), unlike the chip reset latch below.
@@ -110,6 +118,15 @@ static mp_int_t mp_machine_reset_cause(void) {
         }
     }
     return reset_cause;
+}
+
+void machine_init(void) {
+    is_soft_reset = 0;
+}
+
+void machine_deinit(void) {
+    // we are doing a soft-reset so change the reset_cause
+    is_soft_reset = 1;
 }
 
 MP_NORETURN void mp_machine_bootloader(size_t n_args, const mp_obj_t *args) {
