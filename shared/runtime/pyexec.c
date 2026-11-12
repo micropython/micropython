@@ -37,6 +37,7 @@
 #include "py/mphal.h"
 #include "shared/readline/readline.h"
 #include "shared/runtime/pyexec.h"
+#include "py/modatexit.h"
 #include "extmod/modplatform.h"
 #include "genhdr/mpversion.h"
 
@@ -152,6 +153,15 @@ static int parse_compile_execute(const void *source, mp_parse_input_kind_t input
             const mp_reader_t *reader = source;
             reader->close(reader->data);
         }
+
+        // Execute atexit handlers on SystemExit, before the EOF marker
+        // so their output is captured as normal output by the raw REPL.
+        #if MICROPY_PY_ATEXIT
+        if (nlr.ret_val != NULL
+            && mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(((mp_obj_base_t *)nlr.ret_val)->type), MP_OBJ_FROM_PTR(&mp_type_SystemExit))) {
+            mp_atexit_execute();
+        }
+        #endif
 
         // print EOF after normal output
         if (exec_flags & EXEC_FLAG_PRINT_EOF) {
