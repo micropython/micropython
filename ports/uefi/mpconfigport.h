@@ -124,10 +124,13 @@ void mp_uefi_sched_signal(void);
 // extmod skeleton needs sys.exit for machine.soft_reset.
 #define MICROPY_PY_MACHINE                  (1)
 #define MICROPY_PY_MACHINE_INCLUDEFILE      "ports/uefi/modmachine.c"
-// machine basics. mem8/16/32 (flat-mapped: identity address, no port hook), reset,
+// machine basics. mem8/16/32/64 (flat-mapped: identity address; the port hook only
+// adds a null-page check), reset,
 // the bare-metal funcs (unique_id from SMBIOS, freq from the counter, light/deep
 // sleep), and WDT over SetWatchdogTimer. Signal/Pin (hardware) stay off.
 #define MICROPY_PY_MACHINE_MEMX             (1)
+#define MICROPY_MACHINE_MEM_GET_READ_ADDR   mod_machine_mem_get_addr  // rejects the null page
+#define MICROPY_MACHINE_MEM_GET_WRITE_ADDR  mod_machine_mem_get_addr
 #define MICROPY_PY_MACHINE_RESET            (1)
 #define MICROPY_PY_MACHINE_BARE_METAL_FUNCS (1)
 #define MICROPY_PY_MACHINE_WDT              (1)

@@ -78,6 +78,11 @@ Direct memory access (the environment is ring 0, flat/identity-mapped, so a
 
     machine.mem32[0xFED00000]            # read a 32-bit MMIO register
     machine.mem8[addr] = 0x5a            # write a byte
+    machine.mem64[0xFED000F0]            # one 64-bit access (e.g. the HPET counter)
+
+Addresses in the first 4 KiB page raise :exc:`ValueError`, since a null-derived
+address is always a bug.  For x86 port I/O, use
+:data:`uefi.protocols.CPU_IO2`.
 
 The port-specific :mod:`uefi` module gives Python access to the firmware itself
 -- the protocol/handle database, Boot/Runtime Services, NVRAM variables, events

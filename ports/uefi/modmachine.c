@@ -14,6 +14,20 @@
 #include "efi.h"
 #include "uefi_port.h"
 
+// machine.mem*: as the core's check, plus the null page. The firmware usually maps
+// page 0 (OVMF's null-pointer guard is off by default), so a null-derived address
+// would silently hit real memory; it is never a legitimate target.
+uintptr_t mod_machine_mem_get_addr(mp_obj_t addr_o, uint align) {
+    uintptr_t addr = mp_obj_get_int_truncated(addr_o);
+    if (addr < 4096) {
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("address %p is in the null page"), addr);
+    }
+    if ((addr & (align - 1)) != 0) {
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("address %08p is not aligned to %d bytes"), addr, align);
+    }
+    return addr;
+}
+
 // machine.idle(): wait for the next interrupt/event (our WFE primitive).
 static void mp_machine_idle(void) {
     mp_event_wait_indefinite();
