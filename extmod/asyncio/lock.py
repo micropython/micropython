@@ -6,7 +6,7 @@ from . import core
 
 # Lock class for primitive mutex capability
 class Lock:
-    def __init__(self):
+    def __init__(self, /):
         # The state can take the following values:
         # - 0: unlocked
         # - 1: locked
@@ -15,10 +15,10 @@ class Lock:
         # Queue of Tasks waiting to acquire this Lock
         self.waiting = core.TaskQueue()
 
-    def locked(self):
+    def locked(self, /):
         return self.state == 1
 
-    def release(self):
+    def release(self, /):
         if self.state != 1:
             raise RuntimeError("Lock not acquired")
         if self.waiting.peek():
@@ -30,7 +30,7 @@ class Lock:
             self.state = 0
 
     # async
-    def acquire(self):
+    def acquire(self, /):
         if self.state != 0:
             # Lock unavailable, put the calling Task on the waiting queue
             self.waiting.push(core.cur_task)
@@ -48,8 +48,8 @@ class Lock:
         self.state = 1
         return True
 
-    async def __aenter__(self):
+    async def __aenter__(self, /):
         return await self.acquire()
 
-    async def __aexit__(self, exc_type, exc, tb):
+    async def __aexit__(self, exc_type, exc, tb, /):
         return self.release()

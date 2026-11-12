@@ -18,7 +18,7 @@ class QueueFull(Exception):
 
 # FIFO queue, for producer/consumer coordination between tasks.
 class Queue:
-    def __init__(self, maxsize=0):
+    def __init__(self, /, maxsize=0):
         self.maxsize = maxsize
         self._queue = []
         self._unfinished = 0
@@ -27,28 +27,28 @@ class Queue:
         self._evjoin = Event()  # Set whenever there are no unfinished items
         self._evjoin.set()
 
-    def qsize(self):
+    def qsize(self, /):
         return len(self._queue)
 
-    def empty(self):
+    def empty(self, /):
         return not len(self._queue)
 
-    def full(self):
+    def full(self, /):
         return self.maxsize > 0 and len(self._queue) >= self.maxsize
 
-    def get_nowait(self):
+    def get_nowait(self, /):
         if self.empty():
             raise QueueEmpty
         self._evget.set()
         self._evget.clear()
         return self._queue.pop(0)
 
-    async def get(self):
+    async def get(self, /):
         while self.empty():
             await self._evput.wait()
         return self.get_nowait()
 
-    def put_nowait(self, v):
+    def put_nowait(self, v, /):
         if self.full():
             raise QueueFull
         self._queue.append(v)
@@ -57,17 +57,17 @@ class Queue:
         self._evput.set()
         self._evput.clear()
 
-    async def put(self, v):
+    async def put(self, v, /):
         while self.full():
             await self._evget.wait()
         self.put_nowait(v)
 
-    def task_done(self):
+    def task_done(self, /):
         if not self._unfinished:
             raise ValueError("task_done called too many times")
         self._unfinished -= 1
         if not self._unfinished:
             self._evjoin.set()
 
-    async def join(self):
+    async def join(self, /):
         await self._evjoin.wait()

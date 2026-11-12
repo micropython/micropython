@@ -25,7 +25,7 @@ _attrs = {
 # Lazy loader, effectively does:
 #   global attr
 #   from .mod import attr
-def __getattr__(attr):
+def __getattr__(attr, /):
     mod = _attrs.get(attr, None)
     if mod is None:
         raise AttributeError(attr)

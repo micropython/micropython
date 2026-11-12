@@ -34,7 +34,7 @@ Example::
 Core functions
 --------------
 
-.. function:: create_task(coro)
+.. function:: create_task(coro, /)
 
     Create a new task from the given coroutine and schedule it to run.
 
@@ -44,19 +44,19 @@ Core functions
 
     Return the `Task` object associated with the currently running task.
 
-.. function:: run(coro)
+.. function:: run(coro, /)
 
     Create a new task from the given coroutine and run it until it completes.
 
     Returns the value returned by *coro*.
 
-.. function:: sleep(t)
+.. function:: sleep(t, /)
 
     Sleep for *t* seconds (can be a float).
 
     This is a coroutine.
 
-.. function:: sleep_ms(t)
+.. function:: sleep_ms(t, /)
 
     Sleep for *t* milliseconds.
 
@@ -65,7 +65,7 @@ Core functions
 Additional functions
 --------------------
 
-.. function:: wait_for(awaitable, timeout)
+.. function:: wait_for(awaitable, timeout, /)
 
     Wait for the *awaitable* to complete, but cancel it if it takes longer
     than *timeout* seconds.  If *awaitable* is not a task then a task will be
@@ -80,7 +80,7 @@ Additional functions
 
     This is a coroutine.
 
-.. function:: wait_for_ms(awaitable, timeout)
+.. function:: wait_for_ms(awaitable, timeout, /)
 
     Similar to `wait_for` but *timeout* is an integer in milliseconds.
 
@@ -220,14 +220,14 @@ class Queue
     Returns ``True`` if there are *maxsize* items in the queue and
     *maxsize* is greater than zero, otherwise ``False``.
 
-.. method:: Queue.put(item)
+.. method:: Queue.put(item, /)
 
     Put *item* onto the queue.  If the queue is full then wait for space to
     be available before adding the item.
 
     This is a coroutine.
 
-.. method:: Queue.put_nowait(item)
+.. method:: Queue.put_nowait(item, /)
 
     Put *item* into the queue without blocking.  If no space is available
     raise `QueueFull`.
@@ -281,7 +281,7 @@ TCP stream connections
 
     This is a coroutine.
 
-.. function:: start_server(callback, host, port, backlog=5, ssl=None)
+.. function:: start_server(callback, /, host, port, backlog=5, ssl=None)
 
     Start a TCP server on the given *host* and *port*.  The *callback* will be
     called with incoming, accepted connections, and be passed 2 arguments: reader
@@ -299,7 +299,7 @@ TCP stream connections
     both a reader and a writer, and both ``StreamReader`` and ``StreamWriter`` alias to
     this class.
 
-.. method:: Stream.get_extra_info(v)
+.. method:: Stream.get_extra_info(v, /)
 
     Get extra information about the stream, given by *v*.  The valid values for *v* are:
     ``peername``.
@@ -314,7 +314,7 @@ TCP stream connections
 
     This is a coroutine.
 
-.. method:: Stream.read(n=-1)
+.. method:: Stream.read(n=-1, /)
 
     Read up to *n* bytes and return them.  If *n* is not provided or -1 then read all
     bytes until EOF.  The returned value will be an empty bytes object if EOF is
@@ -322,7 +322,7 @@ TCP stream connections
 
     This is a coroutine.
 
-.. method:: Stream.readinto(buf)
+.. method:: Stream.readinto(buf, /)
 
     Read up to n bytes into *buf* with n being equal to the length of *buf*.
 
@@ -330,7 +330,7 @@ TCP stream connections
 
     This is a coroutine, and a MicroPython extension.
 
-.. method:: Stream.readexactly(n)
+.. method:: Stream.readexactly(n, /)
 
     Read exactly *n* bytes and return them as a bytes object.
 
@@ -344,7 +344,7 @@ TCP stream connections
 
     This is a coroutine.
 
-.. method:: Stream.write(buf)
+.. method:: Stream.write(buf, /)
 
     Accumulated *buf* to the output buffer.  The data is only flushed when
     `Stream.drain` is called.  It is recommended to call `Stream.drain` immediately
@@ -390,7 +390,7 @@ Event Loop
     This represents the object which schedules and runs tasks.  It cannot be
     created, use `get_event_loop` instead.
 
-.. method:: Loop.create_task(coro)
+.. method:: Loop.create_task(coro, /)
 
     Create a task from the given *coro* and return the new `Task` object.
 
@@ -398,7 +398,7 @@ Event Loop
 
     Run the event loop until `stop()` is called.
 
-.. method:: Loop.run_until_complete(awaitable)
+.. method:: Loop.run_until_complete(awaitable, /)
 
     Run the given *awaitable* until it completes.  If *awaitable* is not a task
     then it will be promoted to one.
@@ -411,7 +411,7 @@ Event Loop
 
     Close the event loop.
 
-.. method:: Loop.set_exception_handler(handler)
+.. method:: Loop.set_exception_handler(handler, /)
 
     Set the exception handler to call when a Task raises an exception that is not
     caught.  The *handler* should accept two arguments: ``(loop, context)``.
