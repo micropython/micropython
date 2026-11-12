@@ -143,6 +143,8 @@ void mp_hal_delay_ms(mp_uint_t ms) {
     // Yielding wait: park in WaitForEvent so timers, scheduled callbacks and
     // async events keep flowing (and a pending KeyboardInterrupt is raised)
     // while we sleep, instead of spinning in Stall.
+    // Even sleep(0) must run pending scheduled callbacks (and so a scheduled KeyboardInterrupt).
+    mp_event_handle_nowait();
     mp_uint_t start = mp_hal_ticks_ms();
     for (;;) {
         mp_uint_t elapsed = mp_hal_ticks_ms() - start;
