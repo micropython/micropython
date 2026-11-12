@@ -143,12 +143,18 @@ void mp_str_print_json(const mp_print_t *print, const byte *str_data, size_t str
     // for JSON spec, see http://www.ietf.org/rfc/rfc4627.txt
     // if we are given a valid utf8-encoded string, we will print it in a JSON-conforming way
     mp_print_str(print, "\"");
+    const byte *run = str_data; // start of the bytes not yet printed
     for (const byte *s = str_data, *top = str_data + str_len; s < top; s++) {
+        if (*s >= 32 && *s != '"' && *s != '\\') {
+            // this will handle normal and utf-8 encoded chars: printed as a run
+            continue;
+        }
+        if (s > run) {
+            print->print_strn(print->data, (const char *)run, s - run);
+        }
+        run = s + 1;
         if (*s == '"' || *s == '\\') {
             mp_printf(print, "\\%c", *s);
-        } else if (*s >= 32) {
-            // this will handle normal and utf-8 encoded chars
-            mp_printf(print, "%c", *s);
         } else if (*s == '\n') {
             mp_print_str(print, "\\n");
         } else if (*s == '\r') {
@@ -159,6 +165,9 @@ void mp_str_print_json(const mp_print_t *print, const byte *str_data, size_t str
             // this will handle control chars
             mp_printf(print, "\\u%04x", *s);
         }
+    }
+    if (str_data + str_len > run) {
+        print->print_strn(print->data, (const char *)run, str_data + str_len - run);
     }
     mp_print_str(print, "\"");
 }
