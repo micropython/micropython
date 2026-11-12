@@ -1,0 +1,36 @@
+MicroPython \.\+ version
+Type "help()" for more information.
+>>> # REPL tests of UTF-8 editing with emacs keys and word movement
+>>> # ctrl-B, ctrl-F and ctrl-D move over and delete whole characters
+>>> 'あう'いう'
+'あいう'
+>>> 'あいう'[5D'あ[Kう'xう'
+'あxう'
+>>> # ctrl-K and ctrl-U
+>>> 'あいう'[K'
+'あ'
+>>> xyz日本'あい'[5D[K'あい'
+'あい'
+>>> # ctrl-P and ctrl-N
+>>> '日'
+'日'
+>>> '本'
+'本'
+>>> '本''日''本'
+'本'
+>>> # word movement treats non-ASCII characters as separators
+>>> 'ab日本'[5Dxab日本'[5D
+'xab日本'
+>>> '日本ab'[6D'日本abc'
+'日本abc'
+>>> '日本ab'[6D'[K'x'
+'x'
+>>> 'ab日本'[6D'abx日本'
+'abx日本'
+>>> '日本'+'ab'xab'
+'日本xab'
+>>> 'あ' + 'abc'[Kい'
+'あい'
+>>> 'あ' + 'abc'[Kい'
+'あい'
+>>> \$

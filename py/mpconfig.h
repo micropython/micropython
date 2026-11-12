@@ -883,6 +883,13 @@ typedef uint64_t mp_uint_t;
 #define MICROPY_REPL_AUTO_INDENT (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
 #endif
 
+// Whether readline accepts UTF-8 input and edits it by character, rather than
+// by byte.  Each character is assumed to take one terminal column.
+// Depends on MICROPY_PY_BUILTINS_STR_UNICODE.
+#ifndef MICROPY_REPL_UTF8
+#define MICROPY_REPL_UTF8 (MICROPY_PY_BUILTINS_STR_UNICODE)
+#endif
+
 // Whether port requires event-driven REPL functions
 #ifndef MICROPY_REPL_EVENT_DRIVEN
 #define MICROPY_REPL_EVENT_DRIVEN (0)
