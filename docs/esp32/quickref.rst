@@ -86,6 +86,7 @@ The :class:`network.WLAN` class in the :mod:`network` module::
     wlan = network.WLAN()       # create station interface (the default, see below for an access point interface)
     wlan.active(True)           # activate the interface
     wlan.scan()                 # scan for access points
+    wlan.scan_in_progress()     # check if a scan is actively running
     wlan.isconnected()          # check if the station is connected to an AP
     wlan.connect('ssid', 'key') # connect to an AP
     wlan.config('mac')          # get the interface's MAC address
@@ -120,6 +121,87 @@ connection succeeds or the interface gets disabled.  This can be changed by
 calling ``wlan.config(reconnects=n)``, where n are the number of desired reconnect
 attempts (0 means it won't retry, -1 will restore the default behaviour of trying
 to reconnect forever).
+
+WLAN.scan() options
+"""""""""""""""""""
+
+The :func:`network.WLAN.scan` methods supports a number of optional keywords
+to modify the scan behavior. The keywords are:
+
+- ``blocking`` - Defaults to ``True``.
+    If set to ``True``, the scan will block
+    until it is completed, then return a list of networks found. 
+    If set to ``False``, the scan will happen in the background allowing other
+    code to continue running. When called this way, ``callback`` must be
+    specified, and the scan will return ``None`` immediately.
+- ``callback`` - Defaults to ``None``.
+    This is a function that will be called when a scan with the ``blocking=False``
+    option is completed. The function will be called with two arguments: the
+    first argument is the network interface that performed the scan, and the
+    second is a two-element tuple with the scan status, and a list of networks
+    found during the scan that would be returned by the blocking scan.
+- ``channel`` - Defaults to ``None``.
+    With a value of ``None``, all channels will be scanned. If set to an integer,
+    The ESP32 will only scan the specified channel, between 1 and 14 inclusive.
+    This may also be set as a list or tuple of integers, in which case the ESP32
+    will scan the channels specified in the list or tuple. This will raise a
+    ValueError if the integer, or any of the integers in the list or tuple,
+    are invalid (i.e., not between 1 and 14 inclusive).
+- ``ssid`` - Defaults to ``None``.
+    ``None`` will cause all networks to be returned. If set as a string, the ESP32 
+    will only scan for networks with the given SSID. An empty ssid will match
+    hidden networks.
+- ``bssid`` - Defaults to ``None``.
+    ``None`` causes all networks to be returned. Expects exactly 6 bytes to
+    be given, and if set the ESP32 will only scan for networks with the given BSSID.
+- ``show_hidden`` - Defaults to ``True``. 
+    If set to ``False``, hidden networks will not be included in the scan results.
+- ``active_scan`` - Defaults to ``True``. 
+    When ``True`` the ESP32 will send probe requests as part of the scanning
+    process. If set to ``False``, the scan will be a passive scan, meaning
+    that the ESP32 will not send probe requests to discover networks, but 
+    will only listen for beacons from access points.
+- ``scan_time_passive`` - Defaults to ``360`` milliseconds. 
+    This is the time spent on each channel in a passive scan. The value is
+    limited to a maximum of ``1500`` milliseconds. It is only used when 
+    ``active_scan`` is set to ``False``.
+- ``scan_time_active_min`` - Defaults to ``0`` milliseconds. 
+    This is the minimum time spent on each channel in an active scan.
+    It is only used when ``active_scan`` is set to ``True``.
+- ``scan_time_active_max`` - Defaults to ``120`` milliseconds. 
+    This is the maximum time spent on each channel in an active scan.
+    The value is limited to a maximum of ``1500`` milliseconds.
+    ``active_scan`` is set to ``True``.
+- ``home_chan_dwell_time`` - Defaults to ``30`` milliseconds.
+    This is the amount of time to return to the channel of the connected 
+    network in between each channel being scanned.
+
+An example scan with a callback occurring that will print the networks found::
+
+    import network
+
+    wlan = network.WLAN(network.STA_IF)
+    wlan.active(True)
+
+    def scan_callback(interface, callback_event):
+        # interface is the network interface that performed the scan
+        # callback_event is a two element tuple:
+        #  - the first element is the status of the scan, True if successful, False if not
+        #  - the second element is a list of networks found during the scan
+        print("Scan completed: ", callback_event[0])
+        for network in callback_event[1]:
+            print("Network found:", network)
+    
+    return_val = wlan.scan(
+        blocking=False,  # Run a non-blocking scan
+        callback=scan_callback,  # Use a callback function to handle the scan results
+    )
+
+    print(f"The type of the return value is: {type(return_val)}")
+
+    while wlan.scan_in_progress():
+        # While the scan is in progress, we can do other things
+        pass
 
 .. _esp32_network_lan:
 
