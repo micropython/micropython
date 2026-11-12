@@ -5,7 +5,8 @@
     :synopsis: UEFI-allocator-backed memory buffers
 
 The ``uefi.buffer`` submodule provides :class:`PoolBuffer`, memory allocated from
-the UEFI pool allocator (``BootServices->AllocatePool`` / ``FreePool``).
+the UEFI pool allocator (``BootServices->AllocatePool`` / ``FreePool``), and
+:class:`PageBuffer`, whole pages from ``AllocatePages`` / ``FreePages``.
 
 Use a :class:`PoolBuffer` when memory must:
 
@@ -41,8 +42,44 @@ pointer is expected.  :class:`PoolBuffer` is re-exported at the top level as
     finaliser (``__del__``), so the allocation is released deterministically on
     block exit or, as a backstop, at collection.
 
+.. class:: PageBuffer(size, memory_type=BOOT_SERVICES_DATA, max_address=None, address=None)
+
+    Allocate *size* bytes, rounded up to whole :data:`PAGE_SIZE` pages, so the
+    buffer is always page-aligned.  By default the pages may be anywhere;
+    *max_address* keeps the whole buffer at or below that address (for example
+    ``0xFFFF_FFFF`` for a device limited to 32-bit DMA), and *address* asks for
+    exactly that physical address.  Giving both is a :exc:`ValueError`.  Raises
+    :class:`uefi.Error` if the firmware cannot satisfy the request.
+
+    It behaves like a :class:`PoolBuffer` (``ptr``, ``size``, ``close()``, item
+    access, ``write``/``bytes``, ``from_bytes``, ``with``), and adds:
+
+    .. attribute:: pages
+
+        The number of pages allocated.
+
+.. note::
+
+    Memory handed to a device -- a DMA ring, a descriptor, a buffer the device
+    writes into -- must come from :class:`PoolBuffer`, :class:`PageBuffer` or
+    ``PCI_IO.allocate_buffer``, never a Python ``bytes`` or ``bytearray``: the
+    garbage collector can move or reuse those while the device still holds the
+    address.  For real bus-master DMA prefer ``PCI_IO.allocate_buffer`` followed
+    by ``PCI_IO.map``, which apply any IOMMU or bounce-buffer translation and give
+    you the *device* address; a :class:`PageBuffer`'s ``ptr`` is the CPU address.
+
 Constants
 ---------
+
+.. data:: PAGE_SIZE
+
+    The UEFI page size, 4096 bytes.
+
+.. data:: ALLOCATE_ANY_PAGES
+          ALLOCATE_MAX_ADDRESS
+          ALLOCATE_ADDRESS
+
+    ``EFI_ALLOCATE_TYPE`` values, for :func:`uefi.raw.allocate_pages`.
 
 .. data:: LOADER_DATA
 

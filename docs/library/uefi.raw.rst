@@ -169,6 +169,17 @@ Memory
 
     Free a pool allocation; return a status.
 
+.. function:: allocate_pages(type, memory_type, pages, addr=0)
+
+    Return ``(status, addr)`` for a Boot Services page allocation.  *type* is an
+    ``EFI_ALLOCATE_TYPE`` (see :mod:`uefi.buffer`); *addr* is the in/out
+    ``Memory`` argument, so it is the upper limit for ``AllocateMaxAddress`` and
+    the requested address for ``AllocateAddress``.
+
+.. function:: free_pages(addr, pages)
+
+    Free a page allocation; return a status.
+
 Variables
 ---------
 

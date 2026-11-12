@@ -195,6 +195,25 @@ static mp_obj_t uefi_raw_free_pool(mp_obj_t ptr_in) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(uefi_raw_free_pool_obj, uefi_raw_free_pool);
 
+// allocate_pages(type, memory_type, pages, addr=0) -> (status, addr). `addr` is the
+// in/out Memory argument: the limit for AllocateMaxAddress, the address for AllocateAddress.
+static mp_obj_t uefi_raw_allocate_pages(size_t n_args, const mp_obj_t *args) {
+    EFI_ALLOCATE_TYPE type = (EFI_ALLOCATE_TYPE)mp_obj_get_int(args[0]);
+    EFI_MEMORY_TYPE mt = (EFI_MEMORY_TYPE)mp_obj_get_int(args[1]);
+    UINTN pages = (UINTN)mp_obj_get_int_truncated(args[2]);
+    EFI_PHYSICAL_ADDRESS addr = (n_args > 3) ? (EFI_PHYSICAL_ADDRESS)mp_obj_get_int_truncated(args[3]) : 0;
+    EFI_STATUS st = BS->AllocatePages(type, mt, pages, &addr);
+    return status_and_uint(st, (UINTN)addr);
+}
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(uefi_raw_allocate_pages_obj, 3, 4, uefi_raw_allocate_pages);
+
+static mp_obj_t uefi_raw_free_pages(mp_obj_t addr_in, mp_obj_t pages_in) {
+    EFI_STATUS st = BS->FreePages((EFI_PHYSICAL_ADDRESS)mp_obj_get_int_truncated(addr_in),
+        (UINTN)mp_obj_get_int_truncated(pages_in));
+    return mp_obj_new_int_from_uint(st);
+}
+static MP_DEFINE_CONST_FUN_OBJ_2(uefi_raw_free_pages_obj, uefi_raw_free_pages);
+
 // ── Handle database ─────────────────────────────────────────────────────────
 static mp_obj_t uefi_raw_locate_handle_buffer(mp_obj_t search_type_in, mp_obj_t guid_in) {
     EFI_LOCATE_SEARCH_TYPE stype = (EFI_LOCATE_SEARCH_TYPE)mp_obj_get_int(search_type_in);
@@ -860,6 +879,8 @@ static const mp_rom_map_elem_t uefi_raw_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_boot_services_active), MP_ROM_PTR(&uefi_raw_boot_services_active_obj) },
     { MP_ROM_QSTR(MP_QSTR_allocate_pool), MP_ROM_PTR(&uefi_raw_allocate_pool_obj) },
     { MP_ROM_QSTR(MP_QSTR_free_pool), MP_ROM_PTR(&uefi_raw_free_pool_obj) },
+    { MP_ROM_QSTR(MP_QSTR_allocate_pages), MP_ROM_PTR(&uefi_raw_allocate_pages_obj) },
+    { MP_ROM_QSTR(MP_QSTR_free_pages), MP_ROM_PTR(&uefi_raw_free_pages_obj) },
     { MP_ROM_QSTR(MP_QSTR_locate_handle_buffer), MP_ROM_PTR(&uefi_raw_locate_handle_buffer_obj) },
     { MP_ROM_QSTR(MP_QSTR_open_protocol), MP_ROM_PTR(&uefi_raw_open_protocol_obj) },
     { MP_ROM_QSTR(MP_QSTR_close_protocol), MP_ROM_PTR(&uefi_raw_close_protocol_obj) },
