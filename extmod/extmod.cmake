@@ -174,100 +174,44 @@ endif()
 if(MICROPY_SSL_MBEDTLS)
     add_library(micropy_lib_mbedtls INTERFACE)
 
-    set(MICROPY_LIB_MBEDTLS_DIR "${MICROPY_DIR}/lib/mbedtls")
-
-    target_include_directories(micropy_lib_mbedtls INTERFACE
-        ${MICROPY_LIB_MBEDTLS_DIR}/include
-    )
-
-    target_sources(micropy_lib_mbedtls INTERFACE
-        ${MICROPY_DIR}/lib/mbedtls_errors/mp_mbedtls_errors.c
-        ${MICROPY_LIB_MBEDTLS_DIR}/library/aes.c
-        ${MICROPY_LIB_MBEDTLS_DIR}/library/aesni.c
-        ${MICROPY_LIB_MBEDTLS_DIR}/library/asn1parse.c
-        ${MICROPY_LIB_MBEDTLS_DIR}/library/asn1write.c
-        ${MICROPY_LIB_MBEDTLS_DIR}/library/base64.c
-        ${MICROPY_LIB_MBEDTLS_DIR}/library/bignum_core.c
-        ${MICROPY_LIB_MBEDTLS_DIR}/library/bignum_mod.c
-        ${MICROPY_LIB_MBEDTLS_DIR}/library/bignum_mod_raw.c
-        ${MICROPY_LIB_MBEDTLS_DIR}/library/bignum.c
-        ${MICROPY_LIB_MBEDTLS_DIR}/library/camellia.c
-        ${MICROPY_LIB_MBEDTLS_DIR}/library/ccm.c
-        ${MICROPY_LIB_MBEDTLS_DIR}/library/chacha20.c
-        ${MICROPY_LIB_MBEDTLS_DIR}/library/chachapoly.c
-        ${MICROPY_LIB_MBEDTLS_DIR}/library/cipher.c
-        ${MICROPY_LIB_MBEDTLS_DIR}/library/cipher_wrap.c
-        ${MICROPY_LIB_MBEDTLS_DIR}/library/nist_kw.c
-        ${MICROPY_LIB_MBEDTLS_DIR}/library/aria.c
-        ${MICROPY_LIB_MBEDTLS_DIR}/library/cmac.c
-        ${MICROPY_LIB_MBEDTLS_DIR}/library/mps_reader.c
-        ${MICROPY_LIB_MBEDTLS_DIR}/library/mps_trace.c
-        ${MICROPY_LIB_MBEDTLS_DIR}/library/ctr_drbg.c
-        ${MICROPY_LIB_MBEDTLS_DIR}/library/debug.c
-        ${MICROPY_LIB_MBEDTLS_DIR}/library/des.c
-        ${MICROPY_LIB_MBEDTLS_DIR}/library/dhm.c
-        ${MICROPY_LIB_MBEDTLS_DIR}/library/ecdh.c
-        ${MICROPY_LIB_MBEDTLS_DIR}/library/ecdsa.c
-        ${MICROPY_LIB_MBEDTLS_DIR}/library/ecjpake.c
-        ${MICROPY_LIB_MBEDTLS_DIR}/library/ecp.c
-        ${MICROPY_LIB_MBEDTLS_DIR}/library/ecp_curves.c
-        ${MICROPY_LIB_MBEDTLS_DIR}/library/entropy.c
-        ${MICROPY_LIB_MBEDTLS_DIR}/library/entropy_poll.c
-        ${MICROPY_LIB_MBEDTLS_DIR}/library/gcm.c
-        ${MICROPY_LIB_MBEDTLS_DIR}/library/hmac_drbg.c
-        ${MICROPY_LIB_MBEDTLS_DIR}/library/md5.c
-        ${MICROPY_LIB_MBEDTLS_DIR}/library/md.c
-        ${MICROPY_LIB_MBEDTLS_DIR}/library/oid.c
-        ${MICROPY_LIB_MBEDTLS_DIR}/library/padlock.c
-        ${MICROPY_LIB_MBEDTLS_DIR}/library/pem.c
-        ${MICROPY_LIB_MBEDTLS_DIR}/library/pk.c
-        ${MICROPY_LIB_MBEDTLS_DIR}/library/pkcs12.c
-        ${MICROPY_LIB_MBEDTLS_DIR}/library/pkcs5.c
-        ${MICROPY_LIB_MBEDTLS_DIR}/library/pkparse.c
-        ${MICROPY_LIB_MBEDTLS_DIR}/library/pk_ecc.c
-        ${MICROPY_LIB_MBEDTLS_DIR}/library/pk_wrap.c
-        ${MICROPY_LIB_MBEDTLS_DIR}/library/pkwrite.c
-        ${MICROPY_LIB_MBEDTLS_DIR}/library/platform.c
-        ${MICROPY_LIB_MBEDTLS_DIR}/library/platform_util.c
-        ${MICROPY_LIB_MBEDTLS_DIR}/library/poly1305.c
-        ${MICROPY_LIB_MBEDTLS_DIR}/library/ripemd160.c
-        ${MICROPY_LIB_MBEDTLS_DIR}/library/rsa.c
-        ${MICROPY_LIB_MBEDTLS_DIR}/library/rsa_alt_helpers.c
-        ${MICROPY_LIB_MBEDTLS_DIR}/library/sha1.c
-        ${MICROPY_LIB_MBEDTLS_DIR}/library/sha256.c
-        ${MICROPY_LIB_MBEDTLS_DIR}/library/sha512.c
-        ${MICROPY_LIB_MBEDTLS_DIR}/library/ssl_cache.c
-        ${MICROPY_LIB_MBEDTLS_DIR}/library/ssl_ciphersuites.c
-        ${MICROPY_LIB_MBEDTLS_DIR}/library/ssl_tls12_client.c
-        ${MICROPY_LIB_MBEDTLS_DIR}/library/ssl_tls12_server.c
-        ${MICROPY_LIB_MBEDTLS_DIR}/library/ssl_client.c
-        ${MICROPY_LIB_MBEDTLS_DIR}/library/ssl_cookie.c
-        ${MICROPY_LIB_MBEDTLS_DIR}/library/ssl_debug_helpers_generated.c
-        ${MICROPY_LIB_MBEDTLS_DIR}/library/ssl_msg.c
-        ${MICROPY_LIB_MBEDTLS_DIR}/library/ssl_ticket.c
-        ${MICROPY_LIB_MBEDTLS_DIR}/library/ssl_tls.c
-        ${MICROPY_LIB_MBEDTLS_DIR}/library/timing.c
-        ${MICROPY_LIB_MBEDTLS_DIR}/library/constant_time.c
-        ${MICROPY_LIB_MBEDTLS_DIR}/library/x509.c
-        ${MICROPY_LIB_MBEDTLS_DIR}/library/x509_create.c
-        ${MICROPY_LIB_MBEDTLS_DIR}/library/x509_crl.c
-        ${MICROPY_LIB_MBEDTLS_DIR}/library/x509_crt.c
-        ${MICROPY_LIB_MBEDTLS_DIR}/library/x509_csr.c
-        ${MICROPY_LIB_MBEDTLS_DIR}/library/x509write_crt.c
-        ${MICROPY_LIB_MBEDTLS_DIR}/library/x509write_csr.c
-    )
-
     if(NOT MBEDTLS_CONFIG_FILE)
-        set(MBEDTLS_CONFIG_FILE "${MICROPY_PORT_DIR}/mbedtls/mbedtls_config_port.h")
+        # Note: Because mbedTLS CMakeLists.txt sets these as cache variables, we have to set them as cache variables as well or the value
+        # will be overridden with the default (this changed in CMake 3.21 but we can't bump the minimum CMake version without breaking other things...)
+        set(MBEDTLS_CONFIG_FILE "${MICROPY_PORT_DIR}/mbedtls/mbedtls_config_port.h" CACHE FILEPATH "Mbed TLS config file (MicroPython override).")
+    endif()
+    if(NOT TF_PSA_CRYPTO_CONFIG_FILE)
+        set(TF_PSA_CRYPTO_CONFIG_FILE "${MICROPY_PORT_DIR}/mbedtls/crypto_config_port.h" CACHE FILEPATH "Mbed TLS config file (MicroPython override).")
     endif()
 
-    target_compile_definitions(micropy_lib_mbedtls INTERFACE
-        MBEDTLS_CONFIG_FILE="${MBEDTLS_CONFIG_FILE}"
-    )
+    set(ENABLE_TESTING OFF CACHE BOOL "mbedtls: enable testing")
+    set(ENABLE_PROGRAMS OFF CACHE BOOL "mbedtls: enable programs")
 
-    list(APPEND MICROPY_INC_CORE
-        "${MICROPY_LIB_MBEDTLS_DIR}/include"
-    )
+    add_subdirectory("${MICROPY_DIR}/lib/mbedtls" "${CMAKE_CURRENT_BINARY_DIR}/mbedtls")
+
+    target_link_libraries(micropy_lib_mbedtls INTERFACE mbedtls)
+
+    # Need to inject MicroPython directory so mbedTLS config include can find extmod/ directory, board-specific files, etc.
+    #
+    # The list of libraries in the foreach includes all the sub-libraries under tfpsacrypto. I couldn't find a way
+    # to get this list using CMake, so copied Zephyr's hard-coded list from main/modules/mbedtls/CMakeLists.txt
+    # in Zephyr...
+    foreach(mbedtls_lib IN ITEMS mbedtls mbedx509 tfpsacrypto builtin p256-m everest pqcp extras platform utilities)
+        target_include_directories(${mbedtls_lib} PRIVATE
+           "${MICROPY_DIR}"
+           "${MICROPY_PORT_DIR}"
+           "${MICROPY_BOARD_DIR}")
+    endforeach()
+
+    # QSTR generation needs the mbedTLS library include directories
+    # (as some QSTR selections depend on mbedTlS config)
+    get_target_property(MBEDTLS_INC_DIRS mbedtls INTERFACE_INCLUDE_DIRECTORIES)
+    list(FILTER MBEDTLS_INC_DIRS EXCLUDE REGEX "\\$<INSTALL_INTERFACE:")  # Only build include dirs, not install ones
+    list(APPEND MICROPY_CPP_INC_EXTRA ${MBEDTLS_INC_DIRS})
+
+    # Use linker wrap to have the patched mbedtls_strerror from mp_mbedtls_strerror
+    # replace the version built by mbedtls itself
+    list(APPEND MICROPY_SOURCE_EXTMOD "${MICROPY_DIR}/lib/mbedtls_errors/mp_mbedtls_errors.c")
+    target_link_options(mbedtls PUBLIC -Wl,--wrap=mbedtls_strerror)
 endif()
 
 # Library for lwIP network stack

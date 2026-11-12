@@ -104,7 +104,6 @@ list(APPEND GIT_SUBMODULES lib/tinyusb)
 
 # Include component cmake fragments
 include(${MICROPY_DIR}/py/py.cmake)
-include(${MICROPY_DIR}/extmod/extmod.cmake)
 include(${PICO_SDK_PATH}/pico_sdk_init.cmake)
 
 # Define the top-level project
@@ -112,6 +111,7 @@ project(${MICROPY_TARGET})
 
 pico_sdk_init()
 
+include(${MICROPY_DIR}/extmod/extmod.cmake)
 include(${MICROPY_DIR}/py/usermod.cmake)
 
 add_executable(${MICROPY_TARGET})

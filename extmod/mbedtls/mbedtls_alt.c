@@ -90,11 +90,14 @@ int __wrap_mbedtls_ecdsa_write_signature(mbedtls_ecdsa_context *ctx,
 #include "py/mpconfig.h"
 
 #if MICROPY_PY_SSL && MICROPY_SSL_MBEDTLS
-#include "mbedtls/mbedtls_config_port.h"
-
-#if defined(MBEDTLS_ENTROPY_HARDWARE_ALT)
+#include "mbedtls/version.h"
 #include "py/mphal.h"
 
+
+#if MBEDTLS_VERSION_MAJOR < 4
+
+#if defined(MBEDTLS_ENTROPY_HARDWARE_ALT)
+// mbedTLS v3.x hardware entropy interface
 int mbedtls_hardware_poll(void *data, unsigned char *output, size_t len, size_t *olen) {
     *olen = len;
     mp_hal_get_random(len, output);
@@ -102,4 +105,22 @@ int mbedtls_hardware_poll(void *data, unsigned char *output, size_t len, size_t 
 }
 #endif
 
-#endif
+#else // MBEDTLS_VERSION_MAJOR = >= 4
+
+#if defined(MBEDTLS_PSA_DRIVER_GET_ENTROPY)
+#include "psa/crypto_driver_random.h"
+
+// Rely on mp_hal_get_random() as a quality entropy source
+int mbedtls_platform_get_entropy(psa_driver_get_entropy_flags_t flags,
+    size_t *estimate_bits,
+    unsigned char *output, size_t output_size) {
+    mp_hal_get_random(output_size, output);
+    *estimate_bits = 8 * output_size;
+    return PSA_SUCCESS;
+}
+
+#endif // MBEDTLS_PSA_DRIVER_GET_ENTROPY
+
+#endif // MBEDTLS_VERSION_MAJOR
+
+#endif // MICROPY_PY_SSL && MICROPY_SSL_MBEDTLS

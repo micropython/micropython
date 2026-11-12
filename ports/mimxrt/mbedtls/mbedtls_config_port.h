@@ -26,16 +26,14 @@
 #ifndef MICROPY_INCLUDED_MBEDTLS_CONFIG_H
 #define MICROPY_INCLUDED_MBEDTLS_CONFIG_H
 
-// Time hook.
-#include <time.h>
-extern time_t mimxrt_rtctime_seconds(time_t *timer);
-#define MBEDTLS_PLATFORM_TIME_MACRO mimxrt_rtctime_seconds
-#define MBEDTLS_PLATFORM_MS_TIME_ALT mbedtls_ms_time
-
 // Set MicroPython-specific options.
 #define MICROPY_MBEDTLS_CONFIG_BARE_METAL (1)
 
 // Include common mbedtls configuration.
 #include "extmod/mbedtls/mbedtls_config_common.h"
+
+// Workaround for a mimxrt platform driver header that defines ARRAY_SIZE,
+// which is also defined in some mbedtls source files.
+#undef ARRAY_SIZE
 
 #endif /* MICROPY_INCLUDED_MBEDTLS_CONFIG_H */

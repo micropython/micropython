@@ -26,6 +26,7 @@
 
 #include "rng.h"
 #include "mbedtls_config_port.h"
+#include "crypto_config_port.h"
 
 #if defined(MBEDTLS_HAVE_TIME) || defined(MBEDTLS_HAVE_TIME_DATE)
 #include "rtc.h"

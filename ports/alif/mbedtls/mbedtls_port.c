@@ -27,6 +27,7 @@
 #include "py/mphal.h"
 #include "se_services.h"
 #include "mbedtls_config_port.h"
+#include "crypto_config_port.h"
 
 #if defined(MBEDTLS_HAVE_TIME)
 

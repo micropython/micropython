@@ -3,7 +3,7 @@
 @@ -162,7 +162,7 @@
      {
          $code_check = \$ll_code_check;
-         $old_define = \$ll_old_define;
+         $old_define = \@ll_old_define;
 -        $white_space = '        ';
 +        $white_space = '    ';
      }
