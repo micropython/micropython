@@ -5,6 +5,9 @@ if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE MinSizeRel)
 endif()
 
+# The sbom target maps objects to sources through compile_commands.json
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 # Set main target and component locations
 set(MICROPY_TARGET firmware)
 get_filename_component(MICROPY_DIR "../.." ABSOLUTE)
@@ -729,6 +732,9 @@ separate_arguments(MICROPY_CPP_FLAGS_EXTRA)
 
 # Include the main MicroPython cmake rules.
 include(${MICROPY_DIR}/py/mkrules.cmake)
+
+# "make sbom" target.
+micropy_sbom(${MICROPY_TARGET} ${CMAKE_BINARY_DIR}/${MICROPY_TARGET}.elf.map)
 
 if(NOT PICO_NUM_GPIOS)
     set(PICO_NUM_GPIOS 30)
