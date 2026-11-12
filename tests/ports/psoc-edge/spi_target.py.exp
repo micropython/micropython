@@ -1,0 +1,28 @@
+SPITarget(id=10, sck='P16_0', mosi='P16_1', miso='P16_2', ssel='P16_3', polarity=0, phase=0, bits=8, firstbit=MSB)
+True
+SPITarget(id=10, sck='P16_0', mosi='P16_1', miso='P16_2', ssel='P16_3', polarity=1, phase=1, bits=8, firstbit=LSB)
+SPITarget(id=10, sck='P16_0', mosi='P16_1', miso='P16_2', ssel='P16_3', polarity=0, phase=0, bits=8, firstbit=MSB)
+SPITarget(id=10, sck='P16_0', mosi='P16_1', miso='P16_2', ssel='P16_3', polarity=0, phase=0, bits=8, firstbit=MSB)
+SPITarget(id=10, sck='P16_0', mosi='P16_1', miso='P16_2', ssel='P16_3', polarity=0, phase=0, bits=8, firstbit=MSB)
+TypeError SPITarget id must be an integer
+ValueError SPITarget id out of range
+ValueError SPITarget id out of range
+ValueError no id or pins have been provided. At least one of them must be specified.
+ValueError the id does not match the discovered id from the provided pins.
+ValueError no signal 'SPI_CLK' available for id 6.
+ValueError polarity/phase must be 0 or 1
+ValueError polarity/phase must be 0 or 1
+ValueError bits must be 8
+ValueError invalid firstbit
+SPITarget(id=10, sck='P16_0', mosi='P16_1', miso='P16_2', ssel='P16_3', polarity=0, phase=0, bits=8, firstbit=MSB)
+ValueError bits must be 8
+ValueError the id does not match the discovered id from the provided pins.
+SPITarget(id=10, sck='P16_0', mosi='P16_1', miso='P16_2', ssel='P16_3', polarity=1, phase=0, bits=8, firstbit=MSB)
+ValueError bits must be 8
+ValueError the id does not match the discovered id from the provided pins.
+SPITarget(id=10, sck='P16_0', mosi='P16_1', miso='P16_2', ssel='P16_3', polarity=1, phase=0, bits=8, firstbit=MSB)
+True
+ValueError SCB 10 is already in use by another I2C, SPI or UART instance.
+ValueError SCB 10 is already in use by a machine.I2C or machine.SPI instance.
+ValueError SCB 10 is already in use by another I2C, SPI or UART instance.
+SPITarget(id=10, sck='P16_0', mosi='P16_1', miso='P16_2', ssel='P16_3', polarity=0, phase=0, bits=8, firstbit=MSB)

@@ -96,10 +96,18 @@ static void mp_machine_set_freq(size_t n_args, const mp_obj_t *args) {
 }
 */
 
+#if MICROPY_PY_MACHINE_SPI_TARGET
+#define MICROPY_PY_MACHINE_SPITARGET_GLOBAL \
+    { MP_ROM_QSTR(MP_QSTR_SPITarget),           MP_ROM_PTR(&machine_spi_target_type) },
+#else
+#define MICROPY_PY_MACHINE_SPITARGET_GLOBAL
+#endif
+
 #define MICROPY_PY_MACHINE_EXTRA_GLOBALS \
     /* Modules */ \
     { MP_ROM_QSTR(MP_QSTR_Pin),                 MP_ROM_PTR(&machine_pin_type) }, \
     { MP_ROM_QSTR(MP_QSTR_RTC),                 MP_ROM_PTR(&machine_rtc_type) }, \
     { MP_ROM_QSTR(MP_QSTR_UART),                MP_ROM_PTR(&machine_uart_type) }, \
+    MICROPY_PY_MACHINE_SPITARGET_GLOBAL \
 
 #endif // MICROPY_PY_MACHINE

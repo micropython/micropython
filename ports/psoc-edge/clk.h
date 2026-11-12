@@ -32,8 +32,8 @@ typedef struct _pclk_div_obj_t pclk_div_obj_t;
 
 typedef uint32_t pclk_mmio_slave_num_t;
 
-void pclk_div_slave_init(en_clk_dst_t clk_dst, pclk_mmio_slave_num_t clk_slave_num);
-void pclk_div_slave_deinit(en_clk_dst_t clk_dst, pclk_mmio_slave_num_t clk_slave_num);
+void pclk_div_slave_init(en_clk_dst_t clk_dst, uint32_t mmio_peri_nr, uint32_t mmio_group_nr, pclk_mmio_slave_num_t clk_slave_num);
+void pclk_div_slave_deinit(uint32_t mmio_peri_nr, uint32_t mmio_group_nr, pclk_mmio_slave_num_t clk_slave_num);
 
 uint32_t pclk_div_get_input_freq(en_clk_dst_t clk_dst);
 pclk_div_obj_t *pclk_div_init(en_clk_dst_t clk_dst, uint32_t divider, uint8_t divider_frac);
