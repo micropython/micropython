@@ -52,3 +52,20 @@ S8 = {
     "arr": (uctypes.ARRAY | 0, 3, {"a": uctypes.UINT32 | 0, "b": uctypes.UINT8 | 4}),
 }
 assert uctypes.sizeof(S8) == 24
+
+# A nested struct is aligned by its own fields, not by fields of the enclosing struct
+S9_32 = {"v": uctypes.INT32 | 0}
+S9_16 = {"v": uctypes.INT16 | 0}
+S9 = {"v1": (0, S9_32), "v2": (4, S9_32), "v3": (8, S9_16), "v4": (10, S9_16)}
+assert uctypes.sizeof(S9) == 12
+
+s9 = uctypes.struct(0, S9)
+assert uctypes.sizeof(s9.v3) == 2
+
+S10 = {
+    "arr": (uctypes.ARRAY | 0, 2, S9),
+}
+assert uctypes.sizeof(S10) == 24
+
+s10 = uctypes.struct(0, S10)
+assert uctypes.addressof(s10.arr[1]) == 12
