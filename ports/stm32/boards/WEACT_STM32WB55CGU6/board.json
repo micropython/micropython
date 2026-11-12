@@ -1,0 +1,15 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [],
+    "images": [
+        "STM32WB55CGU6.jpg"
+    ],
+    "mcu": "stm32wb",
+    "product": "WEACT STM32WB55CGU6",
+    "thumbnail": "",
+    "url": "https://github.com/WeActStudio/WeActStudio.STM32WB55CoreBoard",
+    "vendor": "ST Microelectronics"
+}
