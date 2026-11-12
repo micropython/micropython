@@ -1,0 +1,3 @@
+Two modules of a split non-namespace package imported
+__init__ is used from the second module
+./modules2/subpkg/
