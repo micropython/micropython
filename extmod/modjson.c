@@ -283,6 +283,12 @@ static mp_obj_t mod_json_load(mp_obj_t stream_obj) {
                 break;
             case '{':
                 next = mp_obj_new_dict(0);
+                #if MICROPY_PY_JSON_ORDERED_DICT
+                // keep the locals ordered
+                mp_obj_dict_t *dict = MP_OBJ_TO_PTR(next);
+                dict->map.is_ordered = 1;
+                #endif
+
                 enter = true;
                 break;
             case '}':
