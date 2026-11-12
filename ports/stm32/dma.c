@@ -109,6 +109,25 @@ static const DMA_InitTypeDef dma_init_struct_spi_i2c = {
     .TransferEventMode = DMA_TCEM_BLOCK_TRANSFER,
     .Mode = DMA_NORMAL, // DMA_NORMAL or DMA_PFCTRL (peripheral flow control mode)
 };
+#if defined(STM32N6) && MICROPY_PY_JPEG
+// The JPEG codec's output FIFO requests DMA 8 words at a time.  Reading and writing
+// through different ports keeps up with the codec better.
+static const DMA_InitTypeDef dma_init_struct_jpeg_out = {
+    .Request = 0, // set by dma_init_handle
+    .BlkHWRequest = DMA_BREQ_SINGLE_BURST,
+    .Direction = 0, // set by dma_init_handle
+    .SrcInc = 0, // set by dma_init_handle
+    .DestInc = 0, // set by dma_init_handle
+    .SrcDataWidth = DMA_SRC_DATAWIDTH_WORD,
+    .DestDataWidth = DMA_DEST_DATAWIDTH_WORD,
+    .Priority = DMA_HIGH_PRIORITY,
+    .SrcBurstLength = 8,
+    .DestBurstLength = 8,
+    .TransferAllocatedPort = DMA_SRC_ALLOCATED_PORT0 | DMA_DEST_ALLOCATED_PORT1,
+    .TransferEventMode = DMA_TCEM_BLOCK_TRANSFER,
+    .Mode = DMA_NORMAL,
+};
+#endif
 #else
 static const DMA_InitTypeDef dma_init_struct_spi_i2c = {
     #if defined(STM32F4) || defined(STM32F7)
@@ -852,6 +871,9 @@ const dma_descr_t dma_SPI_5_RX = { GPDMA1_Channel8, GPDMA1_REQUEST_SPI5_RX, dma_
 const dma_descr_t dma_SPI_5_TX = { GPDMA1_Channel9, GPDMA1_REQUEST_SPI5_TX, dma_id_9, &dma_init_struct_spi_i2c };
 const dma_descr_t dma_SPI_6_RX = { GPDMA1_Channel10, GPDMA1_REQUEST_SPI6_RX, dma_id_10, &dma_init_struct_spi_i2c };
 const dma_descr_t dma_SPI_6_TX = { GPDMA1_Channel11, GPDMA1_REQUEST_SPI6_TX, dma_id_11, &dma_init_struct_spi_i2c };
+#if MICROPY_PY_JPEG
+const dma_descr_t dma_JPEG_OUT = { GPDMA1_Channel13, GPDMA1_REQUEST_JPEG_TX, dma_id_13, &dma_init_struct_jpeg_out };
+#endif
 
 static const uint8_t dma_irqn[NSTREAM] = {
     GPDMA1_Channel0_IRQn,

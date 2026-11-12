@@ -44,6 +44,9 @@ SECTIONS
         *(.text.LL_AHB4_GRP1_EnableClock);
         *(.text.LL_APB4_GRP2_EnableClock);
 
+        /* The jpeg module's per-pixel colour conversion. */
+        *modjpeg.o(.text.mp_jpeg_output_mcu .text.jpeg_row_rgb565 .text.jpeg_row_rgb888);
+
         . = ALIGN(4);
         _eiram = .;
     } >IRAM AT> FLASH_COMMON
