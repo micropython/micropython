@@ -99,7 +99,7 @@ int main(void) {
     /* Initialize the device and board peripherals. */
     result = cybsp_init();
     if (result != CY_RSLT_SUCCESS) {
-        mp_raise_ValueError(MP_ERROR_TEXT("cybsp_init failed !\n"));
+        mp_raise_ValueError(MP_ERROR_TEXT("cybsp_init failed !"));
     }
 
     /* Enable global interrupts */
