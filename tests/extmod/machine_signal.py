@@ -24,6 +24,7 @@ class Pin(machine.PinBase):
 # test non-inverted
 p = Pin()
 s = machine.Signal(p)
+_ = str(s)
 s.value(0)
 print(p.value(), s.value())
 s.value(1)
@@ -32,6 +33,7 @@ print(p.value(), s.value())
 # test inverted, and using on/off methods
 p = Pin()
 s = machine.Signal(p, invert=True)
+_ = str(s)
 s.off()
 print(p.value(), s.value())
 s.on()
