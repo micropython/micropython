@@ -720,6 +720,13 @@ typedef uint64_t mp_uint_t;
 #define MICROPY_OPT_MATH_FACTORIAL (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
 #endif
 
+// Whether to print JSON strings in runs of unescaped bytes rather than byte by
+// byte.  This is much faster for json.dumps() and print() of JSON, but costs
+// about 40 bytes of code size.
+#ifndef MICROPY_OPT_JSON_PRINTING
+#define MICROPY_OPT_JSON_PRINTING (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_FULL_FEATURES)
+#endif
+
 /*****************************************************************************/
 /* Python internal features                                                  */
 

@@ -143,12 +143,29 @@ void mp_str_print_json(const mp_print_t *print, const byte *str_data, size_t str
     // for JSON spec, see http://www.ietf.org/rfc/rfc4627.txt
     // if we are given a valid utf8-encoded string, we will print it in a JSON-conforming way
     mp_print_str(print, "\"");
-    for (const byte *s = str_data, *top = str_data + str_len; s < top; s++) {
+    const byte *s = str_data;
+    const byte *top = str_data + str_len;
+    #if MICROPY_OPT_JSON_PRINTING
+    const byte *run = str_data; // start of the bytes not yet printed
+    #endif
+    for (; s < top; s++) {
+        #if MICROPY_OPT_JSON_PRINTING
+        if (*s >= 32 && *s != '"' && *s != '\\') {
+            // this will handle normal and utf-8 encoded chars: printed as a run
+            continue;
+        }
+        if (s > run) {
+            print->print_strn(print->data, (const char *)run, s - run);
+        }
+        run = s + 1;
+        #endif
         if (*s == '"' || *s == '\\') {
             mp_printf(print, "\\%c", *s);
+        #if !MICROPY_OPT_JSON_PRINTING
         } else if (*s >= 32) {
             // this will handle normal and utf-8 encoded chars
             mp_printf(print, "%c", *s);
+        #endif
         } else if (*s == '\n') {
             mp_print_str(print, "\\n");
         } else if (*s == '\r') {
@@ -160,6 +177,11 @@ void mp_str_print_json(const mp_print_t *print, const byte *str_data, size_t str
             mp_printf(print, "\\u%04x", *s);
         }
     }
+    #if MICROPY_OPT_JSON_PRINTING
+    if (s > run) {
+        print->print_strn(print->data, (const char *)run, s - run);
+    }
+    #endif
     mp_print_str(print, "\"");
 }
 #endif
