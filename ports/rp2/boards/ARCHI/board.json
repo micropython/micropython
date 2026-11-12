@@ -1,0 +1,22 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "Dual-core",
+        "External Flash",
+        "IMU",
+        "Microphone",
+        "RGB LED",
+        "USB-C"
+    ],
+    "images": [
+        "archi.jpg"
+    ],
+    "mcu": "rp2040",
+    "product": "Archi",
+    "thumbnail": "",
+    "url": "https://archikids.com.ar/documentacion",
+    "vendor": "Newsan"
+}
