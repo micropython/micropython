@@ -1,0 +1,1 @@
+picolibc is primarily BSD-3-Clause, plus code derived from newlib under the licences listed in COPYING.NEWLIB. See COPYING.picolibc in the picolibc sources.

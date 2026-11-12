@@ -1,0 +1,1 @@
+Newlib is a collection of code under many permissive licences (BSD-style, from Red Hat, the Regents of the University of California, Sun Microsystems and others). The list is COPYING.NEWLIB in the newlib sources.

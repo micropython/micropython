@@ -1,0 +1,1 @@
+Code by Brad Conte (B-Con/crypto-algorithms) released into the public domain, provided as is without warranty. See the header of each file in lib/crypto-algorithms.
