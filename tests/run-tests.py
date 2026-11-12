@@ -151,6 +151,8 @@ platform_tests_to_skip = {
         # Driven over the raw REPL, so code runs as "<stdin>" with no real filename; the
         # test's expected output regex requires the source filename in the traceback.
         "basics/weakref_callback_exception.py",
+        # Needs a target_wiring UART loopback; the only port under test is the REPL's.
+        "extmod/machine_uart_tx.py",
     ),
     "rp2": (
         # Skip thread tests that require more that 2 threads.

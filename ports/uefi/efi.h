@@ -39,6 +39,9 @@ typedef uint8_t UINT8;
 #define EFI_BUFFER_TOO_SMALL   EFIERR(5)
 #define EFI_NOT_READY          EFIERR(6)
 #define EFI_OUT_OF_RESOURCES   EFIERR(9)
+#define EFI_TIMEOUT            EFIERR(18)
+#define EFI_UNSUPPORTED        EFIERR(3)
+#define EFI_DEVICE_ERROR       EFIERR(7)
 
 typedef enum {
     EfiReservedMemoryType, EfiLoaderCode, EfiLoaderData, EfiBootServicesCode,
@@ -137,19 +140,41 @@ typedef struct _EFI_SIMPLE_TEXT_INPUT_PROTOCOL {
 /* ---- EFI_SERIAL_IO_PROTOCOL (byte-clean serial, bypassing TerminalDxe) ---- */
 #define EFI_SERIAL_IO_PROTOCOL_GUID \
     {0xBB25CF6F, 0xF1D4, 0x11D2, {0x9A, 0x0C, 0x00, 0x90, 0x27, 0x3F, 0xC1, 0xFD}}
-#define EFI_SERIAL_INPUT_BUFFER_EMPTY 0x00000004   /* GetControl bit: no RX data */
+/* Control bits (UEFI spec / MdePkg SerialIo.h). Only DTR, RTS and the flow-control bit
+ * are settable; drivers may reject SetControl with any other bit set. */
+#define EFI_SERIAL_DATA_TERMINAL_READY          0x00000001
+#define EFI_SERIAL_REQUEST_TO_SEND              0x00000002
+#define EFI_SERIAL_CLEAR_TO_SEND                0x00000010   /* GetControl: CTS asserted */
+#define EFI_SERIAL_INPUT_BUFFER_EMPTY           0x00000100   /* GetControl: no RX data */
+#define EFI_SERIAL_OUTPUT_BUFFER_EMPTY          0x00000200   /* GetControl: TX drained */
+#define EFI_SERIAL_HARDWARE_FLOW_CONTROL_ENABLE 0x00004000   /* RTS/CTS */
+/* SetAttributes enums (spec EFI_PARITY_TYPE / EFI_STOP_BITS_TYPE). */
+#define EFI_SERIAL_NO_PARITY    1
+#define EFI_SERIAL_EVEN_PARITY  2
+#define EFI_SERIAL_ODD_PARITY   3
+#define EFI_SERIAL_ONE_STOP_BIT 1
+#define EFI_SERIAL_TWO_STOP_BITS 3
+typedef struct {
+    UINT32 ControlMask;
+    UINT32 Timeout;
+    UINT64 BaudRate;
+    UINT32 ReceiveFifoDepth;
+    UINT32 DataBits;
+    UINT32 Parity;
+    UINT32 StopBits;
+} EFI_SERIAL_IO_MODE;
 typedef struct _EFI_SERIAL_IO_PROTOCOL EFI_SERIAL_IO_PROTOCOL;
 struct _EFI_SERIAL_IO_PROTOCOL {
     UINT32 Revision;
     EFI_STATUS(EFIAPI * Reset)(EFI_SERIAL_IO_PROTOCOL * This);
-    /* enum params typed as UINT32 — we only call Write/Read/GetControl. */
+    /* Parity and StopBits are spec enums, passed as UINT32 (see EFI_SERIAL_*_PARITY / _STOP_BIT*). */
     EFI_STATUS(EFIAPI * SetAttributes)(EFI_SERIAL_IO_PROTOCOL * This, UINT64 BaudRate,
         UINT32 ReceiveFifoDepth, UINT32 Timeout, UINT32 Parity, UINT8 DataBits, UINT32 StopBits);
     EFI_STATUS(EFIAPI * SetControl)(EFI_SERIAL_IO_PROTOCOL * This, UINT32 Control);
     EFI_STATUS(EFIAPI * GetControl)(EFI_SERIAL_IO_PROTOCOL * This, UINT32 *Control);
     EFI_STATUS(EFIAPI * Write)(EFI_SERIAL_IO_PROTOCOL * This, UINTN *BufferSize, void *Buffer);
     EFI_STATUS(EFIAPI * Read)(EFI_SERIAL_IO_PROTOCOL * This, UINTN *BufferSize, void *Buffer);
-    void *Mode;
+    EFI_SERIAL_IO_MODE *Mode;
 };
 
 // EFI_TIMER_ARCH_PROTOCOL (PI spec): the DXE core's low-level periodic tick that drives all
@@ -231,6 +256,7 @@ typedef EFI_STATUS (EFIAPI *EFI_HANDLE_PROTOCOL)(EFI_HANDLE Handle, EFI_GUID *Pr
 typedef enum { AllHandles, ByRegisterNotify, ByProtocol } EFI_LOCATE_SEARCH_TYPE;
 typedef EFI_STATUS (EFIAPI *EFI_LOCATE_HANDLE_BUFFER)(EFI_LOCATE_SEARCH_TYPE SearchType,
     EFI_GUID *Protocol, void *SearchKey, UINTN *NoHandles, EFI_HANDLE **Buffer);
+#define EFI_OPEN_PROTOCOL_GET_PROTOCOL 0x00000002
 typedef EFI_STATUS (EFIAPI *EFI_OPEN_PROTOCOL)(EFI_HANDLE Handle, EFI_GUID *Protocol,
     void **Interface, EFI_HANDLE AgentHandle, EFI_HANDLE ControllerHandle, UINT32 Attributes);
 typedef EFI_STATUS (EFIAPI *EFI_PROTOCOLS_PER_HANDLE)(EFI_HANDLE Handle,
@@ -454,5 +480,18 @@ typedef struct {
 } EFI_SHELL_PARAMETERS_PROTOCOL;
 #define SMBIOS_TABLE_GUID \
     {0xeb9d2d31, 0x2d88, 0x11d3, {0x9a, 0x16, 0x00, 0x90, 0x27, 0x3f, 0xc1, 0x4d}}
+
+/* ---- Device paths, as opaque byte strings plus the firmware's text conversion ---- */
+#define EFI_DEVICE_PATH_PROTOCOL_GUID \
+    {0x09576e91, 0x6d3f, 0x11d2, {0x8e, 0x39, 0x00, 0xa0, 0xc9, 0x69, 0x72, 0x3b}}
+#define EFI_DEVICE_PATH_TO_TEXT_PROTOCOL_GUID \
+    {0x8b843e20, 0x8132, 0x4852, {0x90, 0xcc, 0x55, 0x1a, 0x4e, 0x4a, 0x7f, 0x1c}}
+typedef struct {
+    CHAR16 *(EFIAPI * ConvertDeviceNodeToText)(const void *DeviceNode, BOOLEAN DisplayOnly,
+        BOOLEAN AllowShortcuts);
+    /* Returns a pool-allocated string (FreePool it), or NULL. */
+    CHAR16 *(EFIAPI * ConvertDevicePathToText)(const void *DevicePath, BOOLEAN DisplayOnly,
+        BOOLEAN AllowShortcuts);
+} EFI_DEVICE_PATH_TO_TEXT_PROTOCOL;
 
 #endif /* MPY_UEFI_EFI_H */

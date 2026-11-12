@@ -133,6 +133,8 @@ void mp_uefi_sched_signal(void);
 #define MICROPY_PY_MACHINE_WDT              (1)
 #define MICROPY_PY_MACHINE_WDT_INCLUDEFILE  "ports/uefi/machine_wdt.c"
 #define MICROPY_PY_MACHINE_SIGNAL           (0)
+#define MICROPY_PY_MACHINE_UART             (1)
+#define MICROPY_PY_MACHINE_UART_INCLUDEFILE "ports/uefi/machine_uart.c"
 
 // help() + help('modules'). Custom intro text defined in main.c.
 extern const char uefi_help_text[];

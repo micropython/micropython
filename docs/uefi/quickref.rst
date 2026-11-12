@@ -50,6 +50,20 @@ and is natively UTF-16.
 Both serial and console interfaces offer TAB completion, arrow-key line editing,
 paste mode (ctrl-E) and Ctrl-C interrupts.
 
+Launch options choose and set up the REPL's serial port:
+
+* ``--serial`` -- the first serial port; ``--serial=N`` -- port ``N`` (the same
+  numbering as :ref:`machine.UART <machine.UART>`); ``--serial=TEXT`` -- the first
+  port whose device path contains ``TEXT``, e.g. ``--serial=USB(0x0,0x0)``.
+* ``--baud=N`` -- the REPL port's baud rate (default: keep the port's current rate).
+* ``--no-rtscts`` -- don't turn on RTS/CTS flow control. It is on by default when the
+  driver supports it; use this for cables without the handshake lines wired.
+* ``--console`` -- use the text console even in a serial build.
+
+The console shows which port the REPL is on and the settings the driver accepted.
+If the REPL's port is a USB adapter that is unplugged, output falls back to the
+text console, and the REPL moves back to the port when it is plugged in again.
+
 The :mod:`machine` module::
 
     import machine
@@ -109,6 +123,49 @@ Use the :ref:`machine.Timer <machine.Timer>` class::
 Timer callbacks are *scheduled* (soft) -- they run from the main loop at a safe
 point, not inside the firmware notify, so they may allocate and call into the VM
 freely.
+
+Serial ports (UART)
+-------------------
+
+Every ``EFI_SERIAL_IO_PROTOCOL`` port is a :ref:`machine.UART <machine.UART>`, in
+both console and serial-REPL mode::
+
+    from machine import UART
+
+    uart = UART(0)                      # first port, settings unchanged
+    uart = UART(1, baudrate=9600)       # second port at 9600 8N1
+    uart = UART("USB(0x0,0x0)")         # first port whose device path matches
+    uart.init(flow=0)                   # turn RTS/CTS off (None = on if supported)
+    uart.write(b"hello\r\n")
+    data = uart.read(16)                # bytes, or None if nothing arrived
+    uart.deinit()                       # give the port back to the firmware
+
+Ids are numbered in the order ports were found and stay stable for the session:
+unplugging a USB adapter doesn't renumber the others, and plugging it back into the
+same socket gives it the same id.
+
+* ``baudrate`` omitted keeps the port's current rate. ``bits``, ``parity`` and
+  ``stop`` are passed to the firmware driver; settings it refuses raise
+  ``OSError(EINVAL)``.
+* ``flow``: ``None`` (default) turns RTS/CTS on if the driver supports it, ``0``
+  turns it off, ``UART.RTS | UART.CTS`` turns it on. ``UART.RTS`` or ``UART.CTS``
+  alone is a ``ValueError``: UEFI has a single flow-control setting.
+* ``timeout`` (ms) is how long ``read`` waits for the first character, and ``write``
+  for progress; ``0`` (default) never waits. ``timeout_char`` (ms) is how long
+  ``read`` waits between characters once data is arriving; it is at least one
+  character time.
+* ``rxbuf`` sets the receive buffer size (default 1024).
+* UART objects work with ``select.poll`` and :mod:`asyncio` streams.
+
+Opening a port that the firmware console is mirrored to takes it from the console
+until ``deinit()``, so console output stops appearing on it, and a Ctrl-C arriving on
+it is just data. ``UART(n)`` for the REPL's own port shares it with the REPL; the
+REPL keeps it after ``deinit()``. For binary transfers on the REPL's port, turn off
+Ctrl-C handling with ``micropython.kbd_intr(-1)``.
+
+If a USB serial adapter is unplugged, its UART objects raise ``OSError(ENODEV)``,
+and stay that way when it is plugged back in: call ``uart.init(...)`` (or create a
+new ``UART``) to take it again.
 
 Filesystem
 ----------

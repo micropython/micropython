@@ -32,6 +32,9 @@
 
 #include "efi.h"
 #include "uefi_port.h"
+#include "uefi_serial.h"
+
+int snprintf(char *str, size_t size, const char *fmt, ...); // shared/libc/printf.c
 
 // Live UEFI tables, set on entry.
 EFI_SYSTEM_TABLE *mp_uefi_st;
@@ -101,6 +104,24 @@ static void mpy_uefi_teardown(void) {
     #endif
     uefi_event_obj_deinit_all();
     mp_uefi_async_deinit();
+    mp_uefi_serial_close_user();   // give user-opened UARTs back; the REPL's port goes last
+}
+
+// Print an ASCII string on ConOut (the firmware console), whatever the REPL transport.
+static void conout_ascii(const char *str) {
+    EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL *out = mp_uefi_st->ConOut;
+    CHAR16 buf[65];
+    size_t i = 0;
+    for (; *str; str++) {
+        buf[i++] = (uint8_t)*str;
+        if (i == MP_ARRAY_SIZE(buf) - 1) {
+            buf[i] = 0;
+            out->OutputString(out, buf);
+            i = 0;
+        }
+    }
+    buf[i] = 0;
+    out->OutputString(out, buf);
 }
 
 // ── Script-on-the-command-line support (`app.efi foo.py [args]`) ────────────
@@ -169,10 +190,15 @@ static bool char16_eq_ascii(const CHAR16 *w, const char *a) {
 // (a CHAR16 command line, script first), which we only parse when there are no
 // ShellParameters.
 //
-// Leading `--serial`/`--console`/`--raw`/`--faux-soft` options are consumed here so
-// they don't reach sys.argv or get mistaken for a script:
+// Leading `--serial[=PORT]`/`--console`/`--baud=N`/`--no-rtscts`/`--raw`/`--faux-soft`
+// options are consumed here so they don't reach sys.argv or get mistaken for a script:
 //   --serial      select the byte-clean EFI_SERIAL_IO transport (*serial_out; defaults
-//                 to the build's MPY_UEFI_SERIAL_REPL setting).
+//                 to the build's MPY_UEFI_SERIAL_REPL setting) on the first port.
+//   --serial=PORT the same, on port PORT: a machine.UART index, or text to find in the
+//                 port's device path (e.g. `--serial=USB(0x0,0x0)`).
+//   --baud=N      the REPL port's baud rate (default: keep the port's current rate).
+//   --no-rtscts   don't enable RTS/CTS on the serial transport even if the driver
+//                 supports it (for cables without the handshake lines wired).
 //   --raw         boot straight into raw-REPL mode (skip the friendly-REPL banner and
 //                 prompt) -- used only by the automated test harness, which never wants
 //                 the friendly REPL. Genuine interactive `--serial` use omits it.
@@ -180,6 +206,20 @@ static bool char16_eq_ascii(const CHAR16 *w, const char *a) {
 //                 "soft reboot" so it satisfies stock pyboard.py's reset protocol.
 // Returns the remaining token count and sets *argv_out to the first non-option token,
 // or 0 for a bare launch (-> REPL).
+static bool uefi_rtscts = true;
+static char uefi_serial_spec[64];   // --serial=PORT ("" = first port)
+static uint32_t uefi_baud;          // --baud=N (0 = keep the current rate)
+
+// If CHAR16 token w starts with ASCII prefix p, return the rest of w, else NULL.
+static const CHAR16 *char16_after_prefix(const CHAR16 *w, const char *p) {
+    for (; *p; p++, w++) {
+        if (*w != (CHAR16)(uint8_t)*p) {
+            return NULL;
+        }
+    }
+    return w;
+}
+
 static UINTN uefi_launch_argv(CHAR16 ***argv_out, bool *serial_out) {
     static CHAR16 lo_buf[512];
     static CHAR16 *lo_argv[16];
@@ -219,10 +259,22 @@ static UINTN uefi_launch_argv(CHAR16 ***argv_out, bool *serial_out) {
     #endif
     // Strip leading transport options; the last one on the line wins.
     while (argc > 0) {
+        const CHAR16 *val;
         if (char16_eq_ascii(argv[0], "--serial")) {
             serial = true;
+            uefi_serial_spec[0] = 0;
+        } else if ((val = char16_after_prefix(argv[0], "--serial=")) != NULL) {
+            serial = true;
+            char16_to_cstr(val, uefi_serial_spec, sizeof(uefi_serial_spec));
+        } else if ((val = char16_after_prefix(argv[0], "--baud=")) != NULL) {
+            uefi_baud = 0;
+            for (; *val >= '0' && *val <= '9' && uefi_baud < 100000000; val++) {
+                uefi_baud = uefi_baud * 10 + (*val - '0');
+            }
         } else if (char16_eq_ascii(argv[0], "--console")) {
             serial = false;
+        } else if (char16_eq_ascii(argv[0], "--no-rtscts")) {
+            uefi_rtscts = false;
         } else if (char16_eq_ascii(argv[0], "--raw")) {
             pyexec_mode_kind = PYEXEC_MODE_RAW_REPL;
         } else if (char16_eq_ascii(argv[0], "--faux-soft")) {
@@ -423,15 +475,24 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE image_handle, EFI_SYSTEM_TABLE *system_tab
     bool serial;
     UINTN argc = uefi_launch_argv(&argv, &serial);
     if (serial) {
-        // Let the user know that the MicroPython is only going to run on the serial port.
-        // This is sometimes needed because ConOut is not a clean byte channel and it
-        // mangles various control codes.
-        EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL *out = mp_uefi_st->ConOut;
-        out->OutputString(out, L"\r\n[MicroPython REPL is on the serial port; this console "
-            L"is inactive.\r\nRe-launch with `--console` to use the REPL here instead.]\r\n");
-        // If no serial hardware is present, mp_uefi_serial_init leaves mp_uefi_serial_repl
-        // false and the HAL stays on this ConOut console (the banner above notwithstanding).
-        mp_uefi_serial_init();
+        // Tell the user on this console where the REPL went, and what the driver accepted.
+        // This is needed because ConOut is not a clean byte channel: it mangles various
+        // control codes, so the REPL can't share it. If no usable port is found the HAL
+        // stays on this ConOut console.
+        char msg[400];
+        if (mp_uefi_serial_repl_attach(uefi_serial_spec, uefi_baud, uefi_rtscts)) {
+            mp_uefi_serial_t *s = mp_uefi_serial_repl_port();
+            char path[256];
+            mp_uefi_serial_path_text(s, path, sizeof(path));
+            snprintf(msg, sizeof(msg), "\r\n[MicroPython REPL is on serial port %d (%s) at %u baud, "
+                "RTS/CTS %s; this console is inactive.\r\nRe-launch with `--console` to use the "
+                "REPL here instead.]\r\n", (int)(s - mp_uefi_serial_slots), path[0] ? path : "?",
+                (unsigned)s->baud, s->rtscts ? "on" : "off");
+        } else {
+            snprintf(msg, sizeof(msg), "\r\n[No usable serial port%s%s; the MicroPython REPL "
+                "stays on this console.]\r\n", uefi_serial_spec[0] ? " matching " : "", uefi_serial_spec);
+        }
+        conout_ascii(msg);
     }
     // `app.efi foo.py [args]` runs the script and exits; bare launch -> REPL. Either
     // way capture the pyexec result so sys.exit(N) can reach our caller (see
@@ -450,6 +511,7 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE image_handle, EFI_SYSTEM_TABLE *system_tab
     // boot manager) — it must NOT power the machine off. The marker lets the test
     // harness detect the exit without depending on what the caller does next.
     mp_hal_stdout_tx_str("MPY-UEFI: exit\r\n");
+    mp_uefi_serial_deinit();   // last: hand the serial back to TerminalDxe
     return uefi_exit_status(exit_ret);
 }
 

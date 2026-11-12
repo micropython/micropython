@@ -119,6 +119,7 @@ SRC_C = \
 	mphalport.c \
 	uefi_time.c \
 	uefi_event.c \
+	uefi_serial.c \
 	machine_timer.c \
 	machine_rtc.c \
 	uefi_event_obj.c \

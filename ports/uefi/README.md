@@ -229,6 +229,7 @@ first.
 
 **Standard MicroPython module implementations** - the modules Python code actually imports.
 - `modmachine.c` (+ `machine_timer.c`, `machine_rtc.c`, `machine_wdt.c`) — `machine`: idle/reset/freq/sleep/unique_id, wires in `Timer`/`RTC`/`WDT`
+- `machine_uart.c` — `machine.UART` (`#include`d into `extmod/machine_uart.c`), over `uefi_serial.c`
 - `modnetwork.c` — `network`: interface up/down, static/DHCP IP config
 - `modsocket.c` — `socket`: address constants, `getaddrinfo`, the socket stream type
 - `modtime.c` — `time` wall-clock fragment (`#include`d into `extmod/modtime.c`, not compiled standalone)
@@ -243,7 +244,8 @@ first.
 **UEFI-environment-to-library-API glue** — turning firmware services into what MicroPython's
 core/HAL expects (`time`, VFS, RNG, GC, the scheduler's blocking primitive).
 - `uefi_time.c` — hardware timebase behind `time`/`machine.Timer`
-- `uefi_event.c` — the WFE blocking primitive, timer/signal-event primitives, byte-clean serial REPL
+- `uefi_event.c` — the WFE blocking primitive, timer/signal-event primitives, the serial REPL's attachment to its port
+- `uefi_serial.c` — serial port driver layer over `EFI_SERIAL_IO_PROTOCOL`: port ids stable across USB hot-plug, taking ports from/returning them to TerminalDxe, background RX, bulk TX (design: `docs/serial-uart-design.md`)
 - `uefi_vfs.c` — VFS backend over `EFI_SIMPLE_FILE_SYSTEM_PROTOCOL`
 - `uefi_net.c` — shared plumbing behind `network`/`socket` (async completion helpers)
 - `uefi_rng.c` — entropy behind `os.urandom()`

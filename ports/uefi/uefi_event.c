@@ -20,6 +20,7 @@
 #include "shared/runtime/pyexec.h"
 #include "efi.h"
 #include "uefi_port.h"
+#include "uefi_serial.h"
 
 // --- stdin ring buffer, filled by the ConIn poll notify (the "RX ISR") ---
 // Sizing matters for the raw-REPL raw-paste upload path (the test harness): raw-paste
@@ -27,7 +28,9 @@
 // first flow-control grant (the device advertises a buf_max/2 window and implicitly
 // grants two of them). A whole poll's worth can land in the ring in one notify, so the
 // ring must be comfortably LARGER than twice that ceiling — 1 KiB vs a 256 B ceiling.
-// A byte dropped here (ringbuf_put on a full ring) silently corrupts the uploaded script.
+// In serial-REPL mode the REPL reads its serial port's own ring (uefi_serial.c) of the
+// same size; that poll stops reading when the ring is full, leaving the bytes in the
+// driver (which, with RTS/CTS, back-pressures the sender) rather than dropping them.
 #ifndef MICROPY_UEFI_STDIN_BUFFER_LEN
 #define MICROPY_UEFI_STDIN_BUFFER_LEN (1024)
 #endif
@@ -59,9 +62,16 @@ static UINT64 saved_timer_period = 0; // non-zero once we've changed it (needs r
 // Byte-clean serial REPL. ConOut/ConIn go through the firmware's TerminalDxe, a
 // terminal *emulator* that mangles non-printable bytes (the raw REPL's 0x04 EOT is
 // rendered as '?') and eats input escapes — so it can't carry the raw-REPL protocol.
-// In serial-REPL mode we drive EFI_SERIAL_IO_PROTOCOL directly instead. See main.c.
-bool mp_uefi_serial_repl = false;
-static EFI_SERIAL_IO_PROTOCOL *serial_io = NULL;
+// In serial-REPL mode the REPL is attached to one port of the serial driver layer
+// (uefi_serial.c) instead. See main.c and docs/serial-uart-design.md.
+bool mp_uefi_serial_repl = false;   // the REPL was configured onto a serial port
+static mp_uefi_serial_t *repl_port; // that port (its slot survives unplugging)
+static uint32_t repl_baud;          // settings to re-apply when it is re-plugged
+static int repl_flow;
+
+// Give up on a REPL write that has made no progress for this long (e.g. CTS held low by
+// a far end that went away), rather than hang the interpreter.
+#define SERIAL_TX_STALL_MS (2000)
 
 // Map a UEFI scan-only key (UnicodeChar == 0) to the byte sequence readline
 // understands. We re-emit the CSI escape sequences (the firmware parsed them out
@@ -93,39 +103,14 @@ static const char *scan_to_seq(uint16_t scan) {
     }
 }
 
-// Drain the serial RX (byte-clean) into the stdin ringbuf. Runs from the poll notify
-// in serial-REPL mode; no scan-code translation (the raw REPL wants raw bytes).
-static void serial_poll_rx(void) {
-    bool buffered = false;
-    UINT32 control;
-    while (serial_io->GetControl(serial_io, &control) == EFI_SUCCESS &&
-           !(control & EFI_SERIAL_INPUT_BUFFER_EMPTY)) {
-        uint8_t b;
-        UINTN sz = 1;
-        if (serial_io->Read(serial_io, &sz, &b) != EFI_SUCCESS || sz != 1) {
-            break;
-        }
-        if ((int)b == interrupt_char) {
-            #if MICROPY_KBD_EXCEPTION
-            mp_sched_keyboard_interrupt();
-            #endif
-            continue;   // don't buffer the interrupt char itself
-        }
-        ringbuf_put(&stdin_ringbuf, b);
-        buffered = true;
-    }
-    if (buffered) {
-        mp_uefi_st->BootServices->SignalEvent(wakeup_event);
-    }
-}
-
 // --- the ConIn poll notify: hard-ISR context, TPL_CALLBACK ---
 static void EFIAPI conin_notify(EFI_EVENT event, void *context) {
     (void)event;
     (void)context;
-    if (mp_uefi_serial_repl) {
-        serial_poll_rx();
-        return;
+    // Serial ports first; only the REPL's port has the interrupt char applied.
+    mp_uefi_serial_poll(interrupt_char);
+    if (repl_port != NULL && repl_port->owned) {
+        return;     // the REPL is on its serial port; ConIn is not REPL input
     }
     EFI_SIMPLE_TEXT_INPUT_PROTOCOL *in = mp_uefi_st->ConIn;
     EFI_INPUT_KEY key;
@@ -158,38 +143,96 @@ static void EFIAPI conin_notify(EFI_EVENT event, void *context) {
     }
 }
 
-// Switch REPL I/O to a byte-clean serial channel: grab EFI_SERIAL_IO_PROTOCOL, take
-// the serial away from TerminalDxe (DisconnectController) so we own it exclusively
-// (no RX contention, no ConOut->serial doubling), and flip the mode flag so the HAL
-// (mp_hal_stdout_tx_strn) and the poll notify (serial_poll_rx) use it. Returns true on
-// success; on failure the caller stays on the ConOut/ConIn console. See main.c.
-bool mp_uefi_serial_init(void) {
-    EFI_BOOT_SERVICES *bs = mp_uefi_st->BootServices;
-    static const EFI_GUID g_serial = EFI_SERIAL_IO_PROTOCOL_GUID;
-    UINTN count = 0;
-    EFI_HANDLE *hb = NULL;
-    if (EFI_ERROR(bs->LocateHandleBuffer(ByProtocol, (EFI_GUID *)&g_serial, NULL, &count, &hb)) ||
-        hb == NULL || count == 0) {
+// Attach the REPL to a serial port: `spec` is NULL/"" (first port), a decimal index,
+// or text to find in the port's device path. baud 0 keeps the port's current rate.
+// Returns true on success; on failure the REPL stays on the ConOut/ConIn console.
+bool mp_uefi_serial_repl_attach(const char *spec, uint32_t baud, bool rtscts) {
+    mp_uefi_serial_scan();
+    int i;
+    if (spec == NULL || *spec == 0) {
+        i = mp_uefi_serial_find_index(0);
+    } else if (*spec >= '0' && *spec <= '9') {
+        long n = 0;
+        const char *p = spec;
+        for (; *p >= '0' && *p <= '9' && n < 1000; p++) {
+            n = n * 10 + (*p - '0');
+        }
+        i = *p == 0 ? mp_uefi_serial_find_index(n) : -1;
+    } else {
+        i = mp_uefi_serial_find_text(spec);
+    }
+    if (i < 0) {
         return false;
     }
-    EFI_HANDLE h = hb[0];
-    bs->FreePool(hb);
-    // Grab the interface first (it survives disconnecting the consumer), then detach
-    // TerminalDxe so the firmware no longer reads/writes this serial behind our back.
-    if (EFI_ERROR(bs->HandleProtocol(h, (EFI_GUID *)&g_serial, (void **)&serial_io)) ||
-        serial_io == NULL) {
+    mp_uefi_serial_t *s = &mp_uefi_serial_slots[i];
+    s->repl = true;     // before open: the REPL's ring is never resized
+    if (EFI_ERROR(mp_uefi_serial_open(s, MICROPY_UEFI_STDIN_BUFFER_LEN))) {
+        s->repl = false;
         return false;
     }
-    bs->DisconnectController(h, NULL, NULL);
+    if (baud == 0) {
+        baud = (s->io->Mode != NULL && s->io->Mode->BaudRate != 0) ? (uint32_t)s->io->Mode->BaudRate : 115200;
+    }
+    repl_baud = baud;
+    repl_flow = rtscts ? -1 : 0;
+    if (EFI_ERROR(mp_uefi_serial_configure(s, baud, 8, EFI_SERIAL_NO_PARITY, EFI_SERIAL_ONE_STOP_BIT, repl_flow))) {
+        mp_uefi_serial_close(s);
+        s->repl = false;
+        return false;
+    }
+    repl_port = s;
     mp_uefi_serial_repl = true;
     return true;
 }
 
-// Byte-clean serial TX — the raw bytes go straight out, so control codes (the raw
-// REPL's 0x04 EOT, etc.) survive. Used by mp_hal_stdout_tx_strn in serial-REPL mode.
+// The REPL's port, for reporting (NULL if the REPL isn't on serial).
+mp_uefi_serial_t *mp_uefi_serial_repl_port(void) {
+    return repl_port;
+}
+
+// Foreground: can REPL output go to its serial port right now? If the port was
+// unplugged and a SerialIo has since appeared, look for it and re-attach.
+bool mp_uefi_serial_repl_ready(void) {
+    mp_uefi_serial_t *s = repl_port;
+    if (s == NULL) {
+        return false;
+    }
+    if (mp_uefi_serial_usable(s)) {
+        return true;
+    }
+    if (!mp_uefi_serial_rescan_pending()) {
+        return false;
+    }
+    mp_uefi_serial_scan();
+    if (!s->present || EFI_ERROR(mp_uefi_serial_open(s, MICROPY_UEFI_STDIN_BUFFER_LEN))) {
+        return false;
+    }
+    if (EFI_ERROR(mp_uefi_serial_configure(s, repl_baud, 8, EFI_SERIAL_NO_PARITY, EFI_SERIAL_ONE_STOP_BIT, repl_flow))) {
+        mp_uefi_serial_close(s);
+        return false;
+    }
+    return true;
+}
+
+void mp_uefi_serial_close_user(void) {
+    mp_uefi_serial_close_all(false);
+}
+
+// Hand every serial port back to the firmware (the REPL's last): restore settings and
+// reconnect TerminalDxe so the console mirror comes back. Call after the last REPL
+// output, with the poll timer stopped.
+void mp_uefi_serial_deinit(void) {
+    mp_uefi_serial_close_all(true);
+    repl_port = NULL;
+    mp_uefi_serial_repl = false;
+}
+
+// Byte-clean REPL output — the raw bytes go straight out, so control codes (the raw
+// REPL's 0x04 EOT, etc.) survive. Used by mp_hal_stdout_tx_strn when
+// mp_uefi_serial_repl_ready(). Gives up after SERIAL_TX_STALL_MS without progress.
 void mp_uefi_serial_tx(const char *str, size_t len) {
-    UINTN sz = len;
-    serial_io->Write(serial_io, &sz, (void *)str);
+    EFI_STATUS err;
+    mp_uefi_serial_write(repl_port, (const uint8_t *)str, len, SERIAL_TX_STALL_MS, &err);
 }
 
 // --- atomic section: raise to TPL_HIGH_LEVEL, masking our notifies ---
@@ -286,9 +329,15 @@ void mp_uefi_wfe(int64_t timeout_ms) {
 // --- HAL stdin, backed by the ringbuf ---
 int mp_hal_stdin_rx_chr(void) {
     for (;;) {
-        int c = ringbuf_get(&stdin_ringbuf);
+        int c = repl_port != NULL ? ringbuf_get(&repl_port->rx) : -1;
+        if (c < 0) {
+            c = ringbuf_get(&stdin_ringbuf);
+        }
         if (c >= 0) {
             return c;
+        }
+        if (repl_port != NULL && mp_uefi_serial_rescan_pending()) {
+            mp_uefi_serial_repl_ready();    // the REPL's port may be back: re-attach
         }
         mp_event_wait_indefinite(); // sleeps in WFE; the notify wakes us
     }
@@ -296,7 +345,9 @@ int mp_hal_stdin_rx_chr(void) {
 
 uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags) {
     uintptr_t ret = 0;
-    if ((poll_flags & MP_STREAM_POLL_RD) && ringbuf_avail(&stdin_ringbuf) > 0) {
+    bool rx_ready = ringbuf_avail(&stdin_ringbuf) > 0
+        || (repl_port != NULL && ringbuf_avail(&repl_port->rx) > 0);
+    if ((poll_flags & MP_STREAM_POLL_RD) && rx_ready) {
         ret |= MP_STREAM_POLL_RD;
     }
     if (poll_flags & MP_STREAM_POLL_WR) {
@@ -330,6 +381,8 @@ void mp_uefi_async_init(void) {
     // 2.5 ms tick resolution.
     bs->CreateEvent(EVT_TIMER | EVT_NOTIFY_SIGNAL, TPL_CALLBACK, conin_notify, NULL, &conin_timer);
     bs->SetTimer(conin_timer, TimerPeriodic, 50000ULL); // 5 ms in 100 ns units
+    // Notice serial ports appearing (USB hot-plug), for re-attach and new UART ids.
+    mp_uefi_serial_events_init();
 
     // Best-effort: retune the DXE-core timer tick finer (see MPY_UEFI_TIMER_PERIOD_100NS).
     // Only ever go finer than the current period — never coarsen a firmware that is already
@@ -357,6 +410,7 @@ void mp_uefi_async_deinit(void) {
         timer_arch->SetTimerPeriod(timer_arch, saved_timer_period);
         saved_timer_period = 0;
     }
+    mp_uefi_serial_events_deinit();
     if (conin_timer != NULL) {
         bs->SetTimer(conin_timer, TimerCancel, 0);
         bs->CloseEvent(conin_timer);

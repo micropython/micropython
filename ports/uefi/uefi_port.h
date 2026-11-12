@@ -29,12 +29,16 @@ void uefi_event_obj_deinit_all(void); // defined in uefi_event_obj.c
 // Mount the boot volume at "/" (uefi_vfs.c). Called once, after mp_init().
 void mp_uefi_vfs_mount_boot(void);
 
-// Byte-clean serial REPL (uefi_event.c). mp_uefi_serial_init() switches REPL I/O from
-// the ConOut/ConIn console (TerminalDxe, which mangles the raw-REPL protocol) to a
-// directly-driven EFI_SERIAL_IO_PROTOCOL; when the flag is set the stdin/stdout HAL
-// uses the serial. Returns true on success.
+// Byte-clean serial REPL (uefi_event.c, over the driver layer in uefi_serial.c).
+// mp_uefi_serial_repl_attach() moves REPL I/O from the ConOut/ConIn console (TerminalDxe,
+// which mangles the raw-REPL protocol) to a serial port: spec NULL/"" = first port, a
+// decimal index, or device-path text; baud 0 keeps the current rate. While the port is
+// usable (mp_uefi_serial_repl_ready()) the stdin/stdout HAL uses it, else the console.
 extern bool mp_uefi_serial_repl;
-bool mp_uefi_serial_init(void);
+bool mp_uefi_serial_repl_attach(const char *spec, uint32_t baud, bool rtscts);
+bool mp_uefi_serial_repl_ready(void);
+void mp_uefi_serial_close_user(void);   // close every non-REPL port (teardown)
+void mp_uefi_serial_deinit(void);
 void mp_uefi_serial_tx(const char *str, size_t len);
 
 // Build a VFS object (mountable via os.mount) from an EFI_SIMPLE_FILE_SYSTEM_PROTOCOL
