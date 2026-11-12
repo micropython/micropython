@@ -105,6 +105,8 @@
     (((imm12) << 12) | ((s) << 8) | ((m) << 6) | ((n) << 4) | (op0))
 #define ASM_XTENSA_ENCODE_RRRN(op0, r, s, t) \
     (((r) << 12) | ((s) << 8) | ((t) << 4) | (op0))
+#define ASM_XTENSA_ENCODE_RI6(op0, s, imm6) \
+    ((((imm6) & 0xf) << 12) | ((s) << 8) | ((imm6) & 0x30) | (op0))
 #define ASM_XTENSA_ENCODE_RI7(op0, s, imm7) \
     ((((imm7) & 0xf) << 12) | ((s) << 8) | ((imm7) & 0x70) | (op0))
 
