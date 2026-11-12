@@ -80,6 +80,8 @@ uint8_t ble_drv_stack_enabled(void);
 
 void ble_drv_address_get(ble_drv_addr_t * p_addr);
 
+void ble_drv_address_set(ble_drv_addr_t * p_addr);
+
 bool ble_drv_uuid_add_vs(uint8_t * p_uuid, uint8_t * idx);
 
 bool ble_drv_service_add(ubluepy_service_obj_t * p_service_obj);
