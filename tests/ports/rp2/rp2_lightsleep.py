@@ -27,15 +27,4 @@ for n in range(100):
     sys.stdout.write(chr(ord("a") + (n % 26)))
     lightsleep(2 ** (n % 10))
 
-old_freq = machine.freq()
-machine.freq(50_000_000)
-print("\n{}".format(machine.freq()))
-lightsleep(500)
-print(machine.freq())
-machine.freq(51_000_000, 48_000_000)
-print(machine.freq())
-lightsleep(500)
-print(machine.freq())
-machine.freq(old_freq)
-
-print("DONE")
+print("\nDONE")
