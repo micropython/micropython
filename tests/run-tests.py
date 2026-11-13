@@ -1128,6 +1128,11 @@ the last matching regex is used:
         help="re-run only the failed tests",
     )
     cmd_parser.add_argument(
+        "--endorse",
+        action="store_true",
+        help="Accept named .out files in results/ as .exp files",
+    )
+    cmd_parser.add_argument(
         "--begin",
         metavar="PROLOGUE",
         default=None,
@@ -1170,6 +1175,46 @@ the last matching regex is used:
         rm_f(get_results_filename(args))
 
         sys.exit(0)
+
+    if args.endorse:
+        if not args.files:
+            print("endorse: missing .out filename(s)")
+            sys.exit(1)
+
+        res = True
+        any_endorsed = False
+
+        for f in args.files:
+            if not os.path.exists(f):
+                print("{}: File not found".format(f))
+                res = False
+                continue
+            base, ext = os.path.splitext(f)
+            if ext != ".out":
+                print("{}: Not a .out file".format(f))
+                res = False
+                continue
+            p = os.path.basename(base) + ".exp"
+            l = "."
+            while "_" in p:
+                a, _, b = p.partition("_")
+                la = os.path.join(l, a)
+                if os.path.isdir(la):
+                    l = la
+                    p = b
+                else:
+                    break
+            p = os.path.join(l, p)
+            print("{}: Updated expected result from {}".format(p, f))
+            any_endorsed = True
+            os.rename(f, p)
+
+        if any_endorsed:
+            print("Remember to 'git add' these .exp files")
+        else:
+            res = False
+
+        sys.exit(not res)
 
     # Get the test instance to run on.
     pyb = get_test_instance(args.test_instance, args.baudrate, args.user, args.password)

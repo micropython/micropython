@@ -122,6 +122,7 @@ Set the MICROPY_MPYCROSS environment variable to use a specific version of ``mpy
 * ``--print-failures`` - Show diff of failed tests and exit
 * ``--clean-failures`` - Delete .exp and .out files from prior failed tests
 * ``--run-failures`` - Re-run only previously failed tests
+* ``--endorse`` - Update .exp files from .out files
 
 **Examples:**
 
@@ -146,3 +147,6 @@ Set the MICROPY_MPYCROSS environment variable to use a specific version of ``mpy
 
    # Re-run only failed tests from previous run
    $ ./run-tests.py --run-failures
+
+   # Update a .exp file from a .out file
+   $ ./run-tests.py --endorse results/basics_parser.py.out
