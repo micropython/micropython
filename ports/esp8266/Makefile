@@ -45,6 +45,7 @@ QSTR_DEFS = qstrdefsport.h #$(BUILD)/pins_qstr.h
 QSTR_GLOBAL_DEPENDENCIES = $(BOARD_DIR)/mpconfigboard.h
 
 # MicroPython feature configurations
+MICROPY_USE_COMPILER_PLUGIN ?= none
 MICROPY_ROM_TEXT_COMPRESSION ?= 1
 MICROPY_PY_SSL = 1
 MICROPY_SSL_AXTLS = 1

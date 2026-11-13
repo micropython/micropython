@@ -338,7 +338,6 @@ function ci_esp8266_path {
 }
 
 function ci_esp8266_build {
-    export MICROPY_USE_COMPILER_PLUGIN=none
     make ${MAKEOPTS} -C mpy-cross
     make ${MAKEOPTS} -C ports/esp8266 submodules
     make ${MAKEOPTS} -C ports/esp8266 BOARD=ESP8266_GENERIC
