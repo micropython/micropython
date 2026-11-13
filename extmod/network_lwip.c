@@ -108,7 +108,7 @@ mp_obj_t mod_network_nic_ifconfig(struct netif *netif, size_t n_args, const mp_o
         ip4_addr_t netmask;
         ip4_addr_t gw;
         ip4_addr_t dns;
-        ip_addr_t dns_addr;
+        ip_addr_t dns_addr = { 0 };
         netutils_parse_ipv4_addr(items[0], (uint8_t *)&ip_addr, NETUTILS_BIG);
         netutils_parse_ipv4_addr(items[1], (uint8_t *)&netmask, NETUTILS_BIG);
         netutils_parse_ipv4_addr(items[2], (uint8_t *)&gw, NETUTILS_BIG);
