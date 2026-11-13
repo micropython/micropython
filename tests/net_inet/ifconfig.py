@@ -54,6 +54,9 @@ except OSError:
     raise SystemExit
 
 nic.ifconfig((ip, netmask, gateway, dns))
-socket.getaddrinfo("micropython.org", 80)
+
+# Use a different name so this lookup cannot be served from the cache
+# populated by the pre-check above.
+socket.getaddrinfo("docs.micropython.org", 80)
 
 print("OK")
