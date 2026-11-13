@@ -2099,6 +2099,17 @@ typedef time_t mp_timestamp_t;
 #define MICROPY_PY_MACHINE_MEMX (MICROPY_PY_MACHINE)
 #endif
 
+// Whether to provide the "machine.mem64" object.  This must perform a single
+// 64-bit memory access, which is only assumed for targets with 64-bit pointers.
+// A 32-bit target that can genuinely issue a single 64-bit access may enable it.
+#ifndef MICROPY_PY_MACHINE_MEM64
+#if defined(UINTPTR_MAX) && UINTPTR_MAX > 0xffffffff && MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_NONE
+#define MICROPY_PY_MACHINE_MEM64 (MICROPY_PY_MACHINE_MEMX)
+#else
+#define MICROPY_PY_MACHINE_MEM64 (0)
+#endif
+#endif
+
 // Whether to provide the "machine.mem_backup" function
 #ifndef MICROPY_PY_MACHINE_MEM_BACKUP
 #define MICROPY_PY_MACHINE_MEM_BACKUP (0)

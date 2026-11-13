@@ -1,0 +1,11 @@
+8192 2 0
+b'hello' 111
+True
+0 0
+True
+True True
+True
+b'abc' 4096
+ValueError: give max_address or address, not both
+ValueError: negative size
+EFI_NOT_FOUND
