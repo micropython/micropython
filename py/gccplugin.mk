@@ -18,8 +18,9 @@ CFLAGS += -fplugin=$(CHECKS_PLUGIN)
 .PHONY: plugin
 plugin: $(CHECKS_PLUGIN)
 
-$(CHECKS_PLUGIN): $(TOP)/tools/micropython_checks.cc | $(BUILD)/
+$(CHECKS_PLUGIN): $(TOP)/tools/micropython_checks.cc
 	$(ECHO) "PLUGIN $@"
+	$(Q)$(MKDIR) -p $(dir $@)
 	$(Q)$(HOSTCXX)  -o $@ -shared $^ \
 		-std=gnu++14 -fPIC -Wall -O -fno-rtti \
 		-I$(PLUGINDIR) $(CHECKS_LIB) || \
