@@ -241,7 +241,7 @@ function ci_cc3200_setup {
 
 function ci_cc3200_build {
     make ${MAKEOPTS} -C ports/cc3200 BTARGET=application BTYPE=release
-    make ${MAKEOPTS} -C ports/cc3200 BTARGET=bootloader  BTYPE=release MICROPY_USE_COMPILER_PLUGIN=none
+    make ${MAKEOPTS} -C ports/cc3200 BTARGET=bootloader  BTYPE=release
 }
 
 ########################################################################################
@@ -338,7 +338,6 @@ function ci_esp8266_path {
 }
 
 function ci_esp8266_build {
-    export MICROPY_USE_COMPILER_PLUGIN=none
     make ${MAKEOPTS} -C mpy-cross
     make ${MAKEOPTS} -C ports/esp8266 submodules
     make ${MAKEOPTS} -C ports/esp8266 BOARD=ESP8266_GENERIC

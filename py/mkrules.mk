@@ -13,6 +13,7 @@ endif
 
 HELP_BUILD_ERROR ?= "See \033[1;31mhttps://github.com/micropython/micropython/wiki/Build-Troubleshooting\033[0m"
 HELP_MPY_LIB_SUBMODULE ?= "\033[1;31mError: micropython-lib submodule is not initialized.\033[0m Run 'make submodules'"
+HELP_PLUGIN_ERROR ?= "\033[1;31mError: failed building plugin for $(CC).\033[0m Use MICROPY_USE_COMPILER_PLUGIN=none to disable it"
 
 # Extra deps that need to happen before object compilation.
 OBJ_EXTRA_ORDER_DEPS =
