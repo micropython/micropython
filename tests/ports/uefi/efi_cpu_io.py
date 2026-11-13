@@ -2,6 +2,7 @@
 # register. On x64, also CPU_IO2 port I/O through the 0xCF8/0xCFC config mechanism.
 try:
     import machine
+    import uctypes
     import uefi
     from uefi import protocols as P
 except ImportError:
@@ -17,17 +18,22 @@ W32 = 2  # Uint32 in both the PCI_IO and CPU_IO2 width enums
 
 
 def bar_base(p, bar):
-    # The BAR's CPU address from config space (QEMU's root bridges don't translate).
-    cfg = bytearray(8)
-    p.pci_read(W32, 0x10 + 4 * bar, 2, cfg)
-    lo = int.from_bytes(cfg[0:4], "little")
-    base = lo & ~0xF
-    if lo & 6 == 4:  # 64-bit BAR: the next dword is the high half
-        base |= int.from_bytes(cfg[4:8], "little") << 32
-    return base
+    # The BAR's CPU address as GetBarAttributes reports it: a QWORD address-space
+    # descriptor whose AddrRangeMin is the host address, any root-bridge translation
+    # already applied. (BarIndex counts BARs, not config dwords, so config space
+    # can't be indexed by it once a 64-bit BAR comes first.)
+    res = bytearray(8)
+    p.get_bar_attributes(bar, None, res)
+    rp = int.from_bytes(res, "little")
+    d = uctypes.bytes_at(rp, 22)
+    uefi.raw.free_pool(rp)
+    if d[0] != 0x8A or d[3] != 0:
+        return None  # not described as memory (seen on real hardware): can't cross-check
+    return int.from_bytes(d[14:22], "little")
 
 
-# Find a memory BAR: PCI_IO.mem_read rejects the other kinds.
+# Find a memory BAR that GetBarAttributes also describes: PCI_IO.mem_read rejects
+# the other kinds.
 buf = bytearray(4)
 found = None
 for h in pci:
@@ -37,7 +43,10 @@ for h in pci:
             p.mem_read(W32, bar, 0, 1, buf)
         except uefi.Error:
             continue
-        found = (p, bar_base(p, bar), int.from_bytes(buf, "little"))
+        base = bar_base(p, bar)
+        if base is None:
+            continue
+        found = (p, base, int.from_bytes(buf, "little"))
         break
     if found:
         break
