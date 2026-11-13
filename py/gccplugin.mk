@@ -22,7 +22,8 @@ $(CHECKS_PLUGIN): $(TOP)/tools/micropython_checks.cc | $(BUILD)/
 	$(ECHO) "PLUGIN $@"
 	$(Q)$(HOSTCXX)  -o $@ -shared $^ \
 		-std=gnu++14 -fPIC -Wall -O -fno-rtti \
-		-I$(PLUGINDIR) $(CHECKS_LIB)
+		-I$(PLUGINDIR) $(CHECKS_LIB) || \
+		(echo -e $(HELP_PLUGIN_ERROR); false)
 
 # All objects depend on the checks plugin
 $(OBJ): $(CHECKS_PLUGIN)
