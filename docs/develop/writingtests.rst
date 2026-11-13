@@ -134,8 +134,8 @@ Set the MICROPY_MPYCROSS environment variable to use a specific version of ``mpy
    # Run tests excluding async functionality
    $ ./run-tests.py -e async
 
-   # Run tests matching *_pep_*
-   $ ./run-tests.py -i *_pep_*
+   # Run tests with name containing 'tuple' (regular expression match)
+   $ ./run-tests.py -i tuple
 
    # Run specific test files in parallel
    $ ./run-tests.py -j 4 basics/list*.py
