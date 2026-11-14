@@ -1,0 +1,8 @@
+ready True
+echo 1 True
+echo 16 True
+echo 64 True
+echo 255 True
+echo 256 True
+echo 496 True
+burst True True True

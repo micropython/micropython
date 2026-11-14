@@ -1,0 +1,9 @@
+freq True
+unique_id True True True
+ticks_ms True
+ticks_us True
+ticks_cpu True
+timer_periodic True
+timer_one_shot True
+rtc True
+mem_backup True

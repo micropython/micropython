@@ -1,0 +1,4 @@
+CORE_VREF True
+CORE_TEMP True
+loopback True True
+repeat True
