@@ -61,7 +61,7 @@ def preprocess():
     # that are subsequently needed by the `process_file` step.  The regexs are kept
     # short so they are as efficient as possible. (The stm32 port needs symbols of the
     # form `micropy_hw_xxx` so they are also kept.)
-    re_line_file = re.compile(rb"^#(?:line)?\s+\d+\s\"")
+    re_line_file = re.compile(rb"^#(?:line)?\s+\d+\s\"([^\"]+)\"")
     re_mp_info = re.compile(rb"MP_COMP|MP_QSTR|MP_REGI|micropy_hw")
 
     def pp(flags):
@@ -71,11 +71,17 @@ def preprocess():
                 cmd = args.pp + flags + files
                 with subprocess.Popen(cmd, stdout=subprocess.PIPE) as proc:
                     recent_file = None
+                    current_source = None
                     for line in proc.stdout:
+                        m = re_line_file.match(line)
                         if line.isspace():
                             pass
-                        elif re_line_file.match(line):
-                            recent_file = line
+                        elif m:
+                            fname = os.fsdecode(m.group(1))
+                            if is_c_source(fname) or is_cxx_source(fname):
+                                current_source = line
+                            # Attribute error strings in headers to their source file.
+                            recent_file = current_source or line
                         elif re_mp_info.search(line):
                             if recent_file:
                                 filtered_lines.append(recent_file)
