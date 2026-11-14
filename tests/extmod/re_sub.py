@@ -82,3 +82,10 @@ print(re.sub("b", "\\\\b", "abc"))
 # Using ^, make sure it doesn't repeatedly match
 print(re.sub("^ab", "*", "abababcabab"))
 print(re.sub("^ab|cab", "*", "abababcabab"))
+
+# Empty matches
+print(re.sub("x*", "-", "abxd"))
+print(re.sub(r"\s*", "", "a b  c"))
+print(re.sub(r"[^0-9]*", "", "ab12cd34"))
+print(re.sub("^", "> ", "a"))
+print(re.sub("", "-", "ab"))
