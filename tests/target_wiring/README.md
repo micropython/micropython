@@ -79,3 +79,45 @@ The Encoder instance will be created using:
 
 The two elements in both `encoder_loopback_out_pins` and `encoder_loopback_in_pins` will
 be used to create individual `machine.Pin` instances.
+
+### ADC tests
+
+ADC tests require a GPIO output to be connected in loopback mode to an analog input
+pin.  The variables are:
+
+    adc_loopback_pins: list[tuple[Any, Any]]
+
+The Pin and ADC instances will be created using:
+
+    for out_pin, adc_pin in adc_loopback_pins:
+        machine.Pin(out_pin, Pin.OUT)
+        machine.ADC(Pin(adc_pin))
+
+### I2C device tests
+
+I2C device tests require one or more I2C devices that are always present on the board.
+The variables are:
+
+    i2c_scan_devices: list[tuple[Any, int, Any]]
+
+Each entry is the I2C bus id, the 7-bit address of a device expected on that bus,
+and a pin that must be driven high to power the device (or None).  The I2C and Pin
+instances will be created using:
+
+    for i2c_id, addr, power_pin in i2c_scan_devices:
+        machine.I2C(i2c_id)
+        machine.Pin(power_pin, Pin.OUT)
+
+### SSD1351 display tests
+
+Display tests require an SSD1351 128x128 RGB OLED connected to an SPI bus.  The
+variables are:
+
+    ssd1351_display: dict
+
+The dict has the keys `spi` (the SPI bus id), and `cs`, `dc` and `rst` (the chip
+select, data/command and reset pins).  The SPI and Pin instances will be created
+using:
+
+    machine.SPI(ssd1351_display["spi"])
+    machine.Pin(ssd1351_display["cs"], Pin.OUT)

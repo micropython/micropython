@@ -10,6 +10,8 @@ spi_standalone_args_list = [(0,)]
 
 pwm_loopback_pins = [("P0_4", "P0_5")]
 
+adc_loopback_pins = [("P0_5", "P0_4")]
+
 # CAN args assume no connection for single device tests
 can_args = (1,)
 can_kwargs = {}
