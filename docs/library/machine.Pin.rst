@@ -201,7 +201,23 @@ Methods
        handlers may not allocate memory; see :ref:`isr_rules`.
        Not all ports support this argument.
 
-   This method returns a callback object.
+   On most ports this method returns an IRQ object with these methods:
+
+     - ``flags()`` returns an integer bitmask of interrupt flags reported by
+       the port. The flag values are port-specific.
+
+       Availability: alif, cc3200, mimxrt, nrf, psoc-edge, rp2, samd, zephyr.
+
+     - ``trigger([trigger])`` returns the configured trigger mask. When passed
+       a trigger mask, it sets the new mask and returns the previous value.
+       Trigger values are port-specific.
+
+       Availability: alif, cc3200, esp32, esp8266, mimxrt, nrf, psoc-edge,
+       rp2, samd, zephyr.
+
+   On Zephyr, calling ``trigger()`` without an argument currently returns
+   ``0``. On STM32 and Renesas RA, this method returns ``None`` instead of an
+   IRQ object.
 
 The following methods are not part of the core Pin API and only implemented on certain ports.
 
