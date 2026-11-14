@@ -1,0 +1,5 @@
+uart 9600 True
+uart 115200 True
+uart 921600 True
+uart 2000000 True
+spi True
