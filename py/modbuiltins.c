@@ -339,6 +339,13 @@ static mp_obj_t mp_builtin_oct(mp_obj_t o_in) {
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_oct_obj, mp_builtin_oct);
 
 static mp_obj_t mp_builtin_ord(mp_obj_t o_in) {
+    mp_obj_t native = mp_obj_cast_to_native_base(o_in, MP_OBJ_FROM_PTR(&mp_type_str));
+    if (native == MP_OBJ_NULL) {
+        native = mp_obj_cast_to_native_base(o_in, MP_OBJ_FROM_PTR(&mp_type_bytes));
+    }
+    if (native != MP_OBJ_NULL) {
+        o_in = native;
+    }
     size_t len;
     const byte *str = (const byte *)mp_obj_str_get_data(o_in, &len);
     #if MICROPY_PY_BUILTINS_STR_UNICODE

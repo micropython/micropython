@@ -26,3 +26,15 @@ try:
     ord(1)
 except TypeError:
     print('TypeError')
+
+
+class StrSubclass(str):
+    pass
+
+
+class BytesSubclass(bytes):
+    pass
+
+
+print(ord(StrSubclass("s")))
+print(ord(BytesSubclass(b"s")))
