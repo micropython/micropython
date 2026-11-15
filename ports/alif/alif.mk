@@ -27,24 +27,33 @@ MPY_CROSS_FLAGS += -march=armv7emdp
 CROSS_COMPILE ?= arm-none-eabi-
 ALIF_DFP_REL_TOP ?= lib/alif_ensemble-cmsis-dfp
 ALIF_DFP_REL_HERE ?= $(TOP)/lib/alif_ensemble-cmsis-dfp
-CMSIS_DIR ?= $(TOP)/lib/CMSIS_5/CMSIS/Core/Include
+CMSIS_DIR ?= $(TOP)/lib/CMSIS_6/CMSIS/Core/Include
 
 MCU_CORE ?= M55_HP
 LD_FILE ?= mcu/ensemble.ld.S
+
+# The DFP names the cores' real-time subsystems RTSS_HP and RTSS_HE.
+ALIF_RTSS_CORE := RTSS_$(shell echo $(MCU_CORE) | cut -d_ -f2)
+ALIF_RTSS_CORE_DIR := $(shell echo $(ALIF_RTSS_CORE) | tr A-Z a-z)
+ALIF_SOC_DIR = $(ALIF_DFP_REL_HERE)/Device/soc/$(MCU_VARIANT)
 
 INC += -I.
 INC += -I$(TOP)
 INC += -I$(BUILD)
 INC += -I$(BOARD_DIR)
 INC += -I$(CMSIS_DIR)
+INC += -I$(ALIF_DFP_REL_HERE)/Alif_CMSIS/Include/config/
 INC += -I$(ALIF_DFP_REL_HERE)/drivers/include/
 INC += -I$(ALIF_DFP_REL_HERE)/se_services/include
 INC += -I$(ALIF_DFP_REL_HERE)/ospi_xip/source/ospi
-INC += -I$(ALIF_DFP_REL_HERE)/Device/common/config/
-INC += -I$(ALIF_DFP_REL_HERE)/Device/common/include/
-INC += -I$(ALIF_DFP_REL_HERE)/Device/core/$(MCU_CORE)/config/
-INC += -I$(ALIF_DFP_REL_HERE)/Device/core/$(MCU_CORE)/include/
-INC += -I$(ALIF_DFP_REL_HERE)/Device/$(MCU_SERIES)/$(MCU_VARIANT)/
+INC += -I$(ALIF_DFP_REL_HERE)/Device/core/common/config/
+INC += -I$(ALIF_DFP_REL_HERE)/Device/core/common/include/
+INC += -I$(ALIF_DFP_REL_HERE)/Device/core/$(ALIF_RTSS_CORE_DIR)/config/
+INC += -I$(ALIF_DFP_REL_HERE)/Device/system/include/
+INC += -I$(ALIF_SOC_DIR)/config/
+INC += -I$(ALIF_SOC_DIR)/include/
+INC += -I$(ALIF_SOC_DIR)/include/$(ALIF_RTSS_CORE_DIR)/
+INC += -I$(ALIF_SOC_DIR)/rte/
 INC += -I$(TOP)/lib/tinyusb/src
 INC += -Itinyusb_port
 INC += -Ilwip_inc
@@ -74,7 +83,8 @@ CFLAGS += $(INC) \
           --specs=nosys.specs \
           -D$(MCU_CORE)=1 \
           -DCORE_$(MCU_CORE) \
-          -DALIF_CMSIS_H="\"$(MCU_CORE).h\""
+          -D$(ALIF_RTSS_CORE) \
+          -DALIF_CMSIS_H="\"alif.h\""
 
 ifeq ($(MICROPY_FLOAT_IMPL),float)
 CFLAGS += -fsingle-precision-constant
@@ -197,14 +207,16 @@ SRC_THIRDPARTY_C += $(MM_HALOW_SRC_C)
 endif
 
 ALIF_SRC_C += $(addprefix $(ALIF_DFP_REL_TOP)/,\
-	Device/common/source/clk.c \
-	Device/common/source/mpu_M55.c \
-	Device/common/source/system_M55.c \
-	Device/common/source/system_utils.c \
-	Device/common/source/tcm_partition.c \
-	Device/common/source/tgu_M55.c \
-	Device/common/source/pm.c \
-	Device/core/$(MCU_CORE)/source/startup_$(MCU_CORE).c \
+	Device/core/common/source/cache.c \
+	Device/core/common/source/mpu.c \
+	Device/core/common/source/pm.c \
+	Device/core/common/source/sau_tcm_ns_setup.c \
+	Device/core/common/source/startup.c \
+	Device/core/common/source/system.c \
+	Device/core/common/source/tgu.c \
+	Device/core/common/source/vectors.c \
+	Device/system/source/sys_clocks.c \
+	Device/system/source/sys_utils.c \
 	drivers/source/adc.c \
 	drivers/source/canfd.c \
 	drivers/source/i2c.c \
@@ -214,6 +226,7 @@ ALIF_SRC_C += $(addprefix $(ALIF_DFP_REL_TOP)/,\
 	drivers/source/mram.c \
 	drivers/source/pinconf.c \
 	drivers/source/spi.c \
+	drivers/source/sys_ctrl_analog.c \
 	drivers/source/uart.c \
 	drivers/source/utimer.c \
 	ospi_xip/source/ospi/ospi_drv.c \

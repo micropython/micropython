@@ -33,6 +33,7 @@
 #include "mhu.h"
 #include "services_lib_bare_metal.h"
 #include "services_lib_protocol.h"
+#include "sys_utils.h"
 
 #include "py/mphal.h"
 
@@ -189,8 +190,24 @@ void se_services_dump_device_data(void) {
 }
 
 void se_services_get_unique_id(uint8_t id[8]) {
+    // Pack the ID from the manufacturing data using the field layout of
+    // DFP v1.3.4, so that the ID of existing boards does not change.
     uint32_t error_code;
-    SERVICES_system_get_eui_extension(se_sess_handle, false, id, &error_code);
+    SERVICES_version_data_t data;
+    if (SERVICES_system_get_device_data(se_sess_handle, &data, &error_code) != SERVICES_REQ_SUCCESS) {
+        return;
+    }
+    const uint8_t *m = (const uint8_t *)data.MfgData;
+    uint8_t x_loc = m[0] & 0x7f;
+    uint8_t y_loc = m[1] & 0x7f;
+    uint8_t wfr_fab = ((m[2] & 0x1f) << 1) | (m[2] >> 7);
+    uint8_t year = m[3] & 0x3f;
+    uint8_t week = m[4] & 0x3f;
+    id[0] = (x_loc << 1) | (y_loc >> 6);
+    id[1] = ((y_loc & 0x3f) << 2) | (wfr_fab >> 4);
+    id[2] = ((wfr_fab & 0x0f) << 4) | (year >> 2);
+    id[3] = ((year & 0x03) << 6) | week;
+    id[4] = m[5];
 }
 
 __attribute__((noreturn)) void se_services_reset_soc(void) {

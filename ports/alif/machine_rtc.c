@@ -49,9 +49,9 @@ typedef struct _machine_rtc_obj_t {
 } machine_rtc_obj_t;
 
 // Singleton RTC object.
-static const machine_rtc_obj_t machine_rtc = {{&machine_rtc_type}, (LPRTC_Type *)LPRTC_BASE};
+static const machine_rtc_obj_t machine_rtc = {{&machine_rtc_type}, (LPRTC_Type *)LPRTC0_BASE};
 
-void LPRTC_IRQHandler(void) {
+void LPRTC0_IRQHandler(void) {
     lprtc_interrupt_ack(machine_rtc.rtc);
     lprtc_interrupt_disable(machine_rtc.rtc);
 }
@@ -65,16 +65,16 @@ void machine_rtc_init(void) {
     if (!((VBAT->RTC_CLK_EN & RTC_CLK_ENABLE)
           && (machine_rtc.rtc->LPRTC_CCR & CCR_LPRTC_EN)
           && (machine_rtc.rtc->LPRTC_CPSR == LPRTC_PRESCALER_SETTING))) {
-        enable_lprtc_clk();
+        enable_lprtc_clk(LPRTC0_INSTANCE);
         machine_rtc.rtc->LPRTC_CCR = 0;
         lprtc_load_prescaler(machine_rtc.rtc, LPRTC_PRESCALER_SETTING);
         lprtc_load_count(machine_rtc.rtc, 0);
         machine_rtc.rtc->LPRTC_CCR = CCR_LPRTC_PSCLR_EN | CCR_LPRTC_EN;
     }
 
-    NVIC_SetPriority(LPRTC_IRQ_IRQn, IRQ_PRI_RTC);
-    NVIC_ClearPendingIRQ(LPRTC_IRQ_IRQn);
-    NVIC_EnableIRQ(LPRTC_IRQ_IRQn);
+    NVIC_SetPriority(LPRTC0_IRQ_IRQn, IRQ_PRI_RTC);
+    NVIC_ClearPendingIRQ(LPRTC0_IRQ_IRQn);
+    NVIC_EnableIRQ(LPRTC0_IRQ_IRQn);
 }
 
 // Returns the number of seconds and microseconds since the Epoch.
@@ -110,7 +110,7 @@ static mp_obj_t machine_rtc_make_new(const mp_obj_type_t *type, size_t n_args, s
 }
 
 void machine_rtc_set_wakeup(uint32_t seconds) {
-    LPRTC_Type *rtc = (LPRTC_Type *)LPRTC_BASE;
+    LPRTC_Type *rtc = (LPRTC_Type *)LPRTC0_BASE;
 
     // Configure the counter match as atomically as possible.
     uint32_t atomic_state = MICROPY_BEGIN_ATOMIC_SECTION();
