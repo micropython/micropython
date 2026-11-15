@@ -31,6 +31,7 @@
 #include "canfd.h"
 #include "sys_ctrl_canfd.h"
 #include "RTE_Device.h"
+#include "se_services.h"
 #include "py/runtime.h"
 #include "py/mperrno.h"
 #include "py/mphal.h"
@@ -57,13 +58,13 @@
 #define CAN_MB_STATUS_READY 1
 #define CAN_MB_STATUS_BUSY  2
 
-#if RTE_CANFD_CLK_SOURCE
-    #define CANFD_CLK_DIVISOR (CANFD_CLK_SRC_160MHZ_CLK / RTE_CANFD_CLK_SPEED)
+#if RTE_CANFD0_CLK_SOURCE
+    #define CANFD_CLK_DIVISOR (CANFD_CLK_SRC_160MHZ_CLK / RTE_CANFD0_CLK_SPEED)
     #if ((CANFD_CLK_DIVISOR < 2U) || (CANFD_CLK_DIVISOR > 255U))
         #error "Incorrect CANFD Clock speed"
     #endif
 #else
-    #define CANFD_CLK_DIVISOR (CANFD_CLK_SRC_38P4MHZ_CLK / RTE_CANFD_CLK_SPEED)
+    #define CANFD_CLK_DIVISOR (CANFD_CLK_SRC_38P4MHZ_CLK / RTE_CANFD0_CLK_SPEED)
     #if ((CANFD_CLK_DIVISOR < 2U) || (CANFD_CLK_DIVISOR > 255U))
         #error "Incorrect CANFD Clock speed"
     #endif
@@ -107,14 +108,14 @@ typedef struct machine_can_port {
 // Just one CAN device.
 static machine_can_port_t canfd_port = {
     .can_hw_id = 1,
-    .canfd_base = (CANFD_Type *)CANFD_BASE,
-    .canfd_cnt_base = (CANFD_CNT_Type *)CANFD_CNT_BASE,
+    .canfd_base = (CANFD_Type *)CANFD0_BASE,
+    .canfd_cnt_base = (CANFD_CNT_Type *)CANFD0_CNT_BASE,
     .can_state = MP_CAN_STATE_STOPPED,
 };
 
 static mp_int_t machine_can_send_next(machine_can_port_t *port);
 
-void CANFD_IRQHandler(void) {
+void CANFD0_IRQHandler(void) {
     // Just one CAN device at index 0
     machine_can_obj_t *self = MP_STATE_PORT(machine_can_objs[0]);
     if (self != NULL) {
@@ -211,7 +212,7 @@ void CANFD_IRQHandler(void) {
 }
 
 static int machine_can_port_f_clock(const machine_can_obj_t *self) {
-    return RTE_CANFD_CLK_SPEED;
+    return RTE_CANFD0_CLK_SPEED;
 }
 
 static bool machine_can_port_supports_mode(const machine_can_obj_t *self, machine_can_mode_t mode) {
@@ -306,17 +307,17 @@ static void machine_can_port_init(machine_can_obj_t *self) {
         // power cycle. Thus clearing the filter is required.
         memset(port, 0, sizeof(machine_can_port_t));
         port->can_hw_id = 1;
-        port->canfd_base = (CANFD_Type *)CANFD_BASE;
-        port->canfd_cnt_base = (CANFD_CNT_Type *)CANFD_CNT_BASE;
+        port->canfd_base = (CANFD_Type *)CANFD0_BASE;
+        port->canfd_cnt_base = (CANFD_CNT_Type *)CANFD0_CNT_BASE;
         port->can_state = MP_CAN_STATE_STOPPED;
 
         // Both 160M and HFOSC clocks must be enabled even if only one
         // of them is used.
-        enable_cgu_clk38p4m();
-        enable_cgu_clk160m();
+        se_services_enable_clock(CLKEN_HFOSC, true);
+        se_services_enable_clock(CLKEN_CLK_160M, true);
 
         // Enable the CANFD clock, Source 160 MHz, CANFD clock 20 MHz.
-        canfd_clock_enable(RTE_CANFD_CLK_SOURCE, CANFD_CLK_DIVISOR);
+        canfd_clock_enable(CANFD_INSTANCE_0, RTE_CANFD0_CLK_SOURCE, CANFD_CLK_DIVISOR);
         // Configure the RX/TX pins.
         mp_hal_pin_config(pin_CAN_RXD, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP,
             MP_HAL_PIN_SPEED_HIGH, MP_HAL_PIN_DRIVE_2MA, MP_HAL_PIN_ALT(CAN_RXD, 1), true);
@@ -383,9 +384,9 @@ static void machine_can_port_init(machine_can_obj_t *self) {
     canfd_enable_error_interrupts(port->canfd_base);
 
     // Enable the MCU interrupts for CANFD.
-    NVIC_ClearPendingIRQ(CANFD_IRQ_IRQn);
-    NVIC_SetPriority(CANFD_IRQ_IRQn, IRQ_PRI_CAN);
-    NVIC_EnableIRQ(CANFD_IRQ_IRQn);
+    NVIC_ClearPendingIRQ(CANFD0_IRQ_IRQn);
+    NVIC_SetPriority(CANFD0_IRQ_IRQn, IRQ_PRI_CAN);
+    NVIC_EnableIRQ(CANFD0_IRQ_IRQn);
 
     port->is_enabled = true;
 }
@@ -395,8 +396,8 @@ static void machine_can_port_deinit(machine_can_obj_t *self) {
 
     if (port != NULL) {
         // Clears Pending IRQs and disables it.
-        NVIC_ClearPendingIRQ(CANFD_IRQ_IRQn);
-        NVIC_DisableIRQ(CANFD_IRQ_IRQn);
+        NVIC_ClearPendingIRQ(CANFD0_IRQ_IRQn);
+        NVIC_DisableIRQ(CANFD0_IRQ_IRQn);
 
         // Disable and clear all the interrupts
         canfd_disable_tx_interrupts(port->canfd_base);
@@ -405,7 +406,7 @@ static void machine_can_port_deinit(machine_can_obj_t *self) {
         canfd_clear_interrupts(port->canfd_base);
 
         // Disable CANFD Clock
-        canfd_clock_disable();
+        canfd_clock_disable(CANFD_INSTANCE_0);
         port->is_enabled = false;
         port->can_state = MP_CAN_STATE_STOPPED;
         self->port = NULL;

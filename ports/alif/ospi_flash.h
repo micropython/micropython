@@ -29,6 +29,8 @@
 #include "py/mphal.h"
 #include "ospi_flash_settings.h"
 
+#define OSPI_XIP_SIZE (0x20000000)
+
 // Format of command, address and data phases.
 enum {
     OSPI_FLASH_OCTAL_MODE_SSS,

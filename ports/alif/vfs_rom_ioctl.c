@@ -69,12 +69,11 @@ static const mp_obj_array_t romfs_obj_table[] = {
 #define MRAM_WRITE_BLOCK_SIZE (256)
 
 static inline bool mram_is_valid_addr(uintptr_t addr) {
-    return MRAM_BASE <= addr && addr < MRAM_BASE + MRAM_SIZE;
+    return SOC_FEAT_MRAM_BASE <= addr && addr < SOC_FEAT_MRAM_BASE + SOC_FEAT_MRAM_SIZE;
 }
 
 static inline bool ospi_is_valid_addr(uintptr_t xip_base, uintptr_t addr) {
-    MP_STATIC_ASSERT(OSPI0_XIP_SIZE == OSPI1_XIP_SIZE);
-    return xip_base <= addr && addr < xip_base + OSPI0_XIP_SIZE;
+    return xip_base <= addr && addr < xip_base + OSPI_XIP_SIZE;
 }
 
 mp_obj_t mp_vfs_rom_ioctl(size_t n_args, const mp_obj_t *args) {

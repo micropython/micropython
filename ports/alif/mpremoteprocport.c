@@ -49,7 +49,7 @@ typedef struct mmap {
 static const mmap_t mmap_nocache[] = {
     { .base = ITCM_BASE, .limit = ITCM_BASE + ITCM_SIZE },
     { .base = DTCM_BASE, .limit = DTCM_BASE + ITCM_SIZE },
-    { .base = MRAM_BASE, .limit = MRAM_BASE + MRAM_SIZE }
+    { .base = SOC_FEAT_MRAM_BASE, .limit = SOC_FEAT_MRAM_BASE + SOC_FEAT_MRAM_SIZE }
 };
 
 static bool is_cacheable(const void *p, size_t bytes) {
@@ -100,7 +100,7 @@ void *mp_openamp_remoteproc_mmap(struct remoteproc *rproc, metal_phys_addr_t *pa
     // Currently this port doesn't support loading firmware to flash,
     // only SD/SRAM images are supported. Check of load address is in
     // the flash region, and if so return NULL.
-    if (lda >= MRAM_BASE && lda < (MRAM_BASE + MRAM_SIZE)) {
+    if (lda >= SOC_FEAT_MRAM_BASE && lda < (SOC_FEAT_MRAM_BASE + SOC_FEAT_MRAM_SIZE)) {
         return NULL;
     }
 

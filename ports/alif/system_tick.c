@@ -110,7 +110,6 @@ void system_tick_wfe_with_timeout_us(uint32_t timeout_us) {
 // Channel 0 and 1 are cascaded to make a 64-bit counter.
 // Channel 2 is used for system_tick_wfe_with_timeout_us.
 // Channel 3 is used for system_tick_schedule_after_us.
-#define LPTIMER ((LPTIMER_Type *)LPTIMER_BASE)
 #define LPTIMER_CH_A (0)
 #define LPTIMER_CH_B (1)
 #define LPTIMER_CH_C (2)
@@ -240,7 +239,6 @@ void system_tick_schedule_after_us(uint32_t ticks_us) {
 
 #include "utimer.h"
 
-#define UTIMER ((UTIMER_Type *)UTIMER_BASE)
 #define UTIMER_CHANNEL (11)
 
 uint64_t system_core_clock_mhz;
