@@ -561,17 +561,22 @@ static inline mp_obj_t mp_load_attr_default(mp_obj_t base, qstr attr, mp_obj_t d
     }
 }
 
+static qstr mp_builtin_attr_name_to_qstr(mp_obj_t attr) {
+    mp_obj_t native = mp_obj_cast_to_native_base(attr, MP_OBJ_FROM_PTR(&mp_type_str));
+    return mp_obj_str_get_qstr(native == MP_OBJ_NULL ? attr : native);
+}
+
 static mp_obj_t mp_builtin_getattr(size_t n_args, const mp_obj_t *args) {
     mp_obj_t defval = MP_OBJ_NULL;
     if (n_args > 2) {
         defval = args[2];
     }
-    return mp_load_attr_default(args[0], mp_obj_str_get_qstr(args[1]), defval);
+    return mp_load_attr_default(args[0], mp_builtin_attr_name_to_qstr(args[1]), defval);
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_getattr_obj, 2, 3, mp_builtin_getattr);
 
 static mp_obj_t mp_builtin_setattr(mp_obj_t base, mp_obj_t attr, mp_obj_t value) {
-    mp_store_attr(base, mp_obj_str_get_qstr(attr), value);
+    mp_store_attr(base, mp_builtin_attr_name_to_qstr(attr), value);
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_3(mp_builtin_setattr_obj, mp_builtin_setattr);
@@ -584,7 +589,7 @@ MP_DEFINE_CONST_FUN_OBJ_2(mp_builtin_delattr_obj, mp_builtin_delattr);
 #endif
 
 static mp_obj_t mp_builtin_hasattr(mp_obj_t object_in, mp_obj_t attr_in) {
-    qstr attr = mp_obj_str_get_qstr(attr_in);
+    qstr attr = mp_builtin_attr_name_to_qstr(attr_in);
     mp_obj_t dest[2];
     mp_load_method_protected(object_in, attr, dest, false);
     return mp_obj_new_bool(dest[0] != MP_OBJ_NULL);

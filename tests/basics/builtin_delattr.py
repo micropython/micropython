@@ -6,11 +6,12 @@ except:
     raise SystemExit
 
 class A: pass
+class S(str): pass
 a = A()
 a.x = 1
 print(a.x)
 
-delattr(a, 'x')
+delattr(a, S('x'))
 
 try:
     a.x
