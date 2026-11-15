@@ -39,3 +39,21 @@ try:
     len(D())
 except TypeError:
     print("TypeError")
+
+
+class E:
+    def __len__(self):
+        return True
+
+
+print(len(E()))
+print(bool(E()))
+
+
+class F:
+    def __len__(self):
+        return False
+
+
+print(len(F()))
+print(bool(F()))
