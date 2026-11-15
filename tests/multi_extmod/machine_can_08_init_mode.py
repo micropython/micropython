@@ -9,10 +9,8 @@ import sys
 # Note this test assumes no other CAN nodes are connected apart from the test
 # instances (or if they are connected they must be in silent mode.)
 #
-# TODO: This test needs to eventually support the case where modes aren't supported
-# on a controller, maybe by printing fake output if the mode switch fails?
-
-# MODE_NORMAL, MODE_SLEEP, MODE_LOOPBACK, MODE_SILENT, MODE_SILENT_LOOPBACK
+# Isolated silent loopback is tested separately, as not all controllers support it.
+# MODE_NORMAL, MODE_SLEEP, MODE_LOOPBACK, MODE_SILENT
 can = CAN(1, 500_000, mode=CAN.MODE_NORMAL)
 
 # While instance0 is in Silent mode, instance1 sends a message with this ID
@@ -60,7 +58,7 @@ def instance0():
     time.sleep_ms(100)
 
     reinit_with_mode(can.MODE_SILENT)
-    print("Silent", "MODE_SLIENT" in str(can))
+    print("Silent", "MODE_SILENT" in str(can))
 
     # This message shouldn't go out onto the bus
     idx = can.send(0x52, b"Silent")
@@ -75,13 +73,6 @@ def instance0():
     # Cancel the sent message only if it was accpeted for sending.
     if idx is not None:
         can.cancel_send(idx)
-
-    reinit_with_mode(can.MODE_SILENT_LOOPBACK)
-    print("Silent Loopback", "MODE_SILENT_LOOPBACK" in str(can))
-
-    # This message should be received by instance0 only
-    idx = can.send(0x54, b"SiLoop")
-    time.sleep_ms(50)
 
     reinit_with_mode(can.MODE_NORMAL)
     print("Normal again", "MODE_NORMAL" in str(can))

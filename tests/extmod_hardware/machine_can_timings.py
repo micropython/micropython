@@ -26,6 +26,29 @@ class TestTimings(unittest.TestCase):
             self.assertAlmostEqual(timings[0], bitrate, delta=1_000)
             can.deinit()
 
+    def test_low_bitrate(self):
+        for bitrate in (10_000, 20_000, 50_000):
+            try:
+                can = CAN(*can_args, bitrate=bitrate, **can_kwargs)
+            except ValueError:
+                # Some controllers cannot generate the lowest rates. If a
+                # configuration is accepted, its reported rate must be valid.
+                print("unsupported bitrate", bitrate)
+                continue
+            self.assertAlmostEqual(can.get_timings()[0], bitrate, delta=bitrate // 100)
+            can.deinit()
+
+    def test_low_bitrate_explicit_segments(self):
+        # Requires BRP=1000 at 80 MHz, or BRP=525 at 42 MHz (STM32F405).
+        try:
+            can = CAN(*can_args, bitrate=10_000, tseg1=5, tseg2=2, **can_kwargs)
+        except ValueError:
+            self.skipTest("low bitrate with explicit segments unsupported")
+        bitrate, _sjw, tseg1, tseg2, _fd, _port = can.get_timings()
+        self.assertAlmostEqual(bitrate, 10_000, delta=100)
+        self.assertEqual((tseg1, tseg2), (5, 2))
+        can.deinit()
+
     def test_sample_point(self):
         # Verify that tseg1 and tseg2 are set correctly from the sample_point argument
         for sample_point in (66, 75, 95):
@@ -45,6 +68,22 @@ class TestTimings(unittest.TestCase):
             bitrate, _sjw, ret_tseg1, ret_tseg2, _fd, _port = can.get_timings()
             self.assertEqual(ret_tseg1, tseg1)
             self.assertEqual(ret_tseg2, tseg2)
+            can.deinit()
+
+    def test_invalid_bitrate(self):
+        for bitrate in (0, -1, -100, 1, 100_000_000):
+            for timing in ({}, {"tseg1": 15, "tseg2": 4}):
+                with self.assertRaises(ValueError):
+                    CAN(*can_args, bitrate=bitrate, **timing, **can_kwargs)
+
+    def test_invalid_bitrate_preserves_configuration(self):
+        can = CAN(*can_args, bitrate=500_000, **can_kwargs)
+        before = can.get_timings()
+        for bitrate in (0, -1, 1, 100_000_000):
+            with self.assertRaises(ValueError):
+                can.init(bitrate)
+            self.assertEqual(can.get_timings(), before)
+        can.deinit()
 
     def test_invalid_timing_args(self):
         # Test various kwargs out of their allowed value ranges
