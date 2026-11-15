@@ -16,3 +16,6 @@ tests = [
 ]
 for t in tests:
     print(round(*t))
+
+print(round(True, 1))
+print(round(False, -1))
