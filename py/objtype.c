@@ -919,7 +919,31 @@ mp_obj_t mp_obj_instance_getiter(mp_obj_t self_in, mp_obj_iter_buf_t *iter_buf) 
             return ((mp_getiter_fun_t)MP_OBJ_TYPE_GET_SLOT(type, iter))(self->subobj[0], iter_buf);
         }
     } else {
-        return mp_call_method_n_kw(0, 0, member);
+        mp_obj_t iter = mp_call_method_n_kw(0, 0, member);
+        const mp_obj_type_t *type = mp_obj_get_type(iter);
+        bool has_iternext = type->flags & (MP_TYPE_FLAG_ITER_IS_ITERNEXT | MP_TYPE_FLAG_ITER_IS_CUSTOM);
+        if (!has_iternext && (type->flags & MP_TYPE_FLAG_INSTANCE_TYPE)) {
+            // Don't let __getattr__ make a non-iterator appear valid.
+            mp_obj_t next[2] = {MP_OBJ_NULL};
+            struct class_lookup_data lookup = {
+                .obj = MP_OBJ_TO_PTR(iter),
+                .attr = MP_QSTR___next__,
+                .slot_offset = 0,
+                .dest = next,
+                .is_type = false,
+            };
+            mp_obj_class_lookup(&lookup, type);
+            has_iternext = next[0] != MP_OBJ_NULL;
+        }
+        if (!has_iternext) {
+            #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
+            mp_raise_TypeError(MP_ERROR_TEXT("object not an iterator"));
+            #else
+            mp_raise_msg_varg(&mp_type_TypeError,
+                MP_ERROR_TEXT("iter() returned non-iterator of type '%s'"), mp_obj_get_type_str(iter));
+            #endif
+        }
+        return iter;
     }
 }
 
