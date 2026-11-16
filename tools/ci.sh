@@ -549,17 +549,30 @@ function ci_renesas_ra_board_build {
 }
 
 ########################################################################################
+# tools/sbom.py
+
+function ci_sbom_setup {
+    pip3 install uv
+}
+
+function ci_sbom_test {
+    uv run tests/tools/test_sbom.py
+}
+
+########################################################################################
 # ports/rp2
 
 function ci_rp2_setup {
     ci_gcc_arm_setup
     ci_picotool_setup
+    pip3 install uv
 }
 
 function ci_rp2_build {
     make ${MAKEOPTS} -C mpy-cross
     make ${MAKEOPTS} -C ports/rp2 submodules
     make ${MAKEOPTS} -C ports/rp2
+    make ${MAKEOPTS} -C ports/rp2 sbom
     make ${MAKEOPTS} -C ports/rp2 BOARD=RPI_PICO_W submodules
     # Legacy USER_C_MODULES coverage on RPI_PICO_W.
     make ${MAKEOPTS} -C ports/rp2 BOARD=RPI_PICO_W USER_C_MODULES=../../examples/usercmodule/micropython.cmake
