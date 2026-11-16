@@ -175,14 +175,14 @@ vpath %.c . $(TOP) | $(BUILD)
 $(BUILD)/%.o: %.c | $(BUILD)
 	@mkdir -p $(dir $@)
 	@echo "Compiling $<"
-	@$(CC) $(CFLAGS) -c -MD -MF $(@:.o=.d) -o $@ $<
+	@$(CC) $(CFLAGS) -c -MD -MF $(@:.o=.P) -o $@ $<
 
 # Compile S files
 vpath %.S . $(TOP) | $(BUILD)
 $(BUILD)/%.o: %.S | $(BUILD)
 	@mkdir -p $(dir $@)
 	@echo "Assembling $<"
-	@$(CC) $(CFLAGS) -c -MD -MF $(@:.o=.d) -o $@ $<
+	@$(CC) $(CFLAGS) -c -MD -MF $(@:.o=.P) -o $@ $<
 
 # Generate hex file
 $(BUILD)/secboot.hex: $(BUILD)/secboot.elf
