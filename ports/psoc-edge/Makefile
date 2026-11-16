@@ -173,7 +173,7 @@ LDFLAGS += $(MACHINE_FLAGS) \
 	-Xlinker -L $(PSE_LIB_DIR)/TARGET_$(BOARD)/COMPONENT_CM33/TOOLCHAIN_GCC_ARM \
 	-Xlinker -L $(BOARD_DIR)/bsp-cfg \
 	-T$(PSE_LIB_DIR)/TARGET_$(BOARD)/COMPONENT_CM33/TOOLCHAIN_GCC_ARM/pse84_ns_cm33.ld \
-	-Wl,-Map,$(BUILD)/firmware.map \
+	-Wl,-Map,$(BUILD)/firmware.unshifted.map \
 
 PSE_BSP_CFG_C += $(addprefix $(BOARD_DIR)/bsp-cfg/,\
 	cycfg.c \
@@ -535,6 +535,17 @@ help:
 
 ################################################################################
 # Remaining make rules
+
+# firmware.hex merges the secure boot image, so sbom covers both ELFs (secboot in build/secboot/).
+SBOM_IMAGE = $(BUILD)/firmware.unshifted.elf
+
+sbom: sbom-secboot
+sbom-secboot: $(BUILD)/secboot/secboot.hex
+	$(ECHO) "SBOM $(BUILD)/secboot/sbom.*.json"
+	$(Q)$(SBOM_TOOL) $(BUILD)/secboot/secboot.map -v PORT_DIR=$(CURDIR)/secboot \
+		--spdx $(BUILD)/secboot/sbom.spdx.json --cyclonedx $(BUILD)/secboot/sbom.cdx.json
+
+.PHONY: sbom-secboot
 
 # Include remaining core make rules.
 include $(TOP)/py/mkrules.mk
