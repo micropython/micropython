@@ -1,0 +1,7 @@
+--- instance0 ---
+server running
+recv: b'AAAABBBB'
+done
+--- instance1 ---
+awrite: b'AAAA'
+awrite: b'BBBB'
