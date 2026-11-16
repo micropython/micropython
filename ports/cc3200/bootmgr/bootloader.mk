@@ -108,6 +108,8 @@ SHELL = bash
 BOOT_GEN = bootmgr/bootgen.sh
 HEADER_BUILD = $(BUILD)/genhdr
 
+SBOM_IMAGE = $(BUILD)/bootmgr.axf
+
 all: $(BUILD)/bootloader.bin
 
 $(BUILD)/bootmgr.axf: $(OBJ) $(LINKER_SCRIPT)
