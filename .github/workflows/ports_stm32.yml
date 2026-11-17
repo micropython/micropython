@@ -24,13 +24,14 @@ jobs:
       matrix:
         ci_func:  # names are functions in ci.sh
           - stm32_pyb_build
+          - stm32_build_cmod
           - stm32_nucleo_build
           - stm32_misc_build
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
     - name: Install packages
-      run: source tools/ci.sh && ci_stm32_setup
+      run: tools/ci.sh stm32_setup && tools/ci.sh stm32_path >> $GITHUB_PATH
     - name: Build ci_${{matrix.ci_func }}
-      run: source tools/ci.sh && ci_${{ matrix.ci_func }}
+      run: tools/ci.sh ${{ matrix.ci_func }}
 

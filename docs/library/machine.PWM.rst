@@ -11,20 +11,20 @@ Example usage::
     from machine import PWM
 
     pwm = PWM(pin, freq=50, duty_u16=8192)  # create a PWM object on a pin
-                                            # and set freq and duty
-    pwm.duty_u16(32768)     # set duty to 50%
+                                            # and set freq 50 Hz and duty 12.5%
+    pwm.duty_u16(32768)                     # set duty to 50%
 
     # reinitialise with a period of 200us, duty of 5us
     pwm.init(freq=5000, duty_ns=5000)
 
-    pwm.duty_ns(3000)       # set pulse width to 3us
+    pwm.duty_ns(3000)                       # set pulse width to 3us
 
     pwm.deinit()
 
 Constructors
 ------------
 
-.. class:: PWM(dest, *, freq, duty_u16, duty_ns, invert)
+.. class:: PWM(dest, *, freq, duty_u16, duty_ns, invert=False)
 
    Construct and return a new PWM object using the following parameters:
 
@@ -40,7 +40,7 @@ Constructors
    Setting *freq* may affect other PWM objects if the objects share the same
    underlying PWM generator (this is hardware specific).
    Only one of *duty_u16* and *duty_ns* should be specified at a time.
-   *invert* is not available at all ports.
+   *invert* is available only on the alif, esp32, mimxrt, nrf, rp2, samd, stm32 and zephyr ports.
 
 Methods
 -------
@@ -84,6 +84,22 @@ Methods
 Specific PWM class implementations
 ----------------------------------
 
+On the alif port there are 11 independent PWM blocks with independent
+frequencies, and they have 2 outputs each.  The underlying counter is
+32-bits wide for all 11 PWM blocks.
+
+On the rp2 port there are 8 independent PWM blocks on RP2040 and 12 on
+RP2350, each with independent frequencies, and each with 2 outputs.
+The underlying counter is 16-bits wide for all PWM blocks.
+
+On the stm32 port the number of independent PWM blocks depends on the MCU
+and can range between 4 and 19.  TIM2 and TIM5 blocks (also TIM3 and TIM4
+blocks on STM32U5 and STM32N6) are 32-bits wide, and the others are
+16-bits wide.  All MCUs supported by MicroPython have at least one 32-bit
+block available, and most have two.   MCUs will have pins PA0 through PA3
+assigned to a 32-bit PWM block (except STM32N6 which has a 16-bit PWM
+block on PA3).  PWM blocks have up to 4 outputs each.
+
 The following concrete class(es) implement enhancements to the PWM class.
 
    | :ref:`pyb.Timer for PyBoard <pyb.Timer>`
@@ -116,10 +132,10 @@ Limitations of PWM
   resolution of 8 bit, not 16-bit as may be expected.  In this case, the lowest
   8 bits of *duty_u16* are insignificant. So::
 
-    pwm=PWM(Pin(13), freq=300_000, duty_u16=2**16//2)
+    pwm=PWM(Pin(13), freq=300_000, duty_u16=65536//2)
 
   and::
 
-    pwm=PWM(Pin(13), freq=300_000, duty_u16=2**16//2 + 255)
+    pwm=PWM(Pin(13), freq=300_000, duty_u16=65536//2 + 255)
 
   will generate PWM with the same 50% duty cycle.

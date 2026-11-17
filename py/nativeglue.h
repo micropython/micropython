@@ -143,7 +143,7 @@ typedef struct _mp_fun_table_t {
     int (*printf_)(const mp_print_t *print, const char *fmt, ...);
     int (*vprintf_)(const mp_print_t *print, const char *fmt, va_list args);
     #if defined(__GNUC__)
-    NORETURN // Only certain compilers support no-return attributes in function pointer declarations
+    MP_NORETURN // Only certain compilers support no-return attributes in function pointer declarations
     #endif
     void (*raise_msg)(const mp_obj_type_t *exc_type, mp_rom_error_text_t msg);
     const mp_obj_type_t *(*obj_get_type)(mp_const_obj_t o_in);
@@ -181,9 +181,9 @@ typedef struct _mp_fun_table_t {
     const mp_obj_fun_builtin_var_t *stream_write_obj;
 } mp_fun_table_t;
 
-#if (MICROPY_EMIT_NATIVE && !MICROPY_DYNAMIC_COMPILER) || MICROPY_ENABLE_DYNRUNTIME
+#if (MICROPY_ENABLE_NATIVE_CODE && !MICROPY_DYNAMIC_COMPILER) || MICROPY_ENABLE_DYNRUNTIME
 extern const mp_fun_table_t mp_fun_table;
-#elif MICROPY_EMIT_NATIVE && MICROPY_DYNAMIC_COMPILER
+#elif MICROPY_ENABLE_NATIVE_CODE && MICROPY_DYNAMIC_COMPILER
 // In dynamic-compiler mode eliminate dependency on entries in mp_fun_table.
 // This only needs to be an independent pointer, content doesn't matter.
 extern const int mp_fun_table;

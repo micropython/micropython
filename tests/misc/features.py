@@ -103,7 +103,7 @@ while True:
 
         x = c25()
         print(x.x)
-        raise
+        raise Exception
     except:
         print(26)
     print(27 + zero)

@@ -30,8 +30,6 @@
 #include "py/runtime.h"
 #include "py/mphal.h"
 
-#include "esp_idf_version.h"
-
 #if MICROPY_PY_NETWORK_LAN
 
 #include "esp_eth.h"
@@ -47,11 +45,37 @@
 #include "modnetwork.h"
 #include "extmod/modnetwork.h"
 
+#ifndef NO_QSTR
+#include "mdns.h"
+#endif
+
+#if MICROPY_HW_ENABLE_MDNS_QUERIES || MICROPY_HW_ENABLE_MDNS_RESPONDER
+#if MICROPY_PY_NETWORK_WLAN
+extern bool mdns_initialised; // Defined in network_wlan.c
+#else
+static bool mdns_initialised = false;
+#endif
+#endif
+
+#if PHY_LAN867X_ENABLED
+#include "esp_eth_phy_lan867x.h"
+#endif
+
 typedef struct _lan_if_obj_t {
     base_if_obj_t base;
     bool initialized;
     int8_t mdc_pin;
     int8_t mdio_pin;
+    #if CONFIG_IDF_TARGET_ESP32P4
+    int8_t crs_dv_pin;
+    int8_t rxd0_pin;
+    int8_t rxd1_pin;
+    int8_t tx_en_pin;
+    int8_t txd0_pin;
+    int8_t txd1_pin;
+    int8_t clk_in_pin;
+    int8_t clk_out_pin;
+    #endif
     int8_t phy_reset_pin;
     int8_t phy_power_pin;
     int8_t phy_cs_pin;
@@ -68,29 +92,46 @@ static uint8_t eth_status = 0;
 
 static void eth_event_handler(void *arg, esp_event_base_t event_base,
     int32_t event_id, void *event_data) {
-    switch (event_id) {
-        case ETHERNET_EVENT_CONNECTED:
-            eth_status = ETH_CONNECTED;
-            ESP_LOGI("ethernet", "Ethernet Link Up");
-            break;
-        case ETHERNET_EVENT_DISCONNECTED:
-            eth_status = ETH_DISCONNECTED;
-            ESP_LOGI("ethernet", "Ethernet Link Down");
-            break;
-        case ETHERNET_EVENT_START:
-            eth_status = ETH_STARTED;
-            ESP_LOGI("ethernet", "Ethernet Started");
-            break;
-        case ETHERNET_EVENT_STOP:
-            eth_status = ETH_STOPPED;
-            ESP_LOGI("ethernet", "Ethernet Stopped");
-            break;
-        case IP_EVENT_ETH_GOT_IP:
-            eth_status = ETH_GOT_IP;
-            ESP_LOGI("ethernet", "Ethernet Got IP");
-            break;
-        default:
-            break;
+    if (event_base == ETH_EVENT) {
+        switch (event_id) {
+            case ETHERNET_EVENT_CONNECTED:
+                eth_status = ETH_CONNECTED;
+                ESP_LOGI("ethernet", "Ethernet Link Up");
+                break;
+            case ETHERNET_EVENT_DISCONNECTED:
+                eth_status = ETH_DISCONNECTED;
+                ESP_LOGI("ethernet", "Ethernet Link Down");
+                break;
+            case ETHERNET_EVENT_START:
+                eth_status = ETH_STARTED;
+                ESP_LOGI("ethernet", "Ethernet Started");
+                break;
+            case ETHERNET_EVENT_STOP:
+                eth_status = ETH_STOPPED;
+                ESP_LOGI("ethernet", "Ethernet Stopped");
+                break;
+            default:
+                break;
+        }
+    } else if (event_base == IP_EVENT) {
+        switch (event_id) {
+            case IP_EVENT_ETH_GOT_IP:
+                eth_status = ETH_GOT_IP;
+                ESP_LOGI("ethernet", "Ethernet Got IP");
+                #if MICROPY_HW_ENABLE_MDNS_QUERIES || MICROPY_HW_ENABLE_MDNS_RESPONDER
+                if (!mdns_initialised) {
+                    mdns_init();
+                    #if MICROPY_HW_ENABLE_MDNS_RESPONDER
+                    mdns_hostname_set(mod_network_hostname_data);
+                    mdns_instance_name_set(mod_network_hostname_data);
+                    #endif
+                    mdns_initialised = true;
+                }
+                #endif
+                break;
+            default:
+                break;
+        }
     }
 }
 
@@ -113,7 +154,12 @@ static mp_obj_t get_lan(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
     }
 
     enum { ARG_id, ARG_mdc, ARG_mdio, ARG_reset, ARG_power, ARG_phy_addr, ARG_phy_type,
-           ARG_spi, ARG_cs, ARG_int, ARG_ref_clk_mode, ARG_ref_clk };
+           ARG_spi, ARG_cs, ARG_int, ARG_ref_clk_mode, ARG_ref_clk,
+           #if CONFIG_IDF_TARGET_ESP32P4
+           ARG_crs_dv, ARG_rxd0, ARG_rxd1, ARG_tx_en,
+           ARG_txd0, ARG_txd1, ARG_clk_in, ARG_clk_out,
+           #endif
+    };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_id,           MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_mdc,          MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
@@ -127,6 +173,16 @@ static mp_obj_t get_lan(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
         { MP_QSTR_int,          MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_ref_clk_mode, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_ref_clk,      MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        #if CONFIG_IDF_TARGET_ESP32P4
+        { MP_QSTR_crs_dv,       MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_rxd0,         MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_rxd1,         MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_tx_en,        MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_txd0,         MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_txd1,         MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_clk_in,       MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_clk_out,      MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        #endif
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -146,6 +202,16 @@ static mp_obj_t get_lan(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
     self->phy_power_pin = GET_PIN(ARG_power);
     self->phy_cs_pin = GET_PIN(ARG_cs);
     self->phy_int_pin = GET_PIN(ARG_int);
+    #if CONFIG_IDF_TARGET_ESP32P4
+    self->crs_dv_pin = GET_PIN(ARG_crs_dv);
+    self->rxd0_pin = GET_PIN(ARG_rxd0);
+    self->rxd1_pin = GET_PIN(ARG_rxd1);
+    self->tx_en_pin = GET_PIN(ARG_tx_en);
+    self->txd0_pin = GET_PIN(ARG_txd0);
+    self->txd1_pin = GET_PIN(ARG_txd1);
+    self->clk_in_pin = GET_PIN(ARG_clk_in);
+    self->clk_out_pin = GET_PIN(ARG_clk_out);
+    #endif
 
     if (args[ARG_phy_addr].u_int < 0x00 || args[ARG_phy_addr].u_int > 0x1f) {
         mp_raise_ValueError(MP_ERROR_TEXT("invalid phy address"));
@@ -158,6 +224,15 @@ static mp_obj_t get_lan(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
         args[ARG_phy_type].u_int != PHY_RTL8201 &&
         args[ARG_phy_type].u_int != PHY_KSZ8041 &&
         args[ARG_phy_type].u_int != PHY_KSZ8081 &&
+        #if PHY_LAN867X_ENABLED
+        args[ARG_phy_type].u_int != PHY_LAN8670 &&
+        #endif
+        #if PHY_GENERIC_ENABLED
+        args[ARG_phy_type].u_int != PHY_GENERIC &&
+        #endif
+        #if CONFIG_ETH_USE_OPENETH
+        args[ARG_phy_type].u_int != PHY_OPENETH &&
+        #endif
         #if CONFIG_ETH_USE_SPI_ETHERNET
         #if CONFIG_ETH_SPI_ETHERNET_KSZ8851SNL
         args[ARG_phy_type].u_int != PHY_KSZ8851SNL &&
@@ -174,13 +249,13 @@ static mp_obj_t get_lan(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
     }
 
     eth_mac_config_t mac_config = ETH_MAC_DEFAULT_CONFIG();
-    #if CONFIG_IDF_TARGET_ESP32
+    #if CONFIG_IDF_TARGET_ESP32 || CONFIG_IDF_TARGET_ESP32P4
     eth_esp32_emac_config_t esp32_config = ETH_ESP32_EMAC_DEFAULT_CONFIG();
     #endif
 
     esp_eth_mac_t *mac = NULL;
 
-    #if CONFIG_IDF_TARGET_ESP32
+    #if CONFIG_IDF_TARGET_ESP32 || CONFIG_IDF_TARGET_ESP32P4
     // Dynamic ref_clk configuration.
     if (args[ARG_ref_clk_mode].u_int != -1) {
         // Map the GPIO_MODE constants to EMAC_CLK constants.
@@ -215,7 +290,7 @@ static mp_obj_t get_lan(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
     #endif
 
     switch (args[ARG_phy_type].u_int) {
-        #if CONFIG_IDF_TARGET_ESP32
+        #if CONFIG_IDF_TARGET_ESP32 || CONFIG_IDF_TARGET_ESP32P4
         case PHY_LAN8710:
         case PHY_LAN8720:
             self->phy = esp_eth_phy_new_lan87xx(&phy_config);
@@ -232,6 +307,23 @@ static mp_obj_t get_lan(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
         case PHY_KSZ8041:
         case PHY_KSZ8081:
             self->phy = esp_eth_phy_new_ksz80xx(&phy_config);
+            break;
+        #if PHY_LAN867X_ENABLED
+        case PHY_LAN8670:
+            self->phy = esp_eth_phy_new_lan867x(&phy_config);
+            break;
+        #endif
+        #if PHY_GENERIC_ENABLED
+        case PHY_GENERIC:
+            self->phy = esp_eth_phy_new_generic(&phy_config);
+            break;
+        #endif
+        #endif // CONFIG_IDF_TARGET_ESP32 || CONFIG_IDF_TARGET_ESP32P4
+        #if CONFIG_ETH_USE_OPENETH
+        case PHY_OPENETH:
+            phy_config.autonego_timeout_ms = 100;
+            mac = esp_eth_mac_new_openeth(&mac_config);
+            self->phy = esp_eth_phy_new_dp83848(&phy_config);
             break;
         #endif
         #if CONFIG_ETH_USE_SPI_ETHERNET
@@ -268,13 +360,53 @@ static mp_obj_t get_lan(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
         #endif
     }
 
-    #if CONFIG_IDF_TARGET_ESP32
-    if (!IS_SPI_PHY(args[ARG_phy_type].u_int)) {
+    #if CONFIG_IDF_TARGET_ESP32 || CONFIG_IDF_TARGET_ESP32P4
+    // SPI PHYs and the emulated OpenCores MAC (created above) don't use the
+    // internal EMAC.
+    bool use_internal_emac = !IS_SPI_PHY(args[ARG_phy_type].u_int);
+    #if CONFIG_ETH_USE_OPENETH
+    use_internal_emac = use_internal_emac && args[ARG_phy_type].u_int != PHY_OPENETH;
+    #endif
+    if (use_internal_emac) {
         if (self->mdc_pin == -1 || self->mdio_pin == -1) {
             mp_raise_ValueError(MP_ERROR_TEXT("mdc and mdio must be specified"));
         }
         esp32_config.smi_mdc_gpio_num = self->mdc_pin;
         esp32_config.smi_mdio_gpio_num = self->mdio_pin;
+
+        #if CONFIG_IDF_TARGET_ESP32P4
+        if (self->crs_dv_pin != -1) {
+            esp32_config.emac_dataif_gpio.rmii.crs_dv_num = self->crs_dv_pin;
+        }
+        if (self->rxd0_pin != -1) {
+            esp32_config.emac_dataif_gpio.rmii.rxd0_num = self->rxd0_pin;
+        }
+        if (self->rxd1_pin != -1) {
+            esp32_config.emac_dataif_gpio.rmii.rxd1_num = self->rxd1_pin;
+        }
+        if (self->tx_en_pin != -1) {
+            esp32_config.emac_dataif_gpio.rmii.tx_en_num = self->tx_en_pin;
+        }
+        if (self->txd0_pin != -1) {
+            esp32_config.emac_dataif_gpio.rmii.txd0_num = self->txd0_pin;
+        }
+        if (self->txd1_pin != -1) {
+            esp32_config.emac_dataif_gpio.rmii.txd1_num = self->txd1_pin;
+        }
+        if (self->clk_out_pin != -1) {
+            if (self->clk_in_pin == -1) {
+                mp_raise_ValueError(MP_ERROR_TEXT("clk_in must be specified if clk_out is specified"));
+            }
+            esp32_config.clock_config.rmii.clock_mode = EMAC_CLK_OUT;
+            esp32_config.clock_config.rmii.clock_gpio = (emac_rmii_clock_gpio_t)self->clk_out_pin;
+            esp32_config.clock_config_out_in.rmii.clock_mode = EMAC_CLK_EXT_IN;
+            esp32_config.clock_config_out_in.rmii.clock_gpio = (emac_rmii_clock_gpio_t)self->clk_in_pin;
+        } else if (self->clk_in_pin != -1) {
+            esp32_config.clock_config.rmii.clock_mode = EMAC_CLK_EXT_IN;
+            esp32_config.clock_config.rmii.clock_gpio = (emac_rmii_clock_gpio_t)self->clk_in_pin;
+        }
+        #endif
+
         mac = esp_eth_mac_new_esp32(&esp32_config, &mac_config);
     }
     #endif

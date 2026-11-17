@@ -1,4 +1,5 @@
 # test loading from ptr8 type
+# requires: viper
 
 
 @micropython.viper

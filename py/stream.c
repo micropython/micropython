@@ -108,6 +108,17 @@ const mp_stream_p_t *mp_get_stream_raise(mp_obj_t self_in, int flags) {
     mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("stream operation not supported"));
 }
 
+static MP_NORETURN void mp_stream_raise_error(mp_obj_t stream, int error) {
+    #if MICROPY_STREAMS_DELEGATE_ERROR
+    const mp_stream_p_t *stream_p = mp_get_stream(stream);
+    if (stream_p->ioctl != NULL) {
+        int err;
+        stream_p->ioctl(stream, MP_STREAM_RAISE_ERROR, error, &err);
+    }
+    #endif
+    mp_raise_OSError(error);
+}
+
 static mp_obj_t stream_read_generic(size_t n_args, const mp_obj_t *args, byte flags) {
     // What to do if sz < -1?  Python docs don't specify this case.
     // CPython does a readall, but here we silently let negatives through,
@@ -151,7 +162,7 @@ static mp_obj_t stream_read_generic(size_t n_args, const mp_obj_t *args, byte fl
                     }
                     break;
                 }
-                mp_raise_OSError(error);
+                mp_stream_raise_error(args[0], error);
             }
 
             if (out_sz < more_bytes) {
@@ -219,7 +230,7 @@ static mp_obj_t stream_read_generic(size_t n_args, const mp_obj_t *args, byte fl
             // this as EOF.
             return mp_const_none;
         }
-        mp_raise_OSError(error);
+        mp_stream_raise_error(args[0], error);
     } else {
         vstr.len = out_sz;
         if (stream_p->is_text) {
@@ -250,7 +261,7 @@ mp_obj_t mp_stream_write(mp_obj_t self_in, const void *buf, size_t len, byte fla
             // no single byte could be readily written to it."
             return mp_const_none;
         }
-        mp_raise_OSError(error);
+        mp_stream_raise_error(self_in, error);
     } else {
         return MP_OBJ_NEW_SMALL_INT(out_sz);
     }
@@ -261,9 +272,14 @@ void mp_stream_write_adaptor(void *self, const char *buf, size_t len) {
     mp_stream_write(MP_OBJ_FROM_PTR(self), buf, len, MP_STREAM_RW_WRITE);
 }
 
-static mp_obj_t stream_write_method(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t stream_readinto_write_generic(size_t n_args, const mp_obj_t *args, byte flags) {
     mp_buffer_info_t bufinfo;
-    mp_get_buffer_raise(args[1], &bufinfo, MP_BUFFER_READ);
+    mp_get_buffer_raise(args[1], &bufinfo, (flags & MP_STREAM_RW_WRITE) ? MP_BUFFER_READ : MP_BUFFER_WRITE);
+
+    // CPython extension, allow optional maximum length and offset:
+    // - stream.operation(buf, max_len)
+    // - stream.operation(buf, off, max_len)
+    // Similar to https://docs.python.org/3/library/socket.html#socket.socket.recv_into
     size_t max_len = (size_t)-1;
     size_t off = 0;
     if (n_args == 3) {
@@ -276,44 +292,30 @@ static mp_obj_t stream_write_method(size_t n_args, const mp_obj_t *args) {
         }
     }
     bufinfo.len -= off;
-    return mp_stream_write(args[0], (byte *)bufinfo.buf + off, MIN(bufinfo.len, max_len), MP_STREAM_RW_WRITE);
+
+    // Perform the readinto or write operation.
+    return mp_stream_write(args[0], (byte *)bufinfo.buf + off, MIN(bufinfo.len, max_len), flags);
+}
+
+static mp_obj_t stream_write_method(size_t n_args, const mp_obj_t *args) {
+    return stream_readinto_write_generic(n_args, args, MP_STREAM_RW_WRITE);
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_write_obj, 2, 4, stream_write_method);
 
-static mp_obj_t stream_write1_method(mp_obj_t self_in, mp_obj_t arg) {
-    mp_buffer_info_t bufinfo;
-    mp_get_buffer_raise(arg, &bufinfo, MP_BUFFER_READ);
-    return mp_stream_write(self_in, bufinfo.buf, bufinfo.len, MP_STREAM_RW_WRITE | MP_STREAM_RW_ONCE);
+static mp_obj_t stream_write1_method(size_t n_args, const mp_obj_t *args) {
+    return stream_readinto_write_generic(n_args, args, MP_STREAM_RW_WRITE | MP_STREAM_RW_ONCE);
 }
-MP_DEFINE_CONST_FUN_OBJ_2(mp_stream_write1_obj, stream_write1_method);
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_write1_obj, 2, 4, stream_write1_method);
 
 static mp_obj_t stream_readinto(size_t n_args, const mp_obj_t *args) {
-    mp_buffer_info_t bufinfo;
-    mp_get_buffer_raise(args[1], &bufinfo, MP_BUFFER_WRITE);
-
-    // CPython extension: if 2nd arg is provided, that's max len to read,
-    // instead of full buffer. Similar to
-    // https://docs.python.org/3/library/socket.html#socket.socket.recv_into
-    mp_uint_t len = bufinfo.len;
-    if (n_args > 2) {
-        len = mp_obj_get_int(args[2]);
-        if (len > bufinfo.len) {
-            len = bufinfo.len;
-        }
-    }
-
-    int error;
-    mp_uint_t out_sz = mp_stream_read_exactly(args[0], bufinfo.buf, len, &error);
-    if (error != 0) {
-        if (mp_is_nonblocking_error(error)) {
-            return mp_const_none;
-        }
-        mp_raise_OSError(error);
-    } else {
-        return MP_OBJ_NEW_SMALL_INT(out_sz);
-    }
+    return stream_readinto_write_generic(n_args, args, MP_STREAM_RW_READ);
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_readinto_obj, 2, 3, stream_readinto);
+
+static mp_obj_t stream_readinto1(size_t n_args, const mp_obj_t *args) {
+    return stream_readinto_write_generic(n_args, args, MP_STREAM_RW_READ | MP_STREAM_RW_ONCE);
+}
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_readinto1_obj, 2, 3, stream_readinto1);
 
 static mp_obj_t stream_readall(mp_obj_t self_in) {
     const mp_stream_p_t *stream_p = mp_get_stream(self_in);
@@ -336,7 +338,7 @@ static mp_obj_t stream_readall(mp_obj_t self_in) {
                 }
                 break;
             }
-            mp_raise_OSError(error);
+            mp_stream_raise_error(self_in, error);
         }
         if (out_sz == 0) {
             break;
@@ -394,7 +396,7 @@ static mp_obj_t stream_unbuffered_readline(size_t n_args, const mp_obj_t *args) 
                     goto done;
                 }
             }
-            mp_raise_OSError(error);
+            mp_stream_raise_error(args[0], error);
         }
         if (out_sz == 0) {
         done:
@@ -444,7 +446,7 @@ mp_obj_t mp_stream_close(mp_obj_t stream) {
     int error;
     mp_uint_t res = stream_p->ioctl(stream, MP_STREAM_CLOSE, 0, &error);
     if (res == MP_STREAM_ERROR) {
-        mp_raise_OSError(error);
+        mp_stream_raise_error(stream, error);
     }
     return mp_const_none;
 }
@@ -459,20 +461,20 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream___exit___obj, 4, 4, mp_stream___ex
 static mp_obj_t stream_seek(size_t n_args, const mp_obj_t *args) {
     // TODO: Could be uint64
     mp_off_t offset = mp_obj_get_int(args[1]);
-    int whence = SEEK_SET;
+    int whence = MP_SEEK_SET;
     if (n_args == 3) {
         whence = mp_obj_get_int(args[2]);
     }
 
     // In POSIX, it's error to seek before end of stream, we enforce it here.
-    if (whence == SEEK_SET && offset < 0) {
+    if (whence == MP_SEEK_SET && offset < 0) {
         mp_raise_OSError(MP_EINVAL);
     }
 
     int error;
     mp_off_t res = mp_stream_seek(args[0], offset, whence, &error);
     if (res == (mp_off_t)-1) {
-        mp_raise_OSError(error);
+        mp_stream_raise_error(args[0], error);
     }
 
     // TODO: Could be uint64
@@ -482,7 +484,7 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_seek_obj, 2, 3, stream_seek);
 
 static mp_obj_t stream_tell(mp_obj_t self) {
     mp_obj_t offset = MP_OBJ_NEW_SMALL_INT(0);
-    mp_obj_t whence = MP_OBJ_NEW_SMALL_INT(SEEK_CUR);
+    mp_obj_t whence = MP_OBJ_NEW_SMALL_INT(MP_SEEK_CUR);
     const mp_obj_t args[3] = {self, offset, whence};
     return stream_seek(3, args);
 }
@@ -493,7 +495,7 @@ static mp_obj_t stream_flush(mp_obj_t self) {
     int error;
     mp_uint_t res = stream_p->ioctl(self, MP_STREAM_FLUSH, 0, &error);
     if (res == MP_STREAM_ERROR) {
-        mp_raise_OSError(error);
+        mp_stream_raise_error(self, error);
     }
     return mp_const_none;
 }
@@ -514,7 +516,7 @@ static mp_obj_t stream_ioctl(size_t n_args, const mp_obj_t *args) {
     int error;
     mp_uint_t res = stream_p->ioctl(args[0], mp_obj_get_int(args[1]), val, &error);
     if (res == MP_STREAM_ERROR) {
-        mp_raise_OSError(error);
+        mp_stream_raise_error(args[0], error);
     }
 
     return mp_obj_new_int(res);

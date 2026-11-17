@@ -1,4 +1,4 @@
-// Deinitions common to all SAMD51 boards
+// Definitions common to all SAMD51 boards
 #include "samd51.h"
 
 #define MICROPY_CONFIG_ROM_LEVEL        (MICROPY_CONFIG_ROM_LEVEL_FULL_FEATURES)
@@ -16,20 +16,34 @@
 #define MICROPY_PY_RANDOM_SEED_INIT_FUNC (trng_random_u32())
 unsigned long trng_random_u32(void);
 #define MICROPY_PY_MACHINE_UART_IRQ     (1)
+#ifndef MICROPY_PY_MACHINE_I2C_TARGET
+#define MICROPY_PY_MACHINE_I2C_TARGET   (1)
+#endif
 
 // fatfs configuration used in ffconf.h
-#define MICROPY_FATFS_ENABLE_LFN            (1)
-#define MICROPY_FATFS_RPATH                 (2)
-#define MICROPY_FATFS_MAX_SS                (4096)
-#define MICROPY_FATFS_LFN_CODE_PAGE         437 /* 1=SFN/ANSI 437=LFN/U.S.(OEM) */
+#define MICROPY_FATFS_ENABLE_LFN        (1)
+#define MICROPY_FATFS_RPATH             (2)
+#define MICROPY_FATFS_MAX_SS            (4096)
+#define MICROPY_FATFS_LFN_CODE_PAGE     437 /* 1=SFN/ANSI 437=LFN/U.S.(OEM) */
 
-#define VFS_BLOCK_SIZE_BYTES            (1536) //
+#define VFS_BLOCK_SIZE_BYTES            (2048) //
+
+#ifndef MICROPY_PY_MACHINE_MEM_BACKUP
+#define MICROPY_PY_MACHINE_MEM_BACKUP   (1)
+#endif
+#define MICROPY_PY_MACHINE_MEM_BACKUP_INCLUDEFILE "ports/samd/machine_mem_backup.c"
 
 #ifndef MICROPY_HW_UART_TXBUF
 #define MICROPY_HW_UART_TXBUF           (1)
 #endif
 #ifndef MICROPY_HW_UART_RTSCTS
 #define MICROPY_HW_UART_RTSCTS          (1)
+#endif
+#ifndef MICROPY_PY_MACHINE_ADC_READ_TIMED
+#define MICROPY_PY_MACHINE_ADC_READ_TIMED (1)
+#endif
+#ifndef MICROPY_PY_MACHINE_DAC_WRITE_TIMED
+#define MICROPY_PY_MACHINE_DAC_WRITE_TIMED (1)
 #endif
 
 #define CPU_FREQ                        (120000000)

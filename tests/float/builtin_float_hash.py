@@ -1,4 +1,5 @@
 # test builtin hash function with float args
+# requires: float
 
 # these should hash to an integer with a specific value
 for val in (

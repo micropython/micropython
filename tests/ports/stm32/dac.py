@@ -1,4 +1,4 @@
-import pyb
+import time, pyb
 
 if not hasattr(pyb, "DAC"):
     print("SKIP")
@@ -10,7 +10,7 @@ dac.noise(100)
 dac.triangle(100)
 dac.write(0)
 dac.write_timed(bytearray(10), 100, mode=pyb.DAC.NORMAL)
-pyb.delay(20)
+time.sleep_ms(20)
 dac.write(0)
 
 # test buffering arg

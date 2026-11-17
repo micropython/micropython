@@ -1,4 +1,5 @@
 # Test asyncio TCP server and client with TLS, and an incorrect server_hostname.
+# requires: async
 
 try:
     import os
@@ -8,26 +9,26 @@ except ImportError:
     print("SKIP")
     raise SystemExit
 
+if not hasattr(ssl, "CERT_REQUIRED"):
+    print("SKIP")
+    raise SystemExit
+
 PORT = 8000
 
 # These are test certificates. See tests/README.md for details.
 cert = cafile = "ec_cert.der"
 key = "ec_key.der"
 
-try:
-    os.stat(cafile)
-    os.stat(key)
-except OSError:
-    print("SKIP")
-    raise SystemExit
-
 
 async def handle_connection(reader, writer):
     print("handle connection")
     try:
         data = await reader.read(100)
-    except Exception as e:
-        print(e)
+    except OSError:
+        # The transport may report an OSError before mbedTLS reads the pending
+        # TLS alert, so the exact error should be MBEDTLS_ERR_SSL_FATAL_ALERT_MESSAGE but
+        # currently cannot be verified. See PR #19630.
+        print("OSError")
     ev.set()
 
 

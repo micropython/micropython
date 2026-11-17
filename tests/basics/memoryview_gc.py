@@ -1,4 +1,6 @@
 # test memoryview retains pointer to original object/buffer
+# requires: slice
+
 try:
     memoryview
 except:

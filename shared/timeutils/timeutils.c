@@ -29,12 +29,27 @@
 
 #include "shared/timeutils/timeutils.h"
 
-// LEAPOCH corresponds to 2000-03-01, which is a mod-400 year, immediately
-// after Feb 29. We calculate seconds as a signed integer relative to that.
+// To maintain reasonable compatibility with CPython on embedded systems,
+// and avoid breaking anytime soon, timeutils functions are required to
+// work properly between 1970 and 2099 on all ports.
 //
-// Our timebase is relative to 2000-01-01.
+// During that period of time, leap years occur every 4 years without
+// exception, so we can keep the code short for 32 bit machines.
 
-#define LEAPOCH ((31 + 29) * 86400)
+// The last leap day before the required period is Feb 29, 1968.
+// This is the number of days to add to get to that date.
+#define PREV_LEAP_DAY  ((mp_uint_t)(365 + 366 - (31 + 29)))
+#define PREV_LEAP_YEAR 1968
+
+// On ports where either MICROPY_TIME_SUPPORT_Y2100_AND_BEYOND or
+// MICROPY_TIME_SUPPORT_Y1969_AND_BEFORE is enabled, we include extra
+// code to support leap years outside of the 'easy' period.
+// Computation is then made based on 1600 (a mod-400 year).
+// This is the number of days between 1600 and 1968.
+#define QC_BASE_DAY  134409
+#define QC_LEAP_YEAR 1600
+// This is the number of leap days between 1600 and 1970
+#define QC_LEAP_DAYS 89
 
 #define DAYS_PER_400Y (365 * 400 + 97)
 #define DAYS_PER_100Y (365 * 100 + 24)
@@ -42,8 +57,20 @@
 
 static const uint16_t days_since_jan1[] = { 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365 };
 
+// type used internally to count small integers relative to epoch
+// (using uint when possible produces smaller code on some platforms)
+#if MICROPY_TIME_SUPPORT_Y1969_AND_BEFORE
+typedef mp_int_t relint_t;
+#else
+typedef mp_uint_t relint_t;
+#endif
+
 bool timeutils_is_leap_year(mp_uint_t year) {
+    #if MICROPY_TIME_SUPPORT_Y2100_AND_BEYOND || MICROPY_TIME_SUPPORT_Y1969_AND_BEFORE
     return (year % 4 == 0 && year % 100 != 0) || year % 400 == 0;
+    #else
+    return year % 4 == 0;
+    #endif
 }
 
 // month is one based
@@ -65,67 +92,67 @@ mp_uint_t timeutils_year_day(mp_uint_t year, mp_uint_t month, mp_uint_t date) {
     return yday;
 }
 
-void timeutils_seconds_since_2000_to_struct_time(mp_uint_t t, timeutils_struct_time_t *tm) {
-    // The following algorithm was adapted from musl's __secs_to_tm and adapted
-    // for differences in MicroPython's timebase.
+void timeutils_seconds_since_1970_to_struct_time(timeutils_timestamp_t seconds, timeutils_struct_time_t *tm) {
+    // The following algorithm was inspired from musl's __secs_to_tm
+    // and simplified to reduce code footprint in the simple case
 
-    mp_int_t seconds = t - LEAPOCH;
-
-    mp_int_t days = seconds / 86400;
+    relint_t days = seconds / 86400;
     seconds %= 86400;
+    #if MICROPY_TIME_SUPPORT_Y1969_AND_BEFORE
     if (seconds < 0) {
         seconds += 86400;
         days -= 1;
     }
+    #endif
     tm->tm_hour = seconds / 3600;
     tm->tm_min = seconds / 60 % 60;
     tm->tm_sec = seconds % 60;
 
-    mp_int_t wday = (days + 2) % 7;   // Mar 1, 2000 was a Wednesday (2)
+    relint_t wday = (days + 3) % 7;   // Jan 1, 1970 was a Thursday (3)
+    #if MICROPY_TIME_SUPPORT_Y1969_AND_BEFORE
     if (wday < 0) {
         wday += 7;
     }
+    #endif
     tm->tm_wday = wday;
 
-    mp_int_t qc_cycles = days / DAYS_PER_400Y;
+    days += PREV_LEAP_DAY;
+
+    #if MICROPY_TIME_SUPPORT_Y2100_AND_BEYOND || MICROPY_TIME_SUPPORT_Y1969_AND_BEFORE
+    // rebase day to the oldest supported date (=> always positive)
+    mp_uint_t base_year = QC_LEAP_YEAR;
+    days += QC_BASE_DAY;
+    mp_uint_t qc_cycles = days / DAYS_PER_400Y;
     days %= DAYS_PER_400Y;
-    if (days < 0) {
-        days += DAYS_PER_400Y;
-        qc_cycles--;
-    }
-    mp_int_t c_cycles = days / DAYS_PER_100Y;
+    mp_uint_t c_cycles = days / DAYS_PER_100Y;
     if (c_cycles == 4) {
         c_cycles--;
     }
     days -= (c_cycles * DAYS_PER_100Y);
+    #else
+    mp_uint_t base_year = PREV_LEAP_YEAR;
+    mp_uint_t qc_cycles = 0;
+    mp_uint_t c_cycles = 0;
+    #endif
 
-    mp_int_t q_cycles = days / DAYS_PER_4Y;
+    mp_uint_t q_cycles = days / DAYS_PER_4Y;
+    #if MICROPY_TIME_SUPPORT_Y2100_AND_BEYOND || MICROPY_TIME_SUPPORT_Y1969_AND_BEFORE
     if (q_cycles == 25) {
         q_cycles--;
     }
+    #endif
     days -= q_cycles * DAYS_PER_4Y;
 
-    mp_int_t years = days / 365;
+    relint_t years = days / 365;
     if (years == 4) {
         years--;
     }
     days -= (years * 365);
 
-    /* We will compute tm_yday at the very end
-    mp_int_t leap = !years && (q_cycles || !c_cycles);
-
-    tm->tm_yday = days + 31 + 28 + leap;
-    if (tm->tm_yday >= 365 + leap) {
-        tm->tm_yday -= 365 + leap;
-    }
-
-    tm->tm_yday++;  // Make one based
-    */
-
-    tm->tm_year = 2000 + years + 4 * q_cycles + 100 * c_cycles + 400 * qc_cycles;
+    tm->tm_year = base_year + years + 4 * q_cycles + 100 * c_cycles + 400 * qc_cycles;
 
     // Note: days_in_month[0] corresponds to March
-    static const int8_t days_in_month[] = {31, 30, 31, 30, 31, 31, 30, 31, 30, 31, 31, 29};
+    static const uint8_t days_in_month[] = {31, 30, 31, 30, 31, 31, 30, 31, 30, 31, 31, 29};
 
     mp_int_t month;
     for (month = 0; days_in_month[month] <= days; month++) {
@@ -144,21 +171,28 @@ void timeutils_seconds_since_2000_to_struct_time(mp_uint_t t, timeutils_struct_t
 }
 
 // returns the number of seconds, as an integer, since 2000-01-01
-mp_uint_t timeutils_seconds_since_2000(mp_uint_t year, mp_uint_t month,
+timeutils_timestamp_t timeutils_seconds_since_1970(mp_uint_t year, mp_uint_t month,
     mp_uint_t date, mp_uint_t hour, mp_uint_t minute, mp_uint_t second) {
-    return
-        second
-        + minute * 60
-        + hour * 3600
-        + (timeutils_year_day(year, month, date) - 1
-            + ((year - 2000 + 3) / 4) // add a day each 4 years starting with 2001
-            - ((year - 2000 + 99) / 100) // subtract a day each 100 years starting with 2001
-            + ((year - 2000 + 399) / 400) // add a day each 400 years starting with 2001
-            ) * 86400
-        + (year - 2000) * 31536000;
+    #if MICROPY_TIME_SUPPORT_Y2100_AND_BEYOND || MICROPY_TIME_SUPPORT_Y1969_AND_BEFORE
+    mp_uint_t ref_year = QC_LEAP_YEAR;
+    #else
+    mp_uint_t ref_year = PREV_LEAP_YEAR;
+    #endif
+    timeutils_timestamp_t res;
+    res = ((relint_t)year - 1970) * 365;
+    res += (year - (ref_year + 1)) / 4; // add a day each 4 years
+    #if MICROPY_TIME_SUPPORT_Y2100_AND_BEYOND || MICROPY_TIME_SUPPORT_Y1969_AND_BEFORE
+    res -= (year - (ref_year + 1)) / 100; // subtract a day each 100 years
+    res += (year - (ref_year + 1)) / 400; // add a day each 400 years
+    res -= QC_LEAP_DAYS;
+    #endif
+    res += timeutils_year_day(year, month, date) - 1;
+    res *= 86400;
+    res += hour * 3600 + minute * 60 + second;
+    return res;
 }
 
-mp_uint_t timeutils_mktime_2000(mp_uint_t year, mp_int_t month, mp_int_t mday,
+timeutils_timestamp_t timeutils_mktime_1970(mp_uint_t year, mp_int_t month, mp_int_t mday,
     mp_int_t hours, mp_int_t minutes, mp_int_t seconds) {
 
     // Normalize the tuple. This allows things like:
@@ -211,12 +245,16 @@ mp_uint_t timeutils_mktime_2000(mp_uint_t year, mp_int_t month, mp_int_t mday,
             year++;
         }
     }
-    return timeutils_seconds_since_2000(year, month, mday, hours, minutes, seconds);
+    return timeutils_seconds_since_1970(year, month, mday, hours, minutes, seconds);
 }
 
 // Calculate the weekday from the date.
 // The result is zero based with 0 = Monday.
 // by Michael Keith and Tom Craver, 1990.
 int timeutils_calc_weekday(int y, int m, int d) {
-    return ((d += m < 3 ? y-- : y - 2, 23 * m / 9 + d + 4 + y / 4 - y / 100 + y / 400) + 6) % 7;
+    return ((d += m < 3 ? y-- : y - 2, 23 * m / 9 + d + 4 + y / 4
+        #if MICROPY_TIME_SUPPORT_Y2100_AND_BEYOND || MICROPY_TIME_SUPPORT_Y1969_AND_BEFORE
+        - y / 100 + y / 400
+        #endif
+        ) + 6) % 7;
 }

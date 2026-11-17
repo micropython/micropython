@@ -1,3 +1,5 @@
+# requires: bytearray
+
 try:
     bytearray.center
 except AttributeError:

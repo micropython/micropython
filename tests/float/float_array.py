@@ -1,3 +1,5 @@
+# requires: float
+
 try:
     from array import array
 except ImportError:
@@ -19,4 +21,10 @@ def test(a):
 test(array("f"))
 test(array("d"))
 
-print("{:.4f}".format(array("f", bytes(array("I", [0x3DCCCCCC])))[0]))
+# hand-crafted floats, including non-standard nan
+for float_hex in (0x3DCCCCCC, 0x7F800024, 0x7FC00004):
+    f = array("f", bytes(array("I", [float_hex])))[0]
+    if type(f) is float:
+        print("{:.4e}".format(f))
+    else:
+        print(f)

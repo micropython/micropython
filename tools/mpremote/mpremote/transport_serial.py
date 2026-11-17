@@ -35,45 +35,59 @@
 # Once the API is stabilised, the idea is that mpremote can be used both
 # as a command line tool and a library for interacting with devices.
 
-import ast, io, os, re, struct, sys, time
-from errno import EPERM
+import ast, io, os, re, stat, struct, sys, time
+import serial
+import serial.tools.list_ports
+from errno import EPERM, ENOTTY
 from .console import VT_ENABLED
 from .transport import TransportError, TransportExecError, Transport
 
 
+VID_SILICON_LABS = 0x10C4
+
+
 class SerialTransport(Transport):
-    def __init__(self, device, baudrate=115200, wait=0, exclusive=True):
+    fs_hook_mount = "/remote"  # MUST match the mount point in fs_hook_code
+
+    def __init__(self, device, baudrate=115200, wait=0, exclusive=True, timeout=None):
         self.in_raw_repl = False
         self.use_raw_paste = True
         self.device_name = device
         self.mounted = False
 
-        import serial
-        import serial.tools.list_ports
-
         # Set options, and exclusive if pyserial supports it
-        serial_kwargs = {"baudrate": baudrate, "interCharTimeout": 1}
+        serial_kwargs = {
+            "baudrate": baudrate,
+            "timeout": timeout,
+            "interCharTimeout": 1,
+        }
         if serial.__version__ >= "3.3":
             serial_kwargs["exclusive"] = exclusive
 
         delayed = False
         for attempt in range(wait + 1):
             try:
-                if device.startswith("rfc2217://"):
-                    self.serial = serial.serial_for_url(device, **serial_kwargs)
-                elif os.name == "nt":
-                    self.serial = serial.Serial(**serial_kwargs)
-                    self.serial.port = device
+                self.serial = serial.serial_for_url(device, do_not_open=True, **serial_kwargs)
+                if os.name == "nt":
                     portinfo = list(serial.tools.list_ports.grep(device))  # type: ignore
-                    if portinfo and portinfo[0].manufacturer != "Microsoft":
-                        # ESP8266/ESP32 boards use RTS/CTS for flashing and boot mode selection.
-                        # DTR False: to avoid using the reset button will hang the MCU in bootloader mode
-                        # RTS False: to prevent pulses on rts on serial.close() that would POWERON_RESET an ESPxx
-                        self.serial.dtr = False  # DTR False = gpio0 High = Normal boot
-                        self.serial.rts = False  # RTS False = EN High = MCU enabled
+                    if portinfo and getattr(portinfo[0], "vid", None) == VID_SILICON_LABS:
+                        # Silicon Labs CP210x driver on Windows has a quirk
+                        # where after a power on reset it will set DTR and RTS
+                        # at different times when the port is opened (it doesn't
+                        # happen on subsequent openings).
+                        #
+                        # To avoid issues with spurious reset on Espressif boards we clear DTR and RTS,
+                        # open the port, and then set them in an order which prevents triggering a reset.
+                        self.serial.dtr = False
+                        self.serial.rts = False
+                        self.serial.open()
+                        self.serial.dtr = True
+                        self.serial.rts = True
+
+                # On all other host/driver combinations we keep the default
+                # behaviour (pyserial will set DTR and RTS automatically on open)
+                if not self.serial.isOpen():
                     self.serial.open()
-                else:
-                    self.serial = serial.Serial(device, **serial_kwargs)
                 break
             except OSError:
                 if wait == 0:
@@ -91,36 +105,77 @@ class SerialTransport(Transport):
         if delayed:
             print("")
 
+        self.is_pty = self._is_pty_device(device)
+
+    @staticmethod
+    def _is_pty_device(device):
+        """Detect if device is a PTY (pseudo-terminal), e.g. used by QEMU."""
+        if device.startswith("/dev/pts/"):
+            try:
+                st = os.stat(device)
+                if stat.S_ISCHR(st.st_mode) and os.major(st.st_rdev) == 136:
+                    return True
+            except (OSError, AttributeError):
+                pass
+        return False
+
     def close(self):
+        # ESP Windows quirk: Prevent target from resetting when Windows clears DTR before RTS
+        try:
+            self.serial.rts = False
+            self.serial.dtr = False
+        except OSError as er:
+            if er.errno == ENOTTY:
+                # Some devices (like QEMU pts) don't support RTS/DTR control
+                pass
+            else:
+                raise er
         self.serial.close()
 
-    def read_until(self, min_num_bytes, ending, timeout=10, data_consumer=None):
-        # if data_consumer is used then data is not accumulated and the ending must be 1 byte long
-        assert data_consumer is None or len(ending) == 1
+    def read_until(
+        self, min_num_bytes, ending, timeout=10, data_consumer=None, timeout_overall=None
+    ):
+        """
+        min_num_bytes: Obsolete.
+        ending: Return if 'ending' matches.
+        timeout [s]: Return if timeout between characters. None: Infinite timeout.
+        timeout_overall [s]: Return not later than timeout_overall. None: Infinite timeout.
+        data_consumer: Use callback for incoming characters.
+            If data_consumer is used then data is not accumulated and the ending must be 1 byte long
 
-        data = self.serial.read(min_num_bytes)
-        if data_consumer:
-            data_consumer(data)
-        timeout_count = 0
+        It is not visible to the caller why the function returned. It could be ending or timeout.
+        """
+        assert data_consumer is None or len(ending) == 1
+        assert isinstance(timeout, (type(None), int, float))
+        assert isinstance(timeout_overall, (type(None), int, float))
+
+        data = b""
+        begin_overall_s = begin_char_s = time.monotonic()
         while True:
             if data.endswith(ending):
                 break
-            elif self.serial.inWaiting() > 0:
+            new_data = None
+            if self.is_pty or self.serial.inWaiting() > 0:
                 new_data = self.serial.read(1)
+            if new_data:
                 if data_consumer:
                     data_consumer(new_data)
                     data = new_data
                 else:
                     data = data + new_data
-                timeout_count = 0
+                begin_char_s = time.monotonic()
             else:
-                timeout_count += 1
-                if timeout is not None and timeout_count >= 100 * timeout:
+                if timeout is not None and time.monotonic() >= begin_char_s + timeout:
+                    break
+                if (
+                    timeout_overall is not None
+                    and time.monotonic() >= begin_overall_s + timeout_overall
+                ):
                     break
                 time.sleep(0.01)
         return data
 
-    def enter_raw_repl(self, soft_reset=True):
+    def enter_raw_repl(self, soft_reset=True, timeout_overall=10):
         self.serial.write(b"\r\x03")  # ctrl-C: interrupt any running program
 
         # flush input (without relying on serial.flushInput())
@@ -132,7 +187,9 @@ class SerialTransport(Transport):
         self.serial.write(b"\r\x01")  # ctrl-A: enter raw REPL
 
         if soft_reset:
-            data = self.read_until(1, b"raw REPL; CTRL-B to exit\r\n>")
+            data = self.read_until(
+                1, b"raw REPL; CTRL-B to exit\r\n>", timeout_overall=timeout_overall
+            )
             if not data.endswith(b"raw REPL; CTRL-B to exit\r\n>"):
                 print(data)
                 raise TransportError("could not enter raw repl")
@@ -142,12 +199,12 @@ class SerialTransport(Transport):
             # Waiting for "soft reboot" independently to "raw REPL" (done below)
             # allows boot.py to print, which will show up after "soft reboot"
             # and before "raw REPL".
-            data = self.read_until(1, b"soft reboot\r\n")
+            data = self.read_until(1, b"soft reboot\r\n", timeout_overall=timeout_overall)
             if not data.endswith(b"soft reboot\r\n"):
                 print(data)
                 raise TransportError("could not enter raw repl")
 
-        data = self.read_until(1, b"raw REPL; CTRL-B to exit\r\n")
+        data = self.read_until(1, b"raw REPL; CTRL-B to exit\r\n", timeout_overall=timeout_overall)
         if not data.endswith(b"raw REPL; CTRL-B to exit\r\n"):
             print(data)
             raise TransportError("could not enter raw repl")
@@ -354,7 +411,11 @@ class SerialTransport(Transport):
         self.serial = self.serial.orig_serial
 
         # Provide a message about the remount.
-        out_callback(bytes(f"\r\nRemount local directory {self.cmd.root} at /remote\r\n", "utf8"))
+        out_callback(
+            bytes(
+                f"\r\nRemount local directory {self.cmd.root} at {self.fs_hook_mount}\r\n", "utf8"
+            )
+        )
 
         # Enter raw REPL and re-mount the remote filesystem.
         self.serial.write(b"\x01")
@@ -371,7 +432,7 @@ class SerialTransport(Transport):
 
     def umount_local(self):
         if self.mounted:
-            self.exec('os.umount("/remote")')
+            self.exec(f'os.umount("{self.fs_hook_mount}")')
             self.mounted = False
             self.serial = self.serial.orig_serial
 
@@ -383,18 +444,20 @@ fs_hook_cmds = {
     "CMD_OPEN": 4,
     "CMD_CLOSE": 5,
     "CMD_READ": 6,
-    "CMD_WRITE": 7,
-    "CMD_SEEK": 8,
-    "CMD_REMOVE": 9,
-    "CMD_RENAME": 10,
-    "CMD_MKDIR": 11,
-    "CMD_RMDIR": 12,
+    "CMD_READLINE": 7,
+    "CMD_WRITE": 8,
+    "CMD_SEEK": 9,
+    "CMD_REMOVE": 10,
+    "CMD_RENAME": 11,
+    "CMD_MKDIR": 12,
+    "CMD_RMDIR": 13,
 }
 
-fs_hook_code = """\
+fs_hook_code = f"""\
 import os, io, struct, micropython
 
 SEEK_SET = 0
+SEEK_CUR = 1
 
 class RemoteCommand:
     def __init__(self):
@@ -490,12 +553,22 @@ class RemoteCommand:
         self.fout.write(self.buf4)
 
     def wr_bytes(self, b):
-        self.wr_s32(len(b))
+        if isinstance(b, str):
+            b = bytes(b, "utf8")
+        self.wr_s32(self.buffer_nbytes(b))
         self.fout.write(b)
 
     # str and bytes act the same in MicroPython
     wr_str = wr_bytes
 
+    def buffer_nbytes(self, obj):
+        if isinstance(obj, (str, bytes, bytearray)):
+            return len(obj)
+        mv = memoryview(obj)
+        if hasattr(mv, "itemsize"):
+            return len(mv) * mv.itemsize
+        # Fallback for uncommon buffer providers.
+        return len(bytes(obj))
 
 class RemoteFile(io.IOBase):
     def __init__(self, cmd, fd, is_text):
@@ -565,18 +638,22 @@ class RemoteFile(io.IOBase):
         c = self.cmd
         c.begin(CMD_READ)
         c.wr_s8(self.fd)
-        c.wr_s32(len(buf))
+        c.wr_s32(c.buffer_nbytes(buf))
         n = c.rd_bytes(buf)
         c.end()
         return n
 
     def readline(self):
-        l = ''
-        while 1:
-            c = self.read(1)
-            l += c
-            if c == '\\n' or c == '':
-                return l
+        c = self.cmd
+        c.begin(CMD_READLINE)
+        c.wr_s8(self.fd)
+        data = c.rd_bytes(None)
+        c.end()
+        if self.is_text:
+            data = str(data, 'utf8')
+        else:
+            data = bytes(data)
+        return data
 
     def readlines(self):
         ls = []
@@ -606,6 +683,9 @@ class RemoteFile(io.IOBase):
         if n < 0:
             raise OSError(n)
         return n
+
+    def tell(self):
+        return self.seek(0, SEEK_CUR)
 
 
 class RemoteFS:
@@ -720,13 +800,12 @@ class RemoteFS:
 
 
 def __mount():
-    os.mount(RemoteFS(RemoteCommand()), '/remote')
-    os.chdir('/remote')
+    os.mount(RemoteFS(RemoteCommand()), '{SerialTransport.fs_hook_mount}')
+    os.chdir('{SerialTransport.fs_hook_mount}')
 """
 
 # Apply basic compression on hook code.
-for key, value in fs_hook_cmds.items():
-    fs_hook_code = re.sub(key, str(value), fs_hook_code)
+fs_hook_code = re.sub(r"CMD_[A-Z_]+", lambda m: str(fs_hook_cmds[m.group(0)]), fs_hook_code)
 fs_hook_code = re.sub(" *#.*$", "", fs_hook_code, flags=re.MULTILINE)
 fs_hook_code = re.sub("\n\n+", "\n", fs_hook_code)
 fs_hook_code = re.sub("    ", " ", fs_hook_code)
@@ -759,7 +838,7 @@ class PyboardCommand:
         if n == 0:
             return ""
         else:
-            return str(self.fin.read(n), "utf8")
+            return str(self.fin.read(n), "utf8", errors="backslashreplace")
 
     def wr_s8(self, i):
         self.fout.write(struct.pack("<b", i))
@@ -866,6 +945,14 @@ class PyboardCommand:
         self.wr_bytes(buf)
         # self.log_cmd(f"read {fd} {n} -> {len(buf)}")
 
+    def do_readline(self):
+        fd = self.rd_s8()
+        buf = self.data_files[fd][0].readline()
+        if self.data_files[fd][1]:
+            buf = bytes(buf, "utf8")
+        self.wr_bytes(buf)
+        # self.log_cmd(f"readline {fd} -> {len(buf)}")
+
     def do_seek(self):
         fd = self.rd_s8()
         n = self.rd_s32()
@@ -881,7 +968,7 @@ class PyboardCommand:
         fd = self.rd_s8()
         buf = self.rd_bytes()
         if self.data_files[fd][1]:
-            buf = str(buf, "utf8")
+            buf = str(buf, "utf8", errors="backslashreplace")
         n = self.data_files[fd][0].write(buf)
         self.wr_s32(n)
         # self.log_cmd(f"write {fd} {len(buf)} -> {n}")
@@ -939,6 +1026,7 @@ class PyboardCommand:
         fs_hook_cmds["CMD_OPEN"]: do_open,
         fs_hook_cmds["CMD_CLOSE"]: do_close,
         fs_hook_cmds["CMD_READ"]: do_read,
+        fs_hook_cmds["CMD_READLINE"]: do_readline,
         fs_hook_cmds["CMD_WRITE"]: do_write,
         fs_hook_cmds["CMD_SEEK"]: do_seek,
         fs_hook_cmds["CMD_REMOVE"]: do_remove,

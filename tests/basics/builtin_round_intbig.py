@@ -1,4 +1,5 @@
 # test round() with large integer values and second arg
+# requires: int-big
 
 # rounding integers is an optional feature so test for it
 try:

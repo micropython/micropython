@@ -1,5 +1,6 @@
 # Test fairness of cancelling a task
 # That tasks which keeps being cancelled by multiple other tasks gets a chance to run
+# requires: async
 
 try:
     import asyncio

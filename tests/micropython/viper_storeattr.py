@@ -1,4 +1,5 @@
 # test storing an attribute with a value of different viper types
+# requires: viper
 
 
 class X:

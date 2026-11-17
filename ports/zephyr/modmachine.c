@@ -44,6 +44,7 @@
     MICROPY_PY_MACHINE_RESET_ENTRY \
     { MP_ROM_QSTR(MP_QSTR_reset_cause), MP_ROM_PTR(&machine_reset_cause_obj) }, \
     { MP_ROM_QSTR(MP_QSTR_Pin), MP_ROM_PTR(&machine_pin_type) }, \
+    { MP_ROM_QSTR(MP_QSTR_Timer), MP_ROM_PTR(&machine_timer_type) }, \
 
 static mp_obj_t machine_reset(void) {
     sys_reboot(SYS_REBOOT_COLD);

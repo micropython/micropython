@@ -28,6 +28,9 @@
 
 #include "py/obj.h"
 
+// type check is done on getiter method to allow tuple, namedtuple, attrtuple
+#define mp_obj_is_tuple_compatible(o) (MP_OBJ_TYPE_GET_SLOT_OR_NULL(mp_obj_get_type(o), iter) == mp_obj_tuple_getiter)
+
 typedef struct _mp_obj_tuple_t {
     mp_obj_base_t base;
     size_t len;
@@ -46,11 +49,18 @@ mp_obj_t mp_obj_tuple_binary_op(mp_binary_op_t op, mp_obj_t lhs, mp_obj_t rhs);
 mp_obj_t mp_obj_tuple_subscr(mp_obj_t base, mp_obj_t index, mp_obj_t value);
 mp_obj_t mp_obj_tuple_getiter(mp_obj_t o_in, mp_obj_iter_buf_t *iter_buf);
 
+static inline void mp_obj_tuple_get(mp_obj_t self_in, size_t *len, mp_obj_t **items) {
+    assert(mp_obj_is_tuple_compatible(self_in));
+    mp_obj_tuple_t *self = (mp_obj_tuple_t *)MP_OBJ_TO_PTR(self_in);
+    *len = self->len;
+    *items = &self->items[0];
+}
+
 extern const mp_obj_type_t mp_type_attrtuple;
 
 #define MP_DEFINE_ATTRTUPLE(tuple_obj_name, fields, nitems, ...) \
     const mp_rom_obj_tuple_t tuple_obj_name = { \
-        .base = {&mp_type_attrtuple}, \
+        .base = {.type = &mp_type_attrtuple}, \
         .len = nitems, \
         .items = { __VA_ARGS__, MP_ROM_PTR((void *)fields) } \
     }

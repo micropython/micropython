@@ -28,50 +28,14 @@
 #include "py/mphal.h"
 #include "py/mperrno.h"
 #include "extmod/modmachine.h"
+#include "machine_i2c.h"
 
 #include "hardware/i2c.h"
 
+#if MICROPY_PY_MACHINE_I2C
+
 #define DEFAULT_I2C_FREQ (400000)
 #define DEFAULT_I2C_TIMEOUT (50000)
-
-#ifdef MICROPY_HW_I2C_NO_DEFAULT_PINS
-
-// With no default I2C, need to require the pin args.
-#define MICROPY_HW_I2C0_SCL (0)
-#define MICROPY_HW_I2C0_SDA (0)
-#define MICROPY_HW_I2C1_SCL (0)
-#define MICROPY_HW_I2C1_SDA (0)
-#define MICROPY_I2C_PINS_ARG_OPTS MP_ARG_REQUIRED
-
-#else
-
-// Most boards do not require pin args.
-#define MICROPY_I2C_PINS_ARG_OPTS 0
-
-#ifndef MICROPY_HW_I2C0_SCL
-#if PICO_DEFAULT_I2C == 0
-#define MICROPY_HW_I2C0_SCL (PICO_DEFAULT_I2C_SCL_PIN)
-#define MICROPY_HW_I2C0_SDA (PICO_DEFAULT_I2C_SDA_PIN)
-#else
-#define MICROPY_HW_I2C0_SCL (9)
-#define MICROPY_HW_I2C0_SDA (8)
-#endif
-#endif
-
-#ifndef MICROPY_HW_I2C1_SCL
-#if PICO_DEFAULT_I2C == 1
-#define MICROPY_HW_I2C1_SCL (PICO_DEFAULT_I2C_SCL_PIN)
-#define MICROPY_HW_I2C1_SDA (PICO_DEFAULT_I2C_SDA_PIN)
-#else
-#define MICROPY_HW_I2C1_SCL (7)
-#define MICROPY_HW_I2C1_SDA (6)
-#endif
-#endif
-#endif
-
-// SDA/SCL on even/odd pins, I2C0/I2C1 on even/odd pairs of pins.
-#define IS_VALID_SCL(i2c, pin) (((pin) & 1) == 1 && (((pin) & 2) >> 1) == (i2c))
-#define IS_VALID_SDA(i2c, pin) (((pin) & 1) == 0 && (((pin) & 2) >> 1) == (i2c))
 
 typedef struct _machine_i2c_obj_t {
     mp_obj_base_t base;
@@ -97,7 +61,11 @@ static void machine_i2c_print(const mp_print_t *print, mp_obj_t self_in, mp_prin
 mp_obj_t machine_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_id, ARG_freq, ARG_scl, ARG_sda, ARG_timeout };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_id, MP_ARG_REQUIRED | MP_ARG_OBJ },
+        #ifdef PICO_DEFAULT_I2C
+        { MP_QSTR_id, MP_ARG_INT, {.u_int = PICO_DEFAULT_I2C} },
+        #else
+        { MP_QSTR_id, MP_ARG_INT | MP_ARG_REQUIRED },
+        #endif
         { MP_QSTR_freq, MP_ARG_INT, {.u_int = DEFAULT_I2C_FREQ} },
         { MP_QSTR_scl, MICROPY_I2C_PINS_ARG_OPTS | MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
         { MP_QSTR_sda, MICROPY_I2C_PINS_ARG_OPTS | MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
@@ -108,8 +76,9 @@ mp_obj_t machine_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    // Get I2C bus.
-    int i2c_id = mp_obj_get_int(args[ARG_id].u_obj);
+    int i2c_id = args[ARG_id].u_int;
+
+    // Check if the I2C bus is valid
     if (i2c_id < 0 || i2c_id >= MP_ARRAY_SIZE(machine_i2c_obj)) {
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("I2C(%d) doesn't exist"), i2c_id);
     }
@@ -203,3 +172,5 @@ MP_DEFINE_CONST_OBJ_TYPE(
     protocol, &machine_i2c_p,
     locals_dict, &mp_machine_i2c_locals_dict
     );
+
+#endif // MICROPY_PY_MACHINE_I2C

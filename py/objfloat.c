@@ -34,6 +34,11 @@
 
 #if MICROPY_PY_BUILTINS_FLOAT
 
+// Workaround a bug in Windows SDK version 10.0.26100.0, where NAN is no longer constant.
+#if defined(_MSC_VER) && !defined(_UCRT_NOISY_NAN)
+#define _UCRT_NOISY_NAN
+#endif
+
 #include <math.h>
 #include "py/formatfloat.h"
 
@@ -105,23 +110,7 @@ mp_int_t mp_float_hash(mp_float_t src) {
 static void float_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind) {
     (void)kind;
     mp_float_t o_val = mp_obj_float_get(o_in);
-    #if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
-    char buf[16];
-    #if MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_C
-    const int precision = 6;
-    #else
-    const int precision = 7;
-    #endif
-    #else
-    char buf[32];
-    const int precision = 16;
-    #endif
-    mp_format_float(o_val, buf, sizeof(buf), 'g', precision, '\0');
-    mp_print_str(print, buf);
-    if (strchr(buf, '.') == NULL && strchr(buf, 'e') == NULL && strchr(buf, 'n') == NULL) {
-        // Python floats always have decimal point (unless inf or nan)
-        mp_print_str(print, ".0");
-    }
+    mp_print_float(print, o_val, 'g', PF_FLAG_ALWAYS_DECIMAL, '\0', -1, MP_FLOAT_REPR_PREC);
 }
 
 static mp_obj_t float_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
@@ -310,6 +299,10 @@ mp_obj_t mp_obj_float_binary_op(mp_binary_op_t op, mp_float_t lhs_val, mp_obj_t 
             #if MICROPY_PY_MATH_POW_FIX_NAN // Also see modmath.c.
             if (lhs_val == MICROPY_FLOAT_CONST(1.0) || rhs_val == MICROPY_FLOAT_CONST(0.0)) {
                 lhs_val = MICROPY_FLOAT_CONST(1.0);
+                break;
+            }
+            if (isnan(rhs_val)) {
+                lhs_val = rhs_val;
                 break;
             }
             #endif

@@ -7,13 +7,12 @@
 # This is somewhat like frozen modules in python, but allows arbitrary files
 # to be used.
 
-from __future__ import print_function
-
 import argparse
 import os
+import pathlib
+import shutil
 import subprocess
 import sys
-import types
 
 
 def create_zip(zip_filename, zip_dir):
@@ -28,7 +27,7 @@ def create_zip(zip_filename, zip_dir):
 
 def create_c_from_file(c_filename, zip_filename):
     with open(zip_filename, "rb") as zip_file:
-        with open(c_filename, "wb") as c_file:
+        with open(c_filename, "wt") as c_file:
             print("#include <stdint.h>", file=c_file)
             print("", file=c_file)
             print("const uint8_t memzip_data[] = {", file=c_file)
@@ -38,10 +37,7 @@ def create_c_from_file(c_filename, zip_filename):
                     break
                 print("   ", end="", file=c_file)
                 for byte in buf:
-                    if isinstance(byte, types.StringType):
-                        print(" 0x{:02x},".format(ord(byte)), end="", file=c_file)
-                    else:
-                        print(" 0x{:02x},".format(byte), end="", file=c_file)
+                    print(" 0x{:02x},".format(byte), end="", file=c_file)
                 print("", file=c_file)
             print("};", file=c_file)
 
@@ -69,9 +65,19 @@ def main():
     parser.add_argument(dest="source_dir", default="memzip_files")
     args = parser.parse_args(sys.argv[1:])
 
+    output_zip = pathlib.Path(args.zip_filename)
+    if output_zip.suffix != ".zip":
+        args.zip_filename = output_zip.with_suffix(".zip")
+    output_c = pathlib.Path(args.c_filename)
+    if output_c.suffix != ".c":
+        args.c_filename = output_c.with_suffix(".c")
+
     print("args.zip_filename =", args.zip_filename)
     print("args.c_filename =", args.c_filename)
     print("args.source_dir =", args.source_dir)
+
+    if not shutil.which("zip"):
+        raise FileNotFoundError("zip archiver not available")
 
     create_zip(args.zip_filename, args.source_dir)
     create_c_from_file(args.c_filename, args.zip_filename)

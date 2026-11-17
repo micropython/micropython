@@ -28,19 +28,37 @@
 
 #include "py/obj.h"
 
+// Fixed JsProxy references.
+#define MP_OBJ_JSPROXY_REF_GLOBAL_THIS (0)
+#define MP_OBJ_JSPROXY_REF_UNDEFINED (1)
+
 // proxy value number of items
 #define PVN (3)
 
 typedef struct _mp_obj_jsproxy_t {
     mp_obj_base_t base;
     int ref;
+    bool bind_to_self;
 } mp_obj_jsproxy_t;
 
 extern const mp_obj_type_t mp_type_jsproxy;
 extern const mp_obj_type_t mp_type_JsException;
 
 void external_call_depth_inc(void);
-void external_call_depth_dec(void);
+void external_call_depth_dec(mp_obj_t root_obj);
+
+#if MICROPY_JSPI
+// JSPI suspension gate, maintained in main.c; see the comment there.
+bool mp_js_can_suspend(void);
+bool mp_js_suspension_active(void);
+void mp_js_suspension_begin(void);
+void mp_js_suspension_end(void);
+bool mp_js_allow_suspend_begin(void);
+void mp_js_allow_suspend_end(bool prev);
+#endif
+
+// Wrap a JsProxy of a JS Error into a raisable JsException instance.
+mp_obj_t mp_obj_jsproxy_make_js_exception(mp_obj_t error);
 
 void proxy_c_init(void);
 mp_obj_t proxy_convert_js_to_mp_obj_cside(uint32_t *value);
@@ -48,7 +66,8 @@ void proxy_convert_mp_to_js_obj_cside(mp_obj_t obj, uint32_t *out);
 void proxy_convert_mp_to_js_exc_cside(void *exc, uint32_t *out);
 
 mp_obj_t mp_obj_new_jsproxy(int ref);
-void mp_obj_jsproxy_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest);
+mp_obj_t mp_obj_get_jsproxy(int ref);
+void mp_obj_jsproxy_global_this_attr(qstr attr, mp_obj_t *dest);
 
 static inline bool mp_obj_is_jsproxy(mp_obj_t o) {
     return mp_obj_get_type(o) == &mp_type_jsproxy;

@@ -53,7 +53,7 @@ void mp_asm_base_start_pass(mp_asm_base_t *as, int pass) {
     } else {
         // allocating executable RAM is platform specific
         MP_PLAT_ALLOC_EXEC(as->code_offset, (void **)&as->code_base, &as->code_size);
-        assert(as->code_base != NULL);
+        assert(as->code_size == 0 || as->code_base != NULL);
     }
     as->pass = pass;
     as->suppress = false;
@@ -102,7 +102,7 @@ void mp_asm_base_label_assign(mp_asm_base_t *as, size_t label) {
 
 // align must be a multiple of 2
 void mp_asm_base_align(mp_asm_base_t *as, unsigned int align) {
-    as->code_offset = (as->code_offset + align - 1) & (~(align - 1));
+    as->code_offset = (as->code_offset + align - 1) & (~(size_t)(align - 1));
 }
 
 // this function assumes a little endian machine

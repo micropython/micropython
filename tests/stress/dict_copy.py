@@ -1,6 +1,11 @@
 # copying a large dictionary
 
-a = {i: 2 * i for i in range(1000)}
+try:
+    a = {i: 2 * i for i in range(1000)}
+except MemoryError:
+    print("SKIP")
+    raise SystemExit
+
 b = a.copy()
 for i in range(1000):
     print(i, b[i])

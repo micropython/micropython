@@ -1,0 +1,11 @@
+# Extra ESP-IDF config for Quad mode PSRAM (SPIRAM) support on ESP32-C5, ESP32-S2 & ESP32-S3
+CONFIG_SPIRAM_MODE_QUAD=y
+CONFIG_SPIRAM_SPEED_80M=y
+CONFIG_SPIRAM=y
+CONFIG_SPIRAM_BOOT_INIT=y
+CONFIG_SPIRAM_IGNORE_NOTFOUND=y
+CONFIG_SPIRAM_USE_MALLOC=y
+
+# This is the threshold for preferring small allocations from internal memory
+# first, before failing over to PSRAM.
+CONFIG_SPIRAM_MALLOC_ALWAYSINTERNAL=8192

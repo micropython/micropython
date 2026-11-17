@@ -1,5 +1,5 @@
 MicroPython \.\+ version
-Use \.\+
+Type "help()" for more information.
 >>> # basic REPL tests
 >>> print(1)
 1
@@ -7,4 +7,4 @@ Use \.\+
 1
 >>> 2
 2
->>> 
+>>> \$

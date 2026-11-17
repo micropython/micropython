@@ -9,6 +9,13 @@
 #include "fsl_clock.h"
 #include "flexspi_hyper_flash.h"
 
+void flexspi_update_lut_clk(uint32_t freq_index) {
+    // This should be performed by the boot ROM but for some reason it is not.
+    FLEXSPI_UpdateLUT(BOARD_FLEX_SPI, 0,
+        qspiflash_config.memConfig.lookupTable,
+        ARRAY_SIZE(qspiflash_config.memConfig.lookupTable));
+}
+
 // Copy of a few (pseudo-)functions from fsl_clock.h, which were nor reliably
 // inlined when they should be. That caused DEBUG mode to fail.
 // It does not increase the code size, since they were supposed to be inline.

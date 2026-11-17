@@ -1,5 +1,6 @@
 # Test machine.UART.IRQ_TXIDLE firing after a transmission.
 # Does not require any external connections.
+# requires: target-wiring
 
 try:
     from machine import UART
@@ -10,29 +11,7 @@ except (ImportError, AttributeError):
     raise SystemExit
 
 import time, sys
-
-# Configure pins based on the target.
-if "rp2" in sys.platform:
-    uart_id = 0
-    tx_pin = "GPIO0"
-    rx_pin = "GPIO1"
-elif "samd" in sys.platform and "ItsyBitsy M0" in sys.implementation._machine:
-    uart_id = 0
-    tx_pin = "D1"
-    rx_pin = "D0"
-elif "samd" in sys.platform and "ItsyBitsy M4" in sys.implementation._machine:
-    uart_id = 3
-    tx_pin = "D1"
-    rx_pin = "D0"
-elif "mimxrt" in sys.platform:
-    uart_id = 1
-    tx_pin = None
-elif "nrf" in sys.platform:
-    uart_id = 0
-    tx_pin = None
-else:
-    print("Please add support for this test on this platform.")
-    raise SystemExit
+from target_wiring import uart_loopback_args, uart_loopback_kwargs
 
 
 def irq(u):
@@ -41,24 +20,25 @@ def irq(u):
 
 text = "Hello World" * 20
 
+char_margin = 10  # number of characters to wait before and after the expected IRQ firing
+
+if "psoc-edge" in sys.platform:
+    char_margin = 100
+
 # Test that the IRQ is called after the write has completed.
 for bits_per_s in (2400, 9600, 115200):
-    if tx_pin is None:
-        uart = UART(uart_id, bits_per_s)
-    else:
-        uart = UART(uart_id, bits_per_s, tx=tx_pin, rx=rx_pin)
-
+    uart = UART(*uart_loopback_args, baudrate=bits_per_s, **uart_loopback_kwargs)
     uart.irq(irq, uart.IRQ_TXIDLE)
 
     # The IRQ_TXIDLE shall trigger after the message has been sent. Thus
     # the test marks a time window close to the expected of the sending
     # and the time at which the IRQ should have been fired.
-    # It is just a rough estimation of 10 characters before and
-    # 20 characters after the data's end.
+    # It is just a rough estimation of 'char_margin' characters before and
+    # '2 x char_margin' characters after the data's end.
 
     bits_per_char = 10  # 1(startbit) + 8(bits) + 1(stopbit) + 0(parity)
-    start_time_us = (len(text) - 10) * bits_per_char * 1_000_000 // bits_per_s
-    window_ms = 20 * bits_per_char * 1_000 // bits_per_s + 1
+    start_time_us = (len(text) - char_margin) * bits_per_char * 1_000_000 // bits_per_s
+    window_ms = (2 * char_margin) * bits_per_char * 1_000 // bits_per_s + 1
 
     print("write", bits_per_s)
     uart.write(text)

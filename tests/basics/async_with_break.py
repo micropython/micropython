@@ -1,4 +1,5 @@
 # test async with, escaped by a break
+# requires: async
 
 class AContext:
     async def __aenter__(self):

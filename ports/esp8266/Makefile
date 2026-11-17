@@ -45,6 +45,7 @@ QSTR_DEFS = qstrdefsport.h #$(BUILD)/pins_qstr.h
 QSTR_GLOBAL_DEPENDENCIES = $(BOARD_DIR)/mpconfigboard.h
 
 # MicroPython feature configurations
+MICROPY_USE_COMPILER_PLUGIN ?= none
 MICROPY_ROM_TEXT_COMPRESSION ?= 1
 MICROPY_PY_SSL = 1
 MICROPY_SSL_AXTLS = 1
@@ -82,7 +83,7 @@ CFLAGS_XTENSA = -fsingle-precision-constant -Wdouble-promotion \
 	-Wl,-EL -mlongcalls -mtext-section-literals -mforce-l32 \
 	-DLWIP_OPEN_SRC
 
-CFLAGS += $(INC) -Wall -Wpointer-arith -Werror -std=gnu99 -nostdlib -DUART_OS=$(UART_OS) \
+CFLAGS += $(INC) -Wall -Wpointer-arith -Werror -std=gnu99 -DUART_OS=$(UART_OS) \
 	$(CFLAGS_XTENSA) $(COPT) $(CFLAGS_EXTRA) -I$(BOARD_DIR)
 
 LD_FILES ?= boards/esp8266_2m.ld
@@ -106,9 +107,6 @@ CFLAGS += -fdata-sections -ffunction-sections
 COPT += -Os -DNDEBUG
 LDFLAGS += --gc-sections
 endif
-
-# Flags for optional C++ source code
-CXXFLAGS += $(filter-out -Wmissing-prototypes -Wold-style-definition -std=gnu99,$(CFLAGS))
 
 # Options for mpy-cross
 MPY_CROSS_FLAGS += -march=xtensa
@@ -134,6 +132,7 @@ SRC_C = \
 	fatfs_port.c \
 	posix_helpers.c \
 	hspi.c \
+	vfs_rom_ioctl.c \
 	$(wildcard $(BOARD_DIR)/*.c) \
 
 ifeq ($(MICROPY_PY_ESPNOW),1)
@@ -185,6 +184,11 @@ else ifneq ($(shell cat $(CONFVARS_FILE)), $(FROZEN_MANIFEST) $(UART_OS))
 $(shell echo $(FROZEN_MANIFEST) $(UART_OS) > $(CONFVARS_FILE))
 endif
 
+ESPTOOL := $(shell command -v esptool 2> /dev/null)
+ifndef ESPTOOL
+ESPTOOL = esptool.py
+endif
+
 $(BUILD)/uart.o: $(CONFVARS_FILE)
 
 FROZEN_EXTRA_DEPS = $(CONFVARS_FILE)
@@ -193,29 +197,19 @@ FROZEN_EXTRA_DEPS = $(CONFVARS_FILE)
 
 deploy: $(FWBIN)
 	$(ECHO) "Writing $< to the board"
-	$(Q)esptool.py --port $(PORT) --baud $(BAUD) write_flash --verify --flash_size=$(FLASH_SIZE) --flash_mode=$(FLASH_MODE) 0 $<
+	$(Q)$(ESPTOOL) --chip esp8266 --port $(PORT) --baud $(BAUD) write_flash --flash_size=$(FLASH_SIZE) --flash_mode=$(FLASH_MODE) 0 $<
 
 erase:
 	$(ECHO) "Erase flash"
-	$(Q)esptool.py --port $(PORT) --baud $(BAUD) erase_flash
+	$(Q)$(ESPTOOL) --chip esp8266 --port $(PORT) --baud $(BAUD) erase_flash
 
 reset:
 	echo -e "\r\nimport machine; machine.reset()\r\n" >$(PORT)
 
-ifeq ($(BOARD_VARIANT),OTA)
 $(FWBIN): $(BUILD)/firmware.elf
 	$(ECHO) "Create $@"
-	$(Q)esptool.py elf2image $^
-	$(Q)$(PYTHON) makeimg.py $(BUILD)/firmware.elf-0x00000.bin $(BUILD)/firmware.elf-0x[0-5][1-f]000.bin $(BUILD)/firmware-ota.bin
-
-	$(Q)cat $(YAOTA8266)/yaota8266.bin $(BUILD)/firmware-ota.bin > $@
-	$(Q)$(PYTHON) $(YAOTA8266)/ota-client/ota_client.py sign $@
-else
-$(FWBIN): $(BUILD)/firmware.elf
-	$(ECHO) "Create $@"
-	$(Q)esptool.py elf2image $^
+	$(Q)$(ESPTOOL) --chip esp8266 elf2image $^
 	$(Q)$(PYTHON) makeimg.py $(BUILD)/firmware.elf-0x00000.bin $(BUILD)/firmware.elf-0x[0-5][1-f]000.bin $@
-endif
 
 $(BUILD)/firmware.elf: $(OBJ)
 	$(ECHO) "LINK $@"

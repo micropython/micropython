@@ -28,23 +28,11 @@
 #include "shared/timeutils/timeutils.h"
 #include "pico/aon_timer.h"
 
-// Return the localtime as an 8-tuple.
-static mp_obj_t mp_time_localtime_get(void) {
+// Get the localtime.
+static void mp_time_localtime_get(timeutils_struct_time_t *tm) {
     struct timespec ts;
     aon_timer_get_time(&ts);
-    timeutils_struct_time_t tm;
-    timeutils_seconds_since_epoch_to_struct_time(ts.tv_sec, &tm);
-    mp_obj_t tuple[8] = {
-        mp_obj_new_int(tm.tm_year),
-        mp_obj_new_int(tm.tm_mon),
-        mp_obj_new_int(tm.tm_mday),
-        mp_obj_new_int(tm.tm_hour),
-        mp_obj_new_int(tm.tm_min),
-        mp_obj_new_int(tm.tm_sec),
-        mp_obj_new_int(tm.tm_wday),
-        mp_obj_new_int(tm.tm_yday),
-    };
-    return mp_obj_new_tuple(8, tuple);
+    timeutils_seconds_since_epoch_to_struct_time(ts.tv_sec, tm);
 }
 
 // Return the number of seconds since the Epoch.

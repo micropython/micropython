@@ -1,3 +1,5 @@
+# requires: slice
+
 try:
     import btree
     import io

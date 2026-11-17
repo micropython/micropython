@@ -56,7 +56,7 @@ __asm(
     #endif
     );
 
-NORETURN void nlr_jump(void *val) {
+MP_NORETURN void nlr_jump(void *val) {
     MP_NLR_JUMP_HEAD(val, top)
 
     MP_STATIC_ASSERT(offsetof(nlr_buf_t, regs) == 16); // asm assumes it
@@ -78,7 +78,7 @@ NORETURN void nlr_jump(void *val) {
         : "memory"
         );
 
-    MP_UNREACHABLE
+    MP_UNREACHABLE;
 }
 
 #endif // MICROPY_NLR_AARCH64

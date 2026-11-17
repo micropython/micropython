@@ -28,23 +28,47 @@
 
 #include "py/compile.h"
 #include "py/runtime.h"
-#include "py/stackctrl.h"
 #include "py/gc.h"
 #include "py/mperrno.h"
+#include "extmod/modmachine.h"
+#include "extmod/modnetwork.h"
 #include "shared/runtime/gchelper.h"
 #include "shared/runtime/pyexec.h"
 
-#define HEAP_SIZE (100 * 1024)
+#if MICROPY_PY_LWIP
+#include "lwip/init.h"
+#include "lwip/apps/mdns.h"
+#endif
 
-static uint32_t gc_heap[HEAP_SIZE / sizeof(uint32_t)];
+#if MICROPY_HEAP_SIZE <= 0
+#error MICROPY_HEAP_SIZE must be a positive integer.
+#endif
+
+#if MICROPY_STACK_SIZE <= 0
+#error MICROPY_STACK_SIZE must be a positive integer.
+#endif
+
+static uint32_t gc_heap[MICROPY_HEAP_SIZE / sizeof(uint32_t)];
 
 int main(int argc, char **argv) {
-    mp_stack_ctrl_init();
-    mp_stack_set_limit(10240);
-    gc_init(gc_heap, (char *)gc_heap + HEAP_SIZE);
+    mp_cstack_init_with_sp_here(MICROPY_STACK_SIZE);
+    gc_init(gc_heap, (char *)gc_heap + MICROPY_HEAP_SIZE);
+
+    #if MICROPY_PY_LWIP
+    // lwIP can't be reinitialized due to BSS system timeout list.
+    lwip_init();
+    #if LWIP_MDNS_RESPONDER
+    mdns_resp_init();
+    #endif
+    mod_network_lwip_init();
+    #endif
 
     for (;;) {
         mp_init();
+
+        #if MICROPY_PY_NETWORK
+        mod_network_init();
+        #endif
 
         for (;;) {
             if (pyexec_mode_kind == PYEXEC_MODE_RAW_REPL) {
@@ -60,6 +84,10 @@ int main(int argc, char **argv) {
 
         mp_printf(&mp_plat_print, "MPY: soft reboot\n");
 
+        #if MICROPY_PY_NETWORK
+        mod_network_deinit();
+        #endif
+
         gc_sweep_all();
         mp_deinit();
     }
@@ -69,10 +97,6 @@ void gc_collect(void) {
     gc_collect_start();
     gc_helper_collect_regs_and_stack();
     gc_collect_end();
-}
-
-mp_lexer_t *mp_lexer_new_from_file(qstr filename) {
-    mp_raise_OSError(MP_ENOENT);
 }
 
 void nlr_jump_fail(void *val) {

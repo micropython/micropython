@@ -82,3 +82,4 @@ Examples:
     mpremote mip install aioble
     mpremote mip install github:org/repo@branch
     mpremote mip install gitlab:org/repo@branch
+    mpremote mip install codeberg:org/repo@branch

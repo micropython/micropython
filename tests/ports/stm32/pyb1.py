@@ -2,6 +2,10 @@
 
 import pyb
 
+if not hasattr(pyb, "delay"):
+    print("SKIP")
+    raise SystemExit
+
 # test delay
 
 pyb.delay(-1)
@@ -27,7 +31,10 @@ print((pyb.millis() - start) // 5)  # should print 3
 pyb.disable_irq()
 pyb.enable_irq()
 
-print(pyb.have_cdc())
+if hasattr(pyb, "have_cdc"):
+    print(pyb.have_cdc())
+else:
+    print(True)
 
 pyb.sync()
 

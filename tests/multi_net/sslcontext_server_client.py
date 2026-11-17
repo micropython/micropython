@@ -8,20 +8,20 @@ except ImportError:
     print("SKIP")
     raise SystemExit
 
+if not hasattr(ssl, "CERT_REQUIRED"):
+    print("SKIP")
+    raise SystemExit
+
 PORT = 8000
 
 # These are test certificates. See tests/README.md for details.
 certfile = "ec_cert.der"
 keyfile = "ec_key.der"
 
-try:
-    with open(certfile, "rb") as cf:
-        cert = cadata = cf.read()
-    with open(keyfile, "rb") as kf:
-        key = kf.read()
-except OSError:
-    print("SKIP")
-    raise SystemExit
+with open(certfile, "rb") as cf:
+    cert = cadata = cf.read()
+with open(keyfile, "rb") as kf:
+    key = kf.read()
 
 
 # Server

@@ -38,7 +38,9 @@
 #include "nvs_flash.h"
 #include "esp_task.h"
 #include "esp_event.h"
+#include "esp_flash.h"
 #include "esp_log.h"
+#include "esp_memory_utils.h"
 #include "esp_psram.h"
 
 #include "py/cstack.h"
@@ -49,6 +51,7 @@
 #include "py/repl.h"
 #include "py/gc.h"
 #include "py/mphal.h"
+#include "extmod/modmachine.h"
 #include "shared/readline/readline.h"
 #include "shared/runtime/pyexec.h"
 #include "shared/timeutils/timeutils.h"
@@ -58,8 +61,12 @@
 #include "uart.h"
 #include "usb.h"
 #include "usb_serial_jtag.h"
+#include "modesp32.h"
 #include "modmachine.h"
 #include "modnetwork.h"
+#if MICROPY_PY_NETWORK_WLAN_CSI
+#include "network_wlan_csi.h"
+#endif
 
 #if MICROPY_BLUETOOTH_NIMBLE
 #include "extmod/modbluetooth.h"
@@ -86,7 +93,8 @@ int vprintf_null(const char *format, va_list ap) {
     return 0;
 }
 
-time_t platform_mbedtls_time(time_t *timer) {
+#if MICROPY_SSL_MBEDTLS
+static time_t platform_mbedtls_time(time_t *timer) {
     // mbedtls_time requires time in seconds from EPOCH 1970
 
     struct timeval tv;
@@ -94,6 +102,7 @@ time_t platform_mbedtls_time(time_t *timer) {
 
     return tv.tv_sec + TIMEUTILS_SECONDS_1970_TO_2000;
 }
+#endif
 
 void mp_task(void *pvParameter) {
     volatile uint32_t sp = (uint32_t)esp_cpu_get_sp();
@@ -102,16 +111,19 @@ void mp_task(void *pvParameter) {
     #endif
     #if MICROPY_HW_ESP_USB_SERIAL_JTAG
     usb_serial_jtag_init();
-    #elif MICROPY_HW_ENABLE_USBDEV
-    usb_init();
+    #endif
+    #if MICROPY_HW_ENABLE_USBDEV
+    usb_phy_init();
     #endif
     #if MICROPY_HW_ENABLE_UART_REPL
     uart_stdout_init();
     #endif
     machine_init();
 
+    #if MICROPY_SSL_MBEDTLS
     // Configure time function, for mbedtls certificate time validation.
     mbedtls_platform_set_time(platform_mbedtls_time);
+    #endif
 
     esp_err_t err = esp_event_loop_create_default();
     if (err != ESP_OK) {
@@ -138,9 +150,17 @@ soft_reset:
     machine_i2s_init0();
     #endif
 
-    // run boot-up scripts
-    pyexec_frozen_module("_boot.py", false);
+    // Run optional frozen boot code.
+    #ifdef MICROPY_BOARD_FROZEN_BOOT_FILE
+    pyexec_frozen_module(MICROPY_BOARD_FROZEN_BOOT_FILE, false);
+    #endif
+
     int ret = pyexec_file_if_exists("boot.py");
+
+    #if MICROPY_HW_ENABLE_USBDEV
+    mp_usbd_init();
+    #endif
+
     if (ret & PYEXEC_FORCED_EXIT) {
         goto soft_reset_exit;
     }
@@ -176,10 +196,24 @@ soft_reset_exit:
     MP_STATE_PORT(espnow_singleton) = NULL;
     #endif
 
-    machine_timer_deinit_all();
+    #if MICROPY_PY_NETWORK_WLAN_CSI
+    wifi_csi_deinit();
+    #endif
+
+    #if MICROPY_PY_MACHINE_UART
+    machine_uart_deinit_all();
+    #endif
+
+    #if MICROPY_PY_ESP32_PCNT
+    esp32_pcnt_deinit_all();
+    #endif
 
     #if MICROPY_PY_THREAD
     mp_thread_deinit();
+    #endif
+
+    #if MICROPY_HW_ENABLE_USBDEV
+    mp_usbd_deinit();
     #endif
 
     gc_sweep_all();
@@ -190,16 +224,26 @@ soft_reset_exit:
     mp_hal_stdout_tx_str("MPY: soft reboot\r\n");
 
     // deinitialise peripherals
+    #if MICROPY_PY_MACHINE_PWM
     machine_pwm_deinit_all();
+    #endif
     // TODO: machine_rmt_deinit_all();
     machine_pins_deinit();
+    #if MICROPY_PY_MACHINE_I2C_TARGET
+    mp_machine_i2c_target_deinit_all();
+    #endif
+    #if SOC_GP_LDO_SUPPORTED
+    esp32_ldo_deinit_all();
+    #endif
     machine_deinit();
+
     #if MICROPY_PY_SOCKET_EVENTS
     socket_events_deinit();
     #endif
 
     mp_deinit();
     fflush(stdout);
+
     goto soft_reset;
 }
 
@@ -209,18 +253,45 @@ void boardctrl_startup(void) {
         nvs_flash_erase();
         nvs_flash_init();
     }
+
+    // Query the physical size of the SPI flash and store it in the size
+    // variable of the global, default SPI flash handle.
+    esp_flash_get_physical_size(NULL, &esp_flash_default_chip->size);
+
+    // If there is no filesystem partition (no "vfs" or "ffat"), add a "vfs" partition
+    // that extends from the end of the application partition up to the end of flash.
+    if (esp_partition_find_first(ESP_PARTITION_TYPE_DATA, ESP_PARTITION_SUBTYPE_ANY, "vfs") == NULL
+        && esp_partition_find_first(ESP_PARTITION_TYPE_DATA, ESP_PARTITION_SUBTYPE_ANY, "ffat") == NULL) {
+        // No "vfs" or "ffat" partition, so try to create one.
+
+        // Find the end of the last partition that exists in the partition table.
+        size_t offset = 0;
+        esp_partition_iterator_t iter = esp_partition_find(ESP_PARTITION_TYPE_ANY, ESP_PARTITION_SUBTYPE_ANY, NULL);
+        while (iter != NULL) {
+            const esp_partition_t *part = esp_partition_get(iter);
+            offset = MAX(offset, part->address + part->size);
+            iter = esp_partition_next(iter);
+        }
+
+        // If we found the application partition and there is some space between the end of
+        // that and the end of flash, create a "vfs" partition taking up all of that space.
+        if (offset > 0 && esp_flash_default_chip->size > offset) {
+            size_t size = esp_flash_default_chip->size - offset;
+            esp_partition_register_external(esp_flash_default_chip, offset, size, "vfs", ESP_PARTITION_TYPE_DATA, ESP_PARTITION_SUBTYPE_DATA_FAT, NULL);
+        }
+    }
 }
 
-void app_main(void) {
+void MICROPY_ESP_IDF_ENTRY(void) {
     // Hook for a board to run code at start up.
-    // This defaults to initialising NVS.
+    // This defaults to initialising NVS and detecting the flash size.
     MICROPY_BOARD_STARTUP();
 
     // Create and transfer control to the MicroPython task.
     xTaskCreatePinnedToCore(mp_task, "mp_task", MICROPY_TASK_STACK_SIZE / sizeof(StackType_t), NULL, MP_TASK_PRIORITY, &mp_main_task_handle, MP_TASK_COREID);
 }
 
-void nlr_jump_fail(void *val) {
+MP_WEAK void nlr_jump_fail(void *val) {
     printf("NLR jump failed, val=%p\n", val);
     esp_restart();
 }
@@ -237,6 +308,13 @@ void *esp_native_code_commit(void *buf, size_t len, void *reloc) {
     len = (len + 3) & ~3;
     size_t len_node = sizeof(native_code_node_t) + len;
     native_code_node_t *node = heap_caps_malloc(len_node, MALLOC_CAP_EXEC);
+    #if CONFIG_IDF_TARGET_ESP32S2
+    // Workaround for ESP-IDF bug https://github.com/espressif/esp-idf/issues/14835
+    if (node != NULL && !esp_ptr_executable(node)) {
+        free(node);
+        node = NULL;
+    }
+    #endif // CONFIG_IDF_TARGET_ESP32S2
     if (node == NULL) {
         m_malloc_fail(len_node);
     }
@@ -248,4 +326,15 @@ void *esp_native_code_commit(void *buf, size_t len, void *reloc) {
     }
     memcpy(p, buf, len);
     return p;
+}
+
+
+// Workaround for https://github.com/espressif/esp-insights/issues/38
+extern int  __real_esp_efuse_rtc_calib_get_ver(void);
+int __wrap_esp_efuse_rtc_calib_get_ver(void) {
+    #if CONFIG_ETH_USE_OPENETH // detect QEMU build
+    return 1;
+    #else
+    return __real_esp_efuse_rtc_calib_get_ver();
+    #endif
 }

@@ -1,6 +1,6 @@
 {
     "deploy": [
-        "../deploy.md"
+        "deploy_xplained_pro.md"
     ],
     "docs": "",
     "features": [

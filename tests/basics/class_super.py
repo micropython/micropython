@@ -1,3 +1,5 @@
+# requires: slice
+
 class Base:
 
     def __init__(self):

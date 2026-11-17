@@ -28,23 +28,27 @@
 #include "py/runtime.h"
 #include "py/gc.h"
 #include "py/mperrno.h"
-#include "py/stackctrl.h"
+#include "py/mphal.h"
+#include "extmod/modmachine.h"
 #include "shared/readline/readline.h"
 #include "shared/runtime/gchelper.h"
 #include "shared/runtime/pyexec.h"
 #include "shared/runtime/softtimer.h"
 #include "shared/tinyusb/mp_usbd.h"
 #include "clock_config.h"
+#include "dma_manager.h"
+#include "tc_manager.h"
 
-extern uint8_t _sstack, _estack, _sheap, _eheap;
+extern uint32_t _sstack, _estack, _sheap, _eheap;
 extern void adc_deinit_all(void);
+extern void dac_deinit_all(void);
 extern void pin_irq_deinit_all(void);
 extern void pwm_deinit_all(void);
 extern void sercom_deinit_all(void);
 
 void samd_main(void) {
-    mp_stack_set_top(&_estack);
-    mp_stack_set_limit(&_estack - &_sstack - 1024);
+    mp_cstack_init_with_top(&_estack, (uint8_t *)&_estack - (uint8_t *)&_sstack);
+    mp_hal_time_ns_set_from_rtc();
 
     for (;;) {
         gc_init(&_sheap, &_eheap);
@@ -87,8 +91,17 @@ void samd_main(void) {
 
     soft_reset_exit:
         mp_printf(MP_PYTHON_PRINTER, "MPY: soft reboot\n");
+        #if MICROPY_HW_DMA_MANAGER
+        dma_deinit();
+        #endif
+        #if MICROPY_HW_TC_MANAGER
+        tc_deinit();
+        #endif
         #if MICROPY_PY_MACHINE_ADC
         adc_deinit_all();
+        #endif
+        #if MICROPY_PY_MACHINE_DAC
+        dac_deinit_all();
         #endif
         pin_irq_deinit_all();
         #if MICROPY_PY_MACHINE_PWM
@@ -99,7 +112,7 @@ void samd_main(void) {
         mp_usbd_deinit();
         #endif
         gc_sweep_all();
-        #if MICROPY_PY_MACHINE_I2C || MICROPY_PY_MACHINE_SPI || MICROPY_PY_MACHINE_UART
+        #if MICROPY_PY_MACHINE_I2C || MICROPY_PY_MACHINE_I2C_TARGET || MICROPY_PY_MACHINE_SPI || MICROPY_PY_MACHINE_UART
         sercom_deinit_all();
         #endif
         mp_deinit();

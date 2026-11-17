@@ -1,0 +1,29 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "BLE",
+        "Dual-core",
+        "External Flash",
+        "USB-C",
+        "WiFi",
+        "External RAM",
+        "microSD",
+        "RGB LED",
+        "JST-SH",
+        "Battery Charging"
+    ],
+    "images": [
+        "27708-IoT-RedBoard-RP2350-Feature.jpg"
+    ],
+    "mcu": "rp2350",
+    "product": "SparkFun IoT RedBoard RP2350",
+    "thumbnail": "",
+    "url": "https://www.sparkfun.com/sparkfun-iot-redboard-rp2350.html",
+    "variants": {
+        "RISCV": "RISC-V CPU mode"
+    },
+    "vendor": "SparkFun"
+}

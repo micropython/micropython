@@ -7,12 +7,13 @@ from micropython import const
 _PROG_DATA = const(0)
 _PROG_OFFSET_PIO0 = const(1)
 _PROG_OFFSET_PIO1 = const(2)
-_PROG_EXECCTRL = const(3)
-_PROG_SHIFTCTRL = const(4)
-_PROG_OUT_PINS = const(5)
-_PROG_SET_PINS = const(6)
-_PROG_SIDESET_PINS = const(7)
-_PROG_MAX_FIELDS = const(8)
+_PROG_OFFSET_PIO2 = const(3)
+_PROG_EXECCTRL = const(4)
+_PROG_SHIFTCTRL = const(5)
+_PROG_OUT_PINS = const(6)
+_PROG_SET_PINS = const(7)
+_PROG_SIDESET_PINS = const(8)
+_PROG_MAX_FIELDS = const(9)
 
 
 class PIOASMError(Exception):
@@ -26,20 +27,21 @@ class PIOASMEmit:
         out_init=None,
         set_init=None,
         sideset_init=None,
-        in_shiftdir=0,
-        out_shiftdir=0,
+        side_pindir=False,
+        in_shiftdir=PIO.SHIFT_LEFT,
+        out_shiftdir=PIO.SHIFT_LEFT,
         autopush=False,
         autopull=False,
         push_thresh=32,
         pull_thresh=32,
-        fifo_join=0,
+        fifo_join=PIO.JOIN_NONE,
     ):
         # array is a built-in module so importing it here won't require
         # scanning the filesystem.
         from array import array
 
         self.labels = {}
-        execctrl = 0
+        execctrl = side_pindir << 29
         shiftctrl = (
             fifo_join << 30
             | (pull_thresh & 0x1F) << 25
@@ -49,7 +51,7 @@ class PIOASMEmit:
             | autopull << 17
             | autopush << 16
         )
-        self.prog = [array("H"), -1, -1, execctrl, shiftctrl, out_init, set_init, sideset_init]
+        self.prog = [array("H"), -1, -1, -1, execctrl, shiftctrl, out_init, set_init, sideset_init]
 
         self.wrap_used = False
 
@@ -214,22 +216,29 @@ _pio_funcs = {
     # "block": see above
     "clear": 0x40,
     "rel": lambda x: x | 0x10,
-    # functions
-    "wrap_target": None,
-    "wrap": None,
-    "label": None,
-    "word": None,
-    "nop": None,
-    "jmp": None,
-    "wait": None,
-    "in_": None,
-    "out": None,
-    "push": None,
-    "pull": None,
-    "mov": None,
-    "irq": None,
-    "set": None,
 }
+
+
+_pio_directives = (
+    "wrap_target",
+    "wrap",
+    "label",
+)
+
+
+_pio_instructions = (
+    "word",
+    "nop",
+    "jmp",
+    "wait",
+    "in_",
+    "out",
+    "push",
+    "pull",
+    "mov",
+    "irq",
+    "set",
+)
 
 
 def asm_pio(**kw):
@@ -238,34 +247,25 @@ def asm_pio(**kw):
     def dec(f):
         nonlocal emit
 
-        gl = _pio_funcs
-        gl["wrap_target"] = emit.wrap_target
-        gl["wrap"] = emit.wrap
-        gl["label"] = emit.label
-        gl["word"] = emit.word
-        gl["nop"] = emit.nop
-        gl["jmp"] = emit.jmp
-        gl["wait"] = emit.wait
-        gl["in_"] = emit.in_
-        gl["out"] = emit.out
-        gl["push"] = emit.push
-        gl["pull"] = emit.pull
-        gl["mov"] = emit.mov
-        gl["irq"] = emit.irq
-        gl["set"] = emit.set
+        gl = f.__globals__
+        old_gl = gl.copy()
+        gl.clear()
 
-        old_gl = f.__globals__.copy()
-        f.__globals__.clear()
-        f.__globals__.update(gl)
+        try:
+            gl.update(_pio_funcs)
+            for name in _pio_directives:
+                gl[name] = getattr(emit, name)
+            for name in _pio_instructions:
+                gl[name] = getattr(emit, name)
 
-        emit.start_pass(0)
-        f()
+            emit.start_pass(0)
+            f()
 
-        emit.start_pass(1)
-        f()
-
-        f.__globals__.clear()
-        f.__globals__.update(old_gl)
+            emit.start_pass(1)
+            f()
+        finally:
+            gl.clear()
+            gl.update(old_gl)
 
         return emit.prog
 
@@ -283,19 +283,15 @@ def asm_pio_encode(instr, sideset_count, sideset_opt=False):
     emit.num_sideset = 0
 
     gl = _pio_funcs
-    gl["word"] = emit.word
-    gl["nop"] = emit.nop
-    # gl["jmp"] = emit.jmp currently not supported
-    gl["wait"] = emit.wait
-    gl["in_"] = emit.in_
-    gl["out"] = emit.out
-    gl["push"] = emit.push
-    gl["pull"] = emit.pull
-    gl["mov"] = emit.mov
-    gl["irq"] = emit.irq
-    gl["set"] = emit.set
+    for name in _pio_instructions:
+        gl[name] = getattr(emit, name)
+    gl["jmp"] = None  # emit.jmp currently not supported
 
-    exec(instr, gl)
+    try:
+        exec(instr, gl)
+    finally:
+        for name in _pio_instructions:
+            del gl[name]
 
     if len(emit.prog[_PROG_DATA]) != 1:
         raise PIOASMError("expecting exactly 1 instruction")

@@ -1,0 +1,5 @@
+main started
+foo waiting
+asyncio still pending, unlocking event
+foo done
+main done

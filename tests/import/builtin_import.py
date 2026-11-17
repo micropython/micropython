@@ -20,3 +20,12 @@ try:
     __import__("xyz", None, None, None, -1)
 except ValueError:
     print("ValueError")
+
+# globals is not checked for level=0
+__import__("builtins", "globals")
+
+# globals must be a dict (or None) for level>0
+try:
+    __import__("builtins", "globals", None, None, 1)
+except TypeError:
+    print("TypeError")

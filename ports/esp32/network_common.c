@@ -45,7 +45,7 @@
 #include "lwip/sockets.h"
 #include "lwip/dns.h"
 
-NORETURN void esp_exceptions_helper(esp_err_t e) {
+MP_NORETURN void esp_exceptions_helper(esp_err_t e) {
     switch (e) {
         case ESP_ERR_WIFI_NOT_INIT:
             mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("Wifi Not Initialized"));
@@ -77,6 +77,8 @@ NORETURN void esp_exceptions_helper(esp_err_t e) {
             mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("Wifi Would Block"));
         case ESP_ERR_WIFI_NOT_CONNECT:
             mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("Wifi Not Connected"));
+        case ESP_ERR_NO_MEM:
+            mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("WiFi Out of Memory"));
         default:
             mp_raise_msg_varg(&mp_type_RuntimeError, MP_ERROR_TEXT("Wifi Unknown Error 0x%04x"), e);
     }
@@ -337,11 +339,3 @@ static mp_obj_t esp_phy_mode(size_t n_args, const mp_obj_t *args) {
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_network_phy_mode_obj, 0, 1, esp_phy_mode);
-
-#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 2, 0)
-_Static_assert(WIFI_AUTH_MAX == 13, "Synchronize WIFI_AUTH_XXX constants with the ESP-IDF. Look at esp-idf/components/esp_wifi/include/esp_wifi_types.h");
-#elif ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 5) && ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(5, 1, 0) || ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 1, 2)
-_Static_assert(WIFI_AUTH_MAX == 11, "Synchronize WIFI_AUTH_XXX constants with the ESP-IDF. Look at esp-idf/components/esp_wifi/include/esp_wifi_types.h");
-#else
-_Static_assert(WIFI_AUTH_MAX == 10, "Synchronize WIFI_AUTH_XXX constants with the ESP-IDF. Look at esp-idf/components/esp_wifi/include/esp_wifi_types.h");
-#endif

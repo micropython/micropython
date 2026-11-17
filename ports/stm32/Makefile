@@ -58,8 +58,9 @@ MBOOT_TEXT0_ADDR ?= 0x08000000
 include $(TOP)/py/py.mk
 include $(TOP)/extmod/extmod.mk
 
-GIT_SUBMODULES += lib/libhydrogen lib/stm32lib
+GIT_SUBMODULES += lib/CMSIS_6 lib/libhydrogen lib/stm32lib lib/tinyusb
 
+CROSS_COMPILE ?= arm-none-eabi-
 LD_DIR=boards
 USBDEV_DIR=usbdev
 #USBHOST_DIR=usbhost
@@ -71,7 +72,7 @@ PYDFU ?= $(TOP)/tools/pydfu.py
 DFU_UTIL ?= dfu-util
 BOOTLOADER_DFU_USB_VID ?= 0x0483
 BOOTLOADER_DFU_USB_PID ?= 0xDF11
-STFLASH ?= st-flash
+STFLASH ?= st-flash --connect-under-reset
 OPENOCD ?= openocd
 OPENOCD_CONFIG ?= boards/openocd_stm32f4.cfg
 
@@ -101,29 +102,39 @@ GEN_STMCONST_HDR = $(HEADER_BUILD)/modstm_const.h
 GEN_STMCONST_MPZ = $(HEADER_BUILD)/modstm_mpz.h
 CMSIS_MCU_HDR = $(STM32LIB_CMSIS_ABS)/Include/$(CMSIS_MCU_LOWER).h
 
-# Select the cross compile prefix
-CROSS_COMPILE ?= arm-none-eabi-
-
 INC += -I.
 INC += -I$(TOP)
 INC += -I$(BUILD)
-INC += -I$(TOP)/lib/cmsis/inc
+INC += -I$(TOP)/lib/CMSIS_6/CMSIS/Core/Include
 INC += -I$(STM32LIB_CMSIS_ABS)/Include
 INC += -I$(STM32LIB_HAL_ABS)/Inc
 INC += -I$(USBDEV_DIR)/core/inc -I$(USBDEV_DIR)/class/inc
 #INC += -I$(USBHOST_DIR)
+INC += -I$(TOP)/lib/tinyusb/src
+INC += -Itinyusb_port
 INC += -Ilwip_inc
 
-CFLAGS += $(INC) -Wall -Wpointer-arith -Werror -Wdouble-promotion -Wfloat-conversion -std=gnu99 -nostdlib $(CFLAGS_EXTRA)
+CFLAGS += $(INC) -Wall -Wpointer-arith -Werror -Wdouble-promotion -Wfloat-conversion -std=gnu99 $(CFLAGS_EXTRA)
 CFLAGS += -D$(CMSIS_MCU) -DUSE_FULL_LL_DRIVER
-CFLAGS += $(CFLAGS_MCU_$(MCU_SERIES))
+CFLAGS += $(CFLAGS_MCU)
 CFLAGS += $(COPT)
 CFLAGS += -I$(BOARD_DIR)
 CFLAGS += -DSTM32_HAL_H='<stm32$(MCU_SERIES)xx_hal.h>'
 CFLAGS += -DMBOOT_VTOR=$(MBOOT_TEXT0_ADDR)
 CFLAGS += -DMICROPY_HW_VTOR=$(TEXT0_ADDR)
 
-AFLAGS += $(filter -mcpu=%,$(CFLAGS_MCU_$(MCU_SERIES)))
+ifeq ($(MCU_SERIES),n6)
+ifeq ($(USE_MBOOT),1)
+CFLAGS += -DMICROPY_HW_RUNS_FROM_EXT_FLASH=1
+LDFLAGS += -Wl,--defsym=_micropy_hw_runs_from_ext_flash=1
+else
+LDFLAGS += -Wl,--defsym=_micropy_hw_runs_from_ext_flash=0
+endif
+# as doesn't recognise -mcpu=cortex-m55
+AFLAGS += -march=armv8.1-m.main
+else
+AFLAGS += $(filter -mcpu=%,$(CFLAGS_MCU))
+endif
 
 # Configure for nan-boxing object model if requested
 ifeq ($(NANBOX),1)
@@ -163,7 +174,7 @@ ifeq ($(LTO),1)
 CFLAGS += -flto=auto
 # LTO requires passing compiler flags to the linker as it will run the assembler.
 # To avoid risk of missing something relevant, pass all flags except for preprocessor args
-LDFLAGS += $(filter-out -I%,$(filter-out -D%,$(CFLAGS)))
+LDFLAGS += $(filter-out -fplugin% -I% -D, $(CFLAGS))
 
 $(BUILD)/stm32_it.o $(BUILD)/pendsv.o: CFLAGS += -fno-lto
 endif
@@ -181,21 +192,13 @@ endif
 COPT ?= -Os -DNDEBUG
 endif
 
-# Flags for optional C++ source code
-CXXFLAGS += $(filter-out -Wmissing-prototypes -Wold-style-definition -std=gnu99,$(CFLAGS))
-
-# TODO make this common -- shouldn't be using these "private" vars from py.mk
-ifneq ($(SRC_CXX)$(SRC_USERMOD_CXX)$(SRC_USERMOD_LIB_CXX),)
-LIBSTDCPP_FILE_NAME = "$(shell $(CXX) $(CXXFLAGS) -print-file-name=libstdc++.a)"
-LDFLAGS += -L"$(shell dirname $(LIBSTDCPP_FILE_NAME))"
-endif
-
 # Options for mpy-cross
-MPY_CROSS_FLAGS += -march=$(MPY_CROSS_MCU_ARCH_$(MCU_SERIES))
+MPY_CROSS_FLAGS += -march=$(MPY_CROSS_MCU_ARCH)
 
 SHARED_SRC_C += $(addprefix shared/,\
 	libc/string0.c \
 	netutils/dhcpserver.c \
+	netutils/get_mac_ascii.c \
 	netutils/netutils.c \
 	netutils/trace.c \
 	readline/readline.c \
@@ -207,6 +210,10 @@ SHARED_SRC_C += $(addprefix shared/,\
 	runtime/stdout_helpers.c \
 	runtime/sys_stdio_mphal.c \
 	timeutils/timeutils.c \
+	tinyusb/mp_usbd.c \
+	tinyusb/mp_usbd_cdc.c \
+	tinyusb/mp_usbd_descriptor.c \
+	tinyusb/mp_usbd_runtime.c \
 	)
 
 ifeq ($(MICROPY_FLOAT_IMPL),double)
@@ -236,12 +243,15 @@ SRC_C += \
 	boardctrl.c \
 	main.c \
 	stm32_it.c \
+	usbd.c \
 	usbd_conf.c \
+	usb.c \
 	usbd_desc.c \
 	usbd_cdc_interface.c \
 	usbd_hid_interface.c \
 	usbd_msc_interface.c \
 	mphalport.c \
+	msc_disk.c \
 	mpnetworkport.c \
 	mpthreadport.c \
 	irq.c \
@@ -260,6 +270,7 @@ SRC_C += \
 	bufhelper.c \
 	dma.c \
 	i2c.c \
+	i2cslave.c \
 	pyb_i2c.c \
 	spi.c \
 	pyb_spi.c \
@@ -270,7 +281,6 @@ SRC_C += \
 	can.c \
 	fdcan.c \
 	pyb_can.c \
-	usb.c \
 	eth.c \
 	eth_phy.c \
 	gccollect.c \
@@ -291,6 +301,7 @@ SRC_C += \
 	storage.c \
 	sdcard.c \
 	sdram.c \
+	vfs_rom_ioctl.c \
 	fatfs_port.c \
 	lcd.c \
 	accel.c \
@@ -299,6 +310,7 @@ SRC_C += \
 	adc.c \
 	sdio.c \
 	subghz.c \
+	xspi.c \
 	$(wildcard $(BOARD_DIR)/*.c)
 
 SRC_O += \
@@ -315,6 +327,13 @@ CFLAGS += -DUSE_HAL_DRIVER
 SRC_O += \
 	resethandler_m3.o \
 	shared/runtime/gchelper_thumb2.o
+else ifeq ($(MCU_SERIES),n6)
+SRC_O += shared/runtime/gchelper_thumb2.o
+ifeq ($(USE_MBOOT),1)
+SRC_O += resethandler_iram.o
+else
+SRC_O += resethandler.o
+endif
 else
 SRC_O += \
 	system_stm32.o \
@@ -328,8 +347,6 @@ HAL_SRC_C += $(addprefix $(STM32LIB_HAL_BASE)/Src/stm32$(MCU_SERIES)xx_,\
 	hal_adc_ex.c \
 	hal_cortex.c \
 	hal_dma.c \
-	hal_flash.c \
-	hal_flash_ex.c \
 	hal_gpio.c \
 	hal_i2c.c \
 	hal_pwr.c \
@@ -346,15 +363,34 @@ HAL_SRC_C += $(addprefix $(STM32LIB_HAL_BASE)/Src/stm32$(MCU_SERIES)xx_,\
 	ll_utils.c \
 	)
 
-ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),f4 f7 g0 g4 h5 h7 l0 l1 l4 wb))
+ifneq ($(MCU_SERIES),n6)
+HAL_SRC_C += $(addprefix $(STM32LIB_HAL_BASE)/Src/stm32$(MCU_SERIES)xx_,\
+	hal_flash.c \
+	hal_flash_ex.c \
+	)
+endif
+
+ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),f4 f7 g0 g4 h5 h7 l0 l1 l4 n6 u5 wb))
 HAL_SRC_C += $(addprefix $(STM32LIB_HAL_BASE)/Src/stm32$(MCU_SERIES)xx_,\
 	hal_pcd.c \
 	hal_pcd_ex.c \
 	ll_usb.c \
 	)
+ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),f4 f7))
+# HAL F4-1.16.0 and F7-1.7.0 have an unused debug variable in USB_ActivateDedicatedEndpoint.
+$(BUILD)/$(STM32LIB_HAL_BASE)/Src/stm32$(MCU_SERIES)xx_ll_usb.o: CFLAGS += -Wno-error=unused-but-set-variable
+endif
 endif
 
-ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),f4 f7 h5 h7 l4))
+ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),n6))
+HAL_SRC_C += $(addprefix $(STM32LIB_HAL_BASE)/Src/stm32$(MCU_SERIES)xx_,\
+	hal_bsec.c \
+	hal_rif.c \
+	hal_xspi.c \
+	)
+endif
+
+ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),f4 f7 h5 h7 l4 n6))
 HAL_SRC_C += $(addprefix $(STM32LIB_HAL_BASE)/Src/stm32$(MCU_SERIES)xx_,\
 	hal_sd.c \
 	ll_sdmmc.c \
@@ -379,7 +415,7 @@ $(BUILD)/$(STM32LIB_HAL_BASE)/Src/stm32$(MCU_SERIES)xx_hal_mmc.o: CFLAGS += -Wno
 endif
 endif
 
-ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),f4 f7 g0 g4 h5 h7))
+ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),f4 f7 g0 g4 h5 h7 n6 u5))
 HAL_SRC_C += $(addprefix $(STM32LIB_HAL_BASE)/Src/stm32$(MCU_SERIES)xx_,\
 	hal_dma_ex.c \
 	)
@@ -393,7 +429,7 @@ endif
 
 ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),f0 f4 f7))
 HAL_SRC_C += $(addprefix $(STM32LIB_HAL_BASE)/Src/stm32$(MCU_SERIES)xx_, hal_can.c)
-else ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),g0 g4 h7))
+else ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),g0 g4 h7 n6))
 HAL_SRC_C += $(addprefix $(STM32LIB_HAL_BASE)/Src/stm32$(MCU_SERIES)xx_, hal_fdcan.c)
 else ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),l4))
 HAL_SRC_C += $(addprefix $(STM32LIB_HAL_BASE)/Src/Legacy/stm32$(MCU_SERIES)xx_, hal_can.c)
@@ -416,6 +452,12 @@ HAL_SRC_C += $(addprefix $(STM32LIB_HAL_BASE)/Src/stm32$(MCU_SERIES)xx_,\
 	)
 endif
 
+ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),h7 n6))
+HAL_SRC_C += $(addprefix $(STM32LIB_HAL_BASE)/Src/stm32$(MCU_SERIES)xx_,\
+    hal_uart_ex.c \
+    )
+endif
+
 USBDEV_SRC_C += $(addprefix $(USBDEV_DIR)/,\
 	core/src/usbd_core.c \
 	core/src/usbd_ctlreq.c \
@@ -424,6 +466,28 @@ USBDEV_SRC_C += $(addprefix $(USBDEV_DIR)/,\
 	class/src/usbd_msc_bot.c \
 	class/src/usbd_msc_scsi.c \
 	)
+
+# TinyUSB Stack source
+-include $(TOP)/lib/tinyusb/src/tinyusb.mk
+TINYUSB_SRC_C := $(sort $(addprefix lib/tinyusb/, \
+	$(TINYUSB_SRC_C) \
+	src/portable/st/stm32_fsdev/dcd_stm32_fsdev.c \
+	src/portable/st/stm32_fsdev/fsdev_common.c \
+	src/portable/synopsys/dwc2/dcd_dwc2.c \
+	src/portable/synopsys/dwc2/dwc2_common.c \
+	src/portable/synopsys/dwc2/hcd_dwc2.c \
+	))
+
+# HaLow driver linkage (prebuilt morselib, transceiver firmware blobs), included
+# only when HaLow is enabled as it fetches the driver's nested submodule.  Absent
+# until the submodule is fetched, which "make submodules" must still parse past.
+ifeq ($(MICROPY_PY_NETWORK_HALOW_MORSE_MICRO),1)
+-include $(TOP)/lib/mm-halow-driver/mm_halow.mk
+CFLAGS += $(MM_HALOW_CFLAGS)
+LIBS += $(MM_HALOW_LIBS)
+OBJ += $(MM_HALOW_OBJ)
+SRC_THIRDPARTY_C += $(MM_HALOW_SRC_C)
+endif
 
 ifeq ($(MICROPY_SSL_MBEDTLS),1)
 LIB_SRC_C += mbedtls/mbedtls_port.c
@@ -464,6 +528,7 @@ OBJ += $(addprefix $(BUILD)/, $(SHARED_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(DRIVERS_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(HAL_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(USBDEV_SRC_C:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(TINYUSB_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_CXX:.cpp=.o))
 OBJ += $(GEN_PINS_SRC:.c=.o)
@@ -489,6 +554,12 @@ all: $(TOP)/lib/stm32lib/README.md all_main $(BUILD)/firmware.hex
 
 ifeq ($(MBOOT_ENABLE_PACKING),1)
 all_main: $(BUILD)/firmware.pack.dfu
+else ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),n6))
+ifeq ($(USE_MBOOT),1)
+all_main: $(BUILD)/firmware.dfu
+else
+all_main: $(BUILD)/firmware-trusted.bin
+endif
 else
 all_main: $(BUILD)/firmware.dfu
 endif
@@ -549,7 +620,7 @@ define GENERATE_HEX
 	$(Q)$(OBJCOPY) -O ihex $(2) $(1)
 endef
 
-.PHONY: deploy deploy-stlink deploy-openocd
+.PHONY: deploy deploy-stlink deploy-openocd deploy-trusted
 
 ifeq ($(MBOOT_ENABLE_PACKING),1)
 deploy: $(BUILD)/firmware.pack.dfu
@@ -559,6 +630,9 @@ deploy: $(BUILD)/firmware.dfu
 	$(call RUN_DFU,$^)
 endif
 
+deploy-trusted: $(BUILD)/firmware-trusted.bin
+	$(STM32_CUBE_PROGRAMMER)/bin/STM32_Programmer.sh -c port=SWD mode=HOTPLUG ap=1 -el $(DKEL) -w $^ 0x70000000 -hardRst
+
 # A board should specify TEXT0_ADDR if to use a different location than the
 # default for the firmware memory location.  A board can also optionally define
 # TEXT1_ADDR to split the firmware into two sections; see below for details.
@@ -567,7 +641,7 @@ TEXT0_ADDR ?= 0x08000000
 ifeq ($(TEXT1_ADDR),)
 # No TEXT1_ADDR given so put all firmware at TEXT0_ADDR location
 
-TEXT0_SECTIONS ?= .isr_vector .isr_extratext .text .data .ARM
+TEXT0_SECTIONS ?= .isr_vector .isr_extratext .text .gc.blocks.table .data .ARM
 
 deploy-stlink: $(BUILD)/firmware.bin
 	$(call RUN_STLINK,$^,$(TEXT0_ADDR))
@@ -585,7 +659,7 @@ else
 # TEXT0_ADDR and TEXT1_ADDR are specified so split firmware between these locations
 
 TEXT0_SECTIONS ?= .isr_vector .isr_extratext
-TEXT1_SECTIONS ?= .text .data .ARM
+TEXT1_SECTIONS ?= .text .gc.blocks.table .data .ARM
 
 deploy-stlink: $(BUILD)/firmware0.bin $(BUILD)/firmware1.bin
 	$(call RUN_STLINK,$(word 1,$^),$(TEXT0_ADDR))
@@ -612,6 +686,10 @@ $(BUILD)/firmware.hex: $(BUILD)/firmware.elf
 
 $(BUILD)/firmware.elf: $(OBJ)
 	$(call GENERATE_ELF,$@,$^)
+
+$(BUILD)/firmware-trusted.bin: $(BUILD)/firmware.bin
+	/bin/rm -f $@
+	$(STM32_CUBE_PROGRAMMER)/bin/STM32_SigningTool_CLI -bin $^ -nk -of 0x80000000 -t fsbl -o $@ -hv $(STM32_N6_HEADER_VERSION) --align
 
 # List of sources for qstr extraction
 SRC_QSTR += $(SRC_C) $(SRC_CXX) $(SHARED_SRC_C) $(GEN_PINS_SRC)
@@ -640,20 +718,20 @@ $(BUILD)/%_$(BOARD).c $(HEADER_BUILD)/%.h $(HEADER_BUILD)/%_af_const.h $(HEADER_
 	    --output-source $(GEN_PINS_SRC) --output-header $(GEN_PINS_HDR) \
 		--output-af-const $(GEN_PINS_AF_CONST) --output-af-defs $(GEN_PINS_AF_DEFS)
 
-powerctrl.c: $(GEN_PLLFREQTABLE_HDR)
-$(GEN_PLLFREQTABLE_HDR): $(PLLVALUES) | $(HEADER_BUILD)
+$(BUILD)/powerctrl.o: $(GEN_PLLFREQTABLE_HDR)
+$(GEN_PLLFREQTABLE_HDR): $(PLLVALUES) | $(HEADER_BUILD)/qstr.i.last
 	$(ECHO) "GEN $@"
-	$(Q)$(PYTHON) $(PLLVALUES) -c -m $(CMSIS_MCU_LOWER) file:$(BOARD_DIR)/stm32$(MCU_SERIES)xx_hal_conf.h > $@
+	$(Q)$(PYTHON) $(PLLVALUES) -c -m $(CMSIS_MCU_LOWER) file:$(HEADER_BUILD)/qstr.i.last > $@
 
-$(TOP)/extmod/machine_i2s.c: $(GEN_PLLI2STABLE_HDR)
-$(GEN_PLLI2STABLE_HDR): $(PLLI2SVALUES) | $(HEADER_BUILD)
+$(BUILD)/extmod/machine_i2s.o: $(GEN_PLLI2STABLE_HDR)
+$(GEN_PLLI2STABLE_HDR): $(PLLI2SVALUES) | $(HEADER_BUILD)/qstr.i.last
 	$(ECHO) "GEN $@"
-	$(Q)$(PYTHON) $(PLLI2SVALUES) -c -m $(CMSIS_MCU_LOWER) hse:$(BOARD_DIR)/stm32$(MCU_SERIES)xx_hal_conf.h pllm:$(BOARD_DIR)/mpconfigboard.h > $@
+	$(Q)$(PYTHON) $(PLLI2SVALUES) -c -m $(CMSIS_MCU_LOWER) file:$(HEADER_BUILD)/qstr.i.last > $@
 
 $(BUILD)/modstm.o: $(GEN_STMCONST_HDR)
 $(HEADER_BUILD)/modstm_const.h: $(CMSIS_MCU_HDR) make-stmconst.py | $(HEADER_BUILD)
 	$(ECHO) "GEN stmconst $@"
-	$(Q)$(PYTHON) make-stmconst.py --mpz $(GEN_STMCONST_MPZ) $(CMSIS_MCU_HDR) > $(GEN_STMCONST_HDR)
+	$(Q)$(PYTHON) make-stmconst.py --mpz $(GEN_STMCONST_MPZ) $(CMSIS_MCU_HDR) $(CFLAGS_MCU) > $(GEN_STMCONST_HDR)
 
 $(GEN_CDCINF_HEADER): $(GEN_CDCINF_FILE) $(FILE2H) | $(HEADER_BUILD)
 	$(ECHO) "GEN $@"

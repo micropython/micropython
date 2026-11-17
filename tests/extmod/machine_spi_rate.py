@@ -1,37 +1,31 @@
 # Test machine.SPI data transfer rates
-import sys
-
+# requires: target-wiring
 
 try:
-    import time
     from machine import Pin, SPI
 except ImportError:
     print("SKIP")
     raise SystemExit
 
+try:
+    wr_short = b"abcdefghijklmnop" * 10
+    rd_short = bytearray(len(wr_short))
+    wr_long = wr_short * 20
+    rd_long = bytearray(len(wr_long))
+except MemoryError:
+    print("SKIP")
+    raise SystemExit
+
+import time, sys
+from target_wiring import spi_standalone_args_list
+
 MAX_DELTA_MS = 8
 
-# Configure pins based on the port/board details.
-# Values are tuples of (spi_id, sck, mosi, miso)
-if "pyboard" in sys.platform:
-    spi_instances = (
-        (1, None, None, None),  # "explicit choice of sck/mosi/miso is not implemented"
-        (2, None, None, None),
-    )
-elif "rp2" in sys.platform:
-    spi_instances = ((0, Pin(18), Pin(19), Pin(16)),)
-elif "esp32" in sys.platform:
-    impl = str(sys.implementation)
-    if "ESP32C3" in impl or "ESP32C6" in impl:
-        spi_instances = ((1, Pin(4), Pin(5), Pin(6)),)
-    else:
-        spi_instances = ((1, Pin(18), Pin(19), Pin(21)), (2, Pin(18), Pin(19), Pin(21)))
+# Tune test parameters based on the target.
+if "alif" in sys.platform:
+    MAX_DELTA_MS = 20
 elif "esp8266" in sys.platform:
     MAX_DELTA_MS = 50  # port requires much looser timing requirements
-    spi_instances = ((1, None, None, None),)  # explicit pin choice not allowed
-else:
-    print("Please add support for this test on this platform.")
-    raise SystemExit
 
 
 def get_real_baudrate(spi):
@@ -51,7 +45,7 @@ def get_real_baudrate(spi):
 
 def test_instances():
     print_results = True
-    for spi_id, sck, mosi, miso in spi_instances:
+    for spi_args in spi_standalone_args_list:
         for baudrate in (
             100_000,
             250_000,
@@ -61,55 +55,19 @@ def test_instances():
             4_000_000,
             8_000_000,
         ):
-            test_spi(
-                spi_id,
-                sck,
-                mosi,
-                miso,
-                baudrate,
-                0,
-                0,
-                print_results,
-            )
+            test_spi(spi_args, baudrate, 0, 0, print_results)
 
         for baudrate in (100_000, 4_000_000):
             # Test the other polarity and phase settings
             for polarity, phase in ((0, 1), (1, 0), (1, 1)):
-                test_spi(
-                    spi_id,
-                    sck,
-                    mosi,
-                    miso,
-                    baudrate,
-                    polarity,
-                    phase,
-                    print_results,
-                )
+                test_spi(spi_args, baudrate, polarity, phase, print_results)
 
         # Ensure the same test output regardless of how many SPI instances are tested
         print_results = False
 
 
-wr_short = b"abcdefghijklmnop" * 10
-rd_short = bytearray(len(wr_short))
-
-wr_long = wr_short * 20
-rd_long = bytearray(len(wr_long))
-
-
-def test_spi(spi_id, sck, mosi, miso, baudrate, polarity, phase, print_results):
-    if sck:
-        s = SPI(
-            spi_id,
-            sck=sck,
-            mosi=mosi,
-            miso=miso,
-            baudrate=baudrate,
-            polarity=polarity,
-            phase=phase,
-        )
-    else:
-        s = SPI(spi_id, baudrate=baudrate, polarity=polarity, phase=phase)
+def test_spi(spi_args, baudrate, polarity, phase, print_results):
+    s = SPI(*spi_args, baudrate=baudrate, polarity=polarity, phase=phase)
 
     # to keep the test runtime down, use shorter buffer for lower baud rate
     wr_buf = wr_long if baudrate > 500_000 else wr_short
@@ -141,7 +99,7 @@ def test_spi(spi_id, sck, mosi, miso, baudrate, polarity, phase, print_results):
 
         if print_results or not t_ok:
             print(
-                None if print_results else spi_id,
+                None if print_results else spi_args,
                 baudrate,
                 polarity,
                 phase,

@@ -36,7 +36,7 @@
 
 #include "py/asmarm.h"
 
-#define SIGNED_FIT24(x) (((x) & 0xff800000) == 0) || (((x) & 0xff000000) == 0xff000000)
+#define REG_TEMP ASM_ARM_REG_R8
 
 // Insert word into instruction flow
 static void emit(asm_arm_t *as, uint op) {
@@ -168,13 +168,23 @@ void asm_arm_entry(asm_arm_t *as, int num_locals) {
 
     emit_al(as, asm_arm_op_push(as->push_reglist | 1 << ASM_ARM_REG_LR));
     if (as->stack_adjust > 0) {
-        emit_al(as, asm_arm_op_sub_imm(ASM_ARM_REG_SP, ASM_ARM_REG_SP, as->stack_adjust));
+        if (as->stack_adjust < 0x100) {
+            emit_al(as, asm_arm_op_sub_imm(ASM_ARM_REG_SP, ASM_ARM_REG_SP, as->stack_adjust));
+        } else {
+            asm_arm_mov_reg_i32_optimised(as, REG_TEMP, as->stack_adjust);
+            emit_al(as, asm_arm_op_sub_reg(ASM_ARM_REG_SP, ASM_ARM_REG_SP, REG_TEMP));
+        }
     }
 }
 
 void asm_arm_exit(asm_arm_t *as) {
     if (as->stack_adjust > 0) {
-        emit_al(as, asm_arm_op_add_imm(ASM_ARM_REG_SP, ASM_ARM_REG_SP, as->stack_adjust));
+        if (as->stack_adjust < 0x100) {
+            emit_al(as, asm_arm_op_add_imm(ASM_ARM_REG_SP, ASM_ARM_REG_SP, as->stack_adjust));
+        } else {
+            asm_arm_mov_reg_i32_optimised(as, REG_TEMP, as->stack_adjust);
+            emit_al(as, asm_arm_op_add_reg(ASM_ARM_REG_SP, ASM_ARM_REG_SP, REG_TEMP));
+        }
     }
 
     emit_al(as, asm_arm_op_pop(as->push_reglist | (1 << ASM_ARM_REG_PC)));
@@ -282,8 +292,15 @@ void asm_arm_orr_reg_reg_reg(asm_arm_t *as, uint rd, uint rn, uint rm) {
 }
 
 void asm_arm_mov_reg_local_addr(asm_arm_t *as, uint rd, int local_num) {
-    // add rd, sp, #local_num*4
-    emit_al(as, asm_arm_op_add_imm(rd, ASM_ARM_REG_SP, local_num << 2));
+    if (local_num >= 0x40) {
+        // mov temp, #local_num*4
+        // add rd, sp, temp
+        asm_arm_mov_reg_i32_optimised(as, REG_TEMP, local_num << 2);
+        emit_al(as, asm_arm_op_add_reg(rd, ASM_ARM_REG_SP, REG_TEMP));
+    } else {
+        // add rd, sp, #local_num*4
+        emit_al(as, asm_arm_op_add_imm(rd, ASM_ARM_REG_SP, local_num << 2));
+    }
 }
 
 void asm_arm_mov_reg_pcrel(asm_arm_t *as, uint reg_dest, uint label) {
@@ -316,39 +333,92 @@ void asm_arm_asr_reg_reg(asm_arm_t *as, uint rd, uint rs) {
     emit_al(as, 0x1a00050 | (rd << 12) | (rs << 8) | rd);
 }
 
-void asm_arm_ldr_reg_reg(asm_arm_t *as, uint rd, uint rn, uint byte_offset) {
-    // ldr rd, [rn, #off]
-    emit_al(as, 0x5900000 | (rn << 16) | (rd << 12) | byte_offset);
+void asm_arm_ldr_reg_reg_offset(asm_arm_t *as, uint rd, uint rn, uint byte_offset) {
+    if (byte_offset < 0x1000) {
+        // ldr rd, [rn, #off]
+        emit_al(as, 0x5900000 | (rn << 16) | (rd << 12) | byte_offset);
+    } else {
+        // mov temp, #off
+        // ldr rd, [rn, temp]
+        asm_arm_mov_reg_i32_optimised(as, REG_TEMP, byte_offset);
+        emit_al(as, 0x7900000 | (rn << 16) | (rd << 12) | REG_TEMP);
+    }
 }
 
-void asm_arm_ldrh_reg_reg(asm_arm_t *as, uint rd, uint rn) {
-    // ldrh rd, [rn]
-    emit_al(as, 0x1d000b0 | (rn << 16) | (rd << 12));
+void asm_arm_ldrh_reg_reg_reg(asm_arm_t *as, uint rd, uint rm, uint rn) {
+    // ldrh doesn't support scaled register index
+    emit_al(as, 0x1a00080 | (REG_TEMP << 12) | rn); // mov temp, rn, lsl #1
+    emit_al(as, 0x19000b0 | (rm << 16) | (rd << 12) | REG_TEMP); // ldrh rd, [rm, temp];
 }
 
 void asm_arm_ldrh_reg_reg_offset(asm_arm_t *as, uint rd, uint rn, uint byte_offset) {
-    // ldrh rd, [rn, #off]
-    emit_al(as, 0x1f000b0 | (rn << 16) | (rd << 12) | ((byte_offset & 0xf0) << 4) | (byte_offset & 0xf));
+    if (byte_offset < 0x100) {
+        // ldrh rd, [rn, #off]
+        emit_al(as, 0x1d000b0 | (rn << 16) | (rd << 12) | ((byte_offset & 0xf0) << 4) | (byte_offset & 0xf));
+    } else {
+        // mov temp, #off
+        // ldrh rd, [rn, temp]
+        asm_arm_mov_reg_i32_optimised(as, REG_TEMP, byte_offset);
+        emit_al(as, 0x19000b0 | (rn << 16) | (rd << 12) | REG_TEMP);
+    }
 }
 
-void asm_arm_ldrb_reg_reg(asm_arm_t *as, uint rd, uint rn) {
-    // ldrb rd, [rn]
-    emit_al(as, 0x5d00000 | (rn << 16) | (rd << 12));
+void asm_arm_ldrb_reg_reg_reg(asm_arm_t *as, uint rd, uint rm, uint rn) {
+    // ldrb rd, [rm, rn]
+    emit_al(as, 0x7d00000 | (rm << 16) | (rd << 12) | rn);
 }
 
-void asm_arm_str_reg_reg(asm_arm_t *as, uint rd, uint rm, uint byte_offset) {
-    // str rd, [rm, #off]
-    emit_al(as, 0x5800000 | (rm << 16) | (rd << 12) | byte_offset);
+void asm_arm_ldrb_reg_reg_offset(asm_arm_t *as, uint rd, uint rn, uint byte_offset) {
+    if (byte_offset < 0x1000) {
+        // ldrb rd, [rn, #off]
+        emit_al(as, 0x5d00000 | (rn << 16) | (rd << 12) | byte_offset);
+    } else {
+        // mov temp, #off
+        // ldrb rd, [rn, temp]
+        asm_arm_mov_reg_i32_optimised(as, REG_TEMP, byte_offset);
+        emit_al(as, 0x7d00000 | (rn << 16) | (rd << 12) | REG_TEMP);
+    }
 }
 
-void asm_arm_strh_reg_reg(asm_arm_t *as, uint rd, uint rm) {
-    // strh rd, [rm]
-    emit_al(as, 0x1c000b0 | (rm << 16) | (rd << 12));
+void asm_arm_ldr_reg_reg_reg(asm_arm_t *as, uint rd, uint rm, uint rn) {
+    // ldr rd, [rm, rn, lsl #2]
+    emit_al(as, 0x7900100 | (rm << 16) | (rd << 12) | rn);
 }
 
-void asm_arm_strb_reg_reg(asm_arm_t *as, uint rd, uint rm) {
-    // strb rd, [rm]
-    emit_al(as, 0x5c00000 | (rm << 16) | (rd << 12));
+void asm_arm_str_reg_reg_offset(asm_arm_t *as, uint rd, uint rm, uint byte_offset) {
+    if (byte_offset < 0x1000) {
+        // str rd, [rm, #off]
+        emit_al(as, 0x5800000 | (rm << 16) | (rd << 12) | byte_offset);
+    } else {
+        // mov temp, #off
+        // str rd, [rm, temp]
+        asm_arm_mov_reg_i32_optimised(as, REG_TEMP, byte_offset);
+        emit_al(as, 0x7800000 | (rm << 16) | (rd << 12) | REG_TEMP);
+    }
+}
+
+void asm_arm_strh_reg_reg_offset(asm_arm_t *as, uint rd, uint rn, uint byte_offset) {
+    if (byte_offset < 0x100) {
+        // strh rd, [rn, #off]
+        emit_al(as, 0x1c000b0 | (rn << 16) | (rd << 12) | ((byte_offset & 0xf0) << 4) | (byte_offset & 0xf));
+    } else {
+        // mov temp, #off
+        // strh rd, [rn, temp]
+        asm_arm_mov_reg_i32_optimised(as, REG_TEMP, byte_offset);
+        emit_al(as, 0x18000b0 | (rn << 16) | (rd << 12) | REG_TEMP);
+    }
+}
+
+void asm_arm_strb_reg_reg_offset(asm_arm_t *as, uint rd, uint rm, uint byte_offset) {
+    if (byte_offset < 0x1000) {
+        // strb rd, [rm, #off]
+        emit_al(as, 0x5c00000 | (rm << 16) | (rd << 12) | byte_offset);
+    } else {
+        // mov temp, #off
+        // strb rd, [rm, temp]
+        asm_arm_mov_reg_i32_optimised(as, REG_TEMP, byte_offset);
+        emit_al(as, 0x7c00000 | (rm << 16) | (rd << 12) | REG_TEMP);
+    }
 }
 
 void asm_arm_str_reg_reg_reg(asm_arm_t *as, uint rd, uint rm, uint rn) {
@@ -358,8 +428,8 @@ void asm_arm_str_reg_reg_reg(asm_arm_t *as, uint rd, uint rm, uint rn) {
 
 void asm_arm_strh_reg_reg_reg(asm_arm_t *as, uint rd, uint rm, uint rn) {
     // strh doesn't support scaled register index
-    emit_al(as, 0x1a00080 | (ASM_ARM_REG_R8 << 12) | rn); // mov r8, rn, lsl #1
-    emit_al(as, 0x18000b0 | (rm << 16) | (rd << 12) | ASM_ARM_REG_R8); // strh rd, [rm, r8]
+    emit_al(as, 0x1a00080 | (REG_TEMP << 12) | rn); // mov temp, rn, lsl #1
+    emit_al(as, 0x18000b0 | (rm << 16) | (rd << 12) | REG_TEMP); // strh rd, [rm, temp]
 }
 
 void asm_arm_strb_reg_reg_reg(asm_arm_t *as, uint rd, uint rm, uint rn) {
@@ -374,7 +444,7 @@ void asm_arm_bcc_label(asm_arm_t *as, int cond, uint label) {
     rel -= 8; // account for instruction prefetch, PC is 8 bytes ahead of this instruction
     rel >>= 2; // in ARM mode the branch target is 32-bit aligned, so the 2 LSB are omitted
 
-    if (SIGNED_FIT24(rel)) {
+    if (MP_FIT_SIGNED(24, rel)) {
         emit(as, cond | 0xa000000 | (rel & 0xffffff));
     } else {
         printf("asm_arm_bcc: branch does not fit in 24 bits\n");

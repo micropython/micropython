@@ -1,4 +1,5 @@
 # test complex interacting with special reverse methods
+# requires: complex float reverse-op
 
 
 class A:

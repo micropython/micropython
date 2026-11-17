@@ -29,7 +29,21 @@ print(os.getcwd() == curdir)
 print(type(os.stat("/")))
 
 # listdir and ilistdir
-print(type(os.listdir("/")))
+target = "/"
+try:
+    import platform
+
+    # On Android non-root users are permitted full filesystem access only to
+    # selected directories.  To let this test pass on bionic, the internal
+    # user-accessible storage area root is enumerated instead of the
+    # filesystem root.  "/storage/emulated/0" should be there on pretty much
+    # any recent-ish device; querying the proper location requires a JNI
+    # round-trip, not really worth it.
+    if platform.platform().startswith("Android-"):
+        target = "/storage/emulated/0"
+except ImportError:
+    pass
+print(type(os.listdir(target)))
 
 # mkdir
 os.mkdir(temp_dir)
@@ -82,6 +96,15 @@ for n in names + [basefd, nextfd]:
 # rename
 os.rename(temp_dir + "/test", temp_dir + "/test2")
 print(os.listdir(temp_dir))
+
+# construct new VfsPosix with absolute path
+fs = vfs.VfsPosix(os.getcwd() + os.sep + temp_dir)
+f = fs.open("/test", "w")
+f.close()
+print(sorted(os.listdir(temp_dir)))
+fs.rename("/test", "/_test")
+print(sorted(os.listdir(temp_dir)))
+fs.remove("/_test")
 
 # construct new VfsPosix with path argument
 fs = vfs.VfsPosix(temp_dir)

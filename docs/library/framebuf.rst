@@ -114,7 +114,7 @@ Drawing text
 
 .. method:: FrameBuffer.text(s, x, y[, c])
 
-    Write text to the FrameBuffer using the the coordinates as the upper-left
+    Write text to the FrameBuffer using the coordinates as the upper-left
     corner of the text. The color of the text can be defined by the optional
     argument but is otherwise a default value of 1. All characters have
     dimensions of 8x8 pixels and there is currently no way to change the font.
@@ -136,6 +136,18 @@ Other methods
     color value will not be drawn. (If the *palette* is specified then the *key*
     is compared to the value from *palette*, not to the value directly from
     *fbuf*.)
+
+    *fbuf* can be another FrameBuffer instance, or a tuple or list of the form::
+
+        (buffer, width, height, format)
+
+    or::
+
+        (buffer, width, height, format, stride)
+
+    This matches the signature of the FrameBuffer constructor, and the elements
+    of the tuple/list are the same as the arguments to the constructor except that
+    the *buffer* here can be read-only.
 
     The *palette* argument enables blitting between FrameBuffers with differing
     formats. Typical usage is to render a monochrome or grayscale glyph/icon to

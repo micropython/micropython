@@ -5,7 +5,9 @@ SRC_EXTMOD_C += \
 	extmod/machine_adc.c \
 	extmod/machine_adc_block.c \
 	extmod/machine_bitstream.c \
+	extmod/machine_can.c \
 	extmod/machine_i2c.c \
+	extmod/machine_i2c_target.c \
 	extmod/machine_i2s.c \
 	extmod/machine_mem.c \
 	extmod/machine_pinbase.c \
@@ -29,6 +31,7 @@ SRC_EXTMOD_C += \
 	extmod/modjson.c \
 	extmod/modlwip.c \
 	extmod/modmachine.c \
+	extmod/modmarshal.c \
 	extmod/modnetwork.c \
 	extmod/modonewire.c \
 	extmod/modopenamp.c \
@@ -50,9 +53,11 @@ SRC_EXTMOD_C += \
 	extmod/modwebsocket.c \
 	extmod/network_cyw43.c \
 	extmod/network_esp_hosted.c \
+	extmod/network_halow.c \
 	extmod/network_lwip.c \
 	extmod/network_ninaw10.c \
 	extmod/network_ppp_lwip.c \
+	extmod/network_usbd_ncm.c \
 	extmod/network_wiznet5k.c \
 	extmod/os_dupterm.c \
 	extmod/vfs.c \
@@ -61,6 +66,8 @@ SRC_EXTMOD_C += \
 	extmod/vfs_fat_diskio.c \
 	extmod/vfs_fat_file.c \
 	extmod/vfs_lfs.c \
+	extmod/vfs_rom.c \
+	extmod/vfs_rom_file.c \
 	extmod/vfs_posix.c \
 	extmod/vfs_posix_file.c \
 	extmod/vfs_reader.c \
@@ -203,7 +210,7 @@ endif
 
 ifeq ($(MICROPY_VFS_LFS2),1)
 CFLAGS_EXTMOD += -DMICROPY_VFS_LFS2=1
-CFLAGS_THIRDPARTY += -DLFS2_NO_MALLOC -DLFS2_NO_DEBUG -DLFS2_NO_WARN -DLFS2_NO_ERROR -DLFS2_NO_ASSERT
+CFLAGS_THIRDPARTY += -DLFS2_NO_MALLOC -DLFS2_NO_DEBUG -DLFS2_NO_WARN -DLFS2_NO_ERROR -DLFS2_NO_ASSERT -DLFS2_DEFINES=extmod/littlefs-include/lfs2_defines.h
 SRC_THIRDPARTY_C += $(addprefix $(LITTLEFS_DIR)/,\
 	lfs2.c \
 	lfs2_util.c \
@@ -292,6 +299,7 @@ SRC_THIRDPARTY_C += $(addprefix $(MBEDTLS_DIR)/library/,\
 	pkcs12.c \
 	pkcs5.c \
 	pkparse.c \
+	pk_ecc.c \
 	pk_wrap.c \
 	pkwrite.c \
 	platform.c \
@@ -450,18 +458,88 @@ CYW43_DIR = lib/cyw43-driver
 GIT_SUBMODULES += $(CYW43_DIR)
 CFLAGS_EXTMOD += -DMICROPY_PY_NETWORK_CYW43=1
 SRC_THIRDPARTY_C += $(addprefix $(CYW43_DIR)/src/,\
+	cyw43_bthci_uart.c \
 	cyw43_ctrl.c \
 	cyw43_lwip.c \
 	cyw43_ll.c \
 	cyw43_sdio.c \
+	cyw43_spi.c \
 	cyw43_stats.c \
 	)
-ifeq ($(MICROPY_PY_BLUETOOTH),1)
-DRIVERS_SRC_C += drivers/cyw43/cywbt.c
-endif
 
 $(BUILD)/$(CYW43_DIR)/src/cyw43_%.o: CFLAGS += -std=c11
 endif # MICROPY_PY_NETWORK_CYW43
+
+################################################################################
+# halow (802.11ah)
+
+# network.HALOW is turned on by selecting a PHY back-end; the binding itself is
+# PHY-neutral.  Deriving the umbrella switch from the back-end keeps the choice
+# explicit -- a board selects Morse Micro, not "HaLow" -- and lets a second
+# family be added later with its own switch that also turns network.HALOW on.
+ifeq ($(MICROPY_PY_NETWORK_HALOW_MORSE_MICRO),1)
+MICROPY_PY_NETWORK_HALOW = 1
+endif
+
+ifeq ($(MICROPY_PY_NETWORK_HALOW),1)
+
+CFLAGS += -DMICROPY_PY_NETWORK_HALOW=1
+CFLAGS_EXTMOD += -DMICROPY_PY_NETWORK_HALOW=1
+
+# The Morse Micro back-end.  A board opts in with
+# MICROPY_PY_NETWORK_HALOW_MORSE_MICRO=1, which is what enables network.HALOW
+# above; a second family is added with its own switch and block, and
+# HALOW(phy=...) selects between them at run time.
+ifeq ($(MICROPY_PY_NETWORK_HALOW_MORSE_MICRO),1)
+MM_HALOW_DIR = lib/mm-halow-driver
+MMIOT_DIR = $(MM_HALOW_DIR)/lib/mm-iot-sdk/framework
+GIT_SUBMODULES += lib/mm-halow-driver
+
+CFLAGS += -DMICROPY_PY_NETWORK_HALOW_MORSE_MICRO=1
+CFLAGS_EXTMOD += -DMICROPY_PY_NETWORK_HALOW_MORSE_MICRO=1
+
+INC += -I$(TOP)/$(MM_HALOW_DIR)/src
+INC += -I$(TOP)/$(MMIOT_DIR)/morselib/include
+INC += -I$(TOP)/$(MMIOT_DIR)/src/mmutils
+INC += -I$(TOP)/$(MMIOT_DIR)/src/mmregdb
+
+# The driver reads its configuration from extmod/halow/morse/mm_halow_configport.h.
+INC += -I$(TOP)/extmod/halow/morse
+
+DRIVERS_SRC_C += $(addprefix $(MM_HALOW_DIR)/src/,\
+	mm_halow_ctrl.c \
+	mm_halow_hal.c \
+	mm_halow_lwip.c \
+	mm_halow_osal.c \
+	mm_halow_pktmem.c \
+	mm_halow_sched.c \
+	)
+
+# The MicroPython side of the driver's port interface: machine.SPI, the
+# GC-rooted private heap, RNG/MAC, and the optional pin interrupt; and the
+# adapter that presents the driver as a PHY-neutral halow_drv_t.
+SRC_EXTMOD_C += extmod/halow/morse/mm_halow_port.c
+SRC_EXTMOD_C += extmod/halow/morse/mm_halow_adapter.c
+SRC_EXTMOD_C += extmod/halow/morse/mm_halow_regdb.c
+
+# Support code that morselib expects the integrator to provide: the packet
+# memory pools, the regulatory database and assorted helpers.
+# Packet memory is provided by mm_halow_pktmem.c rather than the SDK's
+# mmpktmem, so that all of the driver's memory comes from the MicroPython heap.
+SRC_THIRDPARTY_C += $(addprefix $(MMIOT_DIR)/src/,\
+	mmutils/mmbuf.c \
+	mmutils/mmcrc.c \
+	mmutils/mmutils_wlan.c \
+	)
+
+# The prebuilt morselib and the transceiver's firmware blobs are not listed
+# here: this file is shared by every port, and none of that belongs in it.  A
+# board that wants the driver includes lib/mm-halow-driver/mm_halow.mk for the
+# linkage.
+
+endif # MICROPY_PY_NETWORK_HALOW_MORSE_MICRO
+
+endif # MICROPY_PY_NETWORK_HALOW
 
 ifneq ($(MICROPY_PY_NETWORK_WIZNET5K),)
 ifneq ($(MICROPY_PY_NETWORK_WIZNET5K),0)
@@ -501,7 +579,7 @@ ESP_HOSTED_SRC_C = $(addprefix $(ESP_HOSTED_DIR)/,\
 	)
 
 ifeq ($(MICROPY_PY_BLUETOOTH),1)
-ESP_HOSTED_SRC_C += $(ESP_HOSTED_DIR)/esp_hosted_bthci.c
+ESP_HOSTED_SRC_C += $(ESP_HOSTED_DIR)/esp_hosted_bthci_uart.c
 endif
 
 # Include the protobuf-c support functions
@@ -616,6 +694,6 @@ $(BUILD)/$(OPENAMP_DIR)/lib/virtio_mmio/virtio_mmio_drv.o: CFLAGS += -Wno-unused
 # We need to have generated libmetal before compiling OpenAMP.
 $(addprefix $(BUILD)/, $(SRC_OPENAMP_C:.c=.o)): $(BUILD)/openamp/metal/config.h
 
-SRC_THIRDPARTY_C += $(SRC_LIBMETAL_C) $(SRC_OPENAMP_C)
+SRC_THIRDPARTY_C += $(SRC_OPENAMP_C) $(SRC_LIBMETAL_C:$(BUILD)/%=%)
 
 endif # MICROPY_PY_OPENAMP

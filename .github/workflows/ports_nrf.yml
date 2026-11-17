@@ -19,10 +19,10 @@ concurrency:
 
 jobs:
   build:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
     - name: Install packages
-      run: source tools/ci.sh && ci_nrf_setup
+      run: tools/ci.sh nrf_setup
     - name: Build
-      run: source tools/ci.sh && ci_nrf_build
+      run: tools/ci.sh nrf_build

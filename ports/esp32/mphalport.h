@@ -36,6 +36,10 @@
 #include "freertos/task.h"
 
 #include "driver/spi_master.h"
+#include "esp_timer.h"
+#include "esp_cache.h"
+#include "esp_cpu.h"
+#include "soc/gpio_reg.h"
 
 #define MICROPY_PLATFORM_VERSION "IDF" IDF_VER
 
@@ -48,6 +52,11 @@
 #define MP_TASK_COREID (0)
 #else
 #define MP_TASK_COREID (1)
+#endif
+
+#if CONFIG_IDF_TARGET_ESP32P4
+#define MP_HAL_CLEAN_DCACHE(data, len) \
+    esp_cache_msync((void *)(data), (len), ESP_CACHE_MSYNC_FLAG_UNALIGNED | ESP_CACHE_MSYNC_FLAG_DIR_C2M)
 #endif
 
 extern TaskHandle_t mp_main_task_handle;
@@ -81,18 +90,14 @@ static inline void mp_end_atomic_section(mp_uint_t state) {
 #define MICROPY_BEGIN_ATOMIC_SECTION() mp_begin_atomic_section()
 #define MICROPY_END_ATOMIC_SECTION(state) mp_end_atomic_section(state)
 
-uint32_t mp_hal_ticks_us(void);
-__attribute__((always_inline)) static inline uint32_t mp_hal_ticks_cpu(void) {
-    uint32_t ccount;
-    #if CONFIG_IDF_TARGET_ARCH_RISCV
-    __asm__ __volatile__ ("csrr %0, 0x7E2" : "=r" (ccount)); // Machine Performance Counter Value
-    #else
-    __asm__ __volatile__ ("rsr %0,ccount" : "=a" (ccount));
-    #endif
-    return ccount;
+__attribute__((always_inline)) static inline mp_uint_t mp_hal_ticks_us(void) {
+    return esp_timer_get_time();
+}
+__attribute__((always_inline)) static inline mp_uint_t mp_hal_ticks_cpu(void) {
+    return esp_cpu_get_cycle_count();
 }
 
-void mp_hal_delay_us(uint32_t);
+void mp_hal_delay_us(mp_uint_t);
 #define mp_hal_delay_us_fast(us) esp_rom_delay_us(us)
 void mp_hal_set_interrupt_char(int c);
 uint32_t mp_hal_get_cpu_freq(void);
@@ -133,10 +138,21 @@ static inline void mp_hal_pin_od_high(mp_hal_pin_obj_t pin) {
 static inline int mp_hal_pin_read(mp_hal_pin_obj_t pin) {
     return gpio_get_level(pin);
 }
+static inline int mp_hal_pin_read_output(mp_hal_pin_obj_t pin) {
+    #if defined(GPIO_OUT1_REG)
+    return pin < 32
+        ? (*(uint32_t *)GPIO_OUT_REG >> pin) & 1
+        : (*(uint32_t *)GPIO_OUT1_REG >> (pin - 32)) & 1;
+    #else
+    return (*(uint32_t *)GPIO_OUT_REG >> pin) & 1;
+    #endif
+}
 static inline void mp_hal_pin_write(mp_hal_pin_obj_t pin, int v) {
     gpio_set_level(pin, v);
 }
 
 spi_host_device_t machine_hw_spi_get_host(mp_obj_t in);
+
+void mp_hal_get_random(size_t n, uint8_t *buf);
 
 #endif // INCLUDED_MPHALPORT_H

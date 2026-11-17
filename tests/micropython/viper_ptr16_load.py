@@ -1,5 +1,6 @@
 # test loading from ptr16 type
 # only works on little endian machines
+# requires: native
 
 
 @micropython.viper

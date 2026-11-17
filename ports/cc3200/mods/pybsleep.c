@@ -136,7 +136,7 @@ static MP_DEFINE_CONST_OBJ_TYPE(
  ******************************************************************************/
 static pyb_sleep_obj_t *pyb_sleep_find (mp_obj_t obj);
 static void pyb_sleep_flash_powerdown (void);
-static NORETURN void pyb_sleep_suspend_enter (void);
+static MP_NORETURN void pyb_sleep_suspend_enter (void);
 void pyb_sleep_suspend_exit (void);
 static void pyb_sleep_obj_wakeup (void);
 static void PRCMInterruptHandler (void);
@@ -360,7 +360,7 @@ static void pyb_sleep_flash_powerdown (void) {
     MAP_SPICSDisable(SSPI_BASE);
 }
 
-static NORETURN void pyb_sleep_suspend_enter (void) {
+static MP_NORETURN void pyb_sleep_suspend_enter (void) {
     // enable full RAM retention
     MAP_PRCMSRAMRetentionEnable(PRCM_SRAM_COL_1 | PRCM_SRAM_COL_2 | PRCM_SRAM_COL_3 | PRCM_SRAM_COL_4, PRCM_SRAM_LPDS_RET);
 

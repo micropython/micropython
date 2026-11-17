@@ -1,6 +1,6 @@
 # tests basics of bound methods
 
-# uPy and CPython differ when printing a bound method, so just print the type
+# MicroPython and CPython differ when printing a bound method, so just print the type
 print(type(repr([].append)))
 
 

@@ -1,4 +1,5 @@
 # test builtin abs
+# requires: int-big
 
 # bignum
 print(abs(123456789012345678901234567890))

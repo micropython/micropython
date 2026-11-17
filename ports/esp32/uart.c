@@ -40,6 +40,10 @@
 
 static void uart_irq_handler(void *arg);
 
+#if CONFIG_IDF_TARGET_ESP32P4
+static uint8_t __DECLARE_RCC_ATOMIC_ENV __attribute__ ((unused));
+#endif
+
 // Declaring the HAL structure on the stack saves a tiny amount of static RAM
 #define REPL_HAL_DEFN() { .dev = UART_LL_GET_HW(MICROPY_HW_UART_REPL) }
 
@@ -51,11 +55,7 @@ static void uart_irq_handler(void *arg);
 
 void uart_stdout_init(void) {
     uart_hal_context_t repl_hal = REPL_HAL_DEFN();
-    #if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(5, 2, 0)
-    uart_sclk_t sclk;
-    #else
     soc_module_clk_t sclk;
-    #endif
     uint32_t sclk_freq;
 
     uart_hal_get_sclk(&repl_hal, &sclk); // To restore SCLK after uart_hal_init() resets it

@@ -14,7 +14,7 @@
         "AFX00002_01.iso_1000x750.jpg"
     ],
     "mcu": "stm32h7",
-    "product": "Arduino Opta WiFi",
+    "product": "Opta WiFi",
     "thumbnail": "",
     "url": "https://store.arduino.cc/products/opta-wifi",
     "vendor": "Arduino"

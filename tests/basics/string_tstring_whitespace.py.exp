@@ -1,0 +1,7 @@
+# Empty expression (whitespace only)
+Empty expr (space): SyntaxError (correct)
+Empty expr (tab): SyntaxError (correct)
+Empty expr (newline): SyntaxError (correct)
+
+# Lexer escape sequence: invalid then valid
+Invalid escape sequence: SyntaxError (correct)

@@ -1,4 +1,6 @@
 # test bytes + other
+# requires: host-endianness
+
 try:
     import array
 except ImportError:

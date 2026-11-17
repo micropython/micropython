@@ -28,9 +28,10 @@
 // extmod/machine_adc.c via MICROPY_PY_MACHINE_ADC_INCLUDEFILE.
 
 #include "py/mphal.h"
+#include "py/runtime.h"
 #include "adc.h"
 
-#if defined(STM32F0) || defined(STM32G0) || defined(STM32G4) || defined(STM32H5) || defined(STM32H7) || defined(STM32L0) || defined(STM32L4) || defined(STM32WB) || defined(STM32WL)
+#if defined(STM32F0) || defined(STM32G0) || defined(STM32G4) || defined(STM32H5) || defined(STM32H7) || defined(STM32L0) || defined(STM32L4) || defined(STM32N6) || defined(STM32U5) || defined(STM32WB) || defined(STM32WL)
 #define ADC_V2 (1)
 #else
 #define ADC_V2 (0)
@@ -80,15 +81,32 @@
 #define ADC_SAMPLETIME_DEFAULT      ADC_SAMPLETIME_12CYCLES_5
 #define ADC_SAMPLETIME_DEFAULT_INT  ADC_SAMPLETIME_160CYCLES_5
 #elif defined(STM32L1)
-#define ADC_SAMPLETIME_DEFAULT      ADC_SAMPLETIME_384CYCLES
+#define ADC_SAMPLETIME_DEFAULT      ADC_SAMPLETIME_16CYCLES
 #define ADC_SAMPLETIME_DEFAULT_INT  ADC_SAMPLETIME_384CYCLES
 #elif defined(STM32L4) || defined(STM32WB)
 #define ADC_SAMPLETIME_DEFAULT      ADC_SAMPLETIME_12CYCLES_5
 #define ADC_SAMPLETIME_DEFAULT_INT  ADC_SAMPLETIME_247CYCLES_5
+#elif defined(STM32N6)
+#define ADC_SAMPLETIME_DEFAULT      ADC_SAMPLETIME_46CYCLES_5
+#define ADC_SAMPLETIME_DEFAULT_INT  ADC_SAMPLETIME_246CYCLES_5
+#elif defined(STM32U5)
+#define ADC_SAMPLETIME_DEFAULT      ADC_SAMPLETIME_5CYCLES
+#define ADC_SAMPLETIME_DEFAULT_INT  ADC_SAMPLETIME_391CYCLES_5
 #endif
 
 // Timeout for waiting for end-of-conversion
 #define ADC_EOC_TIMEOUT_MS (10)
+
+#if ADC_V2
+// Busy-wait with timeout for ADC peripheral operations. 250ms is a generous
+// upper bound; normal operations complete in microseconds.
+#define ADC_WAIT_TIMEOUT_MS (250)
+#define ADC_WAIT(cond) do { \
+        uint32_t _t0 = mp_hal_ticks_ms(); \
+        while ((cond) && (mp_hal_ticks_ms() - _t0 < ADC_WAIT_TIMEOUT_MS)) { \
+        } \
+} while (0)
+#endif
 
 // Channel IDs for machine.ADC object
 typedef enum _machine_adc_internal_ch_t {
@@ -127,6 +145,8 @@ static uint32_t adc_ll_channel(uint32_t channel_id) {
         case MACHINE_ADC_INT_CH_TEMPSENSOR:
             #if defined(STM32G4)
             adc_ll_ch = ADC_CHANNEL_TEMPSENSOR_ADC1;
+            #elif defined(STM32N6)
+            adc_ll_ch = ADC_CHANNEL_0; // TODO
             #else
             adc_ll_ch = ADC_CHANNEL_TEMPSENSOR;
             #endif
@@ -170,6 +190,8 @@ static void adc_wait_eoc(ADC_TypeDef *adc, int32_t timeout_ms) {
 
 #if defined(STM32H7)
 static const uint8_t adc_cr_to_bits_table[] = {16, 14, 12, 10, 8, 8, 8, 8};
+#elif defined(STM32U5)
+static const uint8_t adc_cr_to_bits_table[] = {14, 12, 10, 8};
 #else
 static const uint8_t adc_cr_to_bits_table[] = {12, 10, 8, 6};
 #endif
@@ -183,7 +205,7 @@ void adc_config(ADC_TypeDef *adc, uint32_t bits) {
     if (adc == ADC1) {
         #if defined(STM32H5)
         __HAL_RCC_ADC_CLK_ENABLE();
-        #elif defined(STM32G4) || defined(STM32H7)
+        #elif defined(STM32G4) || defined(STM32H7) || defined(STM32N6) || defined(STM32U5)
         __HAL_RCC_ADC12_CLK_ENABLE();
         #else
         __HAL_RCC_ADC1_CLK_ENABLE();
@@ -193,7 +215,7 @@ void adc_config(ADC_TypeDef *adc, uint32_t bits) {
     if (adc == ADC2) {
         #if defined(STM32H5)
         __HAL_RCC_ADC_CLK_ENABLE();
-        #elif defined(STM32G4) || defined(STM32H7)
+        #elif defined(STM32G4) || defined(STM32H7) || defined(STM32N6) || defined(STM32U5)
         __HAL_RCC_ADC12_CLK_ENABLE();
         #else
         __HAL_RCC_ADC2_CLK_ENABLE();
@@ -216,7 +238,7 @@ void adc_config(ADC_TypeDef *adc, uint32_t bits) {
     adc->CFGR2 = 2 << ADC_CFGR2_CKMODE_Pos; // PCLK/4 (synchronous clock mode)
     #elif defined(STM32F4) || defined(STM32F7) || defined(STM32L4)
     ADCx_COMMON->CCR = 0; // ADCPR=PCLK/2
-    #elif defined(STM32G4) || defined(STM32H5)
+    #elif defined(STM32G4) || defined(STM32H5) || defined(STM32U5)
     ADC12_COMMON->CCR = 7 << ADC_CCR_PRESC_Pos; // PCLK/16 (asynchronous clock mode)
     #elif defined(STM32H7A3xx) || defined(STM32H7A3xxQ) || defined(STM32H7B3xx) || defined(STM32H7B3xxQ)
     ADC12_COMMON->CCR = 3 << ADC_CCR_CKMODE_Pos;
@@ -225,24 +247,28 @@ void adc_config(ADC_TypeDef *adc, uint32_t bits) {
     ADC3_COMMON->CCR = 3 << ADC_CCR_CKMODE_Pos;
     #elif defined(STM32L0)
     ADC1_COMMON->CCR = 0; // ADCPR=PCLK/2
+    #elif defined(STM32L1)
+    ADC1_COMMON->CCR = 1 << ADC_CCR_ADCPRE_Pos; // ADCPRE=2
+    #elif defined(STM32N6)
+    LL_RCC_SetADCPrescaler(4 - 1); // 200MHz / 4 = 50MHz
     #elif defined(STM32WB)
     ADC1_COMMON->CCR = 0 << ADC_CCR_PRESC_Pos | 0 << ADC_CCR_CKMODE_Pos; // PRESC=1, MODE=ASYNC
     #elif defined(STM32WL)
     ADC_COMMON->CCR = 0 << ADC_CCR_PRESC_Pos; // PRESC=1
     #endif
 
-    #if defined(STM32G4) || defined(STM32H5) || defined(STM32H7) || defined(STM32L4) || defined(STM32WB)
+    #if defined(STM32G4) || defined(STM32H5) || defined(STM32H7) || defined(STM32L4) || defined(STM32N6) || defined(STM32U5) || defined(STM32WB)
     if (adc->CR & ADC_CR_DEEPPWD) {
         adc->CR = 0; // disable deep powerdown
     }
     #endif
 
-    #if defined(STM32G4) || defined(STM32H5) || defined(STM32H7) || defined(STM32L0) || defined(STM32L4) || defined(STM32WB) || defined(STM32WL)
+    #if defined(STM32G0) || defined(STM32G4) || defined(STM32H5) || defined(STM32H7) || defined(STM32L0) || defined(STM32L4) || defined(STM32U5) || defined(STM32WB) || defined(STM32WL)
     if (!(adc->CR & ADC_CR_ADVREGEN)) {
         adc->CR = ADC_CR_ADVREGEN; // enable VREG
         #if defined(STM32H7)
         mp_hal_delay_us(10); // T_ADCVREG_STUP
-        #elif defined(STM32G4) || defined(STM32L4) || defined(STM32WB)
+        #elif defined(STM32G0) || defined(STM32G4) || defined(STM32L4) || defined(STM32WB)
         mp_hal_delay_us(20); // T_ADCVREG_STUP
         #endif
     }
@@ -253,24 +279,28 @@ void adc_config(ADC_TypeDef *adc, uint32_t bits) {
         // ADC isn't enabled so calibrate it now
         #if defined(STM32F0) || defined(STM32G0) || defined(STM32L0) || defined(STM32WL)
         LL_ADC_StartCalibration(adc);
-        #elif defined(STM32G4) || defined(STM32H5) || defined(STM32L4) || defined(STM32WB)
+        #elif defined(STM32G4) || defined(STM32H5) || defined(STM32L4) || defined(STM32U5) || defined(STM32WB)
         LL_ADC_StartCalibration(adc, LL_ADC_SINGLE_ENDED);
+        #elif defined(STM32N6)
+        ADC_HandleTypeDef hadc;
+        hadc.Instance = adc;
+        hadc.State = 0;
+        HAL_ADCEx_Calibration_Start(&hadc, ADC_SINGLE_ENDED);
         #else
         LL_ADC_StartCalibration(adc, LL_ADC_CALIB_OFFSET_LINEARITY, LL_ADC_SINGLE_ENDED);
         #endif
-        while (LL_ADC_IsCalibrationOnGoing(adc)) {
-        }
+        ADC_WAIT(LL_ADC_IsCalibrationOnGoing(adc));
     }
 
     if (adc->CR & ADC_CR_ADEN) {
         // ADC enabled, need to disable it to change configuration
         if (adc->CR & ADC_CR_ADSTART) {
-            adc->CR |= ADC_CR_ADSTP;
-            while (adc->CR & ADC_CR_ADSTP) {
-            }
+            adc->CR = (adc->CR & ~ADC_CR_BITS_PROPERTY_RS) | ADC_CR_ADSTP;
+            ADC_WAIT(adc->CR & ADC_CR_ADSTP);
         }
-        adc->CR |= ADC_CR_ADDIS;
-        while (adc->CR & ADC_CR_ADDIS) {
+        if (!(adc->CR & ADC_CR_ADSTART)) {
+            adc->CR = (adc->CR & ~ADC_CR_BITS_PROPERTY_RS) | ADC_CR_ADDIS;
+            ADC_WAIT(adc->CR & ADC_CR_ADDIS);
         }
     }
     #endif
@@ -310,11 +340,17 @@ void adc_config(ADC_TypeDef *adc, uint32_t bits) {
     uint32_t cfgr = res << ADC_CFGR_RES_Pos;
     adc->CFGR = (adc->CFGR & ~cfgr_clr) | cfgr;
 
+    #elif defined(STM32N6) || defined(STM32U5)
+
+    uint32_t cfgr1_clr = ADC_CFGR1_CONT | ADC_CFGR1_EXTEN | ADC_CFGR1_RES;
+    uint32_t cfgr1 = res << ADC_CFGR1_RES_Pos;
+    adc->CFGR1 = (adc->CFGR1 & ~cfgr1_clr) | cfgr1;
+
     #endif
 }
 
 static int adc_get_bits(ADC_TypeDef *adc) {
-    #if defined(STM32F0) || defined(STM32G0) || defined(STM32L0) || defined(STM32WL)
+    #if defined(STM32F0) || defined(STM32G0) || defined(STM32L0) || defined(STM32N6) || defined(STM32U5) || defined(STM32WL)
     uint32_t res = (adc->CFGR1 & ADC_CFGR1_RES) >> ADC_CFGR1_RES_Pos;
     #elif defined(STM32F4) || defined(STM32F7) || defined(STM32L1)
     uint32_t res = (adc->CR1 & ADC_CR1_RES) >> ADC_CR1_RES_Pos;
@@ -324,18 +360,26 @@ static int adc_get_bits(ADC_TypeDef *adc) {
     return adc_cr_to_bits_table[res];
 }
 
-static void adc_config_channel(ADC_TypeDef *adc, uint32_t channel, uint32_t sample_time) {
+static bool adc_config_channel(ADC_TypeDef *adc, uint32_t channel, uint32_t sample_time) {
     #if ADC_V2
-    if (!(adc->CR & ADC_CR_ADEN)) {
-        if (adc->CR & 0x3f) {
-            // Cannot enable ADC with CR!=0
-            return;
+    if (!(adc->CR & ADC_CR_ADEN) || (adc->CR & ADC_CR_ADSTART)) {
+        if (adc->CR & ADC_CR_BITS_PROPERTY_RS) {
+            // Stop and disable before (re-)enabling.
+            adc->CR = (adc->CR & ~ADC_CR_BITS_PROPERTY_RS) | ADC_CR_ADSTP;
+            ADC_WAIT(adc->CR & ADC_CR_ADSTP);
+            if (adc->CR & ADC_CR_ADSTP) {
+                return false;
+            }
+            adc->CR = (adc->CR & ~ADC_CR_BITS_PROPERTY_RS) | ADC_CR_ADDIS;
+            ADC_WAIT(adc->CR & ADC_CR_ADDIS);
+            if (adc->CR & ADC_CR_ADDIS) {
+                return false;
+            }
         }
-        adc->ISR = ADC_ISR_ADRDY; // clear ADRDY
-        adc->CR |= ADC_CR_ADEN;
+        adc->ISR = ADC_ISR_ADRDY;
+        adc->CR = (adc->CR & ~ADC_CR_BITS_PROPERTY_RS) | ADC_CR_ADEN;
         adc_stabilisation_delay_us(ADC_STAB_DELAY_US);
-        while (!(adc->ISR & ADC_ISR_ADRDY)) {
-        }
+        ADC_WAIT(!(adc->ISR & ADC_ISR_ADRDY));
     }
     #else
     if (!(adc->CR2 & ADC_CR2_ADON)) {
@@ -361,6 +405,12 @@ static void adc_config_channel(ADC_TypeDef *adc, uint32_t channel, uint32_t samp
     #else
     adc->SMPR = sample_time << ADC_SMPR_SMP_Pos; // select sample time
     #endif
+
+    #if defined(STM32G0)
+    if (__LL_ADC_IS_CHANNEL_INTERNAL(channel)) {
+        channel = __LL_ADC_CHANNEL_TO_DECIMAL_NB(channel);
+    }
+    #endif
     adc->CHSELR = 1 << channel; // select channel for conversion
 
     #elif defined(STM32F4) || defined(STM32F7)
@@ -385,17 +435,36 @@ static void adc_config_channel(ADC_TypeDef *adc, uint32_t channel, uint32_t samp
     }
     *smpr = (*smpr & ~(7 << (channel * 3))) | sample_time << (channel * 3); // select sample time
 
-    #elif defined(STM32G4) || defined(STM32H5) || defined(STM32H7) || defined(STM32L4) || defined(STM32WB)
-    #if defined(STM32G4) || defined(STM32H5) || defined(STM32H7A3xx) || defined(STM32H7A3xxQ) || defined(STM32H7B3xx) || defined(STM32H7B3xxQ)
+    #elif defined(STM32L1)
+
+    ADC_Common_TypeDef *adc_common = ADC1_COMMON;
+    if (channel == ADC_CHANNEL_VREFINT || channel == ADC_CHANNEL_TEMPSENSOR) {
+        adc_common->CCR |= ADC_CCR_TSVREFE;
+        if (channel == ADC_CHANNEL_TEMPSENSOR) {
+            adc_stabilisation_delay_us(ADC_TEMPSENSOR_DELAY_US);
+        }
+    }
+
+    adc->SQR1 = (1 - 1) << ADC_SQR1_L_Pos;
+    adc->SQR5 = (channel & 0x1f) << ADC_SQR5_SQ1_Pos;
+
+    __IO uint32_t *smpr;
+    if (channel >= 20) {
+        smpr = &adc->SMPR1;
+        channel -= 20;
+    } else if (channel >= 10) {
+        smpr = &adc->SMPR2;
+        channel -= 10;
+    } else {
+        smpr = &adc->SMPR3;
+    }
+    *smpr = (*smpr & ~(7 << (channel * 3))) | sample_time << (channel * 3); // select sample time
+
+    #elif defined(STM32G4) || defined(STM32H5) || defined(STM32H7) || defined(STM32L4) || defined(STM32N6) || defined(STM32U5) || defined(STM32WB)
+
+    #if defined(STM32G4) || defined(STM32H5) || defined(STM32H7A3xx) || defined(STM32H7A3xxQ) || defined(STM32H7B3xx) || defined(STM32H7B3xxQ) || defined(STM32N6) || defined(STM32U5)
     ADC_Common_TypeDef *adc_common = ADC12_COMMON;
     #elif defined(STM32H7)
-    #if defined(ADC_VER_V5_V90)
-    if (adc != ADC3) {
-        adc->PCSEL_RES0 |= 1 << channel;
-    }
-    #else
-    adc->PCSEL |= 1 << channel;
-    #endif
     ADC_Common_TypeDef *adc_common = adc == ADC3 ? ADC3_COMMON : ADC12_COMMON;
     #elif defined(STM32L4)
     ADC_Common_TypeDef *adc_common = ADCx_COMMON;
@@ -404,32 +473,49 @@ static void adc_config_channel(ADC_TypeDef *adc, uint32_t channel, uint32_t samp
     #endif
     if (channel == ADC_CHANNEL_VREFINT) {
         adc_common->CCR |= ADC_CCR_VREFEN;
+        #if !defined(STM32N6)
     #if defined(STM32G4)
     } else if (channel == ADC_CHANNEL_TEMPSENSOR_ADC1) {
         adc_common->CCR |= ADC_CCR_VSENSESEL;
+    #elif defined(STM32U5)
+    } else if (channel == ADC_CHANNEL_TEMPSENSOR) {
+        adc_common->CCR |= ADC_CCR_VSENSEEN;
     #else
     } else if (channel == ADC_CHANNEL_TEMPSENSOR) {
         adc_common->CCR |= ADC_CCR_TSEN;
     #endif
         adc_stabilisation_delay_us(ADC_TEMPSENSOR_DELAY_US);
+        #endif
     } else if (channel == ADC_CHANNEL_VBAT) {
         #if defined(STM32G4)
         adc_common->CCR |= ADC_CCR_VBATSEL;
         #else
         adc_common->CCR |= ADC_CCR_VBATEN;
         #endif
-    #if defined(STM32H5)
+    #if defined(STM32H5) || defined(STM32N6)
     } else if (channel == ADC_CHANNEL_VDDCORE) {
         adc->OR |= ADC_OR_OP0; // Enable Vddcore channel on ADC2
     #endif
     }
-    #if defined(STM32G4) || defined(STM32H5)
-    // G4 and H5 use encoded literals for internal channels -> extract ADC channel for following code
+
+    #if defined(STM32G4) || defined(STM32H5) || defined(STM32N6) || defined(STM32U5) || defined(STM32WB)
+    // MCU uses encoded literals for internal channels -> extract ADC channel for following code
     if (__LL_ADC_IS_CHANNEL_INTERNAL(channel)) {
         channel = __LL_ADC_CHANNEL_TO_DECIMAL_NB(channel);
     }
     adc->DIFSEL &= ~(1 << channel); // Set channel to Single-ended.
     #endif
+
+    #if defined(STM32H7) || defined(STM32N6)
+    #if defined(ADC_VER_V5_V90)
+    if (adc != ADC3) {
+        adc->PCSEL_RES0 |= 1 << channel;
+    }
+    #else
+    adc->PCSEL |= 1 << channel;
+    #endif
+    #endif
+
     adc->SQR1 = (channel & 0x1f) << ADC_SQR1_SQ1_Pos | (1 - 1) << ADC_SQR1_L_Pos;
     __IO uint32_t *smpr;
     if (channel <= 9) {
@@ -441,19 +527,24 @@ static void adc_config_channel(ADC_TypeDef *adc, uint32_t channel, uint32_t samp
     *smpr = (*smpr & ~(7 << (channel * 3))) | sample_time << (channel * 3); // select sample time
 
     #endif
+    return true;
 }
 
 static uint32_t adc_read_channel(ADC_TypeDef *adc) {
     uint32_t value;
-    #if defined(STM32G4)
-    // For STM32G4 there is errata 2.7.7, "Wrong ADC result if conversion done late after
-    // calibration or previous conversion".  According to the errata, this can be avoided
-    // by performing two consecutive ADC conversions and keeping the second result.
+    #if defined(STM32G4) || defined(STM32WB)
+    // For STM32G4 errata 2.7.7 / STM32WB errata 2.7.1:
+    // "Wrong ADC result if conversion done late after calibration or previous conversion"
+    // states an incorrect reading is returned if more than 1ms has elapsed since the last
+    // reading or calibration. According to the errata, this can be avoided by performing
+    // two consecutive ADC conversions and keeping the second result.
+    // Note: On STM32WB55 @ 64Mhz each ADC read takes ~ 3us.
     for (uint8_t i = 0; i < 2; i++)
     #endif
     {
         #if ADC_V2
-        adc->CR |= ADC_CR_ADSTART;
+        adc->ISR = ADC_ISR_EOC | ADC_ISR_EOS | ADC_ISR_OVR; // clear stale flags
+        adc->CR = (adc->CR & ~ADC_CR_BITS_PROPERTY_RS) | ADC_CR_ADSTART;
         #else
         adc->CR2 |= ADC_CR2_SWSTART;
         #endif
@@ -472,7 +563,9 @@ uint32_t adc_config_and_read_u16(ADC_TypeDef *adc, uint32_t channel, uint32_t sa
     channel = adc_ll_channel(channel);
 
     // Select, configure and read the channel.
-    adc_config_channel(adc, channel, sample_time);
+    if (!adc_config_channel(adc, channel, sample_time)) {
+        mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("ADC not responding"));
+    }
     uint32_t raw = adc_read_channel(adc);
 
     // If VBAT was sampled then deselect it to prevent battery drain.

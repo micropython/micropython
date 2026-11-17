@@ -96,14 +96,14 @@ static void array_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t 
 #if MICROPY_PY_BUILTINS_BYTEARRAY || MICROPY_PY_ARRAY
 static mp_obj_array_t *array_new(char typecode, size_t n) {
     int typecode_size = mp_binary_get_size('@', typecode, NULL);
-    mp_obj_array_t *o = m_new_obj(mp_obj_array_t);
     #if MICROPY_PY_BUILTINS_BYTEARRAY && MICROPY_PY_ARRAY
-    o->base.type = (typecode == BYTEARRAY_TYPECODE) ? &mp_type_bytearray : &mp_type_array;
+    const mp_obj_type_t *type = (typecode == BYTEARRAY_TYPECODE) ? &mp_type_bytearray : &mp_type_array;
     #elif MICROPY_PY_BUILTINS_BYTEARRAY
-    o->base.type = &mp_type_bytearray;
+    const mp_obj_type_t *type = &mp_type_bytearray;
     #else
-    o->base.type = &mp_type_array;
+    const mp_obj_type_t *type = &mp_type_array;
     #endif
+    mp_obj_array_t *o = mp_obj_malloc(mp_obj_array_t, type);
     o->typecode = typecode;
     o->free = 0;
     o->len = n;
@@ -113,6 +113,19 @@ static mp_obj_array_t *array_new(char typecode, size_t n) {
 #endif
 
 #if MICROPY_PY_BUILTINS_BYTEARRAY || MICROPY_PY_ARRAY
+static void array_extend_impl(mp_obj_array_t *array, mp_obj_t arg, char typecode, size_t len) {
+    mp_obj_t iterable = mp_getiter(arg, NULL);
+    mp_obj_t item;
+    size_t i = 0;
+    while ((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
+        if (len == 0) {
+            array_append(MP_OBJ_FROM_PTR(array), item);
+        } else {
+            mp_binary_set_val_array(typecode, array->items, i++, item);
+        }
+    }
+}
+
 static mp_obj_t array_construct(char typecode, mp_obj_t initializer) {
     // bytearrays can be raw-initialised from anything with the buffer protocol
     // other arrays can only be raw-initialised from bytes and bytearray objects
@@ -142,18 +155,7 @@ static mp_obj_t array_construct(char typecode, mp_obj_t initializer) {
     }
 
     mp_obj_array_t *array = array_new(typecode, len);
-
-    mp_obj_t iterable = mp_getiter(initializer, NULL);
-    mp_obj_t item;
-    size_t i = 0;
-    while ((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
-        if (len == 0) {
-            array_append(MP_OBJ_FROM_PTR(array), item);
-        } else {
-            mp_binary_set_val_array(typecode, array->items, i++, item);
-        }
-    }
-
+    array_extend_impl(array, initializer, typecode, len);
     return MP_OBJ_FROM_PTR(array);
 }
 #endif
@@ -189,7 +191,10 @@ static mp_obj_t bytearray_make_new(const mp_obj_type_t *type_in, size_t n_args, 
         // 1 arg, an integer: construct a blank bytearray of that length
         mp_uint_t len = mp_obj_get_int(args[0]);
         mp_obj_array_t *o = array_new(BYTEARRAY_TYPECODE, len);
+        // If this config is set then the GC clears all memory, so we don't need to.
+        #if !MICROPY_GC_CONSERVATIVE_CLEAR
         memset(o->items, 0, len);
+        #endif
         return MP_OBJ_FROM_PTR(o);
     } else {
         // 1 arg: construct the bytearray from that
@@ -413,7 +418,10 @@ static mp_obj_t array_extend(mp_obj_t self_in, mp_obj_t arg_in) {
 
     // allow to extend by anything that has the buffer protocol (extension to CPython)
     mp_buffer_info_t arg_bufinfo;
-    mp_get_buffer_raise(arg_in, &arg_bufinfo, MP_BUFFER_READ);
+    if (!mp_get_buffer(arg_in, &arg_bufinfo, MP_BUFFER_READ)) {
+        array_extend_impl(self, arg_in, 0, 0);
+        return mp_const_none;
+    }
 
     size_t sz = mp_binary_get_size('@', self->typecode, NULL);
 
@@ -529,8 +537,10 @@ static mp_obj_t array_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value
                     mp_seq_clear(dest_items, o->len + len_adj, o->len, item_sz);
                     // TODO: alloc policy after shrinking
                 }
-                o->free -= len_adj;
-                o->len += len_adj;
+                if (len_adj != 0) {
+                    o->free -= len_adj;
+                    o->len += len_adj;
+                }
                 return mp_const_none;
                 #else
                 return MP_OBJ_NULL; // op not supported
@@ -621,7 +631,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
 MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_bytearray,
     MP_QSTR_bytearray,
-    MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE | MP_TYPE_FLAG_ITER_IS_GETITER,
+    MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE | MP_TYPE_FLAG_ITER_IS_GETITER | MP_TYPE_FLAG_SUBSCR_ALLOWS_STACK_SLICE,
     make_new, bytearray_make_new,
     print, array_print,
     iter, array_iterator_new,
@@ -649,7 +659,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
 MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_memoryview,
     MP_QSTR_memoryview,
-    MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE | MP_TYPE_FLAG_ITER_IS_GETITER,
+    MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE | MP_TYPE_FLAG_ITER_IS_GETITER | MP_TYPE_FLAG_SUBSCR_ALLOWS_STACK_SLICE,
     make_new, memoryview_make_new,
     iter, array_iterator_new,
     unary_op, array_unary_op,

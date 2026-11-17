@@ -5,7 +5,7 @@ for i in range(len(s)):
 
 # Test all three forms of Unicode escape, and
 # all blocks of UTF-8 byte patterns
-s = "a\xA9\xFF\u0123\u0800\uFFEE\U0001F44C"
+s = "a\xa9\xff\u0123\u0800\uffee\U0001f44c"
 for i in range(-len(s), len(s)):
     print("s[%d]: %s   %X" % (i, s[i], ord(s[i])))
     print("s[:%d]: %d chars, '%s'" % (i, len(s[:i]), s[:i]))
@@ -16,11 +16,6 @@ for i in range(-len(s), len(s)):
 # Test UTF-8 encode and decode
 enc = s.encode()
 print(enc, enc.decode() == s)
-
-# printing of unicode chars using repr
-# NOTE: for some characters (eg \u10ff) we differ to CPython
-print(repr("a\uffff"))
-print(repr("a\U0001ffff"))
 
 # test invalid escape code
 try:
@@ -49,5 +44,15 @@ except UnicodeError:
     print("UnicodeError")
 try:
     str(b"\xf0\xe0\xed\xe8", "utf8")
+except UnicodeError:
+    print("UnicodeError")
+
+# test surrogate repr uses \uXXXX escape
+print(repr(chr(0xD800)))
+
+# test str() from buffer-protocol object (memoryview)
+print(str(memoryview(b"hello"), "utf-8"))
+try:
+    str(memoryview(b"\xff"), "utf-8")
 except UnicodeError:
     print("UnicodeError")

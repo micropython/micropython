@@ -28,6 +28,14 @@
 
 #define NVIC_PRIORITYGROUP_4    ((uint32_t)0x00000003)
 
+// Use this macro together with NVIC_SetPriority to indicate that an IRQn is
+// non-negative, which helps the compiler optimise the resulting inline function.
+#if NUMBER_OF_INT_VECTORS < 128 + 16
+#define IRQn_NONNEG(irq_num) ((irq_num) & 0x7f)
+#else
+#define IRQn_NONNEG(irq_num) ((irq_num) & 0xff)
+#endif
+
 static inline uint32_t query_irq(void) {
     return __get_PRIMASK();
 }
@@ -68,6 +76,8 @@ static inline void restore_irq_pri(uint32_t basepri) {
 // priority to make it a bit easier to figure out.
 
 #define IRQ_PRI_SYSTICK         NVIC_EncodePriority(NVIC_PRIORITYGROUP_4, 0, 0)
+
+#define IRQ_PRI_CSI             NVIC_EncodePriority(NVIC_PRIORITYGROUP_4, 3, 0)
 
 #define IRQ_PRI_OTG_HS          NVIC_EncodePriority(NVIC_PRIORITYGROUP_4, 6, 0)
 

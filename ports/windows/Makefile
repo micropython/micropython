@@ -29,6 +29,13 @@ PROG ?= micropython
 QSTR_DEFS += ../unix/qstrdefsport.h
 QSTR_GLOBAL_DEPENDENCIES += $(VARIANT_DIR)/mpconfigvariant.h
 
+# Enable building 32-bit code on 64-bit hosts.
+ifeq ($(MICROPY_FORCE_32BIT),1)
+CC += -m32
+CXX += -m32
+LD += -m32
+endif
+
 # include py core make definitions
 include $(TOP)/py/py.mk
 include $(TOP)/extmod/extmod.mk
@@ -41,6 +48,14 @@ INC += -I$(VARIANT_DIR)
 # compiler settings
 CFLAGS += $(INC) -Wall -Wpointer-arith -Wdouble-promotion -Werror -std=gnu99 -DUNIX -D__USE_MINGW_ANSI_STDIO=1 $(COPT) $(CFLAGS_EXTRA)
 LDFLAGS += -lm -lbcrypt $(LDFLAGS_EXTRA)
+
+# Force the use of 64-bits for file sizes in C library functions on 32-bit platforms.
+# This option has no effect on 64-bit builds.
+CFLAGS += -D_FILE_OFFSET_BITS=64
+
+# Force the use of 64-bits for time_t in C library functions on 32-bit platforms.
+# This option has no effect on 64-bit builds.
+CFLAGS += -D_TIME_BITS=64
 
 # Debugging/Optimization
 ifdef DEBUG
@@ -75,9 +90,10 @@ OBJ += $(addprefix $(BUILD)/, $(LIB_SRC_C:.c=.o))
 ifeq ($(MICROPY_USE_READLINE),1)
 CFLAGS += -DMICROPY_USE_READLINE=1
 SRC_C += shared/readline/readline.c
+SRC_C += shared/runtime/pyexec.c
 endif
 
-LIB += -lws2_32
+LIBS += -lws2_32
 
 # List of sources for qstr extraction
 SRC_QSTR += $(SRC_C) $(SRC_CXX) $(SHARED_SRC_C)
@@ -94,8 +110,6 @@ ifeq ($(shell $(CC) -dumpmachine),i686-w64-mingw32)
 # https://lemire.me/blog/2020/06/26/gcc-not-nearest
 CFLAGS += -msse -mfpmath=sse -march=pentium4
 endif
-
-CXXFLAGS += $(filter-out -std=gnu99,$(CFLAGS))
 
 include $(TOP)/py/mkrules.mk
 

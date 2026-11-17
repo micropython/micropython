@@ -36,20 +36,19 @@ typedef struct _machine_wdt_obj_t {
 
 static machine_wdt_obj_t wdt_default = {{&machine_wdt_type}};
 
-static machine_wdt_obj_t *mp_machine_wdt_make_new_instance(mp_int_t id, mp_int_t timeout_ms) {
+static machine_wdt_obj_t *mp_machine_wdt_make_new_instance(mp_obj_t id, mp_int_t timeout_ms) {
+    if (id != MP_OBJ_NEW_SMALL_INT(0)) {
+        mp_raise_ValueError(NULL);
+    }
+
     // The timeout on ESP8266 is fixed, so raise an exception if the argument is not the default.
     if (timeout_ms != 5000) {
         mp_raise_ValueError(NULL);
     }
 
-    switch (id) {
-        case 0:
-            ets_loop_dont_feed_sw_wdt = 1;
-            system_soft_wdt_feed();
-            return &wdt_default;
-        default:
-            mp_raise_ValueError(NULL);
-    }
+    ets_loop_dont_feed_sw_wdt = 1;
+    system_soft_wdt_feed();
+    return &wdt_default;
 }
 
 static void mp_machine_wdt_feed(machine_wdt_obj_t *self) {

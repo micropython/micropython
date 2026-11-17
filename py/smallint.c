@@ -26,32 +26,6 @@
 
 #include "py/smallint.h"
 
-bool mp_small_int_mul_overflow(mp_int_t x, mp_int_t y) {
-    // Check for multiply overflow; see CERT INT32-C
-    if (x > 0) { // x is positive
-        if (y > 0) { // x and y are positive
-            if (x > (MP_SMALL_INT_MAX / y)) {
-                return true;
-            }
-        } else { // x positive, y nonpositive
-            if (y < (MP_SMALL_INT_MIN / x)) {
-                return true;
-            }
-        } // x positive, y nonpositive
-    } else { // x is nonpositive
-        if (y > 0) { // x is nonpositive, y is positive
-            if (x < (MP_SMALL_INT_MIN / y)) {
-                return true;
-            }
-        } else { // x and y are nonpositive
-            if (x != 0 && y < (MP_SMALL_INT_MAX / x)) {
-                return true;
-            }
-        } // End if x and y are nonpositive
-    } // End if x is nonpositive
-    return false;
-}
-
 mp_int_t mp_small_int_modulo(mp_int_t dividend, mp_int_t divisor) {
     // Python specs require that mod has same sign as second operand
     dividend %= divisor;

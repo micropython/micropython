@@ -1,4 +1,5 @@
 # Test simple HTTP request with asyncio.open_connection()
+# requires: async
 
 try:
     import asyncio

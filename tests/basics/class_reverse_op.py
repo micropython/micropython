@@ -1,4 +1,5 @@
 # Test reverse operators.
+# requires: reverse-op
 
 # Test user type with integers.
 class A:

@@ -43,6 +43,7 @@ void USB_Handler_wrapper(void);
 
 void sercom_enable(Sercom *spi, int state);
 void sercom_register_irq(int sercom_id, void (*sercom_irq_handler));
+void dma_register_irq(int dma_channel, void (*dma_irq_handler));
 
 // Each device has a unique 128-bit serial number. The uniqueness of the serial number is
 // guaranteed only when using all 128 bits.

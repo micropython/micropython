@@ -11,3 +11,5 @@ Please note that the DFU bootloader comes factory flashed. Should you for any re
 entire flash, the DFU bootloader will have to be re-installed. Please follow the instructions
 [here](https://support.arduino.cc/hc/en-us/articles/9810414060188-Reset-the-Arduino-bootloader-on-the-Nano-ESP32)
 to do so.
+
+**Important** From the options below, download the `.app-bin` file for your board.

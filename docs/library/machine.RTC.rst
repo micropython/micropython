@@ -13,6 +13,7 @@ Example usage::
     rtc.datetime((2020, 1, 21, 2, 10, 32, 36, 0))
     print(rtc.datetime())
 
+Availability: **Alif, ESP32, ESP8266, MIMXRT, Renesas-RA, RP2, SAMD, STM32**
 
 Constructors
 ------------
@@ -42,11 +43,20 @@ Methods
 
    Initialise the RTC. Datetime is a tuple of the form:
 
-      ``(year, month, day[, hour[, minute[, second[, microsecond[, tzinfo]]]]])``
+      ``(year, month, day, hour, minute, second, microsecond, tzinfo)``
+
+   All eight arguments must be present. The ``microsecond`` and ``tzinfo``
+   values are currently ignored but might be used in the future.
+
+   Availability: CC3200, ESP32, MIMXRT, SAMD. The rtc.init() method on
+   the stm32 and renesas-ra ports just (re-)starts the RTC and does not
+   accept arguments.
 
 .. method:: RTC.now()
 
    Get get the current datetime tuple.
+
+   Availability: WiPy.
 
 .. method:: RTC.deinit()
 
@@ -62,9 +72,12 @@ Methods
 
    Get the number of milliseconds left before the alarm expires.
 
-.. method:: RTC.cancel(alarm_id=0)
+.. method:: RTC.alarm_cancel(alarm_id=0)
 
    Cancel a running alarm.
+
+   The mimxrt port also exposes this function as ``RTC.cancel(alarm_id=0)``, but this is
+   scheduled to be removed in MicroPython 2.0.
 
 .. method:: RTC.irq(*, trigger, handler=None, wake=machine.IDLE)
 
@@ -83,12 +96,24 @@ Methods
    a `bytes` object.
 
    Data written to RTC user memory is persistent across restarts, including
-   `machine.soft_reset()` and `machine.deepsleep()`.
+   :ref:`soft_reset` and `machine.deepsleep()`.
 
    The maximum length of RTC user memory is 2048 bytes by default on esp32,
    and 492 bytes on esp8266.
 
    Availability: esp32, esp8266 ports.
+
+   .. note::
+
+      For cross-port persistent storage, see :func:`machine.mem_backup`
+      which is available on more ports and provides direct memoryview access.
+
+   .. warning::
+
+      On esp32, ``RTC.memory()`` and :func:`machine.mem_backup` share the same
+      backing buffer but track length independently. Writes through one API
+      are not reflected in the length seen by the other. Avoid mixing the two
+      in the same application.
 
 Constants
 ---------

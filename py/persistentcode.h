@@ -45,34 +45,47 @@
 
 // Macros to encode/decode native architecture to/from the feature byte
 #define MPY_FEATURE_ENCODE_ARCH(arch) ((arch) << 2)
-#define MPY_FEATURE_DECODE_ARCH(feat) ((feat) >> 2)
+#define MPY_FEATURE_DECODE_ARCH(feat) (((feat) >> 2) & 0x2F)
 
 // Define the host architecture
-#if MICROPY_EMIT_X86
-    #define MPY_FEATURE_ARCH (MP_NATIVE_ARCH_X86)
-#elif MICROPY_EMIT_X64
-    #define MPY_FEATURE_ARCH (MP_NATIVE_ARCH_X64)
-#elif MICROPY_EMIT_THUMB
-    #if defined(__thumb2__)
-        #if defined(__ARM_FP) && (__ARM_FP & 8) == 8
-            #define MPY_FEATURE_ARCH (MP_NATIVE_ARCH_ARMV7EMDP)
-        #elif defined(__ARM_FP) && (__ARM_FP & 4) == 4
-            #define MPY_FEATURE_ARCH (MP_NATIVE_ARCH_ARMV7EMSP)
+#if MICROPY_PERSISTENT_CODE_LOAD_NATIVE
+    #if defined(__i386__) || defined(_M_IX86)
+        #define MPY_FEATURE_ARCH (MP_NATIVE_ARCH_X86)
+    #elif defined(__x86_64__) || defined(_M_X64)
+        #define MPY_FEATURE_ARCH (MP_NATIVE_ARCH_X64)
+    #elif defined(__thumb2__) || defined(__thumb__)
+        #if defined(__thumb2__)
+            #if defined(__ARM_FP) && (__ARM_FP & 8) == 8
+                #define MPY_FEATURE_ARCH (MP_NATIVE_ARCH_ARMV7EMDP)
+            #elif defined(__ARM_FP) && (__ARM_FP & 4) == 4
+                #define MPY_FEATURE_ARCH (MP_NATIVE_ARCH_ARMV7EMSP)
+            #else
+                #define MPY_FEATURE_ARCH (MP_NATIVE_ARCH_ARMV7EM)
+            #endif
         #else
-            #define MPY_FEATURE_ARCH (MP_NATIVE_ARCH_ARMV7EM)
+            #define MPY_FEATURE_ARCH (MP_NATIVE_ARCH_ARMV6M)
+        #endif
+        #define MPY_FEATURE_ARCH_TEST(x) (MP_NATIVE_ARCH_ARMV6M <= (x) && (x) <= MPY_FEATURE_ARCH)
+    #elif defined(__arm__)
+        #define MPY_FEATURE_ARCH (MP_NATIVE_ARCH_ARMV6)
+    #elif defined(__xtensa__)
+        #include <xtensa/config/core-isa.h>
+        #if XCHAL_HAVE_WINDOWED
+            #define MPY_FEATURE_ARCH (MP_NATIVE_ARCH_XTENSAWIN)
+        #else
+            #define MPY_FEATURE_ARCH (MP_NATIVE_ARCH_XTENSA)
+        #endif
+    #elif defined(__riscv)
+        #if __riscv_xlen == 32
+            #define MPY_FEATURE_ARCH (MP_NATIVE_ARCH_RV32IMC)
+        #elif __riscv_xlen == 64
+            #define MPY_FEATURE_ARCH (MP_NATIVE_ARCH_RV64IMC)
+        #else
+            #error "Unsupported RISC-V architecture."
         #endif
     #else
-        #define MPY_FEATURE_ARCH (MP_NATIVE_ARCH_ARMV6M)
+        #error "Unsupported native architecture."
     #endif
-    #define MPY_FEATURE_ARCH_TEST(x) (MP_NATIVE_ARCH_ARMV6M <= (x) && (x) <= MPY_FEATURE_ARCH)
-#elif MICROPY_EMIT_ARM
-    #define MPY_FEATURE_ARCH (MP_NATIVE_ARCH_ARMV6)
-#elif MICROPY_EMIT_XTENSA
-    #define MPY_FEATURE_ARCH (MP_NATIVE_ARCH_XTENSA)
-#elif MICROPY_EMIT_XTENSAWIN
-    #define MPY_FEATURE_ARCH (MP_NATIVE_ARCH_XTENSAWIN)
-#elif MICROPY_EMIT_RV32
-    #define MPY_FEATURE_ARCH (MP_NATIVE_ARCH_RV32IMC)
 #else
     #define MPY_FEATURE_ARCH (MP_NATIVE_ARCH_NONE)
 #endif
@@ -84,6 +97,10 @@
 // 16-bit little-endian integer with the second and third bytes of supported .mpy files
 #define MPY_FILE_HEADER_INT (MPY_VERSION \
     | (MPY_FEATURE_ENCODE_SUB_VERSION(MPY_SUB_VERSION) | MPY_FEATURE_ENCODE_ARCH(MPY_FEATURE_ARCH)) << 8)
+
+// Architecture-specific flags are present in the .mpy file
+#define MPY_FEATURE_ARCH_FLAGS (0x40)
+#define MPY_FEATURE_ARCH_FLAGS_TEST(x) (((x) & MPY_FEATURE_ARCH_FLAGS) == MPY_FEATURE_ARCH_FLAGS)
 
 enum {
     MP_NATIVE_ARCH_NONE = 0,
@@ -98,6 +115,7 @@ enum {
     MP_NATIVE_ARCH_XTENSA,
     MP_NATIVE_ARCH_XTENSAWIN,
     MP_NATIVE_ARCH_RV32IMC,
+    MP_NATIVE_ARCH_RV64IMC,
     MP_NATIVE_ARCH_DEBUG, // this entry should always be last
 };
 
@@ -121,6 +139,7 @@ void mp_raw_code_load_file(qstr filename, mp_compiled_module_t *ctx);
 
 void mp_raw_code_save(mp_compiled_module_t *cm, mp_print_t *print);
 void mp_raw_code_save_file(mp_compiled_module_t *cm, qstr filename);
+mp_obj_t mp_raw_code_save_fun_to_bytes(const mp_module_constants_t *consts, mp_proto_fun_t proto_fun);
 
 void mp_native_relocate(void *reloc, uint8_t *text, uintptr_t reloc_text);
 

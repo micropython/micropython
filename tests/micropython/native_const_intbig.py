@@ -1,4 +1,5 @@
 # check loading constants
+# requires: int-big native
 
 
 @micropython.native

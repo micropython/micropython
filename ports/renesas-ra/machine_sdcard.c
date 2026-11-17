@@ -28,12 +28,12 @@
 #include "py/runtime.h"
 #include "py/mphal.h"
 #include "py/mperrno.h"
-#include "modmachine.h"
+#include "extmod/modmachine.h"
 #include "extmod/vfs.h"
 #include "hal_data.h"
 #include "led.h"
 
-#if MICROPY_HW_HAS_SDHI_CARD
+#if MICROPY_PY_MACHINE_SDCARD
 
 #define CARD_HOLDER    1000  // 500 ms
 #define CARD_OPERATION  200  // 100 ms

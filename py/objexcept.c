@@ -150,10 +150,6 @@ static void decompress_error_text_maybe(mp_obj_exception_t *o) {
             mp_decompress_rom_string(buf, (mp_rom_error_text_t)o_str->data);
             o_str->data = buf;
             o_str->len = strlen((const char *)buf);
-            o_str->hash = 0;
-        }
-        // Lazily compute the string hash.
-        if (o_str->hash == 0) {
             o_str->hash = qstr_compute_hash(o_str->data, o_str->len);
         }
     }
@@ -165,7 +161,7 @@ void mp_obj_exception_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kin
     mp_print_kind_t k = kind & ~PRINT_EXC_SUBCLASS;
     bool is_subclass = kind & PRINT_EXC_SUBCLASS;
     if (!is_subclass && (k == PRINT_REPR || k == PRINT_EXC)) {
-        mp_print_str(print, qstr_str(o->base.type->name));
+        mp_print_str(print, mp_obj_get_type_str(o_in));
     }
 
     if (k == PRINT_EXC) {
@@ -272,7 +268,7 @@ void mp_obj_exception_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
             // We allow 'exc.__traceback__ = None' assignment as low-level
             // optimization of pre-allocating exception instance and raising
             // it repeatedly - this avoids memory allocation during raise.
-            // However, uPy will keep adding traceback entries to such
+            // However, MicroPython will keep adding traceback entries to such
             // exception instance, so before throwing it, traceback should
             // be cleared like above.
             self->traceback_len = 0;
@@ -553,7 +549,14 @@ bool mp_obj_is_exception_type(mp_obj_t self_in) {
 
 // return true if the given object is an instance of an exception type
 bool mp_obj_is_exception_instance(mp_obj_t self_in) {
-    return mp_obj_is_exception_type(MP_OBJ_FROM_PTR(mp_obj_get_type(self_in)));
+    if (mp_obj_is_native_exception_instance(self_in)) {
+        return true;
+    }
+    if (!mp_obj_is_exception_type(MP_OBJ_FROM_PTR(mp_obj_get_type(self_in)))) {
+        return false;
+    }
+    mp_obj_instance_t *self = MP_OBJ_TO_PTR(self_in);
+    return self->subobj[0] != MP_OBJ_FROM_PTR((void *)&mp_native_base_init_wrapper_obj);
 }
 
 // Return true if exception (type or instance) is a subclass of given

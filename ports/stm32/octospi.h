@@ -28,6 +28,17 @@
 
 #include "drivers/bus/qspi.h"
 
+#define OCTOSPI_MAP_ADDR (0x90000000)
+#define OCTOSPI_MAP_ADDR_MAX (0xa0000000)
+
 extern const mp_qspi_proto_t octospi_proto;
+
+void octospi_memory_map(void);
+void octospi_memory_map_exit(void);
+void octospi_memory_map_restart(void);
+
+static inline bool octospi_is_valid_addr(uint32_t addr) {
+    return OCTOSPI_MAP_ADDR <= addr && addr < OCTOSPI_MAP_ADDR_MAX;
+}
 
 #endif // MICROPY_INCLUDED_STM32_OCTOSPI_H

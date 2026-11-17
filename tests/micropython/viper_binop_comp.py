@@ -1,4 +1,7 @@
 # test comparison operators
+# requires: viper
+
+
 @micropython.viper
 def f(x: int, y: int):
     if x < y:

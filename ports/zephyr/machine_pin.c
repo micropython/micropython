@@ -36,11 +36,14 @@
 #include "py/gc.h"
 #include "py/mphal.h"
 #include "extmod/modmachine.h"
+#include "extmod/virtpin.h"
 #include "shared/runtime/mpirq.h"
 #include "modmachine.h"
 #include "zephyr_device.h"
 
 #if MICROPY_PY_MACHINE
+
+#include "machine_pin_related.c"
 
 typedef struct _machine_pin_irq_obj_t {
     mp_irq_obj_t base;
@@ -63,27 +66,13 @@ void machine_pin_deinit(void) {
 static void gpio_callback_handler(const struct device *port, struct gpio_callback *cb, gpio_port_pins_t pins) {
     machine_pin_irq_obj_t *irq = CONTAINER_OF(cb, machine_pin_irq_obj_t, callback);
 
-    #if MICROPY_STACK_CHECK
-    // This callback executes in an ISR context so the stack-limit check must be changed to
-    // use the ISR stack for the duration of this function (so that hard IRQ callbacks work).
-    char *orig_stack_top = MP_STATE_THREAD(stack_top);
-    size_t orig_stack_limit = MP_STATE_THREAD(stack_limit);
-    MP_STATE_THREAD(stack_top) = (void *)&irq;
-    MP_STATE_THREAD(stack_limit) = CONFIG_ISR_STACK_SIZE - 512;
-    #endif
-
     mp_irq_handler(&irq->base);
-
-    #if MICROPY_STACK_CHECK
-    // Restore original stack-limit checking values.
-    MP_STATE_THREAD(stack_top) = orig_stack_top;
-    MP_STATE_THREAD(stack_limit) = orig_stack_limit;
-    #endif
 }
 
 static void machine_pin_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_pin_obj_t *self = self_in;
-    mp_printf(print, "<Pin %p %d>", self->port, self->pin);
+    const char *port_name = zephyr_device_get_name(self->port);
+    mp_printf(print, "<Pin %s %d>", port_name, self->pin);
 }
 
 // pin.init(mode, pull=None, *, value)
@@ -115,8 +104,14 @@ static mp_obj_t machine_pin_obj_init_helper(machine_pin_obj_t *self, size_t n_ar
     }
 
     int ret = gpio_pin_configure(self->port, self->pin, mode | pull | init);
-    if (ret) {
+    if (ret == -ENOTSUP) {
+        mp_raise_ValueError(MP_ERROR_TEXT("unsupported pin setup"));
+    } else if (ret == -EINVAL) {
         mp_raise_ValueError(MP_ERROR_TEXT("invalid pin"));
+    } else if (ret == -EIO) {
+        mp_raise_ValueError(MP_ERROR_TEXT("I/O error"));
+    } else if (ret) {
+        mp_raise_ValueError(MP_ERROR_TEXT("couldn't configure pin"));
     }
 
     return mp_const_none;
@@ -126,19 +121,50 @@ static mp_obj_t machine_pin_obj_init_helper(machine_pin_obj_t *self, size_t n_ar
 mp_obj_t mp_pin_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
 
-    // get the wanted port
-    if (!mp_obj_is_type(args[0], &mp_type_tuple)) {
-        mp_raise_ValueError(MP_ERROR_TEXT("Pin id must be tuple of (\"GPIO_x\", pin#)"));
+    machine_pin_obj_t *pin;
+    if (mp_obj_is_type(args[0], &machine_pin_type)) {
+        // Already a Pin object, reuse it.
+        pin = MP_OBJ_TO_PTR(args[0]);
     }
-    mp_obj_t *items;
-    mp_obj_get_array_fixed_n(args[0], 2, &items);
-    const struct device *wanted_port = zephyr_device_find(items[0]);
-    int wanted_pin = mp_obj_get_int(items[1]);
+    #ifdef CONFIG_MICROPY_RELATED_PINS
+    else if ((mp_obj_is_str(args[0]) || mp_obj_is_int(args[0]))) {
 
-    machine_pin_obj_t *pin = m_new_obj(machine_pin_obj_t);
-    pin->base = machine_pin_obj_template;
-    pin->port = wanted_port;
-    pin->pin = wanted_pin;
+        machine_pin_obj_t related_pin = machine_pin_get_related(args[0]);
+
+        if (related_pin.port == NULL) {
+            mp_raise_ValueError(MP_ERROR_TEXT("not a valid pin"));
+        }
+
+        pin = m_new_obj(machine_pin_obj_t);
+        pin->base = machine_pin_obj_template;
+        pin->port = related_pin.port;
+        pin->pin = related_pin.pin;
+        pin->irq = NULL;
+    }
+    #endif
+    else if (mp_obj_is_type(args[0], &mp_type_tuple)) {
+        // Get the wanted (port, pin) values.
+        mp_obj_t *items;
+        mp_obj_get_array_fixed_n(args[0], 2, &items);
+        const struct device *wanted_port = zephyr_device_find(items[0]);
+        int wanted_pin = mp_obj_get_int(items[1]);
+
+        pin = m_new_obj(machine_pin_obj_t);
+        pin->base = machine_pin_obj_template;
+        pin->port = wanted_port;
+        pin->pin = wanted_pin;
+        pin->irq = NULL;
+    }
+    #ifdef CONFIG_MICROPY_RELATED_PINS
+    else {
+        mp_raise_ValueError(MP_ERROR_TEXT("not a valid pin or (\"port\", pin#) tuple"));
+    }
+    #else
+    else {
+        // Unknown Pin.
+        mp_raise_ValueError(MP_ERROR_TEXT("Pin id must be tuple of (\"port\", pin#)"));
+    }
+    #endif
 
     if (n_args > 1 || n_kw > 0) {
         // pin mode given, so configure this GPIO
@@ -271,10 +297,14 @@ static const mp_rom_map_elem_t machine_pin_locals_dict_table[] = {
     // class constants
     { MP_ROM_QSTR(MP_QSTR_IN),        MP_ROM_INT(GPIO_INPUT) },
     { MP_ROM_QSTR(MP_QSTR_OUT),       MP_ROM_INT(GPIO_OUTPUT) },
+    { MP_ROM_QSTR(MP_QSTR_INOUT),       MP_ROM_INT(GPIO_INPUT | GPIO_OUTPUT) },
+    { MP_ROM_QSTR(MP_QSTR_OPEN_DRAIN), MP_ROM_INT(GPIO_OPEN_DRAIN) },
     { MP_ROM_QSTR(MP_QSTR_PULL_UP),   MP_ROM_INT(GPIO_PULL_UP) },
     { MP_ROM_QSTR(MP_QSTR_PULL_DOWN), MP_ROM_INT(GPIO_PULL_DOWN) },
     { MP_ROM_QSTR(MP_QSTR_IRQ_RISING), MP_ROM_INT(GPIO_INT_EDGE_RISING) },
     { MP_ROM_QSTR(MP_QSTR_IRQ_FALLING), MP_ROM_INT(GPIO_INT_EDGE_FALLING) },
+    { MP_ROM_QSTR(MP_QSTR_IRQ_LOW_LEVEL), MP_ROM_INT(GPIO_INT_LEVEL_LOW) },
+    { MP_ROM_QSTR(MP_QSTR_IRQ_HIGH_LEVEL), MP_ROM_INT(GPIO_INT_LEVEL_HIGH) },
 };
 
 static MP_DEFINE_CONST_DICT(machine_pin_locals_dict, machine_pin_locals_dict_table);

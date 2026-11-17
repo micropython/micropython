@@ -1,4 +1,5 @@
 # test loading constants in native functions
+# requires: native
 
 
 @micropython.native

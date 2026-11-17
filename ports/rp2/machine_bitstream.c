@@ -32,17 +32,13 @@
 
 #if MICROPY_PY_MACHINE_BITSTREAM
 
+#if PICO_RP2350
+#define MP_HAL_BITSTREAM_NS_OVERHEAD  (5)
+#else
 #define MP_HAL_BITSTREAM_NS_OVERHEAD  (9)
+#endif
 
 #if PICO_RISCV
-
-__attribute__((naked)) void mcycle_init(void) {
-    __asm volatile (
-        "li a0, 4\n"
-        "csrw mcountinhibit, a0\n"
-        "ret\n"
-        );
-}
 
 __attribute__((naked)) uint32_t mcycle_get(void) {
     __asm volatile (
@@ -95,7 +91,8 @@ void __time_critical_func(machine_bitstream_high_low)(mp_hal_pin_obj_t pin, uint
 
     #elif PICO_RISCV
 
-    mcycle_init();
+    // Uninhibit the cycle counter.
+    __asm volatile ("csrci mcountinhibit, 1\n");
 
     for (size_t i = 0; i < len; ++i) {
         uint8_t b = buf[i];

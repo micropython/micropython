@@ -1,4 +1,5 @@
 # Test that tasks return their value correctly to the caller
+# requires: async
 
 try:
     import asyncio
@@ -12,7 +13,7 @@ def custom_handler(loop, context):
 
 
 async def task(i):
-    # Raise with 2 args so exception prints the same in uPy and CPython
+    # Raise with 2 args so exception prints the same in MicroPython and CPython
     raise ValueError(i, i + 1)
 
 

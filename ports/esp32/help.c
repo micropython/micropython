@@ -48,7 +48,7 @@ const char esp32_help_text[] =
     "Basic WiFi configuration:\n"
     "\n"
     "import network\n"
-    "sta_if = network.WLAN(network.STA_IF); sta_if.active(True)\n"
+    "sta_if = network.WLAN(network.WLAN.IF_STA); sta_if.active(True)\n"
     "sta_if.scan()                             # Scan for available access points\n"
     "sta_if.connect(\"<AP_name>\", \"<password>\") # Connect to an AP\n"
     "sta_if.isconnected()                      # Check for successful connection\n"

@@ -52,9 +52,48 @@
 #define MICROPY_PY_PYB_LEGACY (1)
 #endif
 
+// Whether to include legacy methods and constants in machine.Pin (which is also pyb.Pin).
+#ifndef MICROPY_PY_MACHINE_PIN_LEGACY
+#define MICROPY_PY_MACHINE_PIN_LEGACY (!MICROPY_PREVIEW_VERSION_2)
+#endif
+
+// Whether to include support for alternate function selection in machine.Pin (and pyb.Pin).
+#ifndef MICROPY_PY_MACHINE_PIN_ALT_SUPPORT
+#define MICROPY_PY_MACHINE_PIN_ALT_SUPPORT (1)
+#endif
+
 // Whether machine.bootloader() will enter the bootloader via reset, or direct jump.
 #ifndef MICROPY_HW_ENTER_BOOTLOADER_VIA_RESET
+#if defined(STM32N6)
+#define MICROPY_HW_ENTER_BOOTLOADER_VIA_RESET (0)
+#else
 #define MICROPY_HW_ENTER_BOOTLOADER_VIA_RESET (1)
+#endif
+#endif
+
+// Whether to enable ROMFS on the internal flash.
+#ifndef MICROPY_HW_ROMFS_ENABLE_INTERNAL_FLASH
+#define MICROPY_HW_ROMFS_ENABLE_INTERNAL_FLASH (0)
+#endif
+
+// Whether to enable ROMFS on external QSPI flash.
+#ifndef MICROPY_HW_ROMFS_ENABLE_EXTERNAL_QSPI
+#define MICROPY_HW_ROMFS_ENABLE_EXTERNAL_QSPI (0)
+#endif
+
+// Whether to enable ROMFS on external XSPI flash.
+#ifndef MICROPY_HW_ROMFS_ENABLE_EXTERNAL_XSPI
+#define MICROPY_HW_ROMFS_ENABLE_EXTERNAL_XSPI (0)
+#endif
+
+// Whether to enable ROMFS partition 0.
+#ifndef MICROPY_HW_ROMFS_ENABLE_PART0
+#define MICROPY_HW_ROMFS_ENABLE_PART0 (0)
+#endif
+
+// Whether to enable ROMFS partition 1.
+#ifndef MICROPY_HW_ROMFS_ENABLE_PART1
+#define MICROPY_HW_ROMFS_ENABLE_PART1 (0)
 #endif
 
 // Whether to enable storage on the internal flash of the MCU
@@ -97,9 +136,16 @@
 #define MICROPY_HW_ENABLE_USB (0)
 #endif
 
-// Whether to enable the PA0-PA3 servo driver, exposed as pyb.Servo
+// Whether to enable the servo driver, exposed as pyb.Servo
 #ifndef MICROPY_HW_ENABLE_SERVO
 #define MICROPY_HW_ENABLE_SERVO (0)
+#endif
+
+// The timer the servo driver uses: TIM5 (the default) or TIM4.  With TIM5 the
+// servos are on PA0-PA3.  A board using TIM4 defines MICROPY_HW_SERVO1 and up,
+// servo N on channel N of the timer.
+#ifndef MICROPY_HW_SERVO_TIM
+#define MICROPY_HW_SERVO_TIM (5)
 #endif
 
 // Whether to enable a USR switch, exposed as pyb.Switch
@@ -177,6 +223,12 @@
 #define MICROPY_HW_SPI_IS_RESERVED(spi_id) (false)
 #endif
 
+// Function to determine if the given spi_id is static or not.
+// Static SPI instances can be accessed by the user but are not deinit'd on soft reset.
+#ifndef MICROPY_HW_SPI_IS_STATIC
+#define MICROPY_HW_SPI_IS_STATIC(spi_id) (false)
+#endif
+
 // Function to determine if the given tim_id is reserved for system use or not.
 #ifndef MICROPY_HW_TIM_IS_RESERVED
 #define MICROPY_HW_TIM_IS_RESERVED(tim_id) (false)
@@ -205,12 +257,52 @@
 #error "Old USBD_xxx configuration option used, renamed to MICROPY_HW_USB_xxx"
 #endif
 
+// Select whether TinyUSB or legacy STM stack is used to provide USB.
+#ifndef MICROPY_HW_TINYUSB_STACK
+#define MICROPY_HW_TINYUSB_STACK (0)
+#endif
+
+// Central definition for STM USB stack (when not using TinyUSB)
+#define MICROPY_HW_STM_USB_STACK (MICROPY_HW_ENABLE_USB && !MICROPY_HW_TINYUSB_STACK)
+
+#if MICROPY_HW_TINYUSB_STACK
+#ifndef MICROPY_HW_ENABLE_USBDEV
+#define MICROPY_HW_ENABLE_USBDEV (1)
+#define MICROPY_HW_TINYUSB_LL_INIT mp_usbd_ll_init
+void mp_usbd_ll_init(void);
+#endif
+
+#ifndef MICROPY_HW_USB_CDC
+#define MICROPY_HW_USB_CDC (1)
+#endif
+
+#ifndef MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
+#define MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE    (1) // Support machine.USBDevice
+#endif
+#endif
+
+// Configure maximum number of CDC VCP interfaces, and whether MSC/HID are supported
+#ifndef MICROPY_HW_USB_CDC_NUM
+#define MICROPY_HW_USB_CDC_NUM (1)
+#endif
+#ifndef MICROPY_HW_USB_MSC
+#define MICROPY_HW_USB_MSC (MICROPY_HW_ENABLE_USB)
+#endif
+#ifndef MICROPY_HW_USB_HID
+#define MICROPY_HW_USB_HID (MICROPY_HW_STM_USB_STACK)
+#endif
+
 // Default VID and PID values to use for the USB device.  If MICROPY_HW_USB_VID
 // is defined by a board then all needed PID options must also be defined.  The
 // VID and PID can also be set dynamically in pyb.usb_mode().
 // Windows needs a different PID to distinguish different device configurations.
 #ifndef MICROPY_HW_USB_VID
 #define MICROPY_HW_USB_VID              (0xf055)
+
+// USB PID for TinyUSB Stack.
+#define MICROPY_HW_USB_PID              (0x9802)
+
+// USB PID table for STM USB stack.
 #define MICROPY_HW_USB_PID_CDC_MSC      (0x9800)
 #define MICROPY_HW_USB_PID_CDC_HID      (0x9801)
 #define MICROPY_HW_USB_PID_CDC          (0x9802)
@@ -324,6 +416,8 @@
 #endif
 #define MICROPY_HW_MAX_LPUART (0)
 
+#define CFG_TUSB_MCU OPT_MCU_STM32F4
+
 // Configuration for STM32F7 series
 #elif defined(STM32F7)
 
@@ -339,6 +433,8 @@
 #define MICROPY_HW_MAX_UART (8)
 #define MICROPY_HW_MAX_LPUART (0)
 
+#define CFG_TUSB_MCU OPT_MCU_STM32F7
+
 // Configuration for STM32G0 series
 #elif defined(STM32G0)
 
@@ -348,6 +444,8 @@
 #define MICROPY_HW_MAX_TIMER (17)
 #define MICROPY_HW_MAX_UART (6)
 #define MICROPY_HW_MAX_LPUART (2)
+
+#define CFG_TUSB_MCU OPT_MCU_STM32G0
 
 // Configuration for STM32G4 series
 #elif defined(STM32G4)
@@ -359,6 +457,8 @@
 #define MICROPY_HW_MAX_UART (5) // UART1-5 + LPUART1
 #define MICROPY_HW_MAX_LPUART (1)
 
+#define CFG_TUSB_MCU OPT_MCU_STM32G4
+
 // Configuration for STM32H5 series
 #elif defined(STM32H5)
 
@@ -368,6 +468,8 @@
 #define MICROPY_HW_MAX_TIMER (17)
 #define MICROPY_HW_MAX_UART (12)
 #define MICROPY_HW_MAX_LPUART (1)
+
+#define CFG_TUSB_MCU OPT_MCU_STM32H5
 
 // Configuration for STM32H7A3/B3 series
 #elif defined(STM32H7A3xx) || defined(STM32H7A3xxQ) || \
@@ -380,6 +482,8 @@
 #define MICROPY_HW_MAX_UART (10)
 #define MICROPY_HW_MAX_LPUART (1)
 
+#define CFG_TUSB_MCU OPT_MCU_STM32H7
+
 // Configuration for STM32H7 series
 #elif defined(STM32H7)
 
@@ -389,6 +493,8 @@
 #define MICROPY_HW_MAX_TIMER (17)
 #define MICROPY_HW_MAX_UART (8)
 #define MICROPY_HW_MAX_LPUART (1)
+
+#define CFG_TUSB_MCU OPT_MCU_STM32H7
 
 #if defined(MICROPY_HW_ANALOG_SWITCH_PA0) \
     || defined(MICROPY_HW_ANALOG_SWITCH_PA1) \
@@ -409,6 +515,8 @@
 #define MICROPY_HW_MAX_UART (5)
 #define MICROPY_HW_MAX_LPUART (1)
 
+#define CFG_TUSB_MCU OPT_MCU_STM32L0
+
 // Configuration for STM32L1 series
 #elif defined(STM32L1)
 #define MP_HAL_UNIQUE_ID_ADDRESS (UID_BASE)
@@ -418,6 +526,8 @@
 #define MICROPY_HW_MAX_TIMER (11)
 #define MICROPY_HW_MAX_UART (5)
 #define MICROPY_HW_MAX_LPUART (0)
+
+#define CFG_TUSB_MCU OPT_MCU_STM32L1
 
 // Configuration for STM32L4 series
 #elif defined(STM32L4)
@@ -429,6 +539,35 @@
 #define MICROPY_HW_MAX_UART (5)
 #define MICROPY_HW_MAX_LPUART (1)
 
+#define CFG_TUSB_MCU OPT_MCU_STM32L4
+
+// Configuration for STM32N6 series
+#elif defined(STM32N6)
+
+#define MP_HAL_UNIQUE_ID_ADDRESS (UID_BASE)
+#define PYB_EXTI_NUM_VECTORS (20) // only EXTI[15:0], RTC and TAMP currently supported
+#define MICROPY_HW_MAX_I2C (4)
+#define MICROPY_HW_MAX_TIMER (18)
+#define MICROPY_HW_MAX_UART (10)
+#define MICROPY_HW_MAX_LPUART (1)
+
+#define CFG_TUSB_MCU OPT_MCU_STM32N6
+#define CFG_TUSB_RHPORT0_MODE (OPT_MODE_DEVICE | OPT_MODE_HIGH_SPEED)
+
+// Configuration for STM32U5 series
+#elif defined(STM32U5)
+
+#define MP_HAL_UNIQUE_ID_ADDRESS (UID_BASE)
+// STM32U5 has 26 EXTI vectors but does not have line for RTC/USB.
+// To treat these interrupts as same as exti, add virtual vectors for
+// EXTI_RTC_TIMESTAMP (26), EXTI_RTC_WAKEUP (27),
+// EXTI_RTC_ALARM (28), and EXTI_USB_OTG_FS_WAKEUP  (29)
+#define PYB_EXTI_NUM_VECTORS (30)
+#define MICROPY_HW_MAX_I2C (6)
+#define MICROPY_HW_MAX_TIMER (17)
+#define MICROPY_HW_MAX_UART (6)
+#define MICROPY_HW_MAX_LPUART (1)
+
 // Configuration for STM32WB series
 #elif defined(STM32WB)
 
@@ -438,6 +577,8 @@
 #define MICROPY_HW_MAX_TIMER (17)
 #define MICROPY_HW_MAX_UART (1)
 #define MICROPY_HW_MAX_LPUART (1)
+
+#define CFG_TUSB_MCU OPT_MCU_STM32WB
 
 #ifndef MICROPY_HW_STM32WB_FLASH_SYNCRONISATION
 #define MICROPY_HW_STM32WB_FLASH_SYNCRONISATION (1)
@@ -522,6 +663,11 @@
 #define MICROPY_HW_CLK_AHB_DIV (RCC_SYSCLK_DIV1)
 #define MICROPY_HW_CLK_APB1_DIV (RCC_HCLK_DIV1)
 #define MICROPY_HW_CLK_APB2_DIV (RCC_HCLK_DIV1)
+#elif defined(STM32U5)
+#define MICROPY_HW_CLK_AHB_DIV (RCC_SYSCLK_DIV1)
+#define MICROPY_HW_CLK_APB1_DIV (RCC_HCLK_DIV1)
+#define MICROPY_HW_CLK_APB2_DIV (RCC_HCLK_DIV1)
+#define MICROPY_HW_CLK_APB3_DIV (RCC_HCLK_DIV1)
 #else
 #define MICROPY_HW_CLK_AHB_DIV (RCC_SYSCLK_DIV1)
 #define MICROPY_HW_CLK_APB1_DIV (RCC_HCLK_DIV4)
@@ -553,8 +699,21 @@
     (op) == BDEV_IOCTL_INIT ? spi_bdev_ioctl(MICROPY_HW_BDEV_SPIFLASH, (op), (uint32_t)MICROPY_HW_BDEV_SPIFLASH_CONFIG) : \
     spi_bdev_ioctl(MICROPY_HW_BDEV_SPIFLASH, (op), (arg)) \
     )
-#define MICROPY_HW_BDEV_READBLOCKS(dest, bl, n) spi_bdev_readblocks(MICROPY_HW_BDEV_SPIFLASH, (dest), (bl), (n))
-#define MICROPY_HW_BDEV_WRITEBLOCKS(src, bl, n) spi_bdev_writeblocks(MICROPY_HW_BDEV_SPIFLASH, (src), (bl), (n))
+#ifndef MICROPY_HW_BDEV_SPIFLASH_OFFSET_BYTES
+#define MICROPY_HW_BDEV_SPIFLASH_OFFSET_BYTES (0)
+#endif
+#define MICROPY_HW_BDEV_SPIFLASH_OFFSET_BLOCKS (MICROPY_HW_BDEV_SPIFLASH_OFFSET_BYTES / FLASH_BLOCK_SIZE)
+#define MICROPY_HW_BDEV_READBLOCKS(dest, bl, n) spi_bdev_readblocks(MICROPY_HW_BDEV_SPIFLASH, (dest), MICROPY_HW_BDEV_SPIFLASH_OFFSET_BLOCKS + (bl), (n))
+#define MICROPY_HW_BDEV_WRITEBLOCKS(src, bl, n) spi_bdev_writeblocks(MICROPY_HW_BDEV_SPIFLASH, (src), MICROPY_HW_BDEV_SPIFLASH_OFFSET_BLOCKS + (bl), (n))
+#endif
+
+// Define the FATFS maximum sector size.
+#ifndef MICROPY_FATFS_MAX_SS
+#if defined(STM32N6)
+#define MICROPY_FATFS_MAX_SS                    (4096)
+#else
+#define MICROPY_FATFS_MAX_SS                    (512)
+#endif
 #endif
 
 // Whether to enable caching for external SPI flash, to allow block writes that are
@@ -576,14 +735,22 @@
 #if defined(MICROPY_HW_I2C1_SCL) || defined(MICROPY_HW_I2C2_SCL) \
     || defined(MICROPY_HW_I2C3_SCL) || defined(MICROPY_HW_I2C4_SCL)
 #define MICROPY_HW_ENABLE_HW_I2C (1)
+#ifndef MICROPY_HW_ENABLE_HW_I2C_TARGET
+#if defined(STM32F4) || defined(STM32F7) || defined(STM32H7) || defined(STM32L4) || defined(STM32WB)
+#define MICROPY_HW_ENABLE_HW_I2C_TARGET (1)
+#else
+#define MICROPY_HW_ENABLE_HW_I2C_TARGET (0)
+#endif
+#endif
 #else
 #define MICROPY_HW_ENABLE_HW_I2C (0)
+#define MICROPY_HW_ENABLE_HW_I2C_TARGET (0)
 #endif
 
 // Enable CAN if there are any peripherals defined
 #if defined(MICROPY_HW_CAN1_TX) || defined(MICROPY_HW_CAN2_TX) || defined(MICROPY_HW_CAN3_TX)
 #define MICROPY_HW_ENABLE_CAN (1)
-#if defined(STM32G0) || defined(STM32G4) || defined(STM32H7)
+#if defined(STM32G0) || defined(STM32G4) || defined(STM32H7) || defined(STM32N6)
 #define MICROPY_HW_ENABLE_FDCAN (1) // define for MCUs with FDCAN
 #endif
 #else
@@ -625,17 +792,6 @@
 #define MICROPY_HW_USB_IS_MULTI_OTG (1)
 #endif
 
-// Configure maximum number of CDC VCP interfaces, and whether MSC/HID are supported
-#ifndef MICROPY_HW_USB_CDC_NUM
-#define MICROPY_HW_USB_CDC_NUM (1)
-#endif
-#ifndef MICROPY_HW_USB_MSC
-#define MICROPY_HW_USB_MSC (MICROPY_HW_ENABLE_USB)
-#endif
-#ifndef MICROPY_HW_USB_HID
-#define MICROPY_HW_USB_HID (MICROPY_HW_ENABLE_USB)
-#endif
-
 // Pin definition header file
 #define MICROPY_PIN_DEFS_PORT_H "pin_defs_stm32.h"
 
@@ -653,3 +809,7 @@
 #endif
 
 #define MICROPY_HW_USES_BOOTLOADER (MICROPY_HW_VTOR != 0x08000000)
+
+#ifndef MICROPY_HW_ETH_DMA_ATTRIBUTE
+#define MICROPY_HW_ETH_DMA_ATTRIBUTE __attribute__((aligned(16384)));
+#endif

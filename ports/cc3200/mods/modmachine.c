@@ -93,7 +93,7 @@ extern OsiTaskHandle    xSimpleLinkSpawnTaskHndl;
 /******************************************************************************/
 // MicroPython bindings;
 
-NORETURN static void mp_machine_reset(void) {
+MP_NORETURN static void mp_machine_reset(void) {
     // disable wlan
     wlan_stop(SL_STOP_TIMEOUT_LONG);
     // reset the cpu and it's peripherals
@@ -161,7 +161,7 @@ static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
     pyb_sleep_sleep();
 }
 
-NORETURN static void mp_machine_deepsleep(size_t n_args, const mp_obj_t *args) {
+MP_NORETURN static void mp_machine_deepsleep(size_t n_args, const mp_obj_t *args) {
     pyb_sleep_deepsleep();
     for (;;) {
     }

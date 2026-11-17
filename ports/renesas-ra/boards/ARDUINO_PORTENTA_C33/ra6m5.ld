@@ -6,7 +6,8 @@
 MEMORY
 {
   FLASH_BOOT (r)     : ORIGIN = 0x00000000, LENGTH = 0x00010000  /* 64K */
-  FLASH (rx)         : ORIGIN = 0x00010000, LENGTH = 0x000f0000  /* 960KB */
+  FLASH (rx)         : ORIGIN = 0x00010000, LENGTH = 0x000B0000  /* 704KB/2MB */
+  FLASH_ROMFS (r)    : ORIGIN = 0x000C0000, LENGTH = 0x00040000  /* 256KB/2MB */
   FLASH_FS (r)       : ORIGIN = 0x00100000, LENGTH = 0x00100000  /* 1MB */
   RAM (rwx)          : ORIGIN = 0x20000000, LENGTH = 0x00080000  /* 512KB */
   OSPI_RAM (rwx)     : ORIGIN = 0x68000000, LENGTH = 0x00800000  /* 8MB/8MB */
@@ -304,3 +305,6 @@ _heap_end = __HeapLimit;	/* tunable */
 
 _micropy_hw_internal_flash_storage_start = ORIGIN(FLASH_FS);
 _micropy_hw_internal_flash_storage_end   = ORIGIN(FLASH_FS) + LENGTH(FLASH_FS);
+
+_micropy_hw_romfs_part0_start            = ORIGIN(FLASH_ROMFS);
+_micropy_hw_romfs_part0_size             = LENGTH(FLASH_ROMFS);

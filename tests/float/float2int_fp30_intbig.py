@@ -1,4 +1,5 @@
 # check cases converting float to int, relying only on single precision float
+# requires: float int-big
 
 import struct
 import sys

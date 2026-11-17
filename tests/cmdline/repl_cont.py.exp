@@ -1,5 +1,5 @@
 MicroPython \.\+ version
-Use \.\+
+Type "help()" for more information.
 >>> # check REPL allows to continue input
 >>> 1 \\\\
 ... + 2
@@ -54,4 +54,4 @@ two
 >>> if1 = 2
 >>> print(if1)
 2
->>> 
+>>> \$

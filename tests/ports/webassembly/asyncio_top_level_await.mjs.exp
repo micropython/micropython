@@ -17,3 +17,11 @@ top-level wait task
 task end
 top-level end
 finished
+= TEST 4 ==========
+jsFail
+caught exception: <class 'JsException'> <class 'JsProxy'> ('Error', 'jsFail')
+jsFail
+caught exception: <class 'JsException'> <class 'JsProxy'> ('Error', 'jsFail')
+jsFail
+caught exception: <class 'JsException'> <class 'JsProxy'> ('Error', 'jsFail')
+finished

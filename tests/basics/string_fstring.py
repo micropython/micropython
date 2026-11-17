@@ -1,3 +1,5 @@
+# requires: fstring
+
 def f():
     return 4
 def g(_):
@@ -31,6 +33,8 @@ print(f"a{ {0,1,2}}")
 
 # PEP-0498 specifies that handling of double braces '{{' or '}}' should
 # behave like str.format.
+print(f'{{')
+print(f'}}')
 print(f'{{}}')
 print(f'{{{4*10}}}', '{40}')
 
@@ -79,3 +83,7 @@ print(
 # Raw f-strings.
 print(rf"\r\a\w {'f'} \s\t\r\i\n\g")
 print(fr"\r{x}")
+
+# Format specifiers with nested replacement fields
+radix = "x"
+print(f"{314:{radix}}")

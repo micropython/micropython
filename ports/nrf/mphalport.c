@@ -38,6 +38,7 @@
 #include "nrfx_config.h"
 #include "drivers/bluetooth/ble_uart.h"
 #include "shared/tinyusb/mp_usbd_cdc.h"
+#include "drivers/rng.h"
 
 #if MICROPY_PY_TIME_TICKS
 #include "nrfx_rtc.h"
@@ -202,7 +203,7 @@ const byte mp_hal_status_to_errno_table[4] = {
     [HAL_TIMEOUT] = MP_ETIMEDOUT,
 };
 
-NORETURN void mp_hal_raise(HAL_StatusTypeDef status) {
+MP_NORETURN void mp_hal_raise(HAL_StatusTypeDef status) {
     mp_raise_OSError(mp_hal_status_to_errno_table[status]);
 }
 
@@ -281,6 +282,12 @@ mp_uint_t mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
     return did_write ? ret : 0;
 }
 
+void mp_hal_get_random(size_t n, uint8_t *buf) {
+    for (int i = 0; i < n; i++) {
+        buf[i] = (uint8_t)(rng_generate_random_word() & 0xFF);
+    }
+}
+
 #if MICROPY_PY_TIME_TICKS
 
 void mp_hal_delay_us(mp_uint_t us) {
@@ -296,12 +303,13 @@ void mp_hal_delay_us(mp_uint_t us) {
 void mp_hal_delay_ms(mp_uint_t ms) {
     uint32_t now;
     if (ms == 0) {
+        mp_handle_pending(MP_HANDLE_PENDING_CALLBACKS_AND_EXCEPTIONS);
         return;
     }
     now = mp_hal_ticks_ms();
-    while (mp_hal_ticks_ms() - now < ms) {
+    do {
         MICROPY_EVENT_POLL_HOOK
-    }
+    } while (mp_hal_ticks_ms() - now < ms);
 }
 
 #else

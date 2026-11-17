@@ -1,4 +1,6 @@
 # test builtin min and max functions with float args
+# requires: float
+
 try:
     min
     max

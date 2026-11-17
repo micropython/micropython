@@ -42,7 +42,8 @@ MEMORY
   m_vfs          (RX) : ORIGIN = vfs_start,             LENGTH = vfs_size
   /* Teensy uses the last bit of flash for recovery. */
   m_reserved     (RX) : ORIGIN = (vfs_start + vfs_size), LENGTH = reserved_size
-  m_itcm         (RX) : ORIGIN = itcm_start,            LENGTH = itcm_size
+  m_isr          (RX) : ORIGIN = itcm_start,            LENGTH = 0x400
+  m_itcm         (RX) : ORIGIN = itcm_start + 0x400,    LENGTH = itcm_size - 0x400
   m_dtcm         (RW) : ORIGIN = dtcm_start,            LENGTH = dtcm_size
   m_ocrm         (RW) : ORIGIN = ocrm_start,            LENGTH = ocrm_size
 
@@ -80,7 +81,8 @@ SECTIONS
     . = ALIGN(4);
   } > m_ivt
 
-  /* The startup code goes first into internal RAM */
+  /* ISR Vector table in flash. Copied to ITCM by ResetHandler(). */
+
   .interrupts :
   {
     __Vectors = .;
@@ -90,14 +92,13 @@ SECTIONS
     . = ALIGN(4);
   } > m_interrupts
 
-  __VECTOR_RAM = __Vectors;
-  __RAM_VECTOR_TABLE_SIZE_BYTES = 0x0;
+  __Vectors_RAM = ORIGIN(m_isr);
 
-  /* The program code and other data goes into internal RAM */
+  /* Some program code and other data goes into internal RAM */
   .text :
   {
     . = ALIGN(4);
-    *(EXCLUDE_FILE(*fsl_flexspi.o *gc.o *vm.o *parse*.o *runtime*.o *map.o *mpirq.o ) .text*) /* .text* sections (code) */
+    *(EXCLUDE_FILE(*fsl_flexspi.o *gc.o *vm.o *runtime*.o *map.o *mpirq.o *machine_i2c_target.o *fsl_lpi2c.o) .text*) /* .text* sections (code) */
     *(.rodata)               /* .rodata sections (constants, strings, etc.) */
     *(.rodata*)              /* .rodata* sections (constants, strings, etc.) */
     *(.glue_7)               /* glue arm to thumb code */

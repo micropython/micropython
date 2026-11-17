@@ -109,6 +109,15 @@ void usbd_msc_init_lu(size_t lu_n, const void *lu_data) {
     usbd_msc_lu_flags = 0;
 }
 
+bool usbd_msc_lu_includes_sdcard(void) {
+    for (int i = 0; i < usbd_msc_lu_num; i++) {
+        if (usbd_msc_lu_data[i] == &machine_sdcard_type) {
+            return true;
+        }
+    }
+    return false;
+}
+
 // Helper function to perform an ioctl on a logical unit
 static int lu_ioctl(uint8_t lun, int op, uint32_t *data) {
     if (lun >= usbd_msc_lu_num) {
@@ -135,7 +144,7 @@ static int lu_ioctl(uint8_t lun, int op, uint32_t *data) {
                 return -1;
         }
     #if MICROPY_HW_ENABLE_SDCARD
-    } else if (lu == &pyb_sdcard_type
+    } else if (lu == &machine_sdcard_type
                #if MICROPY_HW_ENABLE_MMCARD
                || lu == &pyb_mmcard_type
                #endif
@@ -219,7 +228,7 @@ static int usbd_msc_Inquiry(uint8_t lun, const uint8_t *params, uint8_t *data_ou
     #if MICROPY_HW_ENABLE_SDCARD
     const void *lu = usbd_msc_lu_data[lun];
     if (len == sizeof(usbd_msc_inquiry_data)) {
-        if (lu == &pyb_sdcard_type) {
+        if (lu == &machine_sdcard_type) {
             memcpy(data_out + 24, "SDCard", sizeof("SDCard") - 1);
         }
         #if MICROPY_HW_ENABLE_MMCARD
@@ -291,7 +300,7 @@ static int8_t usbd_msc_Read(uint8_t lun, uint8_t *buf, uint32_t blk_addr, uint16
         storage_read_blocks(buf, blk_addr, blk_len);
         return 0;
     #if MICROPY_HW_ENABLE_SDCARD
-    } else if (lu == &pyb_sdcard_type
+    } else if (lu == &machine_sdcard_type
                #if MICROPY_HW_ENABLE_MMCARD
                || lu == &pyb_mmcard_type
                #endif
@@ -315,7 +324,7 @@ static int8_t usbd_msc_Write(uint8_t lun, uint8_t *buf, uint32_t blk_addr, uint1
         storage_write_blocks(buf, blk_addr, blk_len);
         return 0;
     #if MICROPY_HW_ENABLE_SDCARD
-    } else if (lu == &pyb_sdcard_type
+    } else if (lu == &machine_sdcard_type
                #if MICROPY_HW_ENABLE_MMCARD
                || lu == &pyb_mmcard_type
                #endif

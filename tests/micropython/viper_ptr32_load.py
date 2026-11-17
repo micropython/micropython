@@ -1,4 +1,5 @@
 # test loading from ptr32 type
+# requires: viper
 
 
 @micropython.viper

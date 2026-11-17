@@ -37,7 +37,7 @@ def test_one(site, opts):
         else:
             s = ssl_context.wrap_socket(s)
 
-        s.write(b"GET / HTTP/1.0\r\nHost: %s\r\n\r\n" % bytes(site, "latin"))
+        s.write(b"GET / HTTP/1.0\r\nHost: %s\r\n\r\n" % bytes(site, "ascii"))
         resp = s.read(4096)
         if resp[:7] != b"HTTP/1.":
             raise ValueError("response doesn't start with HTTP/1.")

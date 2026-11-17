@@ -2,10 +2,8 @@
 This script processes the output from the C preprocessor and extracts all
 qstr. Each qstr is transformed into a qstr definition of the form 'Q(...)'.
 
-This script works with Python 2.6, 2.7, 3.3 and 3.4.
+This script works with Python 3.3+.
 """
-
-from __future__ import print_function
 
 import io
 import os
@@ -59,10 +57,34 @@ def preprocess():
     except OSError:
         pass
 
+    # These regex's are used to filter the preprocessed data, keeping only those lines
+    # that are subsequently needed by the `process_file` step.  The regexs are kept
+    # short so they are as efficient as possible. (The stm32 port needs symbols of the
+    # form `micropy_hw_xxx` so they are also kept.)
+    re_line_file = re.compile(rb"^#(?:line)?\s+\d+\s\"")
+    re_mp_info = re.compile(rb"MP_COMP|MP_QSTR|MP_REGI|micropy_hw")
+
     def pp(flags):
         def run(files):
             try:
-                return subprocess.check_output(args.pp + flags + files)
+                filtered_lines = []
+                cmd = args.pp + flags + files
+                with subprocess.Popen(cmd, stdout=subprocess.PIPE) as proc:
+                    recent_file = None
+                    for line in proc.stdout:
+                        if line.isspace():
+                            pass
+                        elif re_line_file.match(line):
+                            recent_file = line
+                        elif re_mp_info.search(line):
+                            if recent_file:
+                                filtered_lines.append(recent_file)
+                                recent_file = None
+                            filtered_lines.append(line)
+                    proc.wait()
+                    if proc.returncode:
+                        raise PreprocessorError("command failed: " + " ".join(cmd))
+                return b"".join(filtered_lines)
             except subprocess.CalledProcessError as er:
                 raise PreprocessorError(str(er))
 

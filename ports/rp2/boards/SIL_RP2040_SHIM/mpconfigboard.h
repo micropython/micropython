@@ -5,7 +5,6 @@
 #ifndef PICO_FLASH_SIZE_BYTES
 #define PICO_FLASH_SIZE_BYTES               (4 * 1024 * 1024)
 #endif
-#define MICROPY_HW_FLASH_STORAGE_BYTES      (3 * 1024 * 1024)
 
 #define MICROPY_HW_USB_VID                  (0x1209)
 #define MICROPY_HW_USB_PID                  (0xF502)

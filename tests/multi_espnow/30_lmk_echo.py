@@ -45,7 +45,7 @@ def echo_server(e):
 
         #  Echo the message back to the sender
         if not e.send(peer, msg, sync):
-            print("ERROR: send() failed to", peer)
+            print("ERROR: send() failed to", peer.hex())
             return
 
         if peer not in peers:
@@ -92,7 +92,7 @@ def echo_client(e, peer, msglens):
 
 # Initialise the wifi and espnow hardware and software
 def init(sta_active=True, ap_active=False):
-    wlans = [network.WLAN(i) for i in [network.STA_IF, network.AP_IF]]
+    wlans = [network.WLAN(i) for i in [network.WLAN.IF_STA, network.WLAN.IF_AP]]
     e = espnow.ESPNow()
     e.active(True)
     e.set_pmk(default_pmk)

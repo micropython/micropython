@@ -1,6 +1,5 @@
 # test various type conversions
-
-import micropython
+# requires: viper
 
 
 # converting incoming arg to bool

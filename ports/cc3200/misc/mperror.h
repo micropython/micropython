@@ -27,7 +27,7 @@
 #ifndef MICROPY_INCLUDED_CC3200_MISC_MPERROR_H
 #define MICROPY_INCLUDED_CC3200_MISC_MPERROR_H
 
-extern void NORETURN __fatal_error(const char *msg);
+extern void MP_NORETURN __fatal_error(const char *msg);
 
 void mperror_init0 (void);
 void mperror_bootloader_check_reset_cause (void);

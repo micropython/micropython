@@ -1,0 +1,8 @@
+--- instance0 ---
+Low prio received OK
+High prio received OK
+--- instance1 ---
+waiting for tx queue to empty...
+Sent right number of messages
+Low prio sent OK
+High prio sent OK

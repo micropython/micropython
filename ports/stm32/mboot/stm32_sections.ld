@@ -33,6 +33,14 @@ SECTIONS
         _etext = .;
     } >FLASH_BL
 
+    /* Secure Gateway stubs */
+    .gnu.sgstubs :
+    {
+        . = ALIGN(4);
+        *(.gnu.sgstubs*)
+        . = ALIGN(4);
+    } >FLASH_BL
+
     /* used by the startup to initialize data */
     _sidata = LOADADDR(.data);
 
@@ -46,6 +54,12 @@ SECTIONS
         . = ALIGN(4);
         _edata = .;
     } >RAM AT> FLASH_BL
+
+    /* Final section of mboot flash reserved for mboot version */
+    .mboot_version_text (ORIGIN(FLASH_BL) + LENGTH(FLASH_BL) - mboot_version_len) :
+    {
+        KEEP(*(.mboot_version));
+    } >FLASH_BL
 
     /* Zeroed-out data section */
     .bss :

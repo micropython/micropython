@@ -29,7 +29,14 @@
 #include "py/mpconfig.h"
 #include "py/misc.h"
 
+typedef enum {
+    MP_ENCODING_UTF8,
+    MP_ENCODING_ASCII,
+} mp_encoding_t;
+
 mp_uint_t utf8_ptr_to_index(const byte *s, const byte *ptr);
-bool utf8_check(const byte *p, size_t len);
+
+// Returns true if bytes in buffer 'p' are valid according to encoding.
+bool unicode_encoding_check(mp_encoding_t encoding, const byte *p, size_t len);
 
 #endif // MICROPY_INCLUDED_PY_UNICODE_H

@@ -1,6 +1,5 @@
-set(SDKCONFIG_DEFAULTS
-    boards/sdkconfig.base
-    ${SDKCONFIG_IDF_VERSION_SPECIFIC}
-    boards/sdkconfig.ble
+include(boards/mpconfigboard_esp32_common.cmake)
+
+list(APPEND SDKCONFIG_DEFAULTS
     boards/OLIMEX_ESP32_POE/sdkconfig.board
 )

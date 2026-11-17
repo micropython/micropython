@@ -3,6 +3,7 @@ This test need a set of pins which can be set as inputs and have no external
 pull up or pull down connected.
 GP12 and GP17 must be connected together
 """
+
 from machine import Pin
 import os
 

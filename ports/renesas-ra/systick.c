@@ -97,22 +97,24 @@ void HAL_Delay(uint32_t Delay) {
 
 // Core delay function that does an efficient sleep and may switch thread context.
 // If IRQs are enabled then we must have the GIL.
-void mp_hal_delay_ms(mp_uint_t Delay) {
+void mp_hal_delay_ms(mp_uint_t ms) {
     if (query_irq() == IRQ_STATE_ENABLED) {
         // IRQs enabled, so can use systick counter to do the delay
         uint32_t start = uwTick;
+        mp_uint_t elapsed = 0;
         // Wraparound of tick is taken care of by 2's complement arithmetic.
         do {
             // This macro will execute the necessary idle behaviour.  It may
             // raise an exception, switch threads or enter sleep mode (waiting for
             // (at least) the SysTick interrupt).
-            MICROPY_EVENT_POLL_HOOK
-        } while (uwTick - start < Delay);
+            mp_event_wait_ms(ms - elapsed);
+            elapsed = uwTick - start;
+        } while (elapsed < ms);
     } else {
         // IRQs disabled, so need to use a busy loop for the delay.
         // To prevent possible overflow of the counter we use a double loop.
         volatile uint32_t count_1ms;
-        while (Delay-- > 0) {
+        while (ms-- > 0) {
             count_1ms = (MICROPY_HW_MCU_PCLK / 1000 / 10);
             while (count_1ms-- > 0) {
                 __asm__ __volatile__ ("nop");

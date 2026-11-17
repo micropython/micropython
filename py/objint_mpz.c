@@ -30,7 +30,7 @@
 
 #include "py/parsenumbase.h"
 #include "py/smallint.h"
-#include "py/objint.h"
+#include "py/objint_impl.h"
 #include "py/runtime.h"
 
 #if MICROPY_PY_BUILTINS_FLOAT
@@ -110,12 +110,6 @@ mp_obj_t mp_obj_int_from_bytes_impl(bool big_endian, size_t len, const byte *buf
     mp_obj_int_t *o = mp_obj_int_new_mpz();
     mpz_set_from_bytes(&o->mpz, big_endian, len, buf);
     return MP_OBJ_FROM_PTR(o);
-}
-
-bool mp_obj_int_to_bytes_impl(mp_obj_t self_in, bool big_endian, size_t len, byte *buf) {
-    assert(mp_obj_is_exact_type(self_in, &mp_type_int));
-    mp_obj_int_t *self = MP_OBJ_TO_PTR(self_in);
-    return mpz_as_bytes(&self->mpz, big_endian, self->mpz.neg, len, buf);
 }
 
 int mp_obj_int_sign(mp_obj_t self_in) {
@@ -356,9 +350,10 @@ static mpz_t *mp_mpz_for_int(mp_obj_t arg, mpz_t *temp) {
 mp_obj_t mp_obj_int_pow3(mp_obj_t base, mp_obj_t exponent,  mp_obj_t modulus) {
     if (!mp_obj_is_int(base) || !mp_obj_is_int(exponent) || !mp_obj_is_int(modulus)) {
         mp_raise_TypeError(MP_ERROR_TEXT("pow() with 3 arguments requires integers"));
+    } else if (modulus == MP_OBJ_NEW_SMALL_INT(0)) {
+        mp_raise_ValueError(MP_ERROR_TEXT("divide by zero"));
     } else {
-        mp_obj_t result = mp_obj_new_int_from_ull(0); // Use the _from_ull version as this forces an mpz int
-        mp_obj_int_t *res_p = (mp_obj_int_t *)MP_OBJ_TO_PTR(result);
+        mp_obj_int_t *res_p = mp_obj_int_new_mpz();
 
         mpz_t l_temp, r_temp, m_temp;
         mpz_t *lhs = mp_mpz_for_int(base,     &l_temp);
@@ -376,7 +371,7 @@ mp_obj_t mp_obj_int_pow3(mp_obj_t base, mp_obj_t exponent,  mp_obj_t modulus) {
         if (mod == &m_temp) {
             mpz_deinit(mod);
         }
-        return result;
+        return MP_OBJ_FROM_PTR(res_p);
     }
 }
 #endif
@@ -468,5 +463,23 @@ mp_float_t mp_obj_int_as_float_impl(mp_obj_t self_in) {
     return mpz_as_float(&self->mpz);
 }
 #endif
+
+void mp_obj_int_to_bytes(mp_obj_t self_in, size_t buf_len, byte *buf, bool big_endian, bool is_signed, bool overflow_check) {
+    if (mp_obj_is_exact_type(self_in, &mp_type_int)) {
+        const mp_obj_int_t *self = MP_OBJ_TO_PTR(self_in);
+        const mpz_t *mpz = &self->mpz;
+        if (overflow_check && !is_signed && mpz->neg) {
+            mp_obj_int_raise_unsigned_negative_overflow_error();
+        }
+        if (!mpz_as_bytes(mpz, big_endian, is_signed, buf_len, buf) && overflow_check) {
+            mp_obj_int_raise_to_bytes_overflow_error(buf_len);
+        }
+    } else {
+        // self_in is either a smallint, or another type convertible to mp_int_t (i.e. bool)
+        mp_int_t val = mp_obj_get_int(self_in);
+        mp_obj_small_int_to_bytes(val, buf_len, buf, big_endian, is_signed, overflow_check);
+    }
+}
+
 
 #endif

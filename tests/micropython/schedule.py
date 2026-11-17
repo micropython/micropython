@@ -1,10 +1,12 @@
 # test micropython.schedule() function
-
-import micropython
+# this test should be manually kept in synch with
+# tests/micrpython/schedule_sleep.py.
 
 try:
+    import micropython
+
     micropython.schedule
-except AttributeError:
+except (ImportError, AttributeError):
     print("SKIP")
     raise SystemExit
 

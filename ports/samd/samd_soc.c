@@ -39,6 +39,7 @@
 #include "tusb.h"
 
 extern void machine_rtc_start(bool force);
+extern void samd_flash_init(void);
 
 static void usb_init(void) {
     // Init USB clock
@@ -68,7 +69,6 @@ static void usb_init(void) {
 void init_us_counter(void) {
     #if defined(MCU_SAMD21)
 
-    PM->APBCMASK.bit.TC3_ = 1; // Enable TC3 clock
     PM->APBCMASK.bit.TC4_ = 1; // Enable TC4 clock
     // Select multiplexer generic clock source and enable.
     GCLK->CLKCTRL.reg = GCLK_CLKCTRL_CLKEN | GCLK_CLKCTRL_GEN_GCLK3 | GCLK_CLKCTRL_ID_TC4_TC5;
@@ -120,9 +120,12 @@ void samd_init(void) {
     mp_hal_ticks_cpu_enable();
     #endif
     machine_rtc_start(false);
+    #if MICROPY_HW_MCUFLASH || MICROPY_VFS_ROM
+    samd_flash_init();
+    #endif
 }
 
-#if MICROPY_PY_MACHINE_I2C || MICROPY_PY_MACHINE_SPI || MICROPY_PY_MACHINE_UART
+#if MICROPY_PY_MACHINE_I2C || MICROPY_PY_MACHINE_I2C_TARGET || MICROPY_PY_MACHINE_SPI || MICROPY_PY_MACHINE_UART
 
 Sercom *sercom_instance[] = SERCOM_INSTS;
 MP_REGISTER_ROOT_POINTER(void *sercom_table[SERCOM_INST_NUM]);

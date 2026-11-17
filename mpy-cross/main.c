@@ -24,6 +24,7 @@
  * THE SOFTWARE.
  */
 
+#include <errno.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -34,15 +35,24 @@
 #include "py/persistentcode.h"
 #include "py/runtime.h"
 #include "py/gc.h"
-#include "py/stackctrl.h"
+#include "py/parsenumbase.h"
 #include "genhdr/mpversion.h"
 #ifdef _WIN32
 #include "ports/windows/fmode.h"
 #endif
 
+#if MICROPY_EMIT_NATIVE && MICROPY_EMIT_RV32
+#include "py/asmrv32.h"
+
+static asm_rv32_backend_options_t rv32_options = { 0 };
+#endif
+
 // Command line options, with their defaults
 static uint emit_opt = MP_EMIT_OPT_NONE;
-mp_uint_t mp_verbose_flag = 0;
+
+#if MICROPY_ENABLE_SOURCE_LINE
+static bool include_source_lines = true;
+#endif
 
 // Heap size of GC heap (if enabled)
 // Make it larger on a 64 bit machine, because pointers are larger.
@@ -81,13 +91,20 @@ static int compile_and_save(const char *file, const char *output_file, const cha
             source_name = qstr_from_str(source_file);
         }
 
-        #if MICROPY_PY___FILE__
+        #if MICROPY_MODULE___FILE__
         mp_store_global(MP_QSTR___file__, MP_OBJ_NEW_QSTR(source_name));
         #endif
 
         mp_parse_tree_t parse_tree = mp_parse(lex, MP_PARSE_FILE_INPUT);
         mp_compiled_module_t cm;
         cm.context = m_new_obj(mp_module_context_t);
+        cm.arch_flags = 0;
+        #if MICROPY_EMIT_NATIVE && MICROPY_EMIT_RV32
+        if (mp_dynamic_compiler.native_arch == MP_NATIVE_ARCH_RV32IMC && mp_dynamic_compiler.backend_options != NULL) {
+            cm.arch_flags = ((asm_rv32_backend_options_t *)mp_dynamic_compiler.backend_options)->allowed_extensions;
+        }
+        #endif
+
         mp_compile_to_raw_code(&parse_tree, source_name, false, &cm);
 
         if ((output_file != NULL && strcmp(output_file, "-") == 0) ||
@@ -130,7 +147,10 @@ static int usage(char **argv) {
         "Target specific options:\n"
         "-msmall-int-bits=number : set the maximum bits used to encode a small-int\n"
         "-march=<arch> : set architecture for native emitter;\n"
-        "                x86, x64, armv6, armv6m, armv7m, armv7em, armv7emsp, armv7emdp, xtensa, xtensawin, rv32imc, debug\n"
+        "                x86, x64, armv6, armv6m, armv7m, armv7em, armv7emsp,\n"
+        "                armv7emdp, xtensa, xtensawin, rv32imc, rv64imc, host, debug\n"
+        "-march-flags=<flags> : set architecture-specific flags (can be either a dec/hex/bin value or a comma-separated flags string)\n"
+        "                       supported flags for rv32imc: zba, zcmp\n"
         "\n"
         "Implementation specific options:\n", argv[0]
         );
@@ -147,6 +167,12 @@ static int usage(char **argv) {
         "  heapsize=<n> -- set the heap size for the GC (default %ld)\n"
         , heap_size);
     impl_opts_cnt++;
+    #if MICROPY_ENABLE_SOURCE_LINE
+    printf(
+        "  source-lines    -- include source line numbers (default)\n"
+        "  no-source-lines -- exclude source line numbers\n");
+    impl_opts_cnt += 2;
+    #endif
 
     if (impl_opts_cnt == 0) {
         printf("  (none)\n");
@@ -170,6 +196,14 @@ static void pre_process_options(int argc, char **argv) {
                     emit_opt = MP_EMIT_OPT_NATIVE_PYTHON;
                 } else if (strcmp(argv[a + 1], "emit=viper") == 0) {
                     emit_opt = MP_EMIT_OPT_VIPER;
+                #endif
+                #if MICROPY_ENABLE_SOURCE_LINE
+                } else if (strcmp(argv[a + 1], "source-lines") == 0) {
+                    // Allow excluding source lines for debug builds.
+                    include_source_lines = true;
+                } else if (strcmp(argv[a + 1], "no-source-lines") == 0) {
+                    // Allow excluding source lines for debug builds.
+                    include_source_lines = false;
                 #endif
                 } else if (strncmp(argv[a + 1], "heapsize=", sizeof("heapsize=") - 1) == 0) {
                     char *end;
@@ -211,9 +245,57 @@ static char *backslash_to_forwardslash(char *path) {
     return path;
 }
 
-MP_NOINLINE int main_(int argc, char **argv) {
-    mp_stack_set_limit(40000 * (sizeof(void *) / 4));
+// This will need to be reworked in case mpy-cross needs to set more bits than
+// what `unsigned long` can fit.
+static bool parse_integer(const char *value, unsigned long *integer) {
+    assert(value && "Attempting to parse a NULL string");
+    assert(integer && "Attempting to store into a NULL integer buffer");
 
+    size_t value_length = strlen(value);
+    int base = 0;
+    size_t skip = mp_parse_num_base(value, value_length, &base);
+    // These can trip strtoul up.
+    if (base < 2 || value_length == skip || value[skip] == '+') {
+        return false;
+    }
+    errno = 0;
+    char *end = NULL;
+    *integer = strtoul(value + skip, &end, base);
+    if (end != (value + value_length) || errno != 0) {
+        return false;
+    }
+    return true;
+}
+
+#if MICROPY_EMIT_NATIVE && MICROPY_EMIT_RV32
+static bool parse_rv32_flags_string(const char *source, unsigned long *flags) {
+    assert(source && "Flag arguments string is NULL.");
+    assert(flags && "Collected flags pointer is NULL.");
+
+    const char *current = source;
+    const char *end = source + strlen(source);
+    unsigned long collected_flags = 0;
+    while (current < end) {
+        const char *separator = strchr(current, ',');
+        if (separator == NULL) {
+            separator = end;
+        }
+        ptrdiff_t length = separator - current;
+        if (length == (sizeof("zba") - 1) && memcmp(current, "zba", length) == 0) {
+            collected_flags |= RV32_EXT_ZBA;
+        } else if (length == (sizeof("zcmp") - 1) && memcmp(current, "zcmp", length) == 0) {
+            collected_flags |= RV32_EXT_ZCMP;
+        } else {
+            return false;
+        }
+        current = separator + 1;
+    }
+    *flags = collected_flags;
+    return collected_flags != 0;
+}
+#endif
+
+MP_NOINLINE int main_(int argc, char **argv) {
     pre_process_options(argc, argv);
 
     char *heap = malloc(heap_size);
@@ -236,11 +318,16 @@ MP_NOINLINE int main_(int argc, char **argv) {
     // don't support native emitter unless -march is specified
     mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_NONE;
     mp_dynamic_compiler.nlr_buf_num_regs = 0;
+    mp_dynamic_compiler.backend_options = NULL;
+    #if MICROPY_ENABLE_SOURCE_LINE
+    mp_dynamic_compiler.include_source_lines = include_source_lines;
+    #endif
 
     const char *input_file = NULL;
     const char *output_file = NULL;
     const char *source_file = NULL;
     bool option_parsing_active = true;
+    const char *arch_flags = NULL;
 
     // parse main options
     for (int a = 1; a < argc; a++) {
@@ -252,7 +339,7 @@ MP_NOINLINE int main_(int argc, char **argv) {
                     "; mpy-cross emitting mpy v" MP_STRINGIFY(MPY_VERSION) "." MP_STRINGIFY(MPY_SUB_VERSION) "\n");
                 return 0;
             } else if (strcmp(argv[a], "-v") == 0) {
-                mp_verbose_flag++;
+                // This verbose option doesn't currently do anything.
             } else if (strncmp(argv[a], "-O", 2) == 0) {
                 if (unichar_isdigit(argv[a][2])) {
                     MP_STATE_VM(mp_optimise_value) = argv[a][2] & 0xf;
@@ -316,6 +403,9 @@ MP_NOINLINE int main_(int argc, char **argv) {
                 } else if (strcmp(arch, "rv32imc") == 0) {
                     mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_RV32IMC;
                     mp_dynamic_compiler.nlr_buf_num_regs = MICROPY_NLR_NUM_REGS_RV32I;
+                } else if (strcmp(arch, "rv64imc") == 0) {
+                    mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_RV64IMC;
+                    mp_dynamic_compiler.nlr_buf_num_regs = MICROPY_NLR_NUM_REGS_RV64I;
                 } else if (strcmp(arch, "debug") == 0) {
                     mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_DEBUG;
                     mp_dynamic_compiler.nlr_buf_num_regs = 0;
@@ -329,6 +419,9 @@ MP_NOINLINE int main_(int argc, char **argv) {
                     #elif defined(__arm__) && !defined(__thumb2__)
                     mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_ARMV6;
                     mp_dynamic_compiler.nlr_buf_num_regs = MICROPY_NLR_NUM_REGS_ARM_THUMB_FP;
+                    #elif defined(__riscv) && (__riscv_xlen == 64)
+                    mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_RV64IMC;
+                    mp_dynamic_compiler.nlr_buf_num_regs = MICROPY_NLR_NUM_REGS_RV64I;
                     #else
                     mp_printf(&mp_stderr_print, "unable to determine host architecture for -march=host\n");
                     exit(1);
@@ -336,6 +429,8 @@ MP_NOINLINE int main_(int argc, char **argv) {
                 } else {
                     return usage(argv);
                 }
+            } else if (strncmp(argv[a], "-march-flags=", sizeof("-march-flags=") - 1) == 0) {
+                arch_flags = argv[a] + sizeof("-march-flags=") - 1;
             } else if (strcmp(argv[a], "--") == 0) {
                 option_parsing_active = false;
             } else {
@@ -350,6 +445,35 @@ MP_NOINLINE int main_(int argc, char **argv) {
         }
     }
 
+    if (arch_flags && mp_dynamic_compiler.native_arch != MP_NATIVE_ARCH_NONE) {
+        bool processed = false;
+        #if MICROPY_EMIT_NATIVE && MICROPY_EMIT_RV32
+        if (mp_dynamic_compiler.native_arch == MP_NATIVE_ARCH_RV32IMC) {
+            mp_dynamic_compiler.backend_options = (void *)&rv32_options;
+            unsigned long raw_flags = 0;
+            if (parse_integer(arch_flags, &raw_flags) || parse_rv32_flags_string(arch_flags, &raw_flags)) {
+                if ((raw_flags & ~((unsigned long)RV32_EXT_ALL)) == 0) {
+                    rv32_options.allowed_extensions = (uint8_t)raw_flags;
+                    processed = true;
+                }
+            }
+        }
+        #endif
+        if (!processed) {
+            mp_printf(&mp_stderr_print, "unrecognised arch flags\n");
+            exit(1);
+        }
+    }
+
+    #if MICROPY_EMIT_NATIVE
+    if ((MP_STATE_VM(default_emit_opt) == MP_EMIT_OPT_NATIVE_PYTHON
+         || MP_STATE_VM(default_emit_opt) == MP_EMIT_OPT_VIPER)
+        && mp_dynamic_compiler.native_arch == MP_NATIVE_ARCH_NONE) {
+        mp_printf(&mp_stderr_print, "arch not specified\n");
+        exit(1);
+    }
+    #endif
+
     if (input_file == NULL) {
         mp_printf(&mp_stderr_print, "no input file\n");
         exit(1);
@@ -357,19 +481,13 @@ MP_NOINLINE int main_(int argc, char **argv) {
 
     int ret = compile_and_save(input_file, output_file, source_file);
 
-    #if MICROPY_PY_MICROPYTHON_MEM_INFO
-    if (mp_verbose_flag) {
-        mp_micropython_mem_info(0, NULL);
-    }
-    #endif
-
     mp_deinit();
 
     return ret & 0xff;
 }
 
 int main(int argc, char **argv) {
-    mp_stack_ctrl_init();
+    mp_cstack_init_with_sp_here(40000 * (sizeof(void *) / 4));
     return main_(argc, argv);
 }
 

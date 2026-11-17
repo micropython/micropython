@@ -32,7 +32,18 @@
 // Enable mbedtls modules
 #define MBEDTLS_TIMING_C
 
+#if defined(MICROPY_UNIX_COVERAGE)
+// Test the "bare metal" memory management in the coverage build
+#define MICROPY_MBEDTLS_CONFIG_BARE_METAL (1)
+#endif
+
 // Include common mbedtls configuration.
 #include "extmod/mbedtls/mbedtls_config_common.h"
+
+#if defined(MICROPY_UNIX_COVERAGE)
+// See comment above, but fall back to the default platform entropy functions
+#undef MBEDTLS_ENTROPY_HARDWARE_ALT
+#undef MBEDTLS_NO_PLATFORM_ENTROPY
+#endif
 
 #endif /* MICROPY_INCLUDED_MBEDTLS_CONFIG_H */

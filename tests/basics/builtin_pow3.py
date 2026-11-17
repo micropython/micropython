@@ -12,6 +12,16 @@ print(pow(1, 1, 1))
 print(pow(0, 1, 1))
 print(pow(1, 0, 1))
 print(pow(1, 0, 2))
+print(pow(0, 0, 5))
+print(pow(0, 1, 5))
+print(pow(0, 0, 1))
+
+# a negative modulus gives a result with the sign of the modulus
+print(pow(1, 0, -1))
+print(pow(1, 0, -2))
+print(pow(3, 0, -5))
+print(pow(-3, 0, -5))
+print(pow(3, 4, -5))
 
 # 3 arg pow is defined to only work on integers
 try:
@@ -28,3 +38,9 @@ try:
     print(pow(4, 5, "z"))
 except TypeError:
     print("TypeError expected")
+
+# pow(x, y, None) is equivalent to pow(x, y)
+print(pow(0, 1, None))
+print(pow(1, 0, None))
+print(pow(-2, 3, None))
+print(pow(3, 8, None))

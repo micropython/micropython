@@ -18,16 +18,6 @@ defines a baseline operation of executing a callback with a given period
 (or once after some delay), and allow specific boards to define more
 non-standard behaviour (which thus won't be portable to other boards).
 
-See discussion of :ref:`important constraints <machine_callbacks>` on
-Timer callbacks.
-
-.. note::
-
-    Memory can't be allocated inside irq handlers (an interrupt) and so
-    exceptions raised within a handler don't give much information.  See
-    :func:`micropython.alloc_emergency_exception_buf` for how to get around this
-    limitation.
-
 Constructors
 ------------
 
@@ -71,7 +61,7 @@ Methods
 
    Otherwise, a TimerChannel object is initialized and returned.
 
-   The operating mode is is the one configured to the Timer object that was used to
+   The operating mode is the one configured to the Timer object that was used to
    create the channel.
 
    - ``channel`` if the width of the timer is 16-bit, then must be either ``TIMER.A``, ``TIMER.B``.
@@ -133,6 +123,9 @@ Methods
         - ``trigger`` must be ``TimerWiPy.TIMEOUT`` when the operating mode is either ``TimerWiPy.PERIODIC`` or
           ``TimerWiPy.ONE_SHOT``. In the case that mode is ``TimerWiPy.PWM`` then trigger must be equal to
           ``TimerWiPy.MATCH``.
+
+    Note that callback handlers are hard interrupts, and the constraints described in :ref:`isr_rules`
+    apply when they are executed.
 
     Returns a callback object.
 

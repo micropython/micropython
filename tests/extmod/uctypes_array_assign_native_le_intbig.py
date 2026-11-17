@@ -1,3 +1,5 @@
+# requires: int-big
+
 import sys
 
 try:

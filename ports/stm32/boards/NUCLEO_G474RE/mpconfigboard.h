@@ -9,16 +9,6 @@
 #define MICROPY_HW_HAS_SWITCH       (1)
 #define MICROPY_HW_HAS_FLASH        (0) // QSPI extflash not mounted
 
-#define MICROPY_PY_ASYNCIO          (0)
-#define MICROPY_PY_DEFLATE          (0)
-#define MICROPY_PY_BINASCII         (0)
-#define MICROPY_PY_HASHLIB          (0)
-#define MICROPY_PY_JSON             (0)
-#define MICROPY_PY_RE               (0)
-#define MICROPY_PY_FRAMEBUF         (0)
-#define MICROPY_PY_SOCKET           (0)
-#define MICROPY_PY_NETWORK          (0)
-
 // The board has an 24MHz HSE, the following gives 170MHz CPU speed
 #define MICROPY_HW_CLK_PLLM         (6)
 #define MICROPY_HW_CLK_PLLN         (85)
@@ -26,10 +16,13 @@
 #define MICROPY_HW_CLK_PLLQ         (8)
 #define MICROPY_HW_CLK_PLLR         (2)
 
+// The board has a 32.768 kHz LSE, solder bridge selectable, on by default
+#define MICROPY_HW_RTC_USE_LSE      (1)
+
 #define MICROPY_HW_CLK_USE_HSI48    (1) // for RNG
 
 // 4 wait states
-#define MICROPY_HW_FLASH_LATENCY    FLASH_LATENCY_8
+#define MICROPY_HW_FLASH_LATENCY    FLASH_LATENCY_4
 
 // UART config
 #define MICROPY_HW_LPUART1_TX       (pin_A2)  // A2 (to STLINK), B11, C1
@@ -93,3 +86,9 @@
 #define MICROPY_HW_CAN1_NAME        "FDCAN1"
 #define MICROPY_HW_CAN1_TX          (pin_A12) // A12, B9, D1
 #define MICROPY_HW_CAN1_RX          (pin_A11) // A11, B8, D0
+
+#define MICROPY_HW_CAN2_NAME        "FDCAN2"
+#define MICROPY_HW_CAN2_TX          (pin_B13) // B13, B6
+#define MICROPY_HW_CAN2_RX          (pin_B12) // B12, B5
+
+// Note: This MCU has an FDCAN3 peripheral, but not currently supported in MicroPython

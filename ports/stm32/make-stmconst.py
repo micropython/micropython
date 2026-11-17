@@ -4,30 +4,16 @@ extracts relevant peripheral constants, and creates qstrs, mpz's and constants
 for the stm module.
 """
 
-from __future__ import print_function
-
 import argparse
 import re
 
-# Python 2/3 compatibility
-import platform
 
-if platform.python_version_tuple()[0] == "2":
-
-    def convert_bytes_to_str(b):
-        return b
-
-elif platform.python_version_tuple()[0] == "3":
-
-    def convert_bytes_to_str(b):
-        try:
-            return str(b, "utf8")
-        except ValueError:
-            # some files have invalid utf8 bytes, so filter them out
-            return "".join(chr(l) for l in b if l <= 126)
-
-
-# end compatibility code
+def convert_bytes_to_str(b):
+    try:
+        return str(b, "utf8")
+    except ValueError:
+        # some files have invalid utf8 bytes, so filter them out
+        return "".join(chr(l) for l in b if l <= 126)
 
 
 # given a list of (name,regex) pairs, find the first one that matches the given line
@@ -55,7 +41,10 @@ class Lexer:
                 r"#define +(?P<id>[A-Z0-9_]+) +\(?(\(uint32_t\))?(?P<hex>0x[0-9A-F]+)U?L?\)?($| */\*)"
             ),
         ),
-        ("#define X", re.compile(r"#define +(?P<id>[A-Z0-9_]+) +(?P<id2>[A-Z0-9_]+)($| +/\*)")),
+        (
+            "#define X",
+            re.compile(r"#define +(?P<id>[A-Z0-9_]+) +\(?(?P<id2>[A-Z0-9_]+)\)?($| +/\*)"),
+        ),
         (
             "#define X+hex",
             re.compile(
@@ -130,12 +119,25 @@ def parse_file(filename):
         m = lexer.next_match()
         if m[0] == "EOF":
             break
-        elif m[0] == "#define hex":
+
+        # If the CPU is secure, skip definitions for opposite security mode.
+        if m[0].startswith("#define"):
+            id_lhs = m[1]["id"]
+            if (
+                security_mode
+                and id_lhs.endswith(("_NS", "_S"))
+                and not id_lhs.endswith(security_mode)
+            ):
+                continue
+
+        if m[0] == "#define hex":
             d = m[1].groupdict()
             consts[d["id"]] = int(d["hex"], base=16)
         elif m[0] == "#define X":
             d = m[1].groupdict()
             if d["id2"] in consts:
+                if d["id"] in consts:
+                    raise Exception(f"macro {d['id']} redefined")
                 consts[d["id"]] = consts[d["id2"]]
         elif m[0] == "#define X+hex":
             d = m[1].groupdict()
@@ -144,7 +146,11 @@ def parse_file(filename):
         elif m[0] == "#define typedef":
             d = m[1].groupdict()
             if d["id2"] in consts:
-                periphs.append((d["id"], consts[d["id2"]]))
+                periph_reg = d["id"]
+                if security_mode:
+                    # Make, eg, "RTC_S"/"RTC_NS" available as "RTC".
+                    periph_reg = periph_reg.removesuffix(security_mode)
+                periphs.append((periph_reg, consts[d["id2"]]))
         elif m[0] == "typedef struct":
             lexer.must_match("{")
             m = lexer.next_match()
@@ -241,7 +247,20 @@ const mp_obj_module_t stm_%s_obj = {
 
 
 def main():
+    global security_mode
+
     cmd_parser = argparse.ArgumentParser(description="Extract ST constants from a C header file.")
+
+    # Options used by gcc to control CPU architecture.
+    cmd_parser.add_argument("-mcmse", action="store_true")
+    cmd_parser.add_argument("-mcpu")
+    cmd_parser.add_argument("-mfloat-abi")
+    cmd_parser.add_argument("-mfp16-format")
+    cmd_parser.add_argument("-mfpu")
+    cmd_parser.add_argument("-msoft-float", action="store_true")
+    cmd_parser.add_argument("-mthumb", action="store_true")
+    cmd_parser.add_argument("-mtune")
+
     cmd_parser.add_argument("file", nargs=1, help="input file")
     cmd_parser.add_argument(
         "--mpz",
@@ -251,6 +270,16 @@ def main():
     )
     args = cmd_parser.parse_args()
 
+    # Determine the security mode of the CPU.
+    if args.mcpu in ("cortex-m33", "cortex-m55"):
+        if args.mcmse:
+            security_mode = "_S"
+        else:
+            security_mode = "_NS"
+    else:
+        security_mode = None
+
+    # Parse the input CMSIS file with the register definitions.
     periphs, reg_defs = parse_file(args.file[0])
 
     # add legacy GPIO constants that were removed when upgrading CMSIS

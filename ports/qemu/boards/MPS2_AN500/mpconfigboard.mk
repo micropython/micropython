@@ -1,0 +1,23 @@
+QEMU_ARCH = arm
+QEMU_MACHINE = mps2-an500
+QEMU_ARGS += -nic user
+
+CFLAGS += -mthumb -mcpu=cortex-m7 -mfloat-abi=hard -mfpu=fpv5-d16
+CFLAGS += -DQEMU_SOC_MPS2
+CFLAGS += -DMICROPY_HW_MCU_NAME='"Cortex-M7"'
+
+MICROPY_HW_ROMFS_PART0_START = 0x60C00000
+MICROPY_HW_ROMFS_PART0_SIZE = 0x00400000
+
+LDSCRIPT = mcu/arm/mps2.ld
+
+SRC_BOARD_O = shared/runtime/gchelper_native.o shared/runtime/gchelper_thumb2.o
+
+MPY_CROSS_FLAGS += -march=armv7emdp
+
+MICROPY_FLOAT_IMPL = double
+SUPPORTS_HARDWARE_FP_DOUBLE = 1
+
+MICROPY_PY_LWIP ?= 1
+CFLAGS += -DMICROPY_HW_ETH_LAN9118=1
+CFLAGS += -DLAN9118_BASE=0xa0000000

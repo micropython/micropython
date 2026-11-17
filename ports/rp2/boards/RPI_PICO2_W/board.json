@@ -1,0 +1,24 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "BLE",
+        "Dual-core",
+        "External Flash",
+        "USB",
+        "WiFi"
+    ],
+    "images": [
+        "rp2-pico2-w.jpg"
+    ],
+    "mcu": "rp2350",
+    "product": "Pico 2 W",
+    "thumbnail": "",
+    "url": "https://www.raspberrypi.com/products/raspberry-pi-pico-2/",
+    "variants": {
+        "RISCV": "RISC-V CPU mode"
+    },
+    "vendor": "Raspberry Pi"
+}

@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+#ifdef CONFIG_MICROPY_GETCHAR_CONSOLE_DRIVER
+
 #include <zephyr/kernel.h>
 #include <zephyr/drivers/uart.h>
 #include <zephyr/drivers/console/uart_console.h>
@@ -23,15 +25,12 @@
 extern int mp_interrupt_char;
 void mp_sched_keyboard_interrupt(void);
 void mp_hal_signal_event(void);
-void mp_hal_wait_sem(struct k_sem *sem, uint32_t timeout_ms);
 
-static struct k_sem uart_sem;
-#define UART_BUFSIZE 256
-static uint8_t uart_ringbuf[UART_BUFSIZE];
-static uint8_t i_get, i_put;
+static uint8_t uart_ringbuf[CONFIG_MICROPY_GETCHAR_CONSOLE_DRIVER_BUF_SIZE];
+static uint16_t i_get = 0, i_put = 0;
 
 static int console_irq_input_hook(uint8_t ch) {
-    int i_next = (i_put + 1) & (UART_BUFSIZE - 1);
+    int i_next = (i_put + 1) & (CONFIG_MICROPY_GETCHAR_CONSOLE_DRIVER_BUF_SIZE - 1);
     if (i_next == i_get) {
         printk("UART buffer overflow - char dropped\n");
         return 1;
@@ -44,17 +43,19 @@ static int console_irq_input_hook(uint8_t ch) {
         uart_ringbuf[i_put] = ch;
         i_put = i_next;
     }
-    // printk("%x\n", ch);
-    k_sem_give(&uart_sem);
     return 1;
 }
 
+// Returns true if a char is available for reading.
+int zephyr_getchar_check(void) {
+    return i_get != i_put;
+}
+
 int zephyr_getchar(void) {
-    mp_hal_wait_sem(&uart_sem, 0);
-    if (k_sem_take(&uart_sem, K_MSEC(0)) == 0) {
+    if (i_get != i_put) {
         unsigned int key = irq_lock();
         int c = (int)uart_ringbuf[i_get++];
-        i_get &= UART_BUFSIZE - 1;
+        i_get &= CONFIG_MICROPY_GETCHAR_CONSOLE_DRIVER_BUF_SIZE - 1;
         irq_unlock(key);
         return c;
     }
@@ -62,8 +63,9 @@ int zephyr_getchar(void) {
 }
 
 void zephyr_getchar_init(void) {
-    k_sem_init(&uart_sem, 0, UINT_MAX);
     uart_console_in_debug_hook_install(console_irq_input_hook);
     // All NULLs because we're interested only in the callback above
     uart_register_input(NULL, NULL, NULL);
 }
+
+#endif /* CONFIG_MICROPY_GETCHAR_CONSOLE_DRIVER */

@@ -11,8 +11,6 @@ See app note AN3156 for a description of the DFU protocol.
 See document UM0391 for a description of the DFuse file.
 """
 
-from __future__ import print_function
-
 import argparse
 import collections
 import inspect
@@ -75,11 +73,7 @@ __verbose = None
 # USB DFU interface
 __DFU_INTERFACE = 0
 
-# Python 3 deprecated getargspec in favour of getfullargspec, but
-# Python 2 doesn't have the latter, so detect which one to use
-getargspec = getattr(inspect, "getfullargspec", getattr(inspect, "getargspec", None))
-
-if "length" in getargspec(usb.util.get_string).args:
+if "length" in inspect.getfullargspec(usb.util.get_string).args:
     # PyUSB 1.0.0.b1 has the length argument
     def get_string(dev, index):
         return usb.util.get_string(dev, 255, index)
@@ -344,8 +338,7 @@ def read_dfu_file(filename):
     #   B   uint8_t     targets     Number of targets
     dfu_prefix, data = consume("<5sBIB", data, "signature version size targets")
     print(
-        "    %(signature)s v%(version)d, image size: %(size)d, "
-        "targets: %(targets)d" % dfu_prefix
+        "    %(signature)s v%(version)d, image size: %(size)d, targets: %(targets)d" % dfu_prefix
     )
     for target_idx in range(dfu_prefix["targets"]):
         # Decode the Image Prefix
@@ -359,7 +352,7 @@ def read_dfu_file(filename):
         #   I       uint32_t    size        Size of image (without prefix)
         #   I       uint32_t    elements    Number of elements in the image
         img_prefix, data = consume(
-            "<6sBI255s2I", data, "signature altsetting named name " "size elements"
+            "<6sBI255s2I", data, "signature altsetting named name size elements"
         )
         img_prefix["num"] = target_idx
         if img_prefix["named"]:

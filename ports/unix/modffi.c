@@ -446,7 +446,7 @@ static unsigned long long ffi_get_int_value(mp_obj_t o) {
         return MP_OBJ_SMALL_INT_VALUE(o);
     } else {
         unsigned long long res;
-        mp_obj_int_to_bytes_impl(o, MP_ENDIANNESS_BIG, sizeof(res), (byte *)&res);
+        mp_obj_int_to_bytes(o, sizeof(res), (byte *)&res, MP_ENDIANNESS_BIG, false, false);
         return res;
     }
 }

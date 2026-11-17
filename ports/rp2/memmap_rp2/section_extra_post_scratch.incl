@@ -1,0 +1,11 @@
+/* Overrides the following symbols for use by code:
+    __HeapLimit
+*/
+
+SECTIONS
+{
+    /* Change for MicroPython: pin __HeapLimit to the end of the .heap section,
+       so the SDK doesn't grow it to the top of RAM (which would inflate the
+       reported firmware size). */
+    __HeapLimit = ADDR(.heap) + SIZEOF(.heap);
+}

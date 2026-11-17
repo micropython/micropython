@@ -171,12 +171,12 @@ uint32_t ra_gpio_get_pull(uint32_t pin);
 uint32_t ra_gpio_get_af(uint32_t pin);
 uint32_t ra_gpio_get_drive(uint32_t pin);
 
-inline static void pwpr_unprotect(void) {
+static inline void pwpr_unprotect(void) {
     _PWPR &= (uint8_t) ~0x80;
     _PWPR |= (uint8_t)0x40;
 }
 
-inline static void pwpr_protect(void) {
+static inline void pwpr_protect(void) {
     _PWPR &= (uint8_t) ~0x40;
     _PWPR |= (uint8_t)0x80;
 }

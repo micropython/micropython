@@ -1,4 +1,11 @@
+import sys
 from pyb import ADC, Timer
+
+# This test assumes ADC(16) is the internal temperature sensor and ADC(17) is
+# the internal voltage referenc.  That's only true on certain MCUs.
+if not ("STM32F4" in sys.implementation._machine or "STM32F7" in sys.implementation._machine):
+    print("SKIP")
+    raise SystemExit
 
 adct = ADC(16)  # Temperature 930 -> 20C
 print(str(adct)[:19])

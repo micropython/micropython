@@ -1,4 +1,5 @@
 # test [0,1,-1] edge cases of bignum
+# requires: int-big
 
 long_zero = (2**64) >> 65
 long_neg_zero = -long_zero

@@ -3,6 +3,8 @@
 
 // This configuration is needed for mboot to be able to write to the external QSPI flash
 
+#define QSPI_QREAD_NUM_DUMMY (2)
+
 #if MICROPY_HW_SPIFLASH_ENABLE_CACHE
 static mp_spiflash_cache_t spi_bdev_cache;
 #endif
@@ -21,6 +23,6 @@ spi_bdev_t spi_bdev;
 // This init function is needed to memory map the QSPI flash early in the boot process
 
 void board_early_init(void) {
-    qspi_init();
+    qspi_init(QSPI_QREAD_NUM_DUMMY);
     qspi_memory_map();
 }

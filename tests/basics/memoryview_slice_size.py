@@ -1,4 +1,5 @@
 # test memoryview slicing beyond the limit of what memoryview can internally index
+# requires: slice
 
 try:
     from sys import maxsize

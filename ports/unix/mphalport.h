@@ -25,6 +25,7 @@
  */
 #include <errno.h>
 #include <unistd.h>
+#include <stdbool.h>
 
 #ifndef CHAR_CTRL_C
 #define CHAR_CTRL_C (3)
@@ -40,7 +41,15 @@
 //
 // Note that we don't delay for the full TIMEOUT_MS, as execution
 // can't be woken from the delay.
-#define MICROPY_INTERNAL_WFE(TIMEOUT_MS) mp_hal_delay_us(500)
+#define MICROPY_INTERNAL_WFE(TIMEOUT_MS) \
+    do { \
+        MP_THREAD_GIL_EXIT(); \
+        mp_hal_delay_us(500); \
+        MP_THREAD_GIL_ENTER(); \
+    } while (0)
+
+// The port provides `mp_hal_stdio_mode_raw()` and `mp_hal_stdio_mode_orig()`.
+#define MICROPY_HAL_HAS_STDIO_MODE_SWITCH (1)
 
 void mp_hal_set_interrupt_char(char c);
 
@@ -90,7 +99,7 @@ static inline void mp_hal_delay_us(mp_uint_t us) {
             if (ret == -1) { \
                 int err = errno; \
                 if (err == EINTR) { \
-                    mp_handle_pending(true); \
+                    mp_handle_pending(MP_HANDLE_PENDING_CALLBACKS_AND_EXCEPTIONS); \
                     continue; \
                 } \
                 raise; \
@@ -103,7 +112,7 @@ static inline void mp_hal_delay_us(mp_uint_t us) {
     { if (err_flag == -1) \
       { mp_raise_OSError(error_val); } }
 
-void mp_hal_get_random(size_t n, void *buf);
+void mp_hal_get_random(size_t n, uint8_t *buf);
 
 #if MICROPY_PY_BLUETOOTH
 enum {
@@ -112,3 +121,15 @@ enum {
 
 void mp_hal_get_mac(int idx, uint8_t buf[6]);
 #endif
+
+#if defined(__linux__) && (defined(__ARM_32BIT_STATE) || defined(__riscv))
+#if __has_builtin(__builtin___clear_cache)
+#define MP_HAL_CLEAN_DCACHE(fun_data, fun_len) \
+    do { \
+        __builtin___clear_cache((void *)fun_data, (char *)fun_data + fun_len); \
+    } while (0)
+#endif
+#endif
+
+// Global variable to control compile-only mode.
+extern bool mp_compile_only;

@@ -1,5 +1,6 @@
 # test builtin pow() with integral values
 # 3 arg version
+# requires: int-big
 
 try:
     print(pow(3, 4, 7))
@@ -8,6 +9,9 @@ except NotImplementedError:
     raise SystemExit
 
 print(pow(555557, 1000002, 1000003))
+
+# a zero exponent with a large negative modulus
+print(pow(3, 0, -(2**70)))
 
 # Tests for 3 arg pow with large values
 
@@ -20,3 +24,8 @@ print(hex(pow(2, x-1, x))) # Should be 1, since x is prime
 print(hex(pow(y, x-1, x))) # Should be 1, since x is prime
 print(hex(pow(y, y-1, x))) # Should be a 'big value'
 print(hex(pow(y, y-1, y))) # Should be a 'big value'
+
+try:
+    print(pow(1, 2, 0))
+except ValueError:
+    print("ValueError")

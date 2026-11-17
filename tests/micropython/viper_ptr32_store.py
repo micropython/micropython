@@ -1,4 +1,5 @@
 # test store to ptr32 type
+# requires: viper
 
 
 @micropython.viper

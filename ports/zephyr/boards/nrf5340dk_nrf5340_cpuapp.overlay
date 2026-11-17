@@ -1,0 +1,16 @@
+// Replace default internal storage partition with external flash
+
+/delete-node/ &storage_partition;
+
+&mx25r64 {
+	partitions {
+		compatible = "fixed-partitions";
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		storage_partition: partition@0 {
+			reg = <0x00000000 0x800000>;
+			label = "storage";
+		};
+	};
+};

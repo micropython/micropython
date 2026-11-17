@@ -68,7 +68,6 @@
 // The number of bits in a MP_SMALL_INT including the sign bit.
 #define MP_SMALL_INT_BITS (MP_IMAX_BITS(MP_SMALL_INT_MAX) + 1)
 
-bool mp_small_int_mul_overflow(mp_int_t x, mp_int_t y);
 mp_int_t mp_small_int_modulo(mp_int_t dividend, mp_int_t divisor);
 mp_int_t mp_small_int_floor_divide(mp_int_t num, mp_int_t denom);
 

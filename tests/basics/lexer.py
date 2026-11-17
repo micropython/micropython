@@ -83,3 +83,19 @@ try:
     exec(r"'\U0000000'")
 except SyntaxError:
     print("SyntaxError")
+
+# Properly formed integer literals
+print(eval("00"))
+# badly formed integer literals
+try:
+    eval("01")
+except SyntaxError:
+    print("SyntaxError")
+
+# Bytes 0-8 inclusive are not allowed in input stream.
+# Earlier CPython (eg 3.10.12) raises ValueError, later CPython (eg 3.11.14) raises SyntaxError.
+for invalid_byte_value in range(0, 10):
+    try:
+        print(eval(b"123" + bytes([invalid_byte_value])))
+    except (ValueError, SyntaxError):
+        print("byte {}: SyntaxError".format(invalid_byte_value))

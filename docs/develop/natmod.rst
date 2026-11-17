@@ -39,11 +39,18 @@ options for the ``ARCH`` variable, see below):
 * ``armv7emsp`` (ARM Thumb 2, single precision float, eg Cortex-M4F, Cortex-M7)
 * ``armv7emdp`` (ARM Thumb 2, double precision float, eg Cortex-M7)
 * ``xtensa`` (non-windowed, eg ESP8266)
-* ``xtensawin`` (windowed with window size 8, eg ESP32)
+* ``xtensawin`` (windowed with window size 8, eg ESP32, ESP32S3)
+* ``rv32imc`` (RISC-V 32 bits with compressed instructions, eg ESP32C3, ESP32C6)
+* ``rv64imc`` (RISC-V 64 bits with compressed instructions)
+
+If the chosen platform supports explicit architecture flags and you want to let
+the output .mpy file carry those flags' value, you must pass them to the
+``ARCH_FLAGS`` flags variable when building the .mpy file.
 
 When compiling and linking the native .mpy file the architecture must be chosen
-and the corresponding file can only be imported on that architecture.  For more
-details about .mpy files see :ref:`mpy_files`.
+and the corresponding file can only be imported on that architecture (and if
+architecture flags are present, only if they match the target's capabilities).
+For more details about .mpy files see :ref:`mpy_files`.
 
 Native code must be compiled as position independent code (PIC) and use a global
 offset table (GOT), although the details of this varies from architecture to
@@ -66,14 +73,31 @@ The known limitations are:
 
 * static BSS variables are not supported; workaround: use global BSS variables
 
+* thread-local storage variables are not supported on rv32imc; workaround: use
+  global BSS variables or allocate some space on the heap to store them
+
 So, if your C code has writable data, make sure the data is defined globally,
 without an initialiser, and only written to within functions.
+
+The native module is not automatically linked against the standard static libraries
+like ``libm.a`` and ``libgcc.a``, which can lead to ``undefined symbol`` errors.
+You can link the runtime libraries by setting ``LINK_RUNTIME = 1``
+in your Makefile. Custom static libraries can also be linked by adding
+``MPY_LD_FLAGS += -l path/to/library.a``. Note that these are linked into
+the native module and will not be shared with other modules or the system.
 
 Linker limitation: the native module is not linked against the symbol table of the
 full MicroPython firmware.  Rather, it is linked against an explicit table of exported
 symbols found in ``mp_fun_table`` (in ``py/nativeglue.h``), that is fixed at firmware
 build time.  It is thus not possible to simply call some arbitrary HAL/OS/RTOS/system
-function, for example.
+function, for example, unless that resides at a fixed address. In that case, the path
+of a linkerscript containing a series of symbol names and their fixed address can be
+passed to ``mpy_ld.py`` via the ``--externs`` command line argument. That way symbols
+appearing in the linkerscript will take precedence over what is provided from object
+files, but at the moment the object files' implementation will still reside in the
+final MPY file. The linkerscript parser is limited in its capabilities, and is
+currently used only for parsing the ESP8266 port ROM symbols list (see
+``ports/esp8266/boards/eagle.rom.addr.v6.ld``).
 
 New symbols can be added to the end of the table and the firmware rebuilt.
 The symbols also need to be added to ``tools/mpy_ld.py``'s ``fun_table`` dict in the
@@ -105,7 +129,8 @@ The filesystem layout consists of two main parts, the source files and the Makef
   location of the MicroPython repository (to find header files, the relevant Makefile
   fragment, and the ``mpy_ld.py`` tool), ``MOD`` as the name of the module, ``SRC``
   as the list of source files, optionally specify the machine architecture via ``ARCH``,
-  and then include ``py/dynruntime.mk``.
+  along with optional machine architecture flags specified via ``ARCH_FLAGS``, and
+  then include ``py/dynruntime.mk``.
 
 Minimal example
 ---------------
@@ -172,7 +197,7 @@ The file ``Makefile`` contains:
     # Source files (.c or .py)
     SRC = factorial.c
 
-    # Architecture to build for (x86, x64, armv6m, armv7m, xtensa, xtensawin)
+    # Architecture to build for (x86, x64, armv6m, armv7m, xtensa, xtensawin, rv32imc, rv64imc)
     ARCH = x64
 
     # Include to get the rules for compiling and linking the module
@@ -198,6 +223,10 @@ Without modifying the Makefile you can specify the target architecture via::
 
     $ make ARCH=armv7m
 
+Same applies for optional architecture flags via::
+
+    $ make ARCH=rv32imc ARCH_FLAGS=zba
+
 Module usage in MicroPython
 ---------------------------
 
@@ -209,6 +238,26 @@ other module, for example::
     import factorial
     print(factorial.factorial(10))
     # should display 3628800
+
+Using Picolibc when building modules
+------------------------------------
+
+Using `Picolibc <https://github.com/picolibc/picolibc>`_ as your C standard
+library is not only supported, but in fact it is the default for the rv32imc and
+rv64imc platforms.  However, there are a couple of things worth mentioning to make
+sure you don't run into problems later when building code.
+
+Some pre-built Picolibc versions (for example, those provided by Ubuntu Linux
+as the ``picolibc-arm-none-eabi``, ``picolibc-riscv64-unknown-elf``, and
+``picolibc-xtensa-lx106-elf`` packages) assume thread-local storage (TLS) is
+available at runtime, but unfortunately MicroPython modules do not support that
+on some architectures (namely ``rv32imc`` and ``rv64imc``).  This means that some
+functionalities provided by Picolibc will default to use TLS, returning an
+error either during compilation or during linking.
+
+For an example on how this may affect you, the ``examples/natmod/btree``
+example module contains a workaround to make sure ``errno`` works (look for
+``__PICOLIBC_ERRNO_FUNCTION`` in the Makefile and follow the trail from there).
 
 Further examples
 ----------------

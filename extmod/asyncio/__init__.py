@@ -12,6 +12,9 @@ _attrs = {
     "Event": "event",
     "ThreadSafeFlag": "event",
     "Lock": "lock",
+    "Queue": "queue",
+    "QueueEmpty": "queue",
+    "QueueFull": "queue",
     "open_connection": "stream",
     "start_server": "stream",
     "StreamReader": "stream",
@@ -22,10 +25,10 @@ _attrs = {
 # Lazy loader, effectively does:
 #   global attr
 #   from .mod import attr
-def __getattr__(attr):
+def __getattr__(attr, /):
     mod = _attrs.get(attr, None)
     if mod is None:
         raise AttributeError(attr)
-    value = getattr(__import__(mod, None, None, True, 1), attr)
+    value = getattr(__import__(mod, globals(), None, True, 1), attr)
     globals()[attr] = value
     return value

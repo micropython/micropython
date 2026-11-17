@@ -34,6 +34,14 @@ represented by VFS classes.
 
     Will raise ``OSError(EPERM)`` if *mount_point* is already mounted.
 
+.. function:: mount()
+    :noindex:
+
+    With no arguments to :func:`mount`, return a list of tuples representing
+    all active mountpoints.
+    
+    The returned list has the form *[(fsobj, mount_point), ...]*.
+
 .. function:: umount(mount_point)
 
     Unmount a filesystem. *mount_point* can be a string naming the mount location,
@@ -41,6 +49,9 @@ represented by VFS classes.
     method ``umount()`` is called on the filesystem object.
 
     Will raise ``OSError(EINVAL)`` if *mount_point* is not found.
+
+Filesystem Types
+----------------
 
 .. class:: VfsFat(block_dev)
 
@@ -99,10 +110,86 @@ represented by VFS classes.
     as the root of the ``VfsPosix`` object.  Otherwise the current directory of
     the host filesystem is used.
 
+.. class:: VfsRom(buffer)
+
+    This class is only available when the firmware is built with
+    ``MICROPY_VFS_ROM`` enabled.
+
+    Create a filesystem object that uses the :ref:`ROMFS read-only filesystem
+    format <romfs>`.  *buffer* must be an object supporting the buffer protocol
+    (e.g. ``bytes``, ``bytearray``, or ``memoryview``) that contains a valid
+    ROMFS image.
+    The constructor validates that *buffer* begins with the ROMFS magic bytes
+    (``b"\xd2\xcd\x31"``).  If the buffer is too small or not a valid ROMFS
+    then ``OSError(ENODEV)`` is raised.
+
+    See :ref:`romfs` for more information on the ROMFS filesystem and how to
+    deploy images using :ref:`mpremote <mpremote>`.
+
+   .. method:: VfsRom.open(path, mode)
+
+       Open a file from the ROMFS.  Only read modes (``''``, ``'r'``,
+       ``'rt'``, ``'rb'``) are supported.
+       For binary files opened in read mode,
+       the returned object also supports the buffer protocol so that a
+       ``memoryview`` of the file data can be obtained, which refers
+       directly into the ROMFS memory (zero-copy).
+
+   .. method:: VfsRom.statvfs(path)
+
+       The block size is reported as 1 and
+       the block count represents the total size of the ROMFS image in bytes.
+
+   .. method:: VfsRom.chdir(path)
+
+       Change directory within the ROMFS.  Only the root (``'/'``) is
+       supported; changing to any subdirectory raises ``OSError(EOPNOTSUPP)``.
+
 .. _littlefs v1 filesystem format: https://github.com/ARMmbed/littlefs/tree/v1
 .. _littlefs v2 filesystem format: https://github.com/ARMmbed/littlefs
 .. _littlefs issue 295: https://github.com/ARMmbed/littlefs/issues/295
 .. _littlefs issue 347: https://github.com/ARMmbed/littlefs/issues/347
+
+Miscellaneous Functions
+-----------------------
+
+.. function:: rom_ioctl(op, ...)
+
+   Low-level interface for accessing the read-only memory (ROM) partition(s)
+   of the device. This function is only available on ports that support ROMFS
+   (i.e. where ``MICROPY_VFS_ROM_IOCTL`` is enabled).
+
+   The supported operations are:
+
+   - ``vfs.rom_ioctl(1)`` -- Return the number of available ROM partitions.
+   - ``vfs.rom_ioctl(2, id)`` -- Return ROM partition *id* as an object that
+     supports the buffer protocol.  Depending on the port, this is either a
+     block device or a ``memoryview``.  A block device supports the standard
+     block protocol, including erase and write operations.  If a ``memoryview``
+     is returned, the port must provide erase and write operations through
+     ``vfs.rom_ioctl()`` operations 3, 4, and 5 below.
+   - ``vfs.rom_ioctl(3, id, length)`` -- Prepare the first *length* bytes of
+     ROM partition *id* for writing (for example, by erasing flash).  Returns
+     the minimum write size in bytes (the alignment required for subsequent
+     writes).
+   - ``vfs.rom_ioctl(3, id, offset, length)`` -- Prepare *length* bytes of ROM
+     partition *id*, starting at byte *offset*, for writing.  This form allows
+     a partition to be prepared incrementally. Returns
+     the minimum write size in bytes.
+   - ``vfs.rom_ioctl(4, id, offset, buf)`` -- Write *buf* (a bytes-like object)
+     to the ROM partition with index *id* at byte *offset*.
+   - ``vfs.rom_ioctl(5, id)`` -- Complete a write sequence to partition *id*
+     (performs any finalisation needed after writing, such as cache flushing).
+   - ``vfs.rom_ioctl(6, id)`` -- Return the minimum number of bytes of ROM
+     partition *id* that can be prepared at once.  A positive return value
+     indicates that the four-argument form of operation 3 is supported;
+     *offset* and *length* must be aligned to this value.  Otherwise, only the
+     three-argument form of operation 3 is supported.
+
+   These operations are used internally by ``mpremote`` to deploy ROMFS images.
+   Most users do not need to call ``vfs.rom_ioctl()`` directly.
+
+   See :ref:`romfs` for more information.
 
 Block devices
 -------------
@@ -155,6 +242,9 @@ that the block device supports the extended interface.
         of *offset*, read bytes from the device into *buf* (an array of bytes).
         The number of bytes to read is given by the length of *buf*.
 
+        Upon success the method should return ``None`` or 0.  Upon failure it should
+        return a negative integer corresponding to an ``OSError`` errno code.
+
     .. method:: writeblocks(block_num, buf)
                 writeblocks(block_num, buf, offset)
 
@@ -175,6 +265,9 @@ that the block device supports the extended interface.
 
         Note that implementations must never implicitly erase blocks if the offset
         argument is specified, even if it is zero.
+
+        Upon success the method should return ``None`` or 0.  Upon failure it should
+        return a negative integer corresponding to an ``OSError`` errno code.
 
     .. method:: ioctl(op, arg)
 

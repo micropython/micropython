@@ -28,6 +28,10 @@
 
 #include "py/obj.h"
 
+// Pass to the `free_len` argument to `mp_reader_new_mem` to indicate that the data is in ROM.
+// This means that the data is addressable and will remain valid at least until a soft reset.
+#define MP_READER_IS_ROM ((size_t)-1)
+
 // the readbyte function must return the next byte in the input stream
 // it must return MP_READER_EOF if end of stream
 // it can be called again after returning MP_READER_EOF, and in that case must return MP_READER_EOF
@@ -42,5 +46,10 @@ typedef struct _mp_reader_t {
 void mp_reader_new_mem(mp_reader_t *reader, const byte *buf, size_t len, size_t free_len);
 void mp_reader_new_file(mp_reader_t *reader, qstr filename);
 void mp_reader_new_file_from_fd(mp_reader_t *reader, int fd, bool close_fd);
+
+// Try to efficiently read the given number of bytes from a ROM-based reader.
+// Returns a valid, non-NULL pointer to the requested data if the reader points to ROM.
+// Returns NULL if the reader does not point to ROM.
+const uint8_t *mp_reader_try_read_rom(mp_reader_t *reader, size_t len);
 
 #endif // MICROPY_INCLUDED_PY_READER_H

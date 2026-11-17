@@ -328,18 +328,21 @@ void mp_emit_bc_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scope) {
         // qstr name to use as the argument name.  Note that it's not a simple
         // 1-1 mapping (ie i!=j in general) because of possible closed-over
         // variables.  In the case that the argument i has no corresponding
-        // parameter we use "*" as its name (since no argument can ever be named
-        // "*").  We could use a blank qstr but "*" is better for debugging.
+        // parameter, or is positional-only (which includes closed-over
+        // variables), we use MP_QSTRnull as its name (since no argument can ever
+        // be named MP_QSTRnull, nor passed in through **dict).
         // Note: there is some wasted RAM here for the case of storing a qstr
         // for each closed-over variable, and maybe there is a better way to do
         // it, but that would require changes to mp_setup_code_state.
         for (int i = 0; i < scope->num_pos_args + scope->num_kwonly_args; i++) {
-            qstr qst = MP_QSTR__star_;
-            for (int j = 0; j < scope->id_info_len; ++j) {
-                id_info_t *id = &scope->id_info[j];
-                if ((id->flags & ID_FLAG_IS_PARAM) && id->local_num == i) {
-                    qst = id->qst;
-                    break;
+            qstr qst = MP_QSTRnull;
+            if (i >= scope->num_pos_only_args) {
+                for (int j = 0; j < scope->id_info_len; ++j) {
+                    id_info_t *id = &scope->id_info[j];
+                    if ((id->flags & ID_FLAG_IS_PARAM) && id->local_num == i) {
+                        qst = id->qst;
+                        break;
+                    }
                 }
             }
             emit_write_code_info_qstr(emit, qst);
@@ -430,6 +433,12 @@ void mp_emit_bc_set_source_line(emit_t *emit, mp_uint_t source_line) {
         // If we compile with -O3, don't store line numbers.
         return;
     }
+    #if MICROPY_DYNAMIC_COMPILER
+    if (!mp_dynamic_compiler.include_source_lines) {
+        // Don't store line numbers if explicitly disabled.
+        return;
+    }
+    #endif
     if (source_line > emit->last_source_line) {
         mp_uint_t bytes_to_skip = emit->bytecode_offset - emit->last_source_line_offset;
         mp_uint_t lines_to_skip = source_line - emit->last_source_line;

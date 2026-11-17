@@ -32,6 +32,16 @@
 
 #if MICROPY_HW_ENABLE_STORAGE
 
+#if MICROPY_HW_RUNS_FROM_EXT_FLASH
+// Disable all interrupts.
+#define FLASH_WRITE_ENTER uint32_t atomic_state = MICROPY_BEGIN_ATOMIC_SECTION()
+#define FLASH_WRITE_EXIT MICROPY_END_ATOMIC_SECTION(atomic_state)
+#else
+// Prevent cache flushing and USB access.
+#define FLASH_WRITE_ENTER uint32_t basepri = raise_irq_pri(IRQ_PRI_FLASH)
+#define FLASH_WRITE_EXIT restore_irq_pri(basepri)
+#endif
+
 int32_t spi_bdev_ioctl(spi_bdev_t *bdev, uint32_t op, uint32_t arg) {
     switch (op) {
         case BDEV_IOCTL_INIT:
@@ -68,6 +78,7 @@ int32_t spi_bdev_ioctl(spi_bdev_t *bdev, uint32_t op, uint32_t arg) {
 }
 
 #if MICROPY_HW_SPIFLASH_ENABLE_CACHE
+
 int spi_bdev_readblocks(spi_bdev_t *bdev, uint8_t *dest, uint32_t block_num, uint32_t num_blocks) {
     uint32_t basepri = raise_irq_pri(IRQ_PRI_FLASH); // prevent cache flushing and USB access
     int ret = mp_spiflash_cached_read(&bdev->spiflash, block_num * FLASH_BLOCK_SIZE, num_blocks * FLASH_BLOCK_SIZE, dest);
@@ -87,20 +98,36 @@ int spi_bdev_writeblocks(spi_bdev_t *bdev, const uint8_t *src, uint32_t block_nu
 
     return ret;
 }
+
+#elif FLASH_BLOCK_SIZE == MP_SPIFLASH_ERASE_BLOCK_SIZE
+
+int spi_bdev_readblocks(spi_bdev_t *bdev, uint8_t *dest, uint32_t block_num, uint32_t num_blocks) {
+    int ret = spi_bdev_readblocks_raw(bdev, dest, block_num, 0, num_blocks * FLASH_BLOCK_SIZE);
+    return ret;
+}
+
+int spi_bdev_writeblocks(spi_bdev_t *bdev, const uint8_t *src, uint32_t block_num, uint32_t num_blocks) {
+    int ret = spi_bdev_eraseblocks_raw(bdev, block_num, num_blocks * FLASH_BLOCK_SIZE);
+    if (ret == 0) {
+        ret = spi_bdev_writeblocks_raw(bdev, src, block_num, 0, num_blocks * FLASH_BLOCK_SIZE);
+    }
+    return ret;
+}
+
 #endif // MICROPY_HW_SPIFLASH_ENABLE_CACHE
 
 int spi_bdev_readblocks_raw(spi_bdev_t *bdev, uint8_t *dest, uint32_t block_num, uint32_t block_offset, uint32_t num_bytes) {
-    uint32_t basepri = raise_irq_pri(IRQ_PRI_FLASH); // prevent cache flushing and USB access
+    FLASH_WRITE_ENTER;
     int ret = mp_spiflash_read(&bdev->spiflash, block_num * MP_SPIFLASH_ERASE_BLOCK_SIZE + block_offset, num_bytes, dest);
-    restore_irq_pri(basepri);
+    FLASH_WRITE_EXIT;
 
     return ret;
 }
 
 int spi_bdev_writeblocks_raw(spi_bdev_t *bdev, const uint8_t *src, uint32_t block_num, uint32_t block_offset, uint32_t num_bytes) {
-    uint32_t basepri = raise_irq_pri(IRQ_PRI_FLASH); // prevent cache flushing and USB access
+    FLASH_WRITE_ENTER;
     int ret = mp_spiflash_write(&bdev->spiflash, block_num * MP_SPIFLASH_ERASE_BLOCK_SIZE + block_offset, num_bytes, src);
-    restore_irq_pri(basepri);
+    FLASH_WRITE_EXIT;
 
     return ret;
 }
@@ -108,9 +135,9 @@ int spi_bdev_writeblocks_raw(spi_bdev_t *bdev, const uint8_t *src, uint32_t bloc
 int spi_bdev_eraseblocks_raw(spi_bdev_t *bdev, uint32_t block_num, uint32_t num_bytes) {
     int ret = 0;
     while (num_bytes >= MP_SPIFLASH_ERASE_BLOCK_SIZE) {
-        uint32_t basepri = raise_irq_pri(IRQ_PRI_FLASH); // prevent cache flushing and USB access
+        FLASH_WRITE_ENTER;
         ret = mp_spiflash_erase_block(&bdev->spiflash, block_num * MP_SPIFLASH_ERASE_BLOCK_SIZE);
-        restore_irq_pri(basepri);
+        FLASH_WRITE_EXIT;
         if (ret) {
             break;
         }

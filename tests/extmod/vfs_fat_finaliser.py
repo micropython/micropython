@@ -1,4 +1,5 @@
 # Test VfsFat class and its finaliser
+# requires: slice
 
 try:
     import errno, os, vfs

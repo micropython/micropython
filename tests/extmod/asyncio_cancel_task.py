@@ -1,4 +1,5 @@
 # Test cancelling a task
+# requires: async float
 
 try:
     import asyncio

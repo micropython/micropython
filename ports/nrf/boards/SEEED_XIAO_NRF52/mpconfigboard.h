@@ -26,7 +26,6 @@
 
 #define MICROPY_HW_BOARD_NAME       "XIAO nRF52840 Sense"
 #define MICROPY_HW_MCU_NAME         "NRF52840"
-#define MICROPY_PY_SYS_PLATFORM     "nrf52"
 
 #define MICROPY_BOARD_EARLY_INIT        XIAO_board_early_init
 #define MICROPY_BOARD_DEINIT            XIAO_board_deinit

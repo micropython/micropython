@@ -1,0 +1,16 @@
+--- instance0 ---
+controller iteration 0
+b'0123'
+controller iteration 1
+b'0123'
+done
+--- instance1 ---
+target iteration 0
+IRQ_END_WRITE 2
+bytearray(b'--0123--')
+IRQ_END_READ 2
+target iteration 1
+IRQ_END_WRITE 3
+bytearray(b'--00123-')
+IRQ_END_READ 3
+done

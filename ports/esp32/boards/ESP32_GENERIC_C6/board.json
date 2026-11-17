@@ -1,13 +1,15 @@
 {
     "deploy": [
-        "../deploy_c6.md"
+        "../deploy.md"
     ],
+    "deploy_options": {
+        "flash_offset": "0"
+    },
     "docs": "",
     "features": [
         "BLE",
         "WiFi"
     ],
-    "id": "esp32c6",
     "images": [
         "esp32c6_devkitmini.jpg"
     ],

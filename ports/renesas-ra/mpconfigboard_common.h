@@ -70,8 +70,8 @@
 #endif
 
 // Whether to enable access to SDCARD, through SDHI controller
-#ifndef MICROPY_HW_HAS_SDHI_CARD
-#define MICROPY_HW_HAS_SDHI_CARD (0)
+#ifndef MICROPY_PY_MACHINE_SDCARD
+#define MICROPY_PY_MACHINE_SDCARD (0)
 #endif
 
 // Whether to enable the RTC, exposed as pyb.RTC
@@ -152,6 +152,11 @@
 // Function to determine if the given uart_id is reserved for system use or not.
 #ifndef MICROPY_HW_UART_IS_RESERVED
 #define MICROPY_HW_UART_IS_RESERVED(uart_id) (false)
+#endif
+
+// Whether to support the VFSROM file system
+#ifndef MICROPY_VFS_ROM
+#define MICROPY_VFS_ROM             (1)
 #endif
 
 /*****************************************************************************/

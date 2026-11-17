@@ -1,0 +1,25 @@
+{
+    "deploy": [
+        "../deploy_nativeusb.md"
+    ],
+    "deploy_options": {
+        "flash_offset": "0"
+    },
+    "docs": "",
+    "features": [
+        "BLE",
+        "External Flash",
+        "External RAM",
+        "WiFi",
+        "USB",
+        "USB-C",
+        "Battery Charging"
+    ],
+    "images": [
+        "seeed_xiao_esp32s3.jpg"
+    ],
+    "mcu": "esp32s3",
+    "product": "XIAO ESP32S3",
+    "url": "https://www.seeedstudio.com/XIAO-ESP32S3-p-5627.html",
+    "vendor": "Seeed Studio"
+}

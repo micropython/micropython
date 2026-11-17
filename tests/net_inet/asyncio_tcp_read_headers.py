@@ -1,4 +1,5 @@
 # Test asyncio.open_connection() and stream readline()
+# requires: async
 
 try:
     import asyncio

@@ -50,6 +50,25 @@ SRC_C = \
 	gccollect.c \
 	shared/runtime/gchelper_generic.c \
 
+# Workaround for building native mpy-cross when invoked inside an Espressif
+# Installation Manager (EIM) environment (ie. ESP32 builds).
+#
+# EIM prepends an LLVM installation in front of the system PATH (so macOS can't
+# compile native binaries) and adds directories to the PATH variable whose files
+# collide with an existing GCC installation as they recursively add any
+# directory named `bin` under the tools root of the currently chosen ESP-IDF
+# environment.  Of course nobody would ever build native binaries to do any pre
+# or post build actions or anything else for an ESP32 project, right?
+
+ifneq ($(IDF_TOOLS_PATH),)
+# This may break if one or more path entries contain spaces in their name and
+# the compiler is under one of those directories.
+SPACE := $(subst ,, )
+PATH_COPY := $(PATH)
+# Filter out all directories under IDF_TOOLS_PATH from the system PATH.
+PATH = $(subst $(SPACE),:,$(filter-out $(IDF_TOOLS_PATH)/%,$(subst :,$(SPACE),$(PATH_COPY))))
+endif
+
 # Add fmode when compiling with mingw gcc
 COMPILER_TARGET := $(shell $(CC) -dumpmachine)
 ifneq (,$(findstring mingw,$(COMPILER_TARGET)))

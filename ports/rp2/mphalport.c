@@ -39,6 +39,7 @@
 #include "hardware/irq.h"
 #include "pico/unique_id.h"
 #include "pico/aon_timer.h"
+#include "pico/rand.h"
 
 #if MICROPY_PY_NETWORK_CYW43
 #include "lib/cyw43-driver/src/cyw43.h"
@@ -50,7 +51,7 @@
 static uint64_t time_us_64_offset_from_epoch;
 #endif
 
-#if MICROPY_HW_ENABLE_UART_REPL || MICROPY_HW_USB_CDC
+#if MICROPY_HW_ENABLE_UART_REPL || MICROPY_HW_USB_CDC || MICROPY_PY_OS_DUPTERM_NOTIFY
 
 #ifndef MICROPY_HW_STDIN_BUFFER_LEN
 #define MICROPY_HW_STDIN_BUFFER_LEN 512
@@ -83,11 +84,12 @@ int mp_hal_stdin_rx_chr(void) {
         #if MICROPY_HW_USB_CDC
         mp_usbd_cdc_poll_interfaces(0);
         #endif
-
+        #if MICROPY_HW_USB_CDC || MICROPY_HW_ENABLE_UART_REPL || MICROPY_PY_OS_DUPTERM_NOTIFY
         int c = ringbuf_get(&stdin_ringbuf);
         if (c != -1) {
             return c;
         }
+        #endif
         #if MICROPY_PY_OS_DUPTERM
         int dupterm_c = mp_os_dupterm_rx_chr();
         if (dupterm_c >= 0) {
@@ -128,8 +130,7 @@ mp_uint_t mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
 #if PICO_RISCV
 __attribute__((naked)) mp_uint_t mp_hal_ticks_cpu(void) {
     __asm volatile (
-        "li a0, 4\n" // mask value to uninhibit mcycle counter
-        "csrw mcountinhibit, a0\n" // uninhibit mcycle counter
+        "csrci mcountinhibit, 1\n" // uninhibit mcycle counter
         "csrr a0, mcycle\n" // get mcycle counter
         "ret\n"
         );
@@ -218,15 +219,6 @@ MP_WEAK void mp_hal_get_mac(int idx, uint8_t buf[6]) {
     mp_hal_generate_laa_mac(idx, buf);
 }
 
-void mp_hal_get_mac_ascii(int idx, size_t chr_off, size_t chr_len, char *dest) {
-    static const char hexchr[16] = "0123456789ABCDEF";
-    uint8_t mac[6];
-    mp_hal_get_mac(idx, mac);
-    for (; chr_len; ++chr_off, --chr_len) {
-        *dest++ = hexchr[mac[chr_off >> 1] >> (4 * (1 - (chr_off & 1))) & 0xf];
-    }
-}
-
 // Shouldn't be used, needed by cyw43-driver in debug build.
 uint32_t storage_read_blocks(uint8_t *dest, uint32_t block_num, uint32_t num_blocks) {
     panic_unsupported();
@@ -266,15 +258,20 @@ void soft_timer_init(void) {
 }
 
 void mp_wfe_or_timeout(uint32_t timeout_ms) {
-    soft_timer_entry_t timer;
+    best_effort_wfe_or_timeout(delayed_by_ms(get_absolute_time(), timeout_ms));
+}
 
-    // Note the timer doesn't have an associated callback, it just exists to create a
-    // hardware interrupt to wake the CPU
-    soft_timer_static_init(&timer, SOFT_TIMER_MODE_ONE_SHOT, 0, NULL);
-    soft_timer_insert(&timer, timeout_ms);
+int mp_hal_is_pin_reserved(int n) {
+    #if MICROPY_PY_NETWORK_CYW43
+    return n == CYW43_PIN_WL_HOST_WAKE;
+    #else
+    return false;
+    #endif
+}
 
-    __wfe();
-
-    // Clean up the timer node if it's not already
-    soft_timer_remove(&timer);
+void mp_hal_get_random(size_t n, uint8_t *buf) {
+    for (int i = 0; i < n; i += 8) {
+        uint64_t rand64 = get_rand_64();
+        memcpy(buf + i, &rand64, MIN(n - i, 8));
+    }
 }

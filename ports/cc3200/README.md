@@ -4,6 +4,13 @@ MicroPython port to CC3200 WiFi SoC
 This is a MicroPython port to Texas Instruments CC3200 WiFi SoC (ARM Cortex-M4
 architecture). This port supports 2 boards: WiPy and TI CC3200-LAUNCHXL.
 
+## Not Actively Maintained
+
+The CC3200 port is a [Tier 3 MicroPython
+port](https://docs.micropython.org/en/latest/develop/support_tiers.html). This
+tier is **not actively maintained**. It uses an outdated version of the CC3200
+SDK which contains known security vulnerabilities.
+
 ## Build Instructions for the CC3200
 
 Currently the CC3200 port of MicroPython builds under Linux and OSX,

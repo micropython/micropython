@@ -7,10 +7,10 @@
 #define SFLASH_SECTOR_COUNT         ((SFLASH_BLOCK_SIZE * SFLASH_BLOCK_COUNT) / SFLASH_SECTOR_SIZE)
 #define SFLASH_SECTORS_PER_BLOCK    (SFLASH_BLOCK_SIZE / SFLASH_SECTOR_SIZE)
 
-DRESULT sflash_disk_init(void);
-DRESULT sflash_disk_status(void);
-DRESULT sflash_disk_read(BYTE *buff, DWORD sector, UINT count);
-DRESULT sflash_disk_write(const BYTE *buff, DWORD sector, UINT count);
-DRESULT sflash_disk_flush(void);
+int sflash_disk_init(void);
+int sflash_disk_status(void);
+int sflash_disk_read(BYTE *buff, DWORD sector, UINT count);
+int sflash_disk_write(const BYTE *buff, DWORD sector, UINT count);
+int sflash_disk_flush(void);
 
 #endif /* SFLASH_DISKIO_H_ */

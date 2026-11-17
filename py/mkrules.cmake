@@ -14,9 +14,32 @@ set(MICROPY_MODULEDEFS "${MICROPY_GENHDR_DIR}/moduledefs.h")
 set(MICROPY_ROOT_POINTERS_SPLIT "${MICROPY_GENHDR_DIR}/root_pointers.split")
 set(MICROPY_ROOT_POINTERS_COLLECTED "${MICROPY_GENHDR_DIR}/root_pointers.collected")
 set(MICROPY_ROOT_POINTERS "${MICROPY_GENHDR_DIR}/root_pointers.h")
+set(MICROPY_COMPRESSED_SPLIT "${MICROPY_GENHDR_DIR}/compressed.split")
+set(MICROPY_COMPRESSED_COLLECTED "${MICROPY_GENHDR_DIR}/compressed.collected")
+set(MICROPY_COMPRESSED_DATA "${MICROPY_GENHDR_DIR}/compressed.data.h")
 
 if(NOT MICROPY_PREVIEW_VERSION_2)
     set(MICROPY_PREVIEW_VERSION_2 0)
+endif()
+
+# Set the board name.
+if(MICROPY_BOARD)
+    if(MICROPY_BOARD_VARIANT)
+        set(MICROPY_BOARD_BUILD_NAME ${MICROPY_BOARD}-${MICROPY_BOARD_VARIANT})
+    else()
+        set(MICROPY_BOARD_BUILD_NAME ${MICROPY_BOARD})
+    endif()
+
+    target_compile_definitions(${MICROPY_TARGET} PRIVATE
+        MICROPY_BOARD_BUILD_NAME="${MICROPY_BOARD_BUILD_NAME}"
+    )
+endif()
+
+# Need to do this before extracting MICROPY_CPP_DEF below.
+if(MICROPY_ROM_TEXT_COMPRESSION)
+    target_compile_definitions(${MICROPY_TARGET} PUBLIC
+        MICROPY_ROM_TEXT_COMPRESSION=\(1\)
+    )
 endif()
 
 # Need to do this before extracting MICROPY_CPP_DEF below. Rest of frozen
@@ -53,6 +76,15 @@ foreach(_arg ${MICROPY_CPP_DEF})
 endforeach()
 list(APPEND MICROPY_CPP_FLAGS ${MICROPY_CPP_FLAGS_EXTRA})
 
+# Include anything passed in via CFLAGS_EXTRA
+# in both MICROPY_CPP_FLAGS and CMAKE_C_FLAGS
+if(DEFINED ENV{CFLAGS_EXTRA})
+  set(CFLAGS_EXTRA $ENV{CFLAGS_EXTRA})
+  string(APPEND CMAKE_C_FLAGS " ${CFLAGS_EXTRA}")  # ... not a list
+  separate_arguments(CFLAGS_EXTRA)
+  list(APPEND MICROPY_CPP_FLAGS ${CFLAGS_EXTRA})  # ... a list
+endif()
+
 find_package(Python3 REQUIRED COMPONENTS Interpreter)
 
 target_sources(${MICROPY_TARGET} PRIVATE
@@ -60,6 +92,18 @@ target_sources(${MICROPY_TARGET} PRIVATE
     ${MICROPY_QSTRDEFS_GENERATED}
     ${MICROPY_MODULEDEFS}
     ${MICROPY_ROOT_POINTERS}
+)
+
+if(MICROPY_ROM_TEXT_COMPRESSION)
+    target_sources(${MICROPY_TARGET} PRIVATE
+        ${MICROPY_COMPRESSED_DATA}
+    )
+endif()
+
+# Ensure genhdr directory is removed on clean
+
+set_property(TARGET ${MICROPY_TARGET} APPEND PROPERTY ADDITIONAL_CLEAN_FILES
+    "${MICROPY_GENHDR_DIR}"
 )
 
 # Command to force the build of another command
@@ -175,10 +219,40 @@ add_custom_command(
     DEPENDS ${MICROPY_ROOT_POINTERS_COLLECTED} ${MICROPY_PY_DIR}/make_root_pointers.py
 )
 
+# Generate compressed.data.h
+
+add_custom_command(
+    OUTPUT ${MICROPY_COMPRESSED_SPLIT}
+    COMMAND ${Python3_EXECUTABLE} ${MICROPY_PY_DIR}/makeqstrdefs.py split compress ${MICROPY_QSTRDEFS_LAST} ${MICROPY_GENHDR_DIR}/compress _
+    COMMAND touch ${MICROPY_COMPRESSED_SPLIT}
+    DEPENDS ${MICROPY_QSTRDEFS_LAST}
+    VERBATIM
+    COMMAND_EXPAND_LISTS
+)
+
+add_custom_command(
+    OUTPUT ${MICROPY_COMPRESSED_COLLECTED}
+    COMMAND ${Python3_EXECUTABLE} ${MICROPY_PY_DIR}/makeqstrdefs.py cat compress _ ${MICROPY_GENHDR_DIR}/compress ${MICROPY_COMPRESSED_COLLECTED}
+    BYPRODUCTS "${MICROPY_COMPRESSED_COLLECTED}.hash"
+    DEPENDS ${MICROPY_COMPRESSED_SPLIT}
+    VERBATIM
+    COMMAND_EXPAND_LISTS
+)
+
+add_custom_command(
+    OUTPUT ${MICROPY_COMPRESSED_DATA}
+    COMMAND ${Python3_EXECUTABLE} ${MICROPY_PY_DIR}/makecompresseddata.py ${MICROPY_COMPRESSED_COLLECTED} > ${MICROPY_COMPRESSED_DATA}
+    DEPENDS ${MICROPY_COMPRESSED_COLLECTED} ${MICROPY_PY_DIR}/makecompresseddata.py
+)
+
 # Build frozen code if enabled
 
 if(MICROPY_FROZEN_MANIFEST)
     set(MICROPY_FROZEN_CONTENT "${CMAKE_BINARY_DIR}/frozen_content.c")
+
+    set_property(TARGET ${MICROPY_TARGET} APPEND PROPERTY ADDITIONAL_CLEAN_FILES
+        "${CMAKE_BINARY_DIR}/frozen_mpy"
+    )
 
     target_sources(${MICROPY_TARGET} PRIVATE
         ${MICROPY_FROZEN_CONTENT}
@@ -186,17 +260,15 @@ if(MICROPY_FROZEN_MANIFEST)
 
     # Note: target_compile_definitions already added earlier.
 
-    if(NOT MICROPY_LIB_DIR)
-        string(CONCAT GIT_SUBMODULES "${GIT_SUBMODULES} " lib/micropython-lib)
-        set(MICROPY_LIB_DIR ${MICROPY_DIR}/lib/micropython-lib)
+    # Ensure micropython-lib is included in submodule updates, but only when
+    # MICROPY_LIB_DIR points at the in-tree submodule location; a user
+    # overriding MICROPY_LIB_DIR to an out-of-tree checkout shouldn't have
+    # the submodule updated.
+    if(MICROPY_LIB_DIR STREQUAL "${MICROPY_DIR}/lib/micropython-lib")
+        list(APPEND GIT_SUBMODULES lib/micropython-lib)
     endif()
 
-    if(ECHO_SUBMODULES)
-        # No-op, we're just doing submodule/variant discovery.
-        # Note: All the following rules are safe to run in discovery mode even
-        # though the submodule might not be available as they do not directly depend
-        # on anything from the submodule.
-    elseif(NOT EXISTS ${MICROPY_LIB_DIR}/README.md)
+    if(NOT UPDATE_SUBMODULES AND NOT EXISTS ${MICROPY_LIB_DIR}/README.md)
         message(FATAL_ERROR " micropython-lib not initialized.\n Run 'make BOARD=${MICROPY_BOARD} submodules'")
     endif()
 
@@ -209,9 +281,13 @@ if(MICROPY_FROZEN_MANIFEST)
         if(NOT MICROPY_MAKE_EXECUTABLE)
             set(MICROPY_MAKE_EXECUTABLE make)
         endif()
+        # Clear FROZEN_MANIFEST/USER_C_MODULES in the mpy-cross sub-make so a
+        # shell-env FROZEN_MANIFEST=... doesn't leak in and trigger
+        # manifest.mk against the wrong cwd. mkrules.mk does the same for the
+        # make-based port path.
         add_custom_command(
             OUTPUT ${MICROPY_MPYCROSS_DEPENDENCY}
-            COMMAND ${MICROPY_MAKE_EXECUTABLE} -C ${MICROPY_DIR}/mpy-cross
+            COMMAND ${MICROPY_MAKE_EXECUTABLE} -C ${MICROPY_DIR}/mpy-cross USER_C_MODULES= FROZEN_MANIFEST=
         )
     endif()
 
@@ -221,27 +297,13 @@ if(MICROPY_FROZEN_MANIFEST)
         set(MICROPY_CROSS_FLAGS "-f${MICROPY_CROSS_FLAGS}")
     endif()
 
-    # Set default path variables to be passed to makemanifest.py. These will
-    # be available in path substitutions. Additional variables can be set
-    # per-board in mpconfigboard.cmake.
-    set(MICROPY_MANIFEST_PORT_DIR ${MICROPY_PORT_DIR})
-    set(MICROPY_MANIFEST_BOARD_DIR ${MICROPY_BOARD_DIR})
-    set(MICROPY_MANIFEST_MPY_DIR ${MICROPY_DIR})
-    set(MICROPY_MANIFEST_MPY_LIB_DIR ${MICROPY_LIB_DIR})
-
-    # Find all MICROPY_MANIFEST_* variables and turn them into command line arguments.
-    get_cmake_property(_manifest_vars VARIABLES)
-    list(FILTER _manifest_vars INCLUDE REGEX "MICROPY_MANIFEST_.*")
-    foreach(_manifest_var IN LISTS _manifest_vars)
-        list(APPEND _manifest_var_args "-v")
-        string(REGEX REPLACE "MICROPY_MANIFEST_(.*)" "\\1" _manifest_var_name ${_manifest_var})
-        list(APPEND _manifest_var_args "${_manifest_var_name}=${${_manifest_var}}")
-    endforeach()
-
+    # MICROPY_MAKEMANIFEST_ARGS is populated by py/manifest.cmake (included via
+    # py/usermod.cmake before this file). Reuse that list so both the c_module
+    # extraction pass and the frozen content step substitute the same values.
     add_custom_target(
         BUILD_FROZEN_CONTENT ALL
         BYPRODUCTS ${MICROPY_FROZEN_CONTENT}
-        COMMAND ${Python3_EXECUTABLE} ${MICROPY_DIR}/tools/makemanifest.py -o ${MICROPY_FROZEN_CONTENT} ${_manifest_var_args} -b "${CMAKE_BINARY_DIR}" ${MICROPY_CROSS_FLAGS} --mpy-tool-flags=${MICROPY_MPY_TOOL_FLAGS} ${MICROPY_FROZEN_MANIFEST}
+        COMMAND ${Python3_EXECUTABLE} ${MICROPY_DIR}/tools/makemanifest.py -o ${MICROPY_FROZEN_CONTENT} ${MICROPY_MAKEMANIFEST_ARGS} -b "${CMAKE_BINARY_DIR}" ${MICROPY_CROSS_FLAGS} --mpy-tool-flags=${MICROPY_MPY_TOOL_FLAGS} ${MICROPY_FROZEN_MANIFEST}
         DEPENDS
             ${MICROPY_QSTRDEFS_GENERATED}
             ${MICROPY_ROOT_POINTERS}
@@ -250,12 +312,29 @@ if(MICROPY_FROZEN_MANIFEST)
     )
 endif()
 
-# Update submodules
-if(ECHO_SUBMODULES)
-    # If cmake is run with GIT_SUBMODULES defined on command line, process the port / board
-    # settings then print the final GIT_SUBMODULES variable and exit.
-    # Note: the GIT_SUBMODULES is done via echo rather than message, as message splits
-    # the output onto multiple lines
-    execute_process(COMMAND ${CMAKE_COMMAND} -E echo "GIT_SUBMODULES=${GIT_SUBMODULES}")
-    message(FATAL_ERROR "Done")
+# Update submodules, this is invoked on some ports via 'make submodules'.
+#
+# Note: This logic has a Makefile equivalent in py/mkrules.mk
+if(UPDATE_SUBMODULES AND GIT_SUBMODULES)
+    macro(run_git)
+      execute_process(COMMAND git ${ARGV} WORKING_DIRECTORY ${MICROPY_DIR}
+          RESULT_VARIABLE RES)
+    endmacro()
+
+    list(JOIN GIT_SUBMODULES " " GIT_SUBMODULES_MSG)
+    message("Updating submodules: ${GIT_SUBMODULES_MSG}")
+    run_git(submodule sync ${GIT_SUBMODULES})
+    if(RES EQUAL 0)
+        # If available, do blobless partial clones of submodules to save time and space.
+        # A blobless partial clone lazily fetches data as needed, but has all the metadata available (tags, etc.).
+        run_git(submodule update --init --filter=blob:none ${GIT_SUBMODULES})
+        # Fallback to standard submodule update if blobless isn't available (earlier than git 2.36.0)
+        if (NOT RES EQUAL 0)
+            run_git(submodule update --init ${GIT_SUBMODULES})
+        endif()
+    endif()
+
+    if (NOT RES EQUAL 0)
+        message(FATAL_ERROR "Submodule update failed")
+    endif()
 endif()

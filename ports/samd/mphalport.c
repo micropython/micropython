@@ -48,7 +48,7 @@ ringbuf_t stdin_ringbuf = { stdin_ringbuf_array, sizeof(stdin_ringbuf_array), 0,
 // interrupt handler) and there is in/out data pending on the USB CDC interface.
 #define MICROPY_EVENT_POLL_HOOK_WITH_USB \
     do { \
-        MICROPY_EVENT_POLL_HOOK; \
+        mp_event_wait_ms(1); \
         mp_usbd_task(); \
     } while (0)
 
@@ -70,9 +70,11 @@ void mp_hal_clr_pin_mux(mp_hal_pin_obj_t pin) {
 
 void mp_hal_delay_ms(mp_uint_t ms) {
     uint32_t t0 = systick_ms;
-    while (systick_ms - t0 < ms) {
-        MICROPY_EVENT_POLL_HOOK
-    }
+    uint32_t elapsed = 0;
+    do {
+        mp_event_wait_ms(ms - elapsed);
+        elapsed = systick_ms - t0;
+    } while (elapsed < ms);
 }
 
 void mp_hal_delay_us(mp_uint_t us) {
@@ -120,7 +122,9 @@ uint64_t mp_hal_ticks_us_64(void) {
 
 uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags) {
     uintptr_t ret = 0;
+    #if MICROPY_HW_USB_CDC
     ret |= mp_usbd_cdc_poll_interfaces(poll_flags);
+    #endif
     #if MICROPY_PY_OS_DUPTERM
     ret |= mp_os_dupterm_poll(poll_flags);
     #endif
@@ -129,8 +133,9 @@ uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags) {
 
 int mp_hal_stdin_rx_chr(void) {
     for (;;) {
-
+        #if MICROPY_HW_USB_CDC
         mp_usbd_cdc_poll_interfaces(0);
+        #endif
         int c = ringbuf_get(&stdin_ringbuf);
         if (c != -1) {
             return c;
@@ -149,11 +154,13 @@ int mp_hal_stdin_rx_chr(void) {
 mp_uint_t mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
     mp_uint_t ret = len;
     bool did_write = false;
+    #if MICROPY_HW_USB_CDC
     mp_uint_t cdc_res = mp_usbd_cdc_tx_strn(str, len);
     if (cdc_res > 0) {
         did_write = true;
         ret = MIN(cdc_res, ret);
     }
+    #endif
     #if MICROPY_PY_OS_DUPTERM
     int dupterm_res = mp_os_dupterm_tx_strn(str, len);
     if (dupterm_res >= 0) {

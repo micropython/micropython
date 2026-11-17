@@ -1,6 +1,8 @@
 #ifndef MICROPY_INCLUDED_ESP32_MODESP32_H
 #define MICROPY_INCLUDED_ESP32_MODESP32_H
 
+#include "driver/rmt_tx.h"
+
 #if CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32S3
 
     #define RTC_VALID_EXT_PINS \
@@ -29,6 +31,21 @@
     (1ll << 21)   \
     )
     #define RTC_LAST_EXT_PIN 21
+
+#elif CONFIG_IDF_TARGET_ESP32C6
+
+    #define RTC_VALID_EXT_PINS \
+    ( \
+    (1ll << 0) | \
+    (1ll << 1) | \
+    (1ll << 2) | \
+    (1ll << 3) | \
+    (1ll << 4) | \
+    (1ll << 5) | \
+    (1ll << 6) | \
+    (1ll << 7)   \
+    )
+    #define RTC_LAST_EXT_PIN 7
 
 #else
 
@@ -59,13 +76,19 @@
 
 #define RTC_IS_VALID_EXT_PIN(pin_id) ((1ll << (pin_id)) & RTC_VALID_EXT_PINS)
 
-extern int8_t esp32_rmt_bitstream_channel_id;
+extern bool esp32_rmt_bitstream_enabled;
 
 extern const mp_obj_type_t esp32_nvs_type;
 extern const mp_obj_type_t esp32_partition_type;
 extern const mp_obj_type_t esp32_rmt_type;
 extern const mp_obj_type_t esp32_ulp_type;
+extern const mp_obj_type_t esp32_ldo_type;
 
-esp_err_t rmt_driver_install_core1(uint8_t channel_id);
+#if MICROPY_PY_ESP32_PCNT
+extern const mp_obj_type_t esp32_pcnt_type;
+
+void esp32_ldo_deinit_all(void);
+void esp32_pcnt_deinit_all(void);
+#endif
 
 #endif // MICROPY_INCLUDED_ESP32_MODESP32_H

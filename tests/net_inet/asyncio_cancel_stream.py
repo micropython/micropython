@@ -1,4 +1,5 @@
 # Test cancelling a task waiting on stream IO
+# requires: async
 
 try:
     import asyncio

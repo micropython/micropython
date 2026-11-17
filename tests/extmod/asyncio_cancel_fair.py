@@ -1,5 +1,6 @@
 # Test fairness of cancelling a task
 # That tasks which continuously cancel each other don't take over the scheduler
+# requires: async
 
 try:
     import asyncio

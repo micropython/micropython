@@ -78,6 +78,8 @@
 
 #endif
 
+extern const mp_obj_type_t mod_network_nic_type_wiznet5k;
+
 #ifndef printf
 #define printf(...) mp_printf(MP_PYTHON_PRINTER, __VA_ARGS__)
 #endif
@@ -145,7 +147,7 @@ void mpy_wiznet_yield(void) {
     #if MICROPY_PY_THREAD
     MICROPY_THREAD_YIELD();
     #else
-    mp_handle_pending(true);
+    mp_handle_pending(MP_HANDLE_PENDING_CALLBACKS_AND_EXCEPTIONS);
     #endif
 }
 
@@ -173,6 +175,12 @@ static void wiznet5k_get_mac_address(wiznet5k_obj_t *self, uint8_t mac[6]) {
 }
 
 #if WIZNET5K_WITH_LWIP_STACK
+
+// Ports that retain the NIC across soft reset must also retain its SPI bus.
+mp_obj_t wiznet5k_get_active_spi(void) {
+    wiznet5k_obj_t *self = &wiznet5k_obj;
+    return IS_ACTIVE(self) ? MP_OBJ_FROM_PTR(self->spi) : MP_OBJ_NULL;
+}
 
 void wiznet5k_try_poll(void);
 static void wiznet5k_lwip_init(wiznet5k_obj_t *self);
@@ -348,6 +356,11 @@ static void wiznet5k_lwip_init(wiznet5k_obj_t *self) {
 
 void wiznet5k_poll(void) {
     wiznet5k_obj_t *self = &wiznet5k_obj;
+    // A periodic or queued poll may run before activation or after deactivation.
+    // Do not access the SPI bus, including clearing interrupts, in that case.
+    if (!IS_ACTIVE(self)) {
+        return;
+    }
     if ((self->netif.flags & (NETIF_FLAG_UP | NETIF_FLAG_LINK_UP)) == (NETIF_FLAG_UP | NETIF_FLAG_LINK_UP)) {
         uint16_t len;
         while ((len = wiznet5k_recv_ethernet(self)) > 0) {
@@ -800,7 +813,7 @@ static mp_obj_t wiznet5k_regs(mp_obj_t self_in) {
         #endif
         printf(" %02x", WIZCHIP_READ(reg));
     }
-    for (int sn = 0; sn < 4; ++sn) {
+    for (int sn = 0; sn < _WIZCHIP_SOCK_NUM_; ++sn) {
         printf("\nWiz SREG[%d]:", sn);
         for (int i = 0; i < 0x30; ++i) {
             if (i % 16 == 0) {

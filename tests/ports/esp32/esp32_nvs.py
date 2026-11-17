@@ -4,7 +4,7 @@ from esp32 import NVS
 
 nvs = NVS("mp-test")
 
-# test setting and gettin an integer kv
+# test setting and getting an integer kv
 nvs.set_i32("key1", 1234)
 print(nvs.get_i32("key1"))
 nvs.set_i32("key2", -503)

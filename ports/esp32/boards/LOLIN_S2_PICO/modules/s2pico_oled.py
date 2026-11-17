@@ -37,7 +37,7 @@ class OLED(SSD1306_I2C):
         self.text("Scan...", 0, 0, 1)
         self.show()
 
-        sta_if = network.WLAN(network.STA_IF)
+        sta_if = network.WLAN(network.WLAN.IF_STA)
         sta_if.active(True)
         _wifi = sta_if.scan()
 

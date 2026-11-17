@@ -1,4 +1,5 @@
 # Test the Task.done() method
+# requires: async float
 
 try:
     import asyncio

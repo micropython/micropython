@@ -31,7 +31,7 @@
 #include "extmod/modmachine.h"
 
 // The port must provide implementations of these low-level WDT functions.
-static machine_wdt_obj_t *mp_machine_wdt_make_new_instance(mp_int_t id, mp_int_t timeout_ms);
+static machine_wdt_obj_t *mp_machine_wdt_make_new_instance(mp_obj_t id, mp_int_t timeout_ms);
 static void mp_machine_wdt_feed(machine_wdt_obj_t *self);
 #if MICROPY_PY_MACHINE_WDT_TIMEOUT_MS
 static void mp_machine_wdt_timeout_ms_set(machine_wdt_obj_t *self_in, mp_int_t timeout_ms);
@@ -43,7 +43,7 @@ static void mp_machine_wdt_timeout_ms_set(machine_wdt_obj_t *self_in, mp_int_t t
 static mp_obj_t machine_wdt_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_id, ARG_timeout };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_id, MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_id, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_INT(0)} },
         { MP_QSTR_timeout, MP_ARG_INT, {.u_int = 5000} },
     };
 
@@ -52,7 +52,7 @@ static mp_obj_t machine_wdt_make_new(const mp_obj_type_t *type, size_t n_args, s
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     // Create WDT instance.
-    machine_wdt_obj_t *self = mp_machine_wdt_make_new_instance(args[ARG_id].u_int, args[ARG_timeout].u_int);
+    machine_wdt_obj_t *self = mp_machine_wdt_make_new_instance(args[ARG_id].u_obj, args[ARG_timeout].u_int);
 
     return MP_OBJ_FROM_PTR(self);
 }

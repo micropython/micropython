@@ -61,11 +61,49 @@ static mp_obj_t platform_libc_ver(size_t n_args, const mp_obj_t *pos_args, mp_ma
 }
 static MP_DEFINE_CONST_FUN_OBJ_KW(platform_libc_ver_obj, 0, platform_libc_ver);
 
+#ifdef __riscv
+static mp_obj_t platform_processor(void) {
+    #if (__riscv_xlen <= 64) && !defined(__linux__)
+    uintptr_t misa_csr = 0;
+
+    // Load the MISA CSR directly.
+    __asm volatile (
+        "csrr %0, misa \n"
+        : "+r" (misa_csr)
+        :
+        :
+        );
+
+    char processor_buffer[31] = { // "RV32"/"RV64" + up to 26 chars.
+        #if (__riscv_xlen < 64)
+        "RV32"
+        #else
+        "RV64"
+        #endif
+    };
+    mp_uint_t offset = 4;
+    for (mp_uint_t bit = 0; bit < 26; bit++) {
+        if (misa_csr & (1U << bit)) {
+            processor_buffer[offset++] = 'A' + bit;
+        }
+    }
+
+    return mp_obj_new_str(processor_buffer, offset);
+    #else
+    return MP_OBJ_NEW_QSTR(MP_QSTR_);
+    #endif
+}
+static MP_DEFINE_CONST_FUN_OBJ_0(platform_processor_obj, platform_processor);
+#endif
+
 static const mp_rom_map_elem_t modplatform_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_platform) },
     { MP_ROM_QSTR(MP_QSTR_platform), MP_ROM_PTR(&platform_platform_obj) },
     { MP_ROM_QSTR(MP_QSTR_python_compiler), MP_ROM_PTR(&platform_python_compiler_obj) },
     { MP_ROM_QSTR(MP_QSTR_libc_ver), MP_ROM_PTR(&platform_libc_ver_obj) },
+    #ifdef __riscv
+    { MP_ROM_QSTR(MP_QSTR_processor), MP_ROM_PTR(&platform_processor_obj) },
+    #endif
 };
 
 static MP_DEFINE_CONST_DICT(modplatform_globals, modplatform_globals_table);

@@ -1,4 +1,5 @@
 # Test asyncio stream readexactly() method using TCP server/client
+# requires: async
 
 try:
     import asyncio

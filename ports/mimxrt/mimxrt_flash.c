@@ -5,6 +5,7 @@
  *
  * Copyright (c) 2020-2021 Damien P. George
  * Copyright (c) 2021-2023 Philipp Ebensberger
+ * Copyright (c) 2021-2024 Robert Hammelrath
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,6 +30,7 @@
 
 #include "py/runtime.h"
 #include "extmod/vfs.h"
+#include "py/mperrno.h"
 #include "modmimxrt.h"
 #include "flash.h"
 #include BOARD_FLASH_OPS_HEADER_H
@@ -58,6 +60,19 @@ static mp_obj_t mimxrt_flash_make_new(const mp_obj_type_t *type, size_t n_args, 
 
     // Return singleton object.
     return MP_OBJ_FROM_PTR(&mimxrt_flash_obj);
+}
+
+static mp_int_t mimxrt_flash_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
+    mimxrt_flash_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    if (flags == MP_BUFFER_READ) {
+        bufinfo->buf = (void *)((uintptr_t)&__flash_start + self->flash_base);
+        bufinfo->len = self->flash_size;
+        bufinfo->typecode = 'B';
+        return 0;
+    } else {
+        // Write unsupported.
+        return 1;
+    }
 }
 
 // readblocks(block_num, buf, [offset])
@@ -151,5 +166,39 @@ MP_DEFINE_CONST_OBJ_TYPE(
     MP_QSTR_Flash,
     MP_TYPE_FLAG_NONE,
     make_new, mimxrt_flash_make_new,
+    buffer, mimxrt_flash_get_buffer,
     locals_dict, &mimxrt_flash_locals_dict
     );
+
+#if MICROPY_VFS_ROM
+
+extern uint8_t _micropy_hw_romfs_part0_start;
+extern uint8_t _micropy_hw_romfs_part0_size;
+
+// Put VfsRom file system between the code space and the VFS file system.
+// The size is defined in Makefile(s) as linker symbol MICROPY_HW_ROMFS_BYTES.
+// For machine.mem32 the absolute address is required, for the flash functions
+// erase and write the offset to the flash start address.
+#define MICROPY_HW_ROMFS_BASE ((uintptr_t)&_micropy_hw_romfs_part0_start - (uintptr_t)&__flash_start)
+#define MICROPY_HW_ROMFS_BYTES ((uintptr_t)&_micropy_hw_romfs_part0_size)
+
+static mimxrt_flash_obj_t mimxrt_flash_romfs_obj = {
+    .base = { &mimxrt_flash_type },
+};
+
+mp_obj_t mp_vfs_rom_ioctl(size_t n_args, const mp_obj_t *args) {
+    if (MICROPY_HW_ROMFS_BYTES <= 0) {
+        return MP_OBJ_NEW_SMALL_INT(-MP_EINVAL);
+    }
+    switch (mp_obj_get_int(args[0])) {
+        case MP_VFS_ROM_IOCTL_GET_NUMBER_OF_SEGMENTS:
+            return MP_OBJ_NEW_SMALL_INT(1);
+        case MP_VFS_ROM_IOCTL_GET_SEGMENT:
+            mimxrt_flash_romfs_obj.flash_base = MICROPY_HW_ROMFS_BASE;
+            mimxrt_flash_romfs_obj.flash_size = MICROPY_HW_ROMFS_BYTES;
+            return MP_OBJ_FROM_PTR(&mimxrt_flash_romfs_obj);
+        default:
+            return MP_OBJ_NEW_SMALL_INT(-MP_EINVAL);
+    }
+}
+#endif  // MICROPY_VFS_ROM

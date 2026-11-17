@@ -29,32 +29,68 @@ Use the :mod:`time <time>` module::
     start = time.ticks_ms()     # get millisecond counter
     delta = time.ticks_diff(time.ticks_ms(), start) # compute time difference
 
-Pins and GPIO
--------------
+GPIO
+----
 
-Use the :ref:`machine.Pin <machine.Pin>` class::
+If your board supports Related Pins, use the :ref:`machine.Pin <machine.Pin>` class like so::
 
     from machine import Pin
 
-    pin = Pin(("gpiob", 21), Pin.IN)    # create input pin on GPIO port B
-    print(pin)                          # print pin port and number
+    pin = Pin(21, Pin.IN)    # create input pin for pin ID 21 if related pins are integers
+    pin = Pin("B21", Pin.IN) # create input pin for pin "B21" if related pins are strings-generated or arbitrary
+    print(pin)               # print pin port and number the relation pointed to
 
-    pin.init(Pin.OUT, Pin.PULL_UP, value=1)     # reinitialize pin
+Or, using the :ref:`machine.Pin <machine.Pin>` class like such is supported on all boards::
 
-    pin.value(1)                        # set pin to high
-    pin.value(0)                        # set pin to low
+    from machine import Pin
 
-    pin.on()                            # set pin to high
-    pin.off()                           # set pin to low
+    pin = Pin(("gpiob", 21), Pin.IN) # create input pin 21 from the GPIO port labeled "gpiob"
+    print(pin)                       # print pin port and number
 
-    pin = Pin(("gpiob", 21), Pin.IN)              # create input pin on GPIO port B
+And for both formats::
 
-    pin = Pin(("gpiob", 21), Pin.OUT, value=1)    # set pin high on creation
+    pin.init(Pin.OUT, Pin.PULL_UP, value=1) # reinitialize pin
 
-    pin = Pin(("gpiob", 21), Pin.IN, Pin.PULL_UP) # enable internal pull-up resistor
+    pin.value(1) # set pin to high
+    pin.value(0) # set pin to low
 
-    switch = Pin(("gpioc", 6), Pin.IN)            # create input pin for a switch
-    switch.irq(lambda t: print("SW2 changed"))    # enable an interrupt when switch state is changed
+    pin.on()     # set pin to high
+    pin.off()    # set pin to low
+
+    pin = Pin(("gpiob", 21), Pin.OUT, value=1) # set pin high on creation
+
+    pin = Pin(21, Pin.IN, Pin.PULL_UP)         # enable internal pull-up resistor
+
+    switch = Pin(("gpioc", 6), Pin.IN)         # create input pin for a switch
+    switch.irq(lambda t: print("SW2 changed")) # enable an interrupt when switch state is changed
+
+PinCtrl
+-------
+
+Use the :ref:`zephyr.PinCtrl <zephyr.PinCtrl>` class to configure pin roles::
+
+    from machine import UART
+    from zephyr import PinCtrl
+
+    rx = PinCtrl("GPIO0_UART1_RX", schmitt=True)
+    tx = PinCtrl(PinCtrl.MUXES.GPIO1_UART1_TX, schmitt=True)
+
+    ser = UART("uart1", rx=rx, tx=tx)
+
+PWM
+---
+
+Use the :ref:`machine.PWM <machine.PWM>` class::
+
+    from machine import PWM
+
+    pwm = PWM(("pwm0", 0), freq=3921568, duty_ns=200, invert=True)    # create pwm on PWM0
+    print(pwm)                                                        # print pwm
+
+    print(pwm.duty_ns())                                              # print pwm duty cycle in nanoseconds
+    pwm.duty_ns(255)                                                  # set new pwm duty cycle in nanoseconds
+
+    pwm.deinit()
 
 Hardware I2C bus
 ----------------
@@ -84,10 +120,10 @@ Hardware SPI is accessed via the :ref:`machine.SPI <machine.SPI>` class::
 
     from machine import SPI
 
-    spi = SPI("spi0")           # construct a spi bus with default configuration
+    spi = SPI("spi0")           # construct a SPI bus with default configuration
     spi.init(baudrate=100000, polarity=0, phase=0, bits=8, firstbit=SPI.MSB) # set configuration
 
-    # equivalently, construct spi bus and set configuration at the same time
+    # equivalently, construct the SPI bus and set configuration at the same time
     spi = SPI("spi0", baudrate=100000, polarity=0, phase=0, bits=8, firstbit=SPI.MSB)
     print(spi)                  # print device name and bus configuration
 
@@ -104,13 +140,29 @@ Hardware SPI is accessed via the :ref:`machine.SPI <machine.SPI>` class::
     spi.write_readinto(b'abcd', buf)    # write to MOSI and read from MISO into the buffer
     spi.write_readinto(buf, buf)        # write buf to MOSI and read back into the buf
 
+Analog to Digital Converter (ADC)
+----------------------------------
+
+Use the :ref:`machine.ADC <machine.ADC>` class.
+
+Example of using ADC to read a pin's analog value (the ``zephyr,user`` node must contain
+the ``io-channels`` property containing all the ADC channels)::
+
+    from machine import ADC
+
+    adc = ADC(("adc", 0))
+    adc.read_uv()
+
 Disk Access
 -----------
 
-Use the :ref:`zephyr.DiskAccess <zephyr.DiskAccess>` class to support filesystem::
+Storage devices such as SD cards are automatically mounted at startup (e.g., at ``/sd``).
+For manual mounting, use the :ref:`zephyr.DiskAccess <zephyr.DiskAccess>` class::
 
     import vfs
     from zephyr import DiskAccess
+
+    print(DiskAccess.disks)             # list available disk names, e.g., ('SDHC',)
 
     block_dev = DiskAccess('SDHC')      # create a block device object for an SD card
     vfs.VfsFat.mkfs(block_dev)          # create FAT filesystem object using the disk storage block
@@ -124,12 +176,15 @@ Use the :ref:`zephyr.DiskAccess <zephyr.DiskAccess>` class to support filesystem
 Flash Area
 ----------
 
-Use the :ref:`zephyr.FlashArea <zephyr.FlashArea>` class to support filesystem::
+Flash storage is automatically mounted at ``/flash`` at startup with automatic filesystem creation.
+For manual mounting, use the :ref:`zephyr.FlashArea <zephyr.FlashArea>` class::
 
     import vfs
     from zephyr import FlashArea
 
-    block_dev = FlashArea(4, 4096)      # creates a block device object in the frdm-k64f flash scratch partition
+    print(FlashArea.areas)              # list available areas, e.g., {'storage': 1, 'scratch': 4}
+
+    block_dev = FlashArea(FlashArea.areas['scratch'], 4096)  # creates a block device object using the scratch partition
     vfs.VfsLfs2.mkfs(block_dev)         # create filesystem in lfs2 format using the flash block device
     vfs.mount(block_dev, '/flash')      # mount the filesystem at the flash subdirectory
 
@@ -155,3 +210,76 @@ Use the :ref:`zsensor.Sensor <zsensor.Sensor>` class to access sensor data::
     accel.get_millis(zsensor.ACCEL_Y) # print measurement value for accelerometer Y-axis sensor channel in millionths
     accel.get_micro(zsensor.ACCEL_Z)  # print measurement value for accelerometer Z-axis sensor channel in thousandths
     accel.get_int(zsensor.ACCEL_X)    # print measurement integer value only for accelerometer X-axis sensor channel
+
+The channel IDs that are used as arguments to the :meth:`zsensor.Sensor.get_int`,
+:meth:`zsensor.Sensor.get_float()`, :meth:`zsensor.Sensor.get_millis()`, and
+:meth:`zsensor.Sensor.get_micros()` methods are constants in the :mod:`zsensor` module.
+
+You can use the :meth:`zsensor.Sensor.attr_set` method to set sensor attributes
+like full-scale range and update rate::
+
+    # Example for XIAO BLE NRF52840 SENSE
+    from zsensor import *
+    accel = Sensor('lsm6ds3tr_c')  # name from Devicetree
+    # Set full-scale to 2g (19.613300 m/sec^2)
+    # units are micro-m/s^2 (given as a float)
+    accel.attr_set(ACCEL_XYZ, ATTR_FULL_SCALE, 19.613300)
+    # Set sampling frequency to 104 Hz (as a pair of integers)
+    accel.attr_set(ACCEL_XYZ, ATTR_SAMPLING_FREQUENCY, 104, 0)
+    accel.measure()
+    accel.get_float(ACCEL_X) # -0.508 (m/s^2)
+    accel.get_float(ACCEL_Y) # -3.62 (m/s^2)
+    accel.get_float(ACCEL_Z) # 9.504889 (m/s^2)
+
+There are also the :meth:`zsensor.Sensor.attr_get_float`, :meth:`zsensor.Sensor.attr_get_int`,
+:meth:`zsensor.Sensor.attr_get_millis`, and :meth:`zsensor.Sensor.attr_get_micros` methods,
+but many sensors do not support these::
+
+    full_scale = accel.attr_get_float(ATTR_FULL_SCALE)
+
+The attribute IDs that are used as arguments to the :meth:`zsensor.Sensor.attr_set`,
+:meth:`zsensor.Sensor.attr_get_float`, :meth:`zsensor.Sensor.attr_get_int`,
+:meth:`zsensor.Sensor.attr_get_millis`, and :meth:`zsensor.Sensor.attr_get_micros`
+methods are constants in the :mod:`zsensor` module named ``ATTR_*``.
+
+Display
+-------
+
+Use the :ref:`zephyr.Display <zephyr.Display>` class to control displays provided by Zephyr::
+
+    import zephyr, framebuf
+
+    # Create Display instance from Node identifier
+    display = zephyr.Display("ssd1306@3c")
+
+    # Create a FrameBuffer of the correct format for the display
+    fb = framebuf.FrameBuffer(bytearray(int(64*128/8)), 128, 64, framebuf.MVLSB)
+
+    # Disable blanking
+    display.blanking(False)
+
+    # Write text to framebuf
+    fb.text('Hello World', 0, 0, 1)
+
+    # Write framebuf buffer to Display
+    display.write(fb)
+
+Or::
+
+    # framebuf module must be available for as_framebuf to generate the augmented FrameBuffer class
+    import zephyr, framebuf
+
+    # Create Display instance for the first display configured
+    display = zephyr.Display(0)
+
+    # Disable blanking
+    display.blanking(False)
+
+    # Get a FrameBuffer for the Display as currently configured
+    fb = display.as_framebuf()
+
+    # Write text to framebuf
+    fb.text('Hello World', 0, 0, 1)
+
+    # Write framebuf buffer to Display
+    fb.show()

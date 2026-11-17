@@ -13,7 +13,19 @@ ifeq ($(wildcard $(BOARD_DIR)/.),)
 $(error Invalid BOARD specified: $(BOARD_DIR))
 endif
 
+ifneq ($(BOARD_VARIANT),)
+ifeq ($(wildcard $(BOARD_DIR)/mpconfigvariant_$(BOARD_VARIANT).mk),)
+$(error Invalid BOARD_VARIANT specified: $(BOARD_VARIANT))
+endif
+endif
+
+# If the build directory is not given, make it reflect the board name (and
+# optionally the board variant).
+ifneq ($(BOARD_VARIANT),)
+BUILD ?= build-$(BOARD)-$(BOARD_VARIANT)
+else
 BUILD ?= build-$(BOARD)
+endif
 
 CROSS_COMPILE ?= arm-none-eabi-
 UF2CONV ?= $(TOP)/tools/uf2conv.py
@@ -21,7 +33,13 @@ UF2CONV ?= $(TOP)/tools/uf2conv.py
 MCU_SERIES_LOWER = $(shell echo $(MCU_SERIES) | tr '[:upper:]' '[:lower:]')
 
 include ../../py/mkenv.mk
+# Include board specific .mk file, and optional board variant .mk file.
 include $(BOARD_DIR)/mpconfigboard.mk
+ifeq ($(BOARD_VARIANT),)
+-include $(BOARD_DIR)/mpconfigvariant.mk
+else
+include $(BOARD_DIR)/mpconfigvariant_$(BOARD_VARIANT).mk
+endif
 include mcu/$(MCU_SERIES_LOWER)/mpconfigmcu.mk
 
 # Qstr definitions (must come before including py.mk)
@@ -34,14 +52,14 @@ FROZEN_MANIFEST ?= boards/manifest.py
 include $(TOP)/py/py.mk
 include $(TOP)/extmod/extmod.mk
 
-GIT_SUBMODULES += lib/asf4 lib/tinyusb
+GIT_SUBMODULES += lib/CMSIS_6 lib/asf4 lib/tinyusb
 
 INC += -I.
 INC += -I$(TOP)
 INC += -I$(BUILD)
 INC += -I$(BOARD_DIR)
 INC += -Imcu/$(MCU_SERIES_LOWER)
-INC += -I$(TOP)/lib/cmsis/inc
+INC += -I$(TOP)/lib/CMSIS_6/CMSIS/Core/Include
 INC += -I$(TOP)/lib/asf4/$(MCU_SERIES_LOWER)/hal/include
 INC += -I$(TOP)/lib/asf4/$(MCU_SERIES_LOWER)/hal/utils/include
 INC += -I$(TOP)/lib/asf4/$(MCU_SERIES_LOWER)/config
@@ -64,15 +82,15 @@ AF_FILE = mcu/$(MCU_SERIES_LOWER)/pin-af-table.csv
 GEN_PINS_SRC = $(BUILD)/pins_$(BOARD).c
 GEN_PINS_HDR = $(HEADER_BUILD)/pins.h
 
-CFLAGS += $(INC) -Wall -Werror -std=c99 -nostdlib -mthumb $(CFLAGS_MCU) -fsingle-precision-constant -Wdouble-promotion
+CFLAGS += $(INC) -Wall -Werror -std=c99 -mthumb $(CFLAGS_MCU) -fsingle-precision-constant -Wdouble-promotion
 CFLAGS += -DMCU_$(MCU_SERIES) -D__$(CMSIS_MCU)__
 CFLAGS += $(CFLAGS_EXTRA)
 
 # Strip the letter 'K' from MICROPY_HW_CODESIZE for use by C code.
-CFLAGS += -DMICROPY_HW_CODESIZE=$(strip $(subst K,' ', $(MICROPY_HW_CODESIZE)))
+CFLAGS += -DMICROPY_HW_CODESIZE=$(strip $(subst K,, $(MICROPY_HW_CODESIZE)))
 
-LDFLAGS += -nostdlib $(addprefix -T,$(LD_FILES)) -Map=$@.map --cref
-LDFLAGS += --defsym=_codesize=$(MICROPY_HW_CODESIZE)
+LDFLAGS += -nostdlib $(addprefix -T,$(LD_FILES)) -Wl,-Map=$@.map -Wl,--cref
+LDFLAGS += -Wl,--defsym=_codesize=$(MICROPY_HW_CODESIZE) -Wl,--defsym=_micropy_hw_romfs_part0_size=$(MICROPY_HW_ROMFS_BYTES)
 
 LIBS += $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
 
@@ -82,25 +100,28 @@ ifeq ($(DEBUG),1)
 CFLAGS += -O0
 else
 CFLAGS += -Os -DNDEBUG
-LDFLAGS += --gc-sections --print-memory-usage
+LDFLAGS += -Wl,--gc-sections -Wl,--print-memory-usage
 CFLAGS += -fdata-sections -ffunction-sections
 endif
-
-# Flags for optional C++ source code
-CXXFLAGS += $(filter-out -std=c99,$(CFLAGS))
-
-# TODO make this common -- shouldn't be using these "private" vars from py.mk
-ifneq ($(SRC_CXX)$(SRC_USERMOD_CXX)$(SRC_USERMOD_LIB_CXX),)
-LIBSTDCPP_FILE_NAME = "$(shell $(CXX) $(CXXFLAGS) -print-file-name=libstdc++.a)"
-LDFLAGS += -L"$(shell dirname $(LIBSTDCPP_FILE_NAME))"
+# Disable VFSROM support if the size was set to 0
+ifeq ($(MICROPY_HW_ROMFS_BYTES),0)
+	CFLAGS += -DMICROPY_VFS_ROM=0
 endif
 
-LDFLAGS += --wrap=dcd_event_handler
+ifeq ($(LTO),1)
+CFLAGS += -flto=auto
+# LTO requires passing compiler flags to the linker as it will run the assembler.
+# To avoid risk of missing something relevant, pass all flags except for preprocessor args
+LDFLAGS += $(filter-out -I% -D% -fplugin%,$(CFLAGS))
+
+$(BUILD)/samd_isr.o $(BUILD)/pendsv.o: CFLAGS += -fno-lto
+endif
 
 MPY_CROSS_FLAGS += -march=$(MPY_CROSS_MCU_ARCH)
 
 SRC_C += \
 	mcu/$(MCU_SERIES_LOWER)/clock_config.c \
+	dma_manager.c \
 	help.c \
 	machine_bitstream.c \
 	machine_dac.c \
@@ -119,6 +140,7 @@ SRC_C += \
 	samd_soc.c \
 	samd_spiflash.c \
 	usbd.c \
+	tc_manager.c \
 
 SHARED_SRC_C += \
 	drivers/dht/dht.c \
@@ -147,14 +169,12 @@ ASF4_SRC_C += $(addprefix lib/asf4/$(MCU_SERIES_LOWER)/,\
 LIBM_SRC_C += $(SRC_LIB_LIBM_C)
 LIBM_SRC_C += $(SRC_LIB_LIBM_SQRT_SW_C)
 
-TINYUSB_SRC_C += $(addprefix lib/tinyusb/src/,\
-	class/cdc/cdc_device.c \
-	common/tusb_fifo.c \
-	device/usbd.c \
-	device/usbd_control.c \
-	portable/microchip/samd/dcd_samd.c \
-	tusb.c \
-	)
+# TinyUSB Stack source
+-include $(TOP)/lib/tinyusb/src/tinyusb.mk
+TINYUSB_SRC_C := $(sort $(addprefix lib/tinyusb/, \
+	$(TINYUSB_SRC_C) \
+	src/portable/microchip/samd/dcd_samd.c \
+	))
 
 DRIVERS_SRC_C += \
 	drivers/bus/softspi.c \
@@ -177,7 +197,7 @@ all: $(BUILD)/firmware.uf2
 
 $(BUILD)/firmware.elf: $(OBJ)
 	$(ECHO) "LINK $@"
-	$(Q)$(LD) $(LDFLAGS) -o $@ $^ $(LIBS)
+	$(Q)$(CC) $(LDFLAGS) -o $@ $^ $(LIBS)
 
 $(BUILD)/firmware.bin: $(BUILD)/firmware.elf
 	$(Q)$(OBJCOPY) -O binary -j .isr_vector -j .text -j .data $^ $(BUILD)/firmware.bin

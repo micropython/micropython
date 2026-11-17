@@ -1,0 +1,15 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [],
+    "images": [
+        "stm32f469disc.jpg"
+    ],
+    "mcu": "stm32f4",
+    "product": "Discovery F469",
+    "thumbnail": "",
+    "url": "https://www.st.com/en/evaluation-tools/32f469idiscovery.html",
+    "vendor": "ST Microelectronics"
+}

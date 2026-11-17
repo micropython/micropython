@@ -98,7 +98,7 @@ static mp_obj_t mp_micropython_qstr_info(size_t n_args, const mp_obj_t *args) {
     size_t n_pool, n_qstr, n_str_data_bytes, n_total_bytes;
     qstr_pool_info(&n_pool, &n_qstr, &n_str_data_bytes, &n_total_bytes);
     mp_printf(&mp_plat_print, "qstr pool: n_pool=%u, n_qstr=%u, n_str_data_bytes=%u, n_total_bytes=%u\n",
-        n_pool, n_qstr, n_str_data_bytes, n_total_bytes);
+        (uint)n_pool, (uint)n_qstr, (uint)n_str_data_bytes, (uint)n_total_bytes);
     if (n_args == 1) {
         // arg given means dump qstr data
         qstr_dump_data();
@@ -132,13 +132,13 @@ static MP_DEFINE_CONST_FUN_OBJ_0(mp_micropython_heap_lock_obj, mp_micropython_he
 
 static mp_obj_t mp_micropython_heap_unlock(void) {
     gc_unlock();
-    return MP_OBJ_NEW_SMALL_INT(MP_STATE_THREAD(gc_lock_depth));
+    return MP_OBJ_NEW_SMALL_INT(MP_STATE_THREAD(gc_lock_depth) >> GC_LOCK_DEPTH_SHIFT);
 }
 static MP_DEFINE_CONST_FUN_OBJ_0(mp_micropython_heap_unlock_obj, mp_micropython_heap_unlock);
 
 #if MICROPY_PY_MICROPYTHON_HEAP_LOCKED
 static mp_obj_t mp_micropython_heap_locked(void) {
-    return MP_OBJ_NEW_SMALL_INT(MP_STATE_THREAD(gc_lock_depth));
+    return MP_OBJ_NEW_SMALL_INT(MP_STATE_THREAD(gc_lock_depth) >> GC_LOCK_DEPTH_SHIFT);
 }
 static MP_DEFINE_CONST_FUN_OBJ_0(mp_micropython_heap_locked_obj, mp_micropython_heap_locked);
 #endif
@@ -157,13 +157,35 @@ static MP_DEFINE_CONST_FUN_OBJ_1(mp_micropython_kbd_intr_obj, mp_micropython_kbd
 #endif
 
 #if MICROPY_ENABLE_SCHEDULER
+
+#if MICROPY_KBD_EXCEPTION && MICROPY_SCHEDULER_STATIC_NODES
+static mp_sched_node_t mp_keyboard_interrupt_sched_node;
+static void mp_sched_keyboard_interrupt_wrapper(mp_sched_node_t *node) {
+    mp_sched_keyboard_interrupt();
+}
+#endif
+
 static mp_obj_t mp_micropython_schedule(mp_obj_t function, mp_obj_t arg) {
+    #if MICROPY_KBD_EXCEPTION
+    if (function == MP_OBJ_FROM_PTR(&mp_micropython_kbd_intr_obj)) {
+        #if MICROPY_SCHEDULER_STATIC_NODES
+        // Allow calling `micropython.schedule(micropython.kbd_intr, None)` as a
+        // special case to schedule a keyboard interrupt.
+        mp_sched_schedule_node(&mp_keyboard_interrupt_sched_node, mp_sched_keyboard_interrupt_wrapper);
+        return mp_const_none;
+        #else
+        // Signal that passing `micropython.kbd_intr` is not supported.
+        mp_raise_ValueError(NULL);
+        #endif
+    }
+    #endif
     if (!mp_sched_schedule(function, arg)) {
         mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("schedule queue full"));
     }
     return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_2(mp_micropython_schedule_obj, mp_micropython_schedule);
+
 #endif
 
 static const mp_rom_map_elem_t mp_module_micropython_globals_table[] = {

@@ -1,4 +1,5 @@
 # test % operation on big integers
+# requires: int-big
 
 delta = 100000000000000000000000000000012345
 

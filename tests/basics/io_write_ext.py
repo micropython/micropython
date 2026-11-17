@@ -1,10 +1,11 @@
 # This tests extended (MicroPython-specific) form of write:
 # write(buf, len) and write(buf, offset, len)
-import io
 
 try:
+    import io
+
     io.BytesIO
-except AttributeError:
+except (AttributeError, ImportError):
     print('SKIP')
     raise SystemExit
 

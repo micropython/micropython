@@ -5,8 +5,6 @@
 #    ;
 # This script simply prints the escaped string straight to stdout
 
-from __future__ import print_function
-
 import sys
 
 # Can either be set explicitly, or left blank to auto-detect

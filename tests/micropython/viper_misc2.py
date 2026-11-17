@@ -1,4 +1,5 @@
 # Miscellaneous viper tests
+# requires: viper
 
 
 # Test correct use of registers in load and store

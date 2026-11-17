@@ -20,12 +20,25 @@ characteristic of a board is how much flash it has, how the GPIO pins are
 connected to the outside world, and whether it includes a built-in USB-serial
 converter to make the UART available to your PC.
 
-The minimum requirement for flash size is 1Mbyte. There is also a special
-build for boards with 512KB, but it is highly limited comparing to the
-normal build: there is no support for filesystem, and thus features which
-depend on it won't work (WebREPL, mip, etc.). As such, 512KB build will
-be more interesting for users who build from source and fine-tune parameters
-for their particular application.
+MicroPython is distributed as several firmware variants to suit the amount of
+flash on your board:
+
+* The standard build (``ESP8266_GENERIC``) targets boards with **2MiB or more**
+  of flash. This is the recommended build and the best choice for most users.
+* The ``FLASH_1M`` variant is for boards with **1MiB** of flash. It removes
+  asyncio and FAT-filesystem support, as well as some modules from
+  micropython-lib.
+* The ``FLASH_2M_ROMFS`` variant targets **2MiB** boards and reserves part of
+  the flash for a read-only ROMFS filesystem.
+* The ``FLASH_512K`` variant is for boards with only **512kiB** of flash. It is
+  highly limited compared to the other builds: there is no filesystem support,
+  and so features that depend on it won't work (WebREPL, mip, etc.). It also
+  drops framebuffer support, some Python language features, and has less
+  detailed error messages. This variant is mainly of interest to users who
+  build from source and fine-tune parameters for their particular application.
+
+The minimum recommended flash size is therefore 1MiB, with 2MiB or more giving
+the best experience.
 
 Names of pins will be given in this tutorial using the chip names (eg GPIO0)
 and it should be straightforward to find which pin this corresponds to on your
@@ -43,23 +56,31 @@ Getting the firmware
 
 The first thing you need to do is download the most recent MicroPython firmware
 .bin file to load onto your ESP8266 device. You can download it from the
-`MicroPython downloads page <http://micropython.org/download#esp8266>`_.
-From here, you have 3 main choices
+`ESP8266 download page <https://micropython.org/download/ESP8266_GENERIC/>`_.
 
-* Stable firmware builds for 1024kb modules and above.
-* Daily firmware builds for 1024kb modules and above.
-* Daily firmware builds for 512kb modules.
+The download page offers the firmware variants described above. Pick the one
+that matches your board's flash size:
 
-If you are just starting with MicroPython, the best bet is to go for the Stable
-firmware builds. If you are an advanced, experienced MicroPython ESP8266 user
-who would like to follow development closely and help with testing new
-features, there are daily builds (note: you actually may need some
-development experience, e.g. being ready to follow git history to know
-what new changes and features were introduced).
+========================================================= =========================================
+Firmware file                                             Board flash size
+========================================================= =========================================
+``ESP8266_GENERIC-<date>-<version>.bin``                  2MiB-4MiB, 8MiB-16MiB** (the standard build)
+``ESP8266_GENERIC-FLASH_1M-<date>-<version>.bin``         1MiB
+``ESP8266_GENERIC-FLASH_2M_ROMFS-<date>-<version>.bin``   2MiB-4MiB, 8MiB-16MiB** (includes a ROMFS)
+``ESP8266_GENERIC-FLASH_512K-<date>-<version>.bin``       512kiB
+========================================================= =========================================
 
-Support for 512kb modules is provided on a feature preview basis. For end
-users, it's recommended to use modules with flash of 1024kb or more. As
-such, only daily builds for 512kb modules are provided.
+** Boards with 8MiB or 16MiB of flash can use the standard build, 
+but require an manual step to set up the RF calibration data, see :ref:`esp8266_large_flash` below.
+
+For each variant the page lists *release* builds and *preview* builds. If you
+are just starting with MicroPython, choose the latest release build. If you are
+an experienced user who would like to follow development closely and help with
+testing new features, the preview builds are automatic builds of the
+development branch.
+
+Throughout the rest of this tutorial the example commands use the standard
+``ESP8266_GENERIC`` firmware; substitute the exact filename you downloaded.
 
 Deploying the firmware
 ----------------------
@@ -88,10 +109,6 @@ using pip::
 
     pip install esptool
 
-Versions starting with 1.3 support both Python 2.7 and Python 3.4 (or newer).
-An older version (at least 1.2.1 is needed) works fine but will require Python
-2.7.
-
 Any other flashing program should work, so feel free to try them out or refer
 to the documentation for your board to see its recommendations.
 
@@ -101,12 +118,25 @@ Using esptool.py you can erase the flash with the command::
 
 And then deploy the new firmware using::
 
-    esptool.py --port /dev/ttyUSB0 --baud 460800 write_flash --flash_size=detect 0 esp8266-20170108-v1.8.7.bin
+    esptool.py --port /dev/ttyUSB0 --baud 460800 write_flash --flash_size=detect 0 ESP8266_GENERIC-20260406-v1.28.0.bin
 
 You might need to change the "port" setting to something else relevant for your
 PC.  You may also need to reduce the baudrate if you get errors when flashing
 (eg down to 115200).  The filename of the firmware should also match the file
 that you have.
+
+The ``--flash_size=detect`` option tells esptool.py to read the flash size from
+the chip's JEDEC ID. MicroPython itself also autodetects the flash size at
+runtime for chips up to **4MB**, so a single firmware build adapts to the actual
+flash on your board without any extra configuration. The filesystem is
+automatically sized to use all of the available flash.
+
+The ESP8266 needs a small block of RF calibration data, known as
+``esp_init_data``, near the end of the flash before WiFi will start. On first
+boot MicroPython checks this region and, if it is blank (for example because you
+just ran ``erase_flash``), it automatically writes the default calibration data
+for you. For boards with **4MB of flash or less**, no manual step is needed. See
+:ref:`esp8266_large_flash` below for boards larger than 4MB.
 
 For some boards with a particular FlashROM configuration (e.g. some variants of
 a NodeMCU board) you may need to manually set a compatible
@@ -114,7 +144,7 @@ a NodeMCU board) you may need to manually set a compatible
 You'd usually pick the fastest option that is compatible with your device, but
 the ``-fm dout`` option (the slowest option) should have the best compatibility::
 
-    esptool.py --port /dev/ttyUSB0 --baud 460800 write_flash --flash_size=detect -fm dout 0 esp8266-20170108-v1.8.7.bin
+    esptool.py --port /dev/ttyUSB0 --baud 460800 write_flash --flash_size=detect -fm dout 0 ESP8266_GENERIC-20260406-v1.28.0.bin
 
 If the above commands run without error then MicroPython should be installed on
 your board!
@@ -122,6 +152,64 @@ your board!
 If you pulled GPIO0 manually to ground to enter programming mode, release it
 now and reset the device by again pulling the reset pin to ground for a short
 duration.
+
+.. _esp8266_large_flash:
+
+Boards with more than 4MB of flash
+----------------------------------
+
+Boards with **8MB or 16MB** of flash need one extra step. The flash routines
+built into the ESP8266 boot ROM (which MicroPython uses to write the calibration
+data on first boot) cannot address flash beyond 4MB: the ROM reads the chip's
+device ID but clamps the reported size to 4MB, so any access above that offset
+fails. As a result MicroPython can only write the ``esp_init_data`` RF
+calibration block automatically within the first 4MB of flash.
+So after a full flash erase MicroPython cannot place the calibration data at the correct end-of-flash
+address by itself. Without it the WiFi subsystem will not start (typically
+showing up as a continuous reset loop or ``rf_cal`` errors). For more background
+on this ROM limitation see
+`ESP8266 16MB Flash Handling <https://piers.rocks/esp8266/16mb/flash/eeprom/2016/10/14/esp8266-16mbyte-flash_handling.html>`_.
+
+To fix this, flash the ``esp_init_data_default.bin`` file (shipped with the
+Espressif NONOS SDK) to the calibration address, which is the flash size minus
+``0x4000``, see table below.
+
+You can download ``esp_init_data_default.bin`` from the Espressif repository
+(open the link and click "View raw" to download the file):
+`<https://github.com/espressif/ESP8266_AT/blob/master/bin/esp_init_data_default.bin>`__
+
+The calibration addresses are:
+
+=========== =====================================
+Flash size  ``esp_init_data`` address
+=========== =====================================
+8MB         ``0x7FC000``
+16MB        ``0xFFC000``
+=========== =====================================
+
+The full procedure for a 16MB board is::
+
+    # 1. Make sure esptool is up to date
+    pip install --upgrade esptool
+
+    # 2. Erase the flash
+    esptool.py --port /dev/ttyUSB0 --baud 460800 erase_flash
+
+    # 3. Flash the RF calibration blob at the end of flash (16MB example)
+    esptool.py --port /dev/ttyUSB0 write_flash 0xFFC000 esp_init_data_default.bin
+
+    # 4. Flash MicroPython, telling esptool the real flash size
+    esptool.py --port /dev/ttyUSB0 --baud 460800 \
+        write_flash -fm dio --flash_size 16MB 0 ESP8266_GENERIC-20260406-v1.28.0.bin
+
+    # 5. Check detected flash size in the REPL
+    mpremote exec "import esp;print(f'Detected flash: {esp.flash_size():_}')"
+
+For an 8MB board, use ``0x7FC000`` in step 3 and ``--flash_size 8MB`` in step 4.
+
+The filesystem is sized automatically from the detected flash size, so it
+will use all of the available space once the board boots.
+
 
 Serial prompt
 -------------
@@ -173,15 +261,8 @@ after it, here are troubleshooting recommendations:
   rate may be too high and lead to errors. Try a more common 115200 baud
   rate instead in such cases.
 
-* If lower baud rate didn't help, you may want to try older version of
-  esptool.py, which had a different programming algorithm::
-
-    pip install esptool==1.0.1
-
-  This version doesn't support ``--flash_size=detect`` option, so you will
-  need to specify FlashROM size explicitly (in megabits). It also requires
-  Python 2.7, so you may need to use ``pip2`` instead of ``pip`` in the
-  command above.
+* If lower baud rate didn't help, you may want to try a different version of
+  esptool.py, which may use a different programming algorithm.
 
 * The ``--flash_size`` option in the commands above is mandatory. Omitting
   it will lead to a corrupted firmware.

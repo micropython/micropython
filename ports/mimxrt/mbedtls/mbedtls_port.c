@@ -25,33 +25,21 @@
  */
 
 #include "py/runtime.h"
+#include "mphalport.h"
 
 #ifdef MICROPY_SSL_MBEDTLS
 
 #include "mbedtls_config_port.h"
 #if defined(MBEDTLS_HAVE_TIME) || defined(MBEDTLS_HAVE_TIME_DATE)
-#include "fsl_snvs_lp.h"
 #include "shared/timeutils/timeutils.h"
+#include "modmachine.h"
 #include "mbedtls/platform_time.h"
 #endif
-
-void trng_random_data(unsigned char *output, size_t len);
-
-int mbedtls_hardware_poll(void *data, unsigned char *output, size_t len, size_t *olen) {
-
-    // assumes that TRNG_Init was called during startup
-    *olen = len;
-    trng_random_data(output, len);
-
-    return 0;
-}
 
 #if defined(MBEDTLS_HAVE_TIME)
 time_t mimxrt_rtctime_seconds(time_t *timer) {
     // Get date and date in CPython order.
-    snvs_lp_srtc_datetime_t date;
-    SNVS_LP_SRTC_GetDatetime(SNVS, &date);
-    return timeutils_seconds_since_epoch(date.year, date.month, date.day, date.hour, date.minute, date.second);
+    return machine_rtc_get_seconds();
 }
 
 mbedtls_ms_time_t mbedtls_ms_time(void) {

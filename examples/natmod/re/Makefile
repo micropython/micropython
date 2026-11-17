@@ -2,12 +2,28 @@
 MPY_DIR = ../../..
 
 # Name of module (different to built-in re so it can coexist)
-MOD = re_$(ARCH)
+MOD_BASE = re
+MOD = $(MOD_BASE)_$(ARCH)
 
 # Source files (.c or .py)
 SRC = re.c
 
-# Architecture to build for (x86, x64, armv7m, xtensa, xtensawin)
+# Architecture to build for (x86, x64, armv7m, xtensa, xtensawin, rv32imc, rv64imc)
 ARCH = x64
+
+ifeq ($(ARCH),armv7m)
+ifeq ($(findstring clang,$(shell $(CC) --version)),clang)
+# Link with libclang_rt.a for memmove
+LINK_RUNTIME = 1
+endif
+endif
+
+ifeq ($(ARCH),armv6m)
+# Link with libgcc.a for division helper functions
+LINK_RUNTIME = 1
+endif
+
+# Strip the architecture name from the internal filename.
+MPY_LD_FLAGS = "--source-name=$(MOD_BASE).mpy"
 
 include $(MPY_DIR)/py/dynruntime.mk

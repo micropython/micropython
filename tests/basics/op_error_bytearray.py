@@ -1,4 +1,5 @@
 # test errors from bad operations (unary, binary, etc)
+# requires: bytearray
 
 # unsupported unary operators
 try:

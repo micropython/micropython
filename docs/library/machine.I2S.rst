@@ -79,6 +79,8 @@ other things.  For these drivers see:
 
 - :ref:`wm8960`
 
+Availability: **ESP32, MIMXRT, RP2, STM32**
+
 Constructor
 -----------
 

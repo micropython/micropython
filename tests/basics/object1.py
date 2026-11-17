@@ -1,4 +1,5 @@
 # test builtin object()
+# requires: slice
 
 # creation
 object()

@@ -1,4 +1,5 @@
 # Test slicing of Unicode strings
+# requires: slice
 
 s = "Привет"
 

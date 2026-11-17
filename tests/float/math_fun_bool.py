@@ -1,4 +1,5 @@
 # Test the bool functions from math
+# requires: float
 
 try:
     from math import isfinite, isnan, isinf

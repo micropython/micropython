@@ -28,7 +28,6 @@
 #include <stdint.h>
 
 #include "py/mpconfig.h"
-#include "py/stackctrl.h"
 #include "py/obj.h"
 #include "py/runtime.h"
 #include "py/gc.h"
@@ -131,7 +130,7 @@ soft_reset:
     #endif
 
     // initialise the stack pointer for the main thread (must be done after mp_thread_init)
-    mp_stack_set_top((void *)sp);
+    mp_cstack_init_with_top((void *)sp, 0);
 
     // GC init
     gc_init(&_boot, &_eheap);

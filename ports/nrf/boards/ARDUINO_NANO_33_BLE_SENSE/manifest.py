@@ -1,4 +1,4 @@
-include("$(PORT_DIR)/modules/manifest.py")
+include("$(PORT_DIR)/boards/manifest.py")
 require("hts221")
 require("lps22h")
 require("lsm9ds1")

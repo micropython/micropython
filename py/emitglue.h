@@ -80,7 +80,7 @@ typedef struct _mp_raw_code_t {
     #if MICROPY_PERSISTENT_CODE_SAVE
     uint32_t fun_data_len; // for mp_raw_code_save
     uint16_t n_children;
-    #if MICROPY_EMIT_MACHINE_CODE
+    #if MICROPY_EMIT_INLINE_ASM || MICROPY_ENABLE_NATIVE_CODE
     uint16_t prelude_offset;
     #endif
     #if MICROPY_PY_SYS_SETTRACE
@@ -110,7 +110,7 @@ typedef struct _mp_raw_code_truncated_t {
     #if MICROPY_PERSISTENT_CODE_SAVE
     uint32_t fun_data_len;
     uint16_t n_children;
-    #if MICROPY_EMIT_MACHINE_CODE
+    #if MICROPY_EMIT_INLINE_ASM || MICROPY_ENABLE_NATIVE_CODE
     uint16_t prelude_offset;
     #endif
     #if MICROPY_PY_SYS_SETTRACE

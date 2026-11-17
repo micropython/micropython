@@ -1,4 +1,5 @@
 # Test builtin slice indices resolution
+# requires: slice
 
 # A class that returns an item key
 class A:

@@ -59,10 +59,8 @@ EXPORTED_FUNCTIONS_EXTRA += ,\
 	_proxy_c_to_js_call,\
 	_proxy_c_to_js_delete_attr,\
 	_proxy_c_to_js_dir,\
-	_proxy_c_to_js_get_array,\
-	_proxy_c_to_js_get_dict,\
 	_proxy_c_to_js_get_iter,\
-	_proxy_c_to_js_get_type,\
+	_proxy_c_to_js_get_type_and_data,\
 	_proxy_c_to_js_has_attr,\
 	_proxy_c_to_js_iternext,\
 	_proxy_c_to_js_lookup_attr,\
@@ -71,6 +69,7 @@ EXPORTED_FUNCTIONS_EXTRA += ,\
 	_proxy_convert_mp_to_js_obj_cside
 
 EXPORTED_RUNTIME_METHODS_EXTRA += ,\
+	HEAPU8,\
 	PATH,\
 	PATH_FS,\
 	UTF8ToString,\
@@ -85,6 +84,7 @@ JSFLAGS += -s EXPORTED_FUNCTIONS="\
 	_mp_js_init,\
 	_mp_js_repl_init,\
 	_mp_js_repl_process_char,\
+	_mp_js_repl_process_char_async,\
 	_mp_hal_get_interrupt_char,\
 	_mp_sched_keyboard_interrupt$(EXPORTED_FUNCTIONS_EXTRA)"
 JSFLAGS += -s EXPORTED_RUNTIME_METHODS="\
@@ -92,7 +92,12 @@ JSFLAGS += -s EXPORTED_RUNTIME_METHODS="\
 	cwrap,\
 	FS$(EXPORTED_RUNTIME_METHODS_EXTRA)"
 JSFLAGS += --js-library library.js
-JSFLAGS += -s SUPPORT_LONGJMP=emscripten
+# Longjmp support mode; the browser variant overrides this to "wasm"
+# because the JS invoke_* trampolines used by the emscripten mode are
+# incompatible with JSPI stack suspension.
+SUPPORT_LONGJMP ?= emscripten
+CFLAGS += -s SUPPORT_LONGJMP=$(SUPPORT_LONGJMP)
+JSFLAGS += -s SUPPORT_LONGJMP=$(SUPPORT_LONGJMP)
 JSFLAGS += -s MODULARIZE -s EXPORT_NAME=_createMicroPythonModule
 
 ################################################################################
@@ -130,7 +135,7 @@ OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 ################################################################################
 # Main targets.
 
-.PHONY: all repl min test test_min
+.PHONY: all repl min test test//% test_min
 
 all: $(BUILD)/micropython.mjs
 
@@ -148,10 +153,13 @@ repl: $(BUILD)/micropython.mjs
 min: $(BUILD)/micropython.min.mjs
 
 test: $(BUILD)/micropython.mjs $(TOP)/tests/run-tests.py
-	cd $(TOP)/tests && MICROPY_MICROPYTHON_MJS=../ports/webassembly/$< ./run-tests.py --target webassembly
+	cd $(TOP)/tests && MICROPY_MICROPYTHON_MJS=../ports/webassembly/$< ./run-tests.py -t webassembly
+
+test//%: $(BUILD)/micropython.mjs $(TOP)/tests/run-tests.py
+	cd $(TOP)/tests && MICROPY_MICROPYTHON_MJS=../ports/webassembly/$< ./run-tests.py -t webassembly -i "$*"
 
 test_min: $(BUILD)/micropython.min.mjs $(TOP)/tests/run-tests.py
-	cd $(TOP)/tests && MICROPY_MICROPYTHON_MJS=../ports/webassembly/$< ./run-tests.py --target webassembly
+	cd $(TOP)/tests && MICROPY_MICROPYTHON_MJS=../ports/webassembly/$< ./run-tests.py -t webassembly
 
 ################################################################################
 # Remaining make rules.

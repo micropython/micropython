@@ -9,7 +9,8 @@ storage (disk files, or in general case, a random-access `stream`). Keys are
 stored sorted in the database, and besides efficient retrieval by a key
 value, a database also supports efficient ordered range scans (retrieval
 of values with the keys in a given range). On the application interface
-side, BTree database work as close a possible to a way standard `dict`
+side, BTree database work as close a possible to the way a standard
+:class:`~builtins.dict`
 type works, one notable difference is that both keys and values must
 be `bytes`-like objects (so, if you want to store objects of other types, you
 need to first serialize them to `str` or `bytes` or another type that supports
@@ -151,10 +152,10 @@ Constants
 
 .. data:: INCL
 
-   A flag for `keys()`, `values()`, `items()` methods to specify that
+   A flag for :meth:`btree.keys`, :meth:`btree.values`, :meth:`btree.items` methods to specify that
    scanning should be inclusive of the end key.
 
 .. data:: DESC
 
-   A flag for `keys()`, `values()`, `items()` methods to specify that
+   A flag for :meth:`btree.keys`, :meth:`btree.values`, :meth:`btree.items` methods to specify that
    scanning should be in descending direction of keys.

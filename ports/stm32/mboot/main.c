@@ -41,6 +41,7 @@
 #include "sdcard.h"
 #include "dfu.h"
 #include "pack.h"
+#include "xspi.h"
 
 // Whether the bootloader will leave via reset, or direct jump to the application.
 #ifndef MBOOT_LEAVE_BOOTLOADER_VIA_RESET
@@ -60,6 +61,7 @@
 
 // IRQ priorities (encoded values suitable for NVIC_SetPriority)
 // Most values are defined in irq.h.
+#undef IRQ_PRI_I2C
 #define IRQ_PRI_I2C (NVIC_EncodePriority(NVIC_PRIORITYGROUP_4, 1, 0))
 
 #if defined(MBOOT_CLK_PLLM)
@@ -176,7 +178,7 @@ void HAL_Delay(uint32_t ms) {
     mp_hal_delay_ms(ms);
 }
 
-NORETURN static void __fatal_error(const char *msg) {
+MP_NORETURN static void __fatal_error(const char *msg) {
     NVIC_SystemReset();
     for (;;) {
     }
@@ -373,7 +375,7 @@ void SystemClock_Config(void) {
 #elif defined(STM32G0)
 #define AHBxENR IOPENR
 #define AHBxENR_GPIOAEN_Pos RCC_IOPENR_GPIOAEN_Pos
-#elif defined(STM32H7)
+#elif defined(STM32H7) || defined(STM32N6)
 #define AHBxENR AHB4ENR
 #define AHBxENR_GPIOAEN_Pos RCC_AHB4ENR_GPIOAEN_Pos
 #elif defined(STM32H5) || defined(STM32WB)
@@ -424,42 +426,90 @@ void mp_hal_pin_config_speed(uint32_t port_pin, uint32_t speed) {
 #define MBOOT_SPIFLASH2_LAYOUT ""
 #endif
 
+#if defined(STM32N6)
+#define FLASH_LAYOUT_STR "@Internal Flash  " MBOOT_SPIFLASH_LAYOUT MBOOT_SPIFLASH2_LAYOUT
+#else
+
 #if defined(STM32F4) \
     || defined(STM32F722xx) \
     || defined(STM32F723xx) \
     || defined(STM32F732xx) \
     || defined(STM32F733xx)
-#define FLASH_LAYOUT_STR "@Internal Flash  /0x08000000/04*016Kg,01*064Kg,07*128Kg" MBOOT_SPIFLASH_LAYOUT MBOOT_SPIFLASH2_LAYOUT
+#define INTERNAL_FLASH_LAYOUT "@Internal Flash  /0x08000000/04*016Kg,01*064Kg,07*128Kg"
 #elif defined(STM32F765xx) || defined(STM32F767xx) || defined(STM32F769xx)
-#define FLASH_LAYOUT_STR "@Internal Flash  /0x08000000/04*032Kg,01*128Kg,07*256Kg" MBOOT_SPIFLASH_LAYOUT MBOOT_SPIFLASH2_LAYOUT
+#define INTERNAL_FLASH_LAYOUT "@Internal Flash  /0x08000000/04*032Kg,01*128Kg,07*256Kg"
 #elif defined(STM32G0)
-#define FLASH_LAYOUT_STR "@Internal Flash  /0x08000000/256*02Kg" MBOOT_SPIFLASH_LAYOUT MBOOT_SPIFLASH2_LAYOUT
+#define INTERNAL_FLASH_LAYOUT "@Internal Flash  /0x08000000/256*02Kg"
 #elif defined(STM32H5)
-#define FLASH_LAYOUT_TEMPLATE "@Internal Flash  /0x08000000/???*08Kg" MBOOT_SPIFLASH_LAYOUT MBOOT_SPIFLASH2_LAYOUT
-#elif defined(STM32H743xx)
-#define FLASH_LAYOUT_STR "@Internal Flash  /0x08000000/16*128Kg" MBOOT_SPIFLASH_LAYOUT MBOOT_SPIFLASH2_LAYOUT
+#define INTERNAL_FLASH_LAYOUT "@Internal Flash  /0x08000000/???*08Kg"
+#define INTERNAL_FLASH_LAYOUT_HAS_TEMPLATE (1)
+#elif defined(STM32H743xx) || defined(STM32H753xx)
+#define INTERNAL_FLASH_LAYOUT "@Internal Flash  /0x08000000/16*128Kg"
 #elif defined(STM32H750xx)
-#define FLASH_LAYOUT_STR "@Internal Flash  /0x08000000/01*128Kg" MBOOT_SPIFLASH_LAYOUT MBOOT_SPIFLASH2_LAYOUT
+#define INTERNAL_FLASH_LAYOUT "@Internal Flash  /0x08000000/01*128Kg"
 #elif defined(STM32WB)
-#define FLASH_LAYOUT_STR "@Internal Flash  /0x08000000/256*04Kg" MBOOT_SPIFLASH_LAYOUT MBOOT_SPIFLASH2_LAYOUT
+#define INTERNAL_FLASH_LAYOUT "@Internal Flash  /0x08000000/256*04Kg"
 #endif
 
-#if !defined(FLASH_LAYOUT_STR)
+#if INTERNAL_FLASH_LAYOUT_HAS_TEMPLATE \
+    || defined(MBOOT_SPIFLASH_LAYOUT_DYNAMIC_MAX_LEN) \
+    || defined(MBOOT_SPIFLASH2_LAYOUT_DYNAMIC_MAX_LEN)
 
-#define FLASH_LAYOUT_STR_ALLOC (sizeof(FLASH_LAYOUT_TEMPLATE))
+#ifndef MBOOT_SPIFLASH_LAYOUT_DYNAMIC_MAX_LEN
+#define MBOOT_SPIFLASH_LAYOUT_DYNAMIC_MAX_LEN (sizeof(MBOOT_SPIFLASH_LAYOUT) - 1)
+#endif
+
+#ifndef MBOOT_SPIFLASH2_LAYOUT_DYNAMIC_MAX_LEN
+#define MBOOT_SPIFLASH2_LAYOUT_DYNAMIC_MAX_LEN (sizeof(MBOOT_SPIFLASH2_LAYOUT) - 1)
+#endif
+
+#define FLASH_LAYOUT_STR_ALLOC \
+    ( \
+    (sizeof(INTERNAL_FLASH_LAYOUT) - 1) \
+    + MBOOT_SPIFLASH_LAYOUT_DYNAMIC_MAX_LEN \
+    + MBOOT_SPIFLASH2_LAYOUT_DYNAMIC_MAX_LEN \
+    + 1 \
+    )
 
 // Build the flash layout string from a template with total flash size inserted.
-static size_t build_flash_layout_str(char *buf) {
-    size_t len = FLASH_LAYOUT_STR_ALLOC - 1;
-    memcpy(buf, FLASH_LAYOUT_TEMPLATE, len + 1);
+static size_t build_flash_layout_str(uint8_t *buf) {
+    const char *internal_layout = INTERNAL_FLASH_LAYOUT;
+    size_t internal_layout_len = strlen(internal_layout);
+
+    const char *spiflash_layout = MBOOT_SPIFLASH_LAYOUT;
+    size_t spiflash_layout_len = strlen(spiflash_layout);
+
+    const char *spiflash2_layout = MBOOT_SPIFLASH2_LAYOUT;
+    size_t spiflash2_layout_len = strlen(spiflash2_layout);
+
+    uint8_t *buf_orig = buf;
+
+    memcpy(buf, internal_layout, internal_layout_len);
+    buf += internal_layout_len;
+
+    #if INTERNAL_FLASH_LAYOUT_HAS_TEMPLATE
     unsigned int num_sectors = FLASH_SIZE / FLASH_SECTOR_SIZE;
-    buf += 31; // location of "???" in FLASH_LAYOUT_TEMPLATE
+    uint8_t *buf_size = buf_orig + 31; // location of "???" in FLASH_LAYOUT_TEMPLATE
     for (unsigned int i = 0; i < 3; ++i) {
-        *buf-- = '0' + num_sectors % 10;
+        *buf_size-- = '0' + num_sectors % 10;
         num_sectors /= 10;
     }
-    return len;
+    #endif
+
+    memcpy(buf, spiflash_layout, spiflash_layout_len);
+    buf += spiflash_layout_len;
+
+    memcpy(buf, spiflash2_layout, spiflash2_layout_len);
+    buf += spiflash2_layout_len;
+
+    *buf++ = '\0';
+
+    return buf - buf_orig;
 }
+
+#else
+
+#define FLASH_LAYOUT_STR INTERNAL_FLASH_LAYOUT MBOOT_SPIFLASH_LAYOUT MBOOT_SPIFLASH2_LAYOUT
 
 #endif
 
@@ -540,12 +590,18 @@ static int mboot_flash_write(uint32_t addr, const uint8_t *src8, size_t len) {
     return 0;
 }
 
+#endif
+
 /******************************************************************************/
 // Writable address space interface
 
 static int do_mass_erase(void) {
+    #if defined(STM32N6)
+    return -1;
+    #else
     // TODO spiflash erase ?
     return mboot_flash_mass_erase();
+    #endif
 }
 
 #if defined(MBOOT_SPIFLASH_ADDR) || defined(MBOOT_SPIFLASH2_ADDR)
@@ -581,7 +637,12 @@ int hw_page_erase(uint32_t addr, uint32_t *next_addr) {
     } else
     #endif
     {
+        #if defined(STM32N6)
+        dfu_context.status = DFU_STATUS_ERROR_ADDRESS;
+        dfu_context.error = MBOOT_ERROR_STR_INVALID_ADDRESS_IDX;
+        #else
         ret = mboot_flash_page_erase(addr, next_addr);
+        #endif
     }
 
     mboot_state_change(MBOOT_STATE_ERASE_END, ret);
@@ -634,9 +695,12 @@ int hw_write(uint32_t addr, const uint8_t *src8, size_t len) {
         ret = mp_spiflash_write(MBOOT_SPIFLASH2_SPIFLASH, addr - MBOOT_SPIFLASH2_ADDR, len, src8);
     } else
     #endif
+    #if !defined(STM32N6)
     if (flash_is_valid_addr(addr)) {
         ret = mboot_flash_write(addr, src8, len);
-    } else {
+    } else
+    #endif
+    {
         dfu_context.status = DFU_STATUS_ERROR_ADDRESS;
         dfu_context.error = MBOOT_ERROR_STR_INVALID_ADDRESS_IDX;
     }
@@ -742,9 +806,9 @@ int i2c_slave_process_addr_match(i2c_slave_t *i2c, int rw) {
     return 0; // ACK
 }
 
-int i2c_slave_process_rx_byte(i2c_slave_t *i2c, uint8_t val) {
+int i2c_slave_process_rx_byte(i2c_slave_t *i2c) {
     if (i2c_obj.cmd_buf_pos < sizeof(i2c_obj.cmd_buf)) {
-        i2c_obj.cmd_buf[i2c_obj.cmd_buf_pos++] = val;
+        i2c_obj.cmd_buf[i2c_obj.cmd_buf_pos++] = i2c_slave_read_byte(i2c);
     }
     return 0; // ACK
 }
@@ -846,15 +910,17 @@ void i2c_slave_process_rx_end(i2c_slave_t *i2c) {
     i2c_obj.cmd_arg_sent = false;
 }
 
-uint8_t i2c_slave_process_tx_byte(i2c_slave_t *i2c) {
+void i2c_slave_process_tx_byte(i2c_slave_t *i2c) {
+    uint8_t value;
     if (i2c_obj.cmd_send_arg) {
         i2c_obj.cmd_arg_sent = true;
-        return i2c_obj.cmd_arg;
+        value = i2c_obj.cmd_arg;
     } else if (i2c_obj.cmd_buf_pos < sizeof(i2c_obj.cmd_buf)) {
-        return i2c_obj.cmd_buf[i2c_obj.cmd_buf_pos++];
+        value = i2c_obj.cmd_buf[i2c_obj.cmd_buf_pos++];
     } else {
-        return 0;
+        value = 0;
     }
+    i2c_slave_write_byte(i2c, value);
 }
 
 void i2c_slave_process_tx_end(i2c_slave_t *i2c) {
@@ -1188,7 +1254,7 @@ static uint8_t *pyb_usbdd_StrDescriptor(USBD_HandleTypeDef *pdev, uint8_t idx, u
             USBD_GetString((uint8_t *)FLASH_LAYOUT_STR, str_desc, length);
             #else
             {
-                char buf[FLASH_LAYOUT_STR_ALLOC];
+                uint8_t buf[FLASH_LAYOUT_STR_ALLOC];
                 build_flash_layout_str(buf);
                 USBD_GetString((uint8_t *)buf, str_desc, length);
             }
@@ -1399,7 +1465,7 @@ static int pyb_usbdd_shutdown(void) {
 /******************************************************************************/
 // main
 
-NORETURN static __attribute__((naked)) void branch_to_application(uint32_t r0, uint32_t bl_addr) {
+MP_NORETURN static __attribute__((naked)) void branch_to_application(uint32_t r0, uint32_t bl_addr) {
     __asm volatile (
         "ldr r2, [r1, #0]\n"    // get address of stack pointer
         "msr msp, r2\n"         // set stack pointer
@@ -1465,7 +1531,7 @@ void stm32_main(uint32_t initial_r0) {
     // Make sure IRQ vector table points to flash where this bootloader lives.
     SCB->VTOR = MBOOT_VTOR;
 
-    #if __CORTEX_M != 33
+    #if __CORTEX_M != 33 && __CORTEX_M != 55
     // Enable 8-byte stack alignment for IRQ handlers, in accord with EABI
     SCB->CCR |= SCB_CCR_STKALIGN_Msk;
     #endif
@@ -1495,6 +1561,12 @@ void stm32_main(uint32_t initial_r0) {
     SCB_EnableDCache();
     #endif
 
+    #if defined(STM32N6)
+    LL_PWR_EnableBkUpAccess();
+    initial_r0 = TAMP_S->BKP31R;
+    TAMP_S->BKP31R = 0;
+    #endif
+
     MBOOT_BOARD_EARLY_INIT(&initial_r0);
 
     #ifdef MBOOT_BOOTPIN_PIN
@@ -1517,6 +1589,12 @@ void stm32_main(uint32_t initial_r0) {
     }
 
 enter_bootloader:
+
+    #if defined(STM32N6)
+    // Enable USB OTG peripherals during sleep, so they run during WFI.
+    LL_AHB5_GRP1_EnableClockLowPower(LL_AHB5_GRP1_PERIPH_OTG1);
+    LL_AHB5_GRP1_EnableClockLowPower(LL_AHB5_GRP1_PERIPH_OTG2);
+    #endif
 
     #if defined(STM32H5)
     // MPU is needed for H5 to access the unique id.
@@ -1686,7 +1764,7 @@ void SysTick_Handler(void) {
 
 #if defined(MBOOT_I2C_SCL)
 void I2Cx_EV_IRQHandler(void) {
-    i2c_slave_ev_irq_handler(MBOOT_I2Cx);
+    i2c_slave_irq_handler(MBOOT_I2Cx);
 }
 #endif
 
@@ -1702,6 +1780,12 @@ void USB_UCPD1_2_IRQHandler(void) {
 
 void USB_DRD_FS_IRQHandler(void) {
     HAL_PCD_IRQHandler(&pcd_fs_handle);
+}
+
+#elif defined(STM32N6)
+
+void USB1_OTG_HS_IRQHandler(void) {
+    HAL_PCD_IRQHandler(&pcd_hs_handle);
 }
 
 #elif defined(STM32WB)

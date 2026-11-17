@@ -39,6 +39,12 @@ enum {
     PORT_I,
     PORT_J,
     PORT_K,
+    PORT_L,
+    PORT_M,
+    PORT_N,
+    PORT_O,
+    PORT_P,
+    PORT_Q,
 };
 
 // Must have matching entries in SUPPORTED_FN in boards/make-pins.py
@@ -127,6 +133,16 @@ enum {
 #define CAN2 FDCAN2
 #define GPIO_AF9_CAN1 GPIO_AF9_FDCAN1
 #define GPIO_AF9_CAN2 GPIO_AF9_FDCAN2
+#endif
+
+#if defined(STM32N6)
+// Make N6 FDCAN more like CAN
+#define CAN1 FDCAN1
+#define CAN2 FDCAN2
+#define CAN3 FDCAN3
+#define GPIO_AF6_CAN1 GPIO_AF6_FDCAN1
+#define GPIO_AF6_CAN2 GPIO_AF6_FDCAN2
+#define GPIO_AF6_CAN3 GPIO_AF6_FDCAN3
 #endif
 
 enum {

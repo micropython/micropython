@@ -1,4 +1,5 @@
 # Test waiting on a task
+# requires: async float
 
 try:
     import asyncio

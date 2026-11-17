@@ -32,23 +32,42 @@ ESP-NOW is a connection-less wireless communication protocol supporting:
 
 - Direct communication between up to 20 registered peers:
 
-  - Without the need for a wireless access point (AP),
+- Without the need for a wireless access point (AP),
 
 - Encrypted and unencrypted communication (up to 6 encrypted peers),
 
-- Message sizes up to 250 bytes,
+- Message sizes up to 1470 bytes (For ESP-NOW v2),
 
-- Can operate alongside Wifi operation (:doc:`network.WLAN<network.WLAN>`) on
+- Can operate alongside Wi-Fi operation (:doc:`network.WLAN<network.WLAN>`) on
   ESP32 and ESP8266 devices.
+
+- Track the Wi-Fi signal strength (RSSI) of ESP-NOW peer devices.
 
 It is especially useful for small IoT networks, latency sensitive or power
 sensitive applications (such as battery operated devices) and for long-range
 communication between devices (hundreds of metres).
 
-This module also supports tracking the Wifi signal strength (RSSI) of peer
-devices.
+ESP-NOW Versions
+~~~~~~~~~~~~~~~~
 
-A simple example would be:
+Since ESP-IDF V5.4, two ESP-NOW versions are supported when running on ESP32:
+V1 and V2.
+
+- The maximum packet length supported by V2 devices is 1470 bytes
+- The maximum packet length supported by V1 devices is 250 bytes.
+
+To check at runtime whether ESP-NOW V2 is available, check the value of
+`espnow.MAX_DATA_LEN`.
+
+ESP-NOW V2 devices are capable of receiving packets from both V2 and V1 devices.
+
+ESP-NOW V1 devices (including ESP8266) can receive packets from other V1
+devices, or from V2 devices if the packet length doesn't exceed 250 bytes. For
+packets exceeding this length, a V1 device will either truncate the data to the
+first 250 bytes or discard the packet entirely.
+
+Example
+~~~~~~~
 
 **Sender:** ::
 
@@ -56,7 +75,7 @@ A simple example would be:
     import espnow
 
     # A WLAN interface must be active to send()/recv()
-    sta = network.WLAN(network.STA_IF)  # Or network.AP_IF
+    sta = network.WLAN(network.WLAN.IF_STA)  # Or network.WLAN.IF_AP
     sta.active(True)
     sta.disconnect()      # For ESP8266
 
@@ -76,7 +95,7 @@ A simple example would be:
     import espnow
 
     # A WLAN interface must be active to send()/recv()
-    sta = network.WLAN(network.STA_IF)
+    sta = network.WLAN(network.WLAN.IF_STA)
     sta.active(True)
     sta.disconnect()   # Because ESP8266 auto-connects to last Access Point
 
@@ -148,27 +167,34 @@ Configuration
 
     .. data:: Options:
 
-        *rxbuf*: (default=526) Get/set the size in bytes of the internal
-        buffer used to store incoming ESPNow packet data. The default size is
-        selected to fit two max-sized ESPNow packets (250 bytes) with associated
-        mac_address (6 bytes), a message byte count (1 byte) and RSSI data plus
+        *rxbuf*: (default=528 or 2972) Get/set the size in bytes of the internal
+        buffer used to store incoming ESP-NOW packet data. The default size is
+        selected to fit two max-sized ESP-NOW packets (250 or 1470 bytes) with associated
+        mac_address (6 bytes), a message byte count (2 byte) and RSSI data plus
         buffer overhead. Increase this if you expect to receive a lot of large
         packets or expect bursty incoming traffic.
 
-        **Note:** The recv buffer is allocated by `ESPNow.active()`. Changing
-        this value will have no effect until the next call of
-        `ESPNow.active(True)<ESPNow.active()>`.
+        .. note:: If only using ESP-NOW V1 packets and low throughput, recommend
+                  setting ``rxbuf=528`` here to reduce memory overhead.
 
-        *timeout_ms*: (default=300,000) Default timeout (in milliseconds)
-        for receiving ESPNow messages. If *timeout_ms* is less than zero, then
+        .. note:: The recv buffer is allocated by `ESPNow.active()`. Changing
+                  this value will have no effect until the next call of
+                  `ESPNow.active(True)<ESPNow.active()>`.
+
+        *timeout_ms*: (default=300_000) Default timeout (in milliseconds)
+        for receiving ESP-NOW messages. If *timeout_ms* is less than zero, then
         wait forever. The timeout can also be provided as arg to
         `recv()`/`irecv()`/`recvinto()`.
 
-        *rate*: (ESP32 only, IDF>=4.3.0 only) Set the transmission speed for
-        ESPNow packets. Must be set to a number from the allowed numeric values
-        in `enum wifi_phy_rate_t
-        <https://docs.espressif.com/projects/esp-idf/en/v4.4.1/esp32/
-        api-reference/network/esp_wifi.html#_CPPv415wifi_phy_rate_t>`_.
+        *rate*: (ESP32 only) Set the transmission data rate for ESP-NOW packets.
+        The default setting is `espnow.RATE_1M`. It's recommended to use one of
+        the other ``espnow.RATE_nnn`` constants to set this, but it's also
+        possible to pass an integer corresponding to the `enum wifi_phy_rate_t
+        <https://docs.espressif.com/projects/esp-idf/en/v5.5.1/esp32/
+        api-reference/network/esp_wifi.html#_CPPv415wifi_phy_rate_t>`_. This
+        parameter is actually *write-only* due to ESP-IDF not providing any
+        means for querying the radio interface's rate parameter.
+        See also `espnow-long-range`. This API currently doesn't work on ESP32-C6.
 
     .. data:: Returns:
 
@@ -182,14 +208,14 @@ Configuration
 Sending and Receiving Data
 --------------------------
 
-A wifi interface (``network.STA_IF`` or ``network.AP_IF``) must be
+A wifi interface (``network.WLAN.IF_STA`` or ``network.WLAN.IF_AP``) must be
 `active()<network.WLAN.active>` before messages can be sent or received,
 but it is not necessary to connect or configure the WLAN interface.
 For example::
 
     import network
 
-    sta = network.WLAN(network.STA_IF)
+    sta = network.WLAN(network.WLAN.IF_STA)
     sta.active(True)
     sta.disconnect()    # For ESP8266
 
@@ -210,12 +236,12 @@ after reboot/reset). This reduces the reliability of receiving ESP-NOW messages
 
     .. data:: Arguments:
 
-      - *mac*: byte string exactly ``espnow.ADDR_LEN`` (6 bytes) long or
+      - *mac*: byte string exactly `espnow.ADDR_LEN` (6 bytes) long or
         ``None``. If *mac* is ``None`` (ESP32 only) the message will be sent
         to all registered peers, except any broadcast or multicast MAC
         addresses.
 
-      - *msg*: string or byte-string up to ``espnow.MAX_DATA_LEN`` (250)
+      - *msg*: string or byte-string up to `espnow.MAX_DATA_LEN` (250 or 1470)
         bytes long.
 
       - *sync*:
@@ -239,7 +265,7 @@ after reboot/reset). This reduces the reliability of receiving ESP-NOW messages
         `active()<network.WLAN.active>`.
       - ``OSError(num, "ESP_ERR_ESPNOW_NO_MEM")`` internal ESP-NOW buffers are
         full.
-      - ``ValueError()`` on invalid values for the parameters.
+      - ``ValueError()`` or ``TypeError()`` on invalid values or types for the parameters.
 
     **Note**: A peer will respond with success if its wifi interface is
     `active()<network.WLAN.active>` and set to the same channel as the sender,
@@ -323,10 +349,10 @@ after reboot/reset). This reduces the reliability of receiving ESP-NOW messages
     .. data:: Arguments:
 
         *data*: A list of at least two elements, ``[peer, msg]``. ``msg`` must
-        be a bytearray large enough to hold the message (250 bytes). On the
-        ESP8266, ``peer`` should be a bytearray of 6 bytes. The MAC address of
-        the sender and the message will be stored in these bytearrays (see Note
-        on ESP32 below).
+        be a bytearray large enough to hold the received message (recommended at
+        least `espnow.MAX_DATA_LEN`). On the ESP8266, ``peer`` should be a
+        bytearray of 6 bytes. The MAC address of the sender and the message will
+        be stored in these bytearrays (see Note on ESP32 below).
 
         *timeout_ms*: (Optional) Timeout in milliseconds (see `ESPNow.recv()`).
 
@@ -338,6 +364,10 @@ after reboot/reset). This reduces the reliability of receiving ESP-NOW messages
     .. data:: Raises:
 
       - See `ESPNow.recv()`.
+
+      - This function will also raise a ``ValueError`` if the received message
+        is too large for the provided buffer. If this error is raised, received
+        message(s) will be lost.
 
     **Note:** On the ESP32:
 
@@ -441,12 +471,14 @@ must first register the sender and use the same encryption keys as the sender
 
         - *channel*: The wifi channel (2.4GHz) to communicate with this peer.
           Must be an integer from 0 to 14. If channel is set to 0 the current
-          channel of the wifi device will be used. (default=0)
+          channel of the wifi device will be used, if channel is set to another
+          value then this must match the channel currently configured on the
+          interface (see :func:`WLAN.config`). (default=0)
 
         - *ifidx*: (ESP32 only) Index of the wifi interface which will be
           used to send data to this peer. Must be an integer set to
-          ``network.STA_IF`` (=0) or ``network.AP_IF`` (=1).
-          (default=0/``network.STA_IF``). See `ESPNow and Wifi Operation`_
+          ``network.WLAN.IF_STA`` (=0) or ``network.WLAN.IF_AP`` (=1).
+          (default=0/``network.WLAN.IF_STA``). See `ESPNow and Wifi Operation`_
           below for more information.
 
         - *encrypt*: (ESP32 only) If set to ``True`` data exchanged with
@@ -470,7 +502,10 @@ must first register the sender and use the same encryption keys as the sender
           registered.
         - ``OSError(num, "ESP_ERR_ESPNOW_FULL")`` if too many peers are
           already registered.
-        - ``ValueError()`` on invalid keyword args or values.
+        - ``OSError(num, "ESP_ERR_ESPNOW_CHAN")`` if a channel value was
+          set that doesn't match the channel currently configured for this
+          interface.
+        - ``ValueError()`` or ``TypeError()`` on invalid keyword args or values.
 
 .. method:: ESPNow.del_peer(mac)
 
@@ -485,7 +520,7 @@ must first register the sender and use the same encryption keys as the sender
         - ``OSError(num, "ESP_ERR_ESPNOW_NOT_INIT")`` if not initialised.
         - ``OSError(num, "ESP_ERR_ESPNOW_NOT_FOUND")`` if *mac* is not
           registered.
-        - ``ValueError()`` on invalid *mac* values.
+        - ``ValueError()`` or ``TypeError()`` on invalid *mac* values.
 
 .. method:: ESPNow.get_peer(mac) (ESP32 only)
 
@@ -501,7 +536,7 @@ must first register the sender and use the same encryption keys as the sender
         - ``OSError(num, "ESP_ERR_ESPNOW_NOT_INIT")`` if not initialised.
         - ``OSError(num, "ESP_ERR_ESPNOW_NOT_FOUND")`` if *mac* is not
           registered.
-        - ``ValueError()`` on invalid *mac* values.
+        - ``ValueError()`` or ``TypeError()`` on invalid *mac* values.
 
 .. method:: ESPNow.peer_count() (ESP32 only)
 
@@ -561,11 +596,50 @@ Callback Methods
 Constants
 ---------
 
-.. data:: espnow.MAX_DATA_LEN(=250)
+.. data:: espnow.MAX_DATA_LEN(=250 or 1470 for ESPNow V1 or V2)
           espnow.KEY_LEN(=16)
           espnow.ADDR_LEN(=6)
           espnow.MAX_TOTAL_PEER_NUM(=20)
           espnow.MAX_ENCRYPT_PEER_NUM(=6)
+
+The following constants correspond to different transmit data rates on ESP32
+only. Lower data rates are generally more reliable over long distances:
+
+.. data:: espnow.RATE_LORA_250K
+          espnow.RATE_LORA_500K
+
+             See  `espnow-long-range`.
+
+.. data:: espnow.RATE_1M
+          espnow.RATE_2M
+          espnow.RATE_5M
+          espnow.RATE_6M
+          espnow.RATE_11M
+          espnow.RATE_12M
+          espnow.RATE_24M
+          espnow.RATE_54M
+
+Unless using the two proprietary long range data rates, only the sender must
+configure the data rate.
+
+.. _espnow-long-range:
+
+Long Range Mode
+---------------
+
+(ESP32 Only, except ESP32-C2)
+
+To use the `espnow.RATE_LORA_250K` and `espnow.RATE_LORA_500K` data rates,
+first set the `WLAN` interface object to long-range mode, i.e.::
+
+  import network, espnow
+  sta = network.WLAN(network.WLAN.IF_STA)
+  sta.active(True)
+  sta.config(channel=6, protocol=WLAN.PROTOCOL_LR)  # Set on sender & receiver
+  e = espnow.ESPNow()
+  e.config(rate=espnow.RATE_LORA_250K)  # Needed on sender only
+
+For more information about the limitations of long-range mode, see `WLAN.PROTOCOL_LR`.
 
 Exceptions
 ----------
@@ -588,7 +662,7 @@ api-reference/network/esp_now.html#api-reference>`_. For example::
         elif err.args[1] == 'ESP_ERR_ESPNOW_NOT_FOUND':
             e.add_peer(peer)
         elif err.args[1] == 'ESP_ERR_ESPNOW_IF':
-            network.WLAN(network.STA_IF).active(True)
+            network.WLAN(network.WLAN.IF_STA).active(True)
         else:
             raise err
 
@@ -645,7 +719,7 @@ A small async server example::
     import asyncio
 
     # A WLAN interface must be active to send()/recv()
-    network.WLAN(network.STA_IF).active(True)
+    network.WLAN(network.WLAN.IF_STA).active(True)
 
     e = aioespnow.AIOESPNow()  # Returns AIOESPNow enhanced with async support
     e.active(True)
@@ -747,8 +821,8 @@ ESPNow and Wifi Operation
 -------------------------
 
 ESPNow messages may be sent and received on any `active()<network.WLAN.active>`
-`WLAN<network.WLAN()>` interface (``network.STA_IF`` or ``network.AP_IF``), even
-if that interface is also connected to a wifi network or configured as an access
+`WLAN<network.WLAN()>` interface (``network.WLAN.IF_STA`` or ``network.WLAN.IF_AP``),
+even if that interface is also connected to a wifi network or configured as an access
 point. When an ESP32 or ESP8266 device connects to a Wifi Access Point (see
 `ESP32 Quickref <../esp32/quickref.html#networking>`__) the following things
 happen which affect ESPNow communications:
@@ -832,8 +906,8 @@ Other issues to take care with when using ESPNow with wifi are:
     import network, time
 
     def wifi_reset():   # Reset wifi to AP_IF off, STA_IF on and disconnected
-      sta = network.WLAN(network.STA_IF); sta.active(False)
-      ap = network.WLAN(network.AP_IF); ap.active(False)
+      sta = network.WLAN(network.WLAN.IF_STA); sta.active(False)
+      ap = network.WLAN(network.WLAN.IF_AP); ap.active(False)
       sta.active(True)
       while not sta.active():
           time.sleep(0.1)

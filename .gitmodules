@@ -26,7 +26,7 @@
 	branch = circuitpython
 [submodule "lib/tinyusb"]
 	path = lib/tinyusb
-	url = https://github.com/hathach/tinyusb
+	url = https://github.com/micropython/tinyusb.git
 [submodule "lib/mynewt-nimble"]
 	path = lib/mynewt-nimble
 	url = https://github.com/micropython/mynewt-nimble.git
@@ -35,7 +35,7 @@
 	url = https://github.com/bluekitchen/btstack.git
 [submodule "lib/nxp_driver"]
 	path = lib/nxp_driver
-	url = https://github.com/hathach/nxp_driver.git
+	url = https://github.com/micropython/nxp_driver.git
 [submodule "lib/libhydrogen"]
 	path = lib/libhydrogen
 	url = https://github.com/jedisct1/libhydrogen.git
@@ -68,3 +68,42 @@
 [submodule "lib/arduino-lib"]
 	path = lib/arduino-lib
 	url = https://github.com/arduino/arduino-lib-mpy.git
+[submodule "lib/alif_ensemble-cmsis-dfp"]
+	path = lib/alif_ensemble-cmsis-dfp
+	url = https://github.com/alifsemi/alif_ensemble-cmsis-dfp.git
+[submodule "lib/alif-security-toolkit"]
+	path = lib/alif-security-toolkit
+	url = https://github.com/micropython/alif-security-toolkit.git
+[submodule "lib/CMSIS_5"]
+	path = lib/CMSIS_5
+	url = https://github.com/ARM-software/CMSIS_5.git
+[submodule "lib/CMSIS_6"]
+	path = lib/CMSIS_6
+	url = https://github.com/ARM-software/CMSIS_6.git
+[submodule "lib/psoc-edge/TARGET_KIT_PSE84_AI"]
+	path = lib/psoc-edge/TARGET_KIT_PSE84_AI
+	url = https://github.com/Infineon/TARGET_KIT_PSE84_AI.git
+[submodule "lib/psoc-edge/core-lib"]
+	path = lib/psoc-edge/core-lib
+	url = https://github.com/Infineon/core-lib.git
+[submodule "lib/psoc-edge/mtb-dsl-pse8xxgp"]
+	path = lib/psoc-edge/mtb-dsl-pse8xxgp
+	url = https://github.com/Infineon/mtb-dsl-pse8xxgp.git
+[submodule "lib/psoc-edge/mtb-srf"]
+	path = lib/psoc-edge/mtb-srf
+	url = https://github.com/Infineon/mtb-srf.git
+[submodule "lib/psoc-edge/se-rt-services-utils"]
+	path = lib/psoc-edge/se-rt-services-utils
+	url = https://github.com/Infineon/se-rt-services-utils.git
+[submodule "lib/psoc-edge/serial-memory"]
+	path = lib/psoc-edge/serial-memory
+	url = https://github.com/Infineon/serial-memory.git
+[submodule "lib/psoc-edge/mtb-ipc"]
+	path = lib/psoc-edge/mtb-ipc
+	url = https://github.com/Infineon/mtb-ipc.git
+[submodule "lib/psoc-edge/async-transfer"]
+	path = lib/psoc-edge/async-transfer
+	url = https://github.com/Infineon/async-transfer.git
+[submodule "lib/mm-halow-driver"]
+	path = lib/mm-halow-driver
+	url = https://github.com/micropython/mm-halow-driver.git

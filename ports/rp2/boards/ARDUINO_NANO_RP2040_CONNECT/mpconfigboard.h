@@ -2,16 +2,12 @@
 
 // Board and hardware specific configuration
 #define MICROPY_HW_BOARD_NAME           "Arduino Nano RP2040 Connect"
-#define MICROPY_HW_FLASH_STORAGE_BYTES  (14 * 1024 * 1024)
 
 // Network config
 #define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT "mpy-nano-rp2040-connect"
 
 // Enable networking.
 #define MICROPY_PY_NETWORK              (1)
-
-// Enable MD5 hash.
-#define MICROPY_PY_HASHLIB_MD5          (1)
 
 // Disable internal error numbers.
 #define MICROPY_USE_INTERNAL_ERRNO      (0)

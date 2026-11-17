@@ -117,12 +117,16 @@ static const machine_pwm_obj_t machine_hard_pwm_obj[] = {
     #endif
 };
 
+static void pwm_config_reset(machine_pwm_config_t *config) {
+    config->active = FREE;
+    config->freq_div = -1;
+    config->freq = 0;
+    memset(config->duty_mode, DUTY_NOT_SET, NRF_PWM_CHANNEL_COUNT);
+}
+
 void pwm_init0(void) {
     for (int i = 0; i < MP_ARRAY_SIZE(hard_configs); i++) {
-        hard_configs[i].active = FREE;
-        hard_configs[i].freq_div = -1;
-        hard_configs[i].freq = 0;
-        memset(hard_configs[i].duty_mode, DUTY_NOT_SET, NRF_PWM_CHANNEL_COUNT);
+        pwm_config_reset(&hard_configs[i]);
     }
 }
 
@@ -234,8 +238,8 @@ static mp_obj_t mp_machine_pwm_make_new(const mp_obj_type_t *type, size_t n_args
     self->p_config->defer_start = false;
 
     // Allocate the device if it was not used before.
-    if (hard_configs[pwm_id].active == FREE) {
-        hard_configs[pwm_id].active = STOPPED;
+    if (self->p_config->active == FREE) {
+        self->p_config->active = STOPPED;
     }
 
     // start the PWM running for this channel
@@ -251,14 +255,13 @@ void pwm_deinit_all(void) {
     for (int i = 0; i < MP_ARRAY_SIZE(machine_hard_pwm_instances); i++) {
         mp_machine_pwm_deinit((machine_pwm_obj_t *)&machine_hard_pwm_obj[i * NRF_PWM_CHANNEL_COUNT]);
     }
-    pwm_init0();
 }
 
-// Stop the PWM module, but do not release it.
+// Stop the PWM module, which stops all its channels, and release it.
 static void mp_machine_pwm_deinit(machine_pwm_obj_t *self) {
-    self->p_config->active = STOPPED;
     nrfx_pwm_stop(self->p_pwm, true);
     nrfx_pwm_uninit(self->p_pwm);
+    pwm_config_reset(self->p_config);
 }
 
 static mp_obj_t mp_machine_pwm_freq_get(machine_pwm_obj_t *self) {
@@ -285,7 +288,7 @@ static mp_obj_t mp_machine_pwm_duty_get(machine_pwm_obj_t *self) {
     if (self->p_config->duty_mode[self->channel] == DUTY_PERCENT) {
         return MP_OBJ_NEW_SMALL_INT(self->p_config->duty[self->channel]);
     } else if (self->p_config->duty_mode[self->channel] == DUTY_U16) {
-        return MP_OBJ_NEW_SMALL_INT(self->p_config->duty[self->channel] * 100 / 65536);
+        return MP_OBJ_NEW_SMALL_INT(self->p_config->duty[self->channel] * 100 / 65535);
     } else {
         return MP_OBJ_NEW_SMALL_INT(-1);
     }
@@ -301,7 +304,7 @@ static mp_obj_t mp_machine_pwm_duty_get_u16(machine_pwm_obj_t *self) {
     if (self->p_config->duty_mode[self->channel] == DUTY_U16) {
         return MP_OBJ_NEW_SMALL_INT(self->p_config->duty[self->channel]);
     } else if (self->p_config->duty_mode[self->channel] == DUTY_PERCENT) {
-        return MP_OBJ_NEW_SMALL_INT(self->p_config->duty[self->channel] * 65536 / 100);
+        return MP_OBJ_NEW_SMALL_INT(self->p_config->duty[self->channel] * 65535 / 100);
     } else {
         return MP_OBJ_NEW_SMALL_INT(-1);
     }
@@ -332,6 +335,7 @@ static void mp_machine_pwm_duty_set_ns(machine_pwm_obj_t *self, mp_int_t duty) {
 static void machine_hard_pwm_start(const machine_pwm_obj_t *self) {
 
     nrfx_pwm_config_t config;
+    memset(&config, 0, sizeof(config));
 
     // check if ready to go
     if (self->p_config->defer_start == true || self->p_config->freq_div < 0 || self->p_config->duty_mode[self->channel] == DUTY_NOT_SET) {
@@ -340,10 +344,10 @@ static void machine_hard_pwm_start(const machine_pwm_obj_t *self) {
 
     self->p_config->active = RUNNING;
 
-    config.output_pins[0] = self->p_config->duty_mode[0] != DUTY_NOT_SET ? self->p_config->pwm_pin[0] : NRFX_PWM_PIN_NOT_USED;
-    config.output_pins[1] = self->p_config->duty_mode[1] != DUTY_NOT_SET ? self->p_config->pwm_pin[1] : NRFX_PWM_PIN_NOT_USED;
-    config.output_pins[2] = self->p_config->duty_mode[2] != DUTY_NOT_SET ? self->p_config->pwm_pin[2] : NRFX_PWM_PIN_NOT_USED;
-    config.output_pins[3] = self->p_config->duty_mode[3] != DUTY_NOT_SET ? self->p_config->pwm_pin[3] : NRFX_PWM_PIN_NOT_USED;
+    config.output_pins[0] = self->p_config->duty_mode[0] != DUTY_NOT_SET ? self->p_config->pwm_pin[0] : NRF_PWM_PIN_NOT_CONNECTED;
+    config.output_pins[1] = self->p_config->duty_mode[1] != DUTY_NOT_SET ? self->p_config->pwm_pin[1] : NRF_PWM_PIN_NOT_CONNECTED;
+    config.output_pins[2] = self->p_config->duty_mode[2] != DUTY_NOT_SET ? self->p_config->pwm_pin[2] : NRF_PWM_PIN_NOT_CONNECTED;
+    config.output_pins[3] = self->p_config->duty_mode[3] != DUTY_NOT_SET ? self->p_config->pwm_pin[3] : NRF_PWM_PIN_NOT_CONNECTED;
 
     uint32_t tick_freq = PWM_MAX_BASE_FREQ / (1 << self->p_config->freq_div);
     uint32_t period = tick_freq / self->p_config->freq;
@@ -365,7 +369,7 @@ static void machine_hard_pwm_start(const machine_pwm_obj_t *self) {
         if (self->p_config->duty_mode[i] == DUTY_PERCENT) {
             pulse_width = ((period * self->p_config->duty[i]) / 100);
         } else if (self->p_config->duty_mode[i] == DUTY_U16) {
-            pulse_width = ((period * self->p_config->duty[i]) / 65536);
+            pulse_width = ((period * self->p_config->duty[i]) / 65535);
         } else if (self->p_config->duty_mode[i] == DUTY_NS) {
             pulse_width = (uint64_t)self->p_config->duty[i] * tick_freq / 1000000000ULL;
         }

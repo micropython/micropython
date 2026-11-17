@@ -42,7 +42,6 @@ The basic MicroPython firmware is implemented in the main port file, e.g ``main.
    #include "py/compile.h"
    #include "py/gc.h"
    #include "py/mperrno.h"
-   #include "py/stackctrl.h"
    #include "shared/runtime/gchelper.h"
    #include "shared/runtime/pyexec.h"
 
@@ -51,7 +50,7 @@ The basic MicroPython firmware is implemented in the main port file, e.g ``main.
 
    int main(int argc, char **argv) {
        // Initialise the MicroPython runtime.
-       mp_stack_ctrl_init();
+       mp_cstack_init_with_sp_here(2048);
        gc_init(heap, heap + sizeof(heap));
        mp_init();
 
@@ -162,8 +161,6 @@ The following is an example of an ``mpconfigport.h`` file:
 
    // Type definitions for the specific machine.
 
-   typedef intptr_t mp_int_t; // must be pointer size
-   typedef uintptr_t mp_uint_t; // must be pointer size
    typedef long mp_off_t;
 
    // We need to provide a declaration/definition of alloca().
@@ -244,10 +241,12 @@ That should give a MicroPython REPL.  You can then run commands like:
 
 .. code-block:: bash
 
-   MicroPython v1.13 on 2021-01-01; example-board with unknown-cpu
-   >>> import sys
-   >>> sys.implementation
-   ('micropython', (1, 13, 0))
+   MicroPython v1.26.0-preview on 2025-08-01; minimal with unknown-cpu
+   >>> def sum(n, m):
+   ...     return n + m
+   ...
+   >>> 3, 4, sum(3, 4)
+   (3, 4, 7)
    >>>
 
 Use Ctrl-D to exit, and then run ``reset`` to reset the terminal.

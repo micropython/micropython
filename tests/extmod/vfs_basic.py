@@ -19,11 +19,11 @@ class Filesystem:
         print(self.id, "umount")
 
     def ilistdir(self, dir):
-        print(self.id, "ilistdir", dir)
+        print(self.id, "ilistdir", repr(dir))
         return iter([("a%d" % self.id, 0, 0)])
 
     def chdir(self, dir):
-        print(self.id, "chdir", dir)
+        print(self.id, "chdir", repr(dir))
         if self.fail:
             raise OSError(self.fail)
 
@@ -32,23 +32,23 @@ class Filesystem:
         return "dir%d" % self.id
 
     def mkdir(self, path):
-        print(self.id, "mkdir", path)
+        print(self.id, "mkdir", repr(path))
 
     def remove(self, path):
-        print(self.id, "remove", path)
+        print(self.id, "remove", repr(path))
 
     def rename(self, old_path, new_path):
-        print(self.id, "rename", old_path, new_path)
+        print(self.id, "rename", repr(old_path), repr(new_path))
 
     def rmdir(self, path):
-        print(self.id, "rmdir", path)
+        print(self.id, "rmdir", repr(path))
 
     def stat(self, path):
-        print(self.id, "stat", path)
-        return (self.id,)
+        print(self.id, "stat", repr(path))
+        return (self.id, 0, 0, 0, 0, 0, 0, 0, 0, 0)
 
     def statvfs(self, path):
-        print(self.id, "statvfs", path)
+        print(self.id, "statvfs", repr(path))
         return (self.id,)
 
     def open(self, file, mode):
@@ -64,7 +64,7 @@ for path in os.listdir("/"):
     vfs.umount("/" + path)
 
 # stat root dir
-print(os.stat("/"))
+print(tuple(os.stat("/")))
 
 # statvfs root dir; verify that f_namemax has a sensible size
 print(os.statvfs("/")[9] >= 32)
@@ -131,7 +131,7 @@ os.mkdir("test_dir")
 os.remove("test_file")
 os.rename("test_file", "test_file2")
 os.rmdir("test_dir")
-print(os.stat("test_file"))
+print(tuple(os.stat("test_file")))
 print(os.statvfs("/test_mnt"))
 open("test_file")
 open("test_file", "wb")
@@ -148,7 +148,7 @@ except OSError:
 
 # root dir
 vfs.mount(Filesystem(3), "/")
-print(os.stat("/"))
+print(tuple(os.stat("/")))
 print(os.statvfs("/"))
 print(os.listdir())
 open("test")

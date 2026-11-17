@@ -88,6 +88,7 @@
 #define MICROPY_PY_MACHINE_UART_IRQ (0)
 #endif
 
+#if MICROPY_PY_MACHINE_SOFTI2C
 // Temporary support for legacy construction of SoftI2C via I2C type.
 #define MP_MACHINE_I2C_CHECK_FOR_LEGACY_SOFTI2C_CONSTRUCTION(n_args, n_kw, all_args) \
     do { \
@@ -100,7 +101,9 @@
             return MP_OBJ_TYPE_GET_SLOT(&mp_machine_soft_i2c_type, make_new)(&mp_machine_soft_i2c_type, n_args, n_kw, all_args); \
         } \
     } while (0)
+#endif
 
+#if MICROPY_PY_MACHINE_SOFTSPI
 // Temporary support for legacy construction of SoftSPI via SPI type.
 #define MP_MACHINE_SPI_CHECK_FOR_LEGACY_SOFTSPI_CONSTRUCTION(n_args, n_kw, all_args) \
     do { \
@@ -113,6 +116,7 @@
             return MP_OBJ_TYPE_GET_SLOT(&mp_machine_soft_spi_type, make_new)(&mp_machine_soft_spi_type, n_args, n_kw, all_args); \
         } \
     } while (0)
+#endif
 
 #if MICROPY_PY_MACHINE_I2C || MICROPY_PY_MACHINE_SOFTI2C
 
@@ -129,6 +133,7 @@
 // A port must provide these types, but they are otherwise opaque.
 typedef struct _machine_adc_obj_t machine_adc_obj_t;
 typedef struct _machine_adc_block_obj_t machine_adc_block_obj_t;
+typedef struct _machine_i2c_target_obj_t machine_i2c_target_obj_t;
 typedef struct _machine_i2s_obj_t machine_i2s_obj_t;
 typedef struct _machine_pwm_obj_t machine_pwm_obj_t;
 typedef struct _machine_uart_obj_t machine_uart_obj_t;
@@ -156,6 +161,7 @@ typedef struct _mp_machine_i2c_p_t {
     bool transfer_supports_write1;
     #endif
     void (*init)(mp_obj_base_t *obj, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args);
+    void (*deinit)(mp_obj_base_t *obj); // can be NULL
     int (*start)(mp_obj_base_t *obj);
     int (*stop)(mp_obj_base_t *obj);
     int (*read)(mp_obj_base_t *obj, uint8_t *dest, size_t len, bool nack);
@@ -197,24 +203,35 @@ extern const machine_mem_obj_t machine_mem8_obj;
 extern const machine_mem_obj_t machine_mem16_obj;
 extern const machine_mem_obj_t machine_mem32_obj;
 
+#if MICROPY_PY_MACHINE_MEM_BACKUP
+MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(machine_mem_backup_fun_obj);
+#endif
+
 // These classes correspond to machine.Type entries in the machine module.
 // Their Python bindings are implemented in extmod, and their implementation
 // is provided by a port.
 extern const mp_obj_type_t machine_adc_type;
 extern const mp_obj_type_t machine_adc_block_type;
+extern const mp_obj_type_t machine_can_type;
 extern const mp_obj_type_t machine_i2c_type;
+extern const mp_obj_type_t machine_i2c_target_type;
 extern const mp_obj_type_t machine_i2s_type;
 extern const mp_obj_type_t machine_mem_type;
 extern const mp_obj_type_t machine_pin_type;
 extern const mp_obj_type_t machine_pinbase_type;
 extern const mp_obj_type_t machine_pwm_type;
 extern const mp_obj_type_t machine_rtc_type;
+extern const mp_obj_type_t machine_sdcard_type;
 extern const mp_obj_type_t machine_signal_type;
 extern const mp_obj_type_t machine_spi_type;
 extern const mp_obj_type_t machine_timer_type;
 extern const mp_obj_type_t machine_uart_type;
 extern const mp_obj_type_t machine_usbd_type;
 extern const mp_obj_type_t machine_wdt_type;
+#if MICROPY_PY_MACHINE_QECNT
+extern const mp_obj_type_t machine_encoder_type;
+extern const mp_obj_type_t machine_counter_type;
+#endif
 
 #if MICROPY_PY_MACHINE_SOFTI2C
 extern const mp_obj_type_t mp_machine_soft_i2c_type;
@@ -242,7 +259,7 @@ uintptr_t MICROPY_MACHINE_MEM_GET_READ_ADDR(mp_obj_t addr_o, uint align);
 uintptr_t MICROPY_MACHINE_MEM_GET_WRITE_ADDR(mp_obj_t addr_o, uint align);
 #endif
 
-NORETURN mp_obj_t machine_bootloader(size_t n_args, const mp_obj_t *args);
+MP_NORETURN mp_obj_t machine_bootloader(size_t n_args, const mp_obj_t *args);
 void machine_bitstream_high_low(mp_hal_pin_obj_t pin, uint32_t *timing_ns, const uint8_t *buf, size_t len);
 mp_uint_t machine_time_pulse_us(mp_hal_pin_obj_t pin, int pulse_level, mp_uint_t timeout_us);
 
@@ -259,6 +276,10 @@ MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(machine_time_pulse_us_obj);
 #if MICROPY_PY_MACHINE_I2C
 int mp_machine_i2c_transfer_adaptor(mp_obj_base_t *self, uint16_t addr, size_t n, mp_machine_i2c_buf_t *bufs, unsigned int flags);
 int mp_machine_soft_i2c_transfer(mp_obj_base_t *self, uint16_t addr, size_t n, mp_machine_i2c_buf_t *bufs, unsigned int flags);
+#endif
+
+#if MICROPY_PY_MACHINE_I2C_TARGET
+void mp_machine_i2c_target_deinit_all(void);
 #endif
 
 #if MICROPY_PY_MACHINE_SPI

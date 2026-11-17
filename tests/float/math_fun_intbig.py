@@ -1,4 +1,5 @@
 # test the math functions that return ints, with very large results
+# requires: float int-big
 
 try:
     import math

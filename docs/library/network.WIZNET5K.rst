@@ -9,6 +9,9 @@ the W5200 and W5500 chipsets.  The particular chipset that is supported
 by the firmware is selected at compile-time via the MICROPY_PY_NETWORK_WIZNET5K
 option.
 
+.. note:: The esp32 port also supports WIZnet W5500 chipsets, but this port
+          uses the :ref:`network.LAN interface <esp32_spi_ethernet>`.
+
 Example usage::
 
     import network

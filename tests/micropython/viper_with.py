@@ -1,4 +1,5 @@
 # test with handling within a viper function
+# requires: viper
 
 
 class C:
@@ -9,6 +10,7 @@ class C:
         print("__enter__")
 
     def __exit__(self, a, b, c):
+        b = repr(b)[:10]  # shorten exception to "NameError(" prefix for target compatibility
         print("__exit__", a, b, c)
 
 

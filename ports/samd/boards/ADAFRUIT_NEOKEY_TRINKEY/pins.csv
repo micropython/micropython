@@ -1,0 +1,14 @@
+# The lines contain pairs of Pin name and Pin number.
+# Pin names must be valid Python identifiers.
+# Pin numbers have the form Pxnn, with x being A, B, C or D.
+# Lines starting with # or empty lines are ignored.
+
+NEOPIXEL,PA15
+SWITCH,PA18
+TOUCH,PA07
+
+USB_DM,PA24
+USB_DP,PA25
+
+SWCLK,PA30
+SWDIO,PA31

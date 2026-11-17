@@ -1,4 +1,5 @@
 # Test asyncio.wait_for, with forwarding cancellation
+# requires: async float
 
 try:
     import asyncio

@@ -34,6 +34,8 @@
 
 #define USBD_CDC_CMD_MAX_SIZE (8)
 #define USBD_CDC_IN_OUT_MAX_SIZE ((CFG_TUD_MAX_SPEED == OPT_MODE_HIGH_SPEED) ? 512 : 64)
+#define USBD_MSC_IN_OUT_MAX_SIZE ((CFG_TUD_MAX_SPEED == OPT_MODE_HIGH_SPEED) ? 512 : 64)
+#define USBD_NCM_IN_OUT_MAX_SIZE ((CFG_TUD_MAX_SPEED == OPT_MODE_HIGH_SPEED) ? 512 : 64)
 
 const tusb_desc_device_t mp_usbd_builtin_desc_dev = {
     .bLength = sizeof(tusb_desc_device_t),
@@ -52,6 +54,21 @@ const tusb_desc_device_t mp_usbd_builtin_desc_dev = {
     .bNumConfigurations = 1,
 };
 
+#if (CFG_TUD_MAX_SPEED == OPT_MODE_HIGH_SPEED)
+// Device qualifier descriptor for high-speed devices.
+const tusb_desc_device_qualifier_t mp_usbd_builtin_desc_qual = {
+    .bLength = sizeof(tusb_desc_device_qualifier_t),
+    .bDescriptorType = TUSB_DESC_DEVICE_QUALIFIER,
+    .bcdUSB = 0x0200,
+    .bDeviceClass = TUSB_CLASS_MISC,
+    .bDeviceSubClass = MISC_SUBCLASS_COMMON,
+    .bDeviceProtocol = MISC_PROTOCOL_IAD,
+    .bMaxPacketSize0 = CFG_TUD_ENDPOINT0_SIZE,
+    .bNumConfigurations = 0x01,
+    .bReserved = 0x00,
+};
+#endif
+
 const uint8_t mp_usbd_builtin_desc_cfg[MP_USBD_BUILTIN_DESC_CFG_LEN] = {
     TUD_CONFIG_DESCRIPTOR(1, USBD_ITF_BUILTIN_MAX, USBD_STR_0, MP_USBD_BUILTIN_DESC_CFG_LEN,
         0, USBD_MAX_POWER_MA),
@@ -61,7 +78,11 @@ const uint8_t mp_usbd_builtin_desc_cfg[MP_USBD_BUILTIN_DESC_CFG_LEN] = {
         USBD_CDC_CMD_MAX_SIZE, USBD_CDC_EP_OUT, USBD_CDC_EP_IN, USBD_CDC_IN_OUT_MAX_SIZE),
     #endif
     #if CFG_TUD_MSC
-    TUD_MSC_DESCRIPTOR(USBD_ITF_MSC, 5, EPNUM_MSC_OUT, EPNUM_MSC_IN, 64),
+    TUD_MSC_DESCRIPTOR(USBD_ITF_MSC, USBD_STR_MSC, USBD_MSC_EP_OUT, USBD_MSC_EP_IN, USBD_MSC_IN_OUT_MAX_SIZE),
+    #endif
+    #if CFG_TUD_NCM
+    // Interface number, description string index, MAC address string index, EP notification address and size, EP data address (out, in), and size, max segment size, notification interval, network capabilities.
+    TUD_CDC_NCM_DESCRIPTOR(USBD_ITF_NCM, USBD_STR_NCM, USBD_STR_NCM_MAC, USBD_NCM_EP_CMD, 64, USBD_NCM_EP_OUT, USBD_NCM_EP_IN, USBD_NCM_IN_OUT_MAX_SIZE, CFG_TUD_NET_MTU, 50, 0),
     #endif
 };
 
@@ -114,6 +135,15 @@ const uint16_t *tud_descriptor_string_cb(uint8_t index, uint16_t langid) {
                 desc_str = MICROPY_HW_USB_MSC_INTERFACE_STRING;
                 break;
             #endif
+            #if CFG_TUD_NCM
+            case USBD_STR_NCM:
+                desc_str = MICROPY_PY_NETWORK_USBD_NCM_INTERFACE_STRING;
+                break;
+            case USBD_STR_NCM_MAC:
+                mp_usbd_hex_str(serial_buf, (uint8_t *)tud_network_mac_address, sizeof(tud_network_mac_address));
+                desc_str = serial_buf;
+                break;
+            #endif
             default:
                 break;
         }
@@ -147,6 +177,12 @@ const uint8_t *tud_descriptor_configuration_cb(uint8_t index) {
     (void)index;
     return mp_usbd_builtin_desc_cfg;
 }
+
+#if (CFG_TUD_MAX_SPEED == OPT_MODE_HIGH_SPEED)
+uint8_t const *tud_descriptor_device_qualifier_cb(void) {
+    return (uint8_t const *)&mp_usbd_builtin_desc_qual;
+}
+#endif
 
 #else
 

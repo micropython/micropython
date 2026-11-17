@@ -44,6 +44,10 @@
 #define MICROPY_HW_UART1_RX                 (pin_B7) // SB63: Arduino Connector CN10-Pin16 (D0)
 #define MICROPY_HW_UART3_TX                 (pin_D8) // SB23: ST-Link
 #define MICROPY_HW_UART3_RX                 (pin_D9) // SB18: ST-Link
+#define MICROPY_HW_UART11_TX                (pin_F3) // CN12-58
+#define MICROPY_HW_UART11_RX                (pin_F4) // CN12-38 Shared with yellow LED2.
+#define MICROPY_HW_UART12_TX                (pin_E10) // CN12-47
+#define MICROPY_HW_UART12_RX                (pin_E9) // CN12-52
 
 // Connect REPL to UART3 which is provided on ST-Link USB interface
 #define MICROPY_HW_UART_REPL                PYB_UART_3
@@ -70,7 +74,7 @@
 
 // LEDs
 #define MICROPY_HW_LED1                     (pin_B0) // Green
-#define MICROPY_HW_LED2                     (pin_F4) // Orange
+#define MICROPY_HW_LED2                     (pin_F4) // Yellow shared with UART11
 #define MICROPY_HW_LED3                     (pin_G4) // Red
 #define MICROPY_HW_LED_ON(pin)              (mp_hal_pin_high(pin))
 #define MICROPY_HW_LED_OFF(pin)             (mp_hal_pin_low(pin))

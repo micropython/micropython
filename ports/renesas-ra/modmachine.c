@@ -55,12 +55,6 @@
 #define PYB_RESET_WDT       (3)
 #define PYB_RESET_DEEPSLEEP (4)
 
-#if MICROPY_HW_HAS_SDHI_CARD
-#define MICROPY_PY_MACHINE_SDCARD_ENTRY { MP_ROM_QSTR(MP_QSTR_SDCard), MP_ROM_PTR(&machine_sdcard_type) },
-#else
-#define MICROPY_PY_MACHINE_SDCARD_ENTRY
-#endif
-
 #define MICROPY_PY_MACHINE_EXTRA_GLOBALS \
     { MP_ROM_QSTR(MP_QSTR_info),                MP_ROM_PTR(&machine_info_obj) }, \
     { MP_ROM_QSTR(MP_QSTR_sleep),               MP_ROM_PTR(&machine_lightsleep_obj) }, \
@@ -71,7 +65,6 @@
     \
     { MP_ROM_QSTR(MP_QSTR_RTC),                 MP_ROM_PTR(&machine_rtc_type) }, \
     { MP_ROM_QSTR(MP_QSTR_Timer),               MP_ROM_PTR(&machine_timer_type) }, \
-    MICROPY_PY_MACHINE_SDCARD_ENTRY \
     \
     { MP_ROM_QSTR(MP_QSTR_PWRON_RESET),         MP_ROM_INT(PYB_RESET_POWER_ON) }, \
     { MP_ROM_QSTR(MP_QSTR_HARD_RESET),          MP_ROM_INT(PYB_RESET_HARD) }, \
@@ -184,12 +177,12 @@ static mp_obj_t mp_machine_unique_id(void) {
 }
 
 // Resets the pyboard in a manner similar to pushing the external RESET button.
-NORETURN static void mp_machine_reset(void) {
+MP_NORETURN static void mp_machine_reset(void) {
     powerctrl_mcu_reset();
 }
 
 // Activate the bootloader without BOOT* pins.
-NORETURN void mp_machine_bootloader(size_t n_args, const mp_obj_t *args) {
+MP_NORETURN void mp_machine_bootloader(size_t n_args, const mp_obj_t *args) {
     #if MICROPY_HW_ENABLE_STORAGE
     storage_flush();
     #endif
@@ -232,7 +225,7 @@ static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
     powerctrl_enter_stop_mode();
 }
 
-NORETURN static void mp_machine_deepsleep(size_t n_args, const mp_obj_t *args) {
+MP_NORETURN static void mp_machine_deepsleep(size_t n_args, const mp_obj_t *args) {
     if (n_args != 0) {
         mp_obj_t args2[2] = {MP_OBJ_NULL, args[0]};
         machine_rtc_wakeup(2, args2);

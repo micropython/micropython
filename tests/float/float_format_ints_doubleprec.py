@@ -1,5 +1,6 @@
 # Test formatting of very large ints.
 # Relies on double-precision floats.
+# requires: float-64bit
 
 import array
 import sys

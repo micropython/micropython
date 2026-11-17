@@ -1,3 +1,5 @@
+# requires: async
+
 try:
     import uasyncio
 except ImportError:

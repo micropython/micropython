@@ -13,6 +13,7 @@
 #define MICROPY_PY_UHEAPQ           (1)
 #define MICROPY_PY_UTIMEQ           (1)
 #define MICROPY_PY_THREAD           (0) // disable ARM_THUMB_FP using vldr due to RA has single float only
+#define MICROPY_PY_MACHINE_SDCARD   (1)
 
 // peripheral config
 #define MICROPY_HW_ENABLE_RTC       (1)
@@ -21,7 +22,6 @@
 #define MICROPY_HW_HAS_FLASH        (1)
 #define MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE (1)
 #define MICROPY_HW_HAS_QSPI_FLASH   (1)
-#define MICROPY_HW_HAS_SDHI_CARD    (1)
 
 // board config
 

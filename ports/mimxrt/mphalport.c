@@ -34,7 +34,7 @@
 #include "extmod/misc.h"
 #include "ticks.h"
 #include "tusb.h"
-#include "fsl_snvs_lp.h"
+#include "modmachine.h"
 
 #ifndef MICROPY_HW_STDIN_BUFFER_LEN
 #define MICROPY_HW_STDIN_BUFFER_LEN 512
@@ -47,7 +47,9 @@ ringbuf_t stdin_ringbuf = {stdin_ringbuf_array, sizeof(stdin_ringbuf_array), 0, 
 
 uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags) {
     uintptr_t ret = 0;
+    #if MICROPY_HW_USB_CDC
     ret |= mp_usbd_cdc_poll_interfaces(poll_flags);
+    #endif
     #if MICROPY_PY_OS_DUPTERM
     ret |= mp_os_dupterm_poll(poll_flags);
     #endif
@@ -56,7 +58,9 @@ uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags) {
 
 int mp_hal_stdin_rx_chr(void) {
     for (;;) {
+        #if MICROPY_HW_USB_CDC
         mp_usbd_cdc_poll_interfaces(0);
+        #endif
         int c = ringbuf_get(&stdin_ringbuf);
         if (c != -1) {
             return c;
@@ -67,18 +71,20 @@ int mp_hal_stdin_rx_chr(void) {
             return dupterm_c;
         }
         #endif
-        MICROPY_EVENT_POLL_HOOK
+        mp_event_wait_indefinite();
     }
 }
 
 mp_uint_t mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
     mp_uint_t ret = len;
     bool did_write = false;
+    #if MICROPY_HW_USB_CDC
     mp_uint_t cdc_res = mp_usbd_cdc_tx_strn(str, len);
     if (cdc_res > 0) {
         did_write = true;
         ret = MIN(cdc_res, ret);
     }
+    #endif
     #if MICROPY_PY_OS_DUPTERM
     int dupterm_res = mp_os_dupterm_tx_strn(str, len);
     if (dupterm_res >= 0) {
@@ -90,10 +96,12 @@ mp_uint_t mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
 }
 
 uint64_t mp_hal_time_ns(void) {
-    snvs_lp_srtc_datetime_t t;
-    SNVS_LP_SRTC_GetDatetime(SNVS, &t);
-    uint64_t s = timeutils_seconds_since_epoch(t.year, t.month, t.day, t.hour, t.minute, t.second);
-    return s * 1000000000ULL;
+    uint64_t ticks = machine_rtc_get_ticks();
+    // Need to compute:
+    //  nanoseconds = ticks * 1_000_000_000 / 32768
+    //              = ticks * 5**9 / 64
+    // but split it into upper and lower 32-bit values so the multiplication doesn't overflow.
+    return (((ticks >> 32U) * 1953125ULL) << 26U) + (((ticks & 0xffffffff) * 1953125ULL) >> 6U);
 }
 
 /*******************************************************************************/
@@ -127,13 +135,4 @@ void mp_hal_generate_laa_mac(int idx, uint8_t buf[6]) {
 // A board can override this if needed
 MP_WEAK void mp_hal_get_mac(int idx, uint8_t buf[6]) {
     mp_hal_generate_laa_mac(idx, buf);
-}
-
-void mp_hal_get_mac_ascii(int idx, size_t chr_off, size_t chr_len, char *dest) {
-    static const char hexchr[16] = "0123456789ABCDEF";
-    uint8_t mac[6];
-    mp_hal_get_mac(idx, mac);
-    for (; chr_len; ++chr_off, --chr_len) {
-        *dest++ = hexchr[mac[chr_off >> 1] >> (4 * (1 - (chr_off & 1))) & 0xf];
-    }
 }

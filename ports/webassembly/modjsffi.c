@@ -48,6 +48,7 @@ static mp_obj_t mp_jsffi_create_proxy(mp_obj_t arg) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(mp_jsffi_create_proxy_obj, mp_jsffi_create_proxy);
 
+
 EM_JS(void, proxy_convert_mp_to_js_then_js_to_js_then_js_to_mp_obj_jsside, (uint32_t * out), {
     const ret = proxy_convert_mp_to_js_obj_jsside(out);
     const js_obj = PyProxy.toJs(ret);
@@ -100,6 +101,150 @@ static mp_obj_t mp_jsffi_mem_info(void) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_0(mp_jsffi_mem_info_obj, mp_jsffi_mem_info);
 
+/******************************************************************************/
+// jsffi.run_sync / jsffi.can_run_sync
+//
+// Block synchronous-looking Python on a JS promise (or any awaitable)
+// by suspending the promising entry via JSPI, mirroring Pyodide's
+// pyodide.ffi.run_sync / can_run_sync API.  Both functions exist on
+// every build so that feature-detection code is portable; without
+// JSPI, run_sync() raises RuntimeError and can_run_sync() is False.
+
+#if MICROPY_JSPI
+
+// Outcome of js_run_sync_wait(), below.
+enum {
+    RUN_SYNC_RESOLVED = 0,
+    RUN_SYNC_REJECTED = 1,
+    RUN_SYNC_NOT_AWAITABLE = 2,
+    RUN_SYNC_INTERRUPTED = 3,
+    RUN_SYNC_ERROR = 4,
+};
+
+// *FORMAT-OFF*
+
+// Suspend until the object in "value" is fulfilled or rejected, or a
+// KeyboardInterrupt arrives.  Under -sJSPI an EM_ASYNC_JS function is a
+// WebAssembly.Suspending import: the engine parks this frame and resumes
+// it when the awaited promise is done, so nothing polls in between.  The
+// interrupt arrives through Module.jspiInterrupt, a promise created here
+// and fulfilled by api.js when a KeyboardInterrupt arrives.  Returns a
+// RUN_SYNC_* code.  When the object was fulfilled or rejected, its value
+// or rejection reason is written back into "value".
+EM_ASYNC_JS(int, js_run_sync_wait, (uint32_t * value), {
+    // Everything is inside try/catch: a JS exception thrown from here
+    // would pass straight through the C frames, skipping their clean-up,
+    // so it is reported as a status code instead.
+    try {
+        const obj = proxy_convert_mp_to_js_obj_jsside(value);
+        if (!obj || typeof obj.then !== "function") {
+            return 2; // RUN_SYNC_NOT_AWAITABLE
+        }
+        // Create a promise to be resolved if a KeyboardInterrupt arrives.
+        const interrupt = {};
+        interrupt.promise = new Promise((resolve) => {
+            interrupt.resolve = resolve;
+        });
+        Module.jspiInterrupt = interrupt;
+        // Promise.race takes the outcome of whichever promise finishes
+        // first and ignores the rest.  Each input is wrapped with .then
+        // so a win is always a plain { status, result } object: the
+        // awaited object's rejection becomes status 1 rather than a
+        // throw, and the interrupt gives status 3 with no result.  If
+        // the interrupt wins, the awaited promise carries on in the
+        // background and its eventual outcome is dropped.
+        const outcome = await Promise.race([
+            Promise.resolve(obj).then(
+                (result) => ({ status: 0, result }), // RUN_SYNC_RESOLVED
+                (error) => ({ status: 1, result: error }), // RUN_SYNC_REJECTED
+            ),
+            interrupt.promise.then(() => ({ status: 3 })), // RUN_SYNC_INTERRUPTED
+        ]);
+        if (outcome.status !== 3) {
+            proxy_convert_js_to_mp_obj_jsside(outcome.result, value);
+        }
+        return outcome.status;
+    } catch (error) {
+        proxy_convert_js_to_mp_obj_jsside(error, value);
+        return 4; // RUN_SYNC_ERROR
+    } finally {
+        // Clear the interrupt promise.
+        Module.jspiInterrupt = null;
+    }
+});
+
+// *FORMAT-ON*
+
+static mp_obj_t mp_jsffi_run_sync(mp_obj_t arg) {
+    if (!mp_js_can_suspend()) {
+        if (mp_js_suspension_active()) {
+            mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("run_sync: another run_sync is already pending"));
+        }
+        mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("run_sync: no suspender in this context"));
+    }
+
+    // Convert the argument to its JS form: a JsProxy unwraps to the
+    // underlying JS object, and a Python generator/coroutine becomes a
+    // PyProxyThenable, so both are adopted uniformly by Promise.resolve
+    // on the JS side.
+    uint32_t value[PVN];
+    proxy_convert_mp_to_js_obj_cside(arg, value);
+
+    // Suspend here until the promise is fulfilled or rejected, or a
+    // KeyboardInterrupt arrives.  js_run_sync_wait() catches every JS
+    // exception and reports it as a status code, and the other two
+    // calls cannot raise, so suspension_end() always runs and the
+    // "already pending" flag can never be left set.
+    mp_js_suspension_begin();
+    int status = js_run_sync_wait(value);
+    mp_js_suspension_end();
+
+    if (status == RUN_SYNC_NOT_AWAITABLE) {
+        mp_raise_TypeError(MP_ERROR_TEXT("object is not awaitable"));
+    }
+    if (status == RUN_SYNC_INTERRUPTED) {
+        // A KeyboardInterrupt arrived while suspended.  In that case
+        // api.js only wakes the wait and does not queue the
+        // KeyboardInterrupt, so queue and raise it here.
+        mp_sched_keyboard_interrupt();
+        mp_handle_pending(true);
+    }
+
+    mp_obj_t result = proxy_convert_js_to_mp_obj_cside(value);
+    if (status == RUN_SYNC_REJECTED || status == RUN_SYNC_ERROR) {
+        // The promise rejected, or the wait itself threw a JS exception:
+        // raise the reason as Python sees it.
+        if (mp_obj_get_type(result) == &mp_type_jsproxy) {
+            nlr_raise(mp_obj_jsproxy_make_js_exception(result));
+        }
+        if (mp_obj_is_exception_instance(result)) {
+            nlr_raise(result);
+        }
+        mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("run_sync: promise rejected"));
+    }
+    return result;
+}
+
+#else // !MICROPY_JSPI
+
+static mp_obj_t mp_jsffi_run_sync(mp_obj_t arg) {
+    (void)arg;
+    mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("WebAssembly stack switching not supported in this build"));
+}
+
+#endif // MICROPY_JSPI
+
+static MP_DEFINE_CONST_FUN_OBJ_1(mp_jsffi_run_sync_obj, mp_jsffi_run_sync);
+
+static mp_obj_t mp_jsffi_can_run_sync(void) {
+    #if MICROPY_JSPI
+    return mp_obj_new_bool(mp_js_can_suspend());
+    #else
+    return mp_const_false;
+    #endif
+}
+static MP_DEFINE_CONST_FUN_OBJ_0(mp_jsffi_can_run_sync_obj, mp_jsffi_can_run_sync);
+
 static const mp_rom_map_elem_t mp_module_jsffi_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_jsffi) },
 
@@ -108,6 +253,8 @@ static const mp_rom_map_elem_t mp_module_jsffi_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_create_proxy), MP_ROM_PTR(&mp_jsffi_create_proxy_obj) },
     { MP_ROM_QSTR(MP_QSTR_to_js), MP_ROM_PTR(&mp_jsffi_to_js_obj) },
     { MP_ROM_QSTR(MP_QSTR_mem_info), MP_ROM_PTR(&mp_jsffi_mem_info_obj) },
+    { MP_ROM_QSTR(MP_QSTR_run_sync), MP_ROM_PTR(&mp_jsffi_run_sync_obj) },
+    { MP_ROM_QSTR(MP_QSTR_can_run_sync), MP_ROM_PTR(&mp_jsffi_can_run_sync_obj) },
 };
 static MP_DEFINE_CONST_DICT(mp_module_jsffi_globals, mp_module_jsffi_globals_table);
 

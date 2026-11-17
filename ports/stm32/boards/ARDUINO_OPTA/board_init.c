@@ -61,6 +61,13 @@ void OPTA_board_early_init(void) {
         HAL_MPU_ConfigRegion(&MPU_InitStruct);
     }
     #endif
+
+    // Reset ETH Phy
+    mp_hal_pin_config(pyb_pin_ETH_RST, MP_HAL_PIN_MODE_OUTPUT, MP_HAL_PIN_PULL_UP, 0);
+    mp_hal_pin_config_speed(pyb_pin_ETH_RST, MP_HAL_PIN_SPEED_LOW);
+    mp_hal_pin_write(pyb_pin_ETH_RST, 0);
+    HAL_Delay(100);
+    mp_hal_pin_write(pyb_pin_ETH_RST, 1);
 }
 
 void OPTA_board_enter_bootloader(void) {

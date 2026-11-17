@@ -1,4 +1,5 @@
 # test try handling within a viper function
+# requires: viper
 
 
 # basic try-finally

@@ -29,6 +29,7 @@
 #include "py/mphal.h"
 #include "py/runtime.h"
 #include "i2c.h"
+#include "i2cslave.h"
 
 #if MICROPY_HW_ENABLE_HW_I2C
 
@@ -270,18 +271,14 @@ int i2c_write(i2c_t *i2c, const uint8_t *src, size_t len, size_t next_len) {
     return num_acks;
 }
 
-#elif defined(STM32F0) || defined(STM32F7) || defined(STM32H7) || defined(STM32L4)
+#elif defined(STM32F0) || defined(STM32F7) || defined(STM32G4) || defined(STM32H7) || defined(STM32L4) || defined(STM32U5)
 
 #if defined(STM32H7)
 #define APB1ENR            APB1LENR
 #define RCC_APB1ENR_I2C1EN RCC_APB1LENR_I2C1EN
-#elif defined(STM32L4)
+#elif defined(STM32G4) || defined(STM32L4) || defined(STM32U5)
 #define APB1ENR            APB1ENR1
 #define RCC_APB1ENR_I2C1EN RCC_APB1ENR1_I2C1EN
-#if defined(STM32L432xx)
-// Not a real peripheral, only needed for i2c_id calculation in i2c_init.
-#define I2C2_BASE          (APB1PERIPH_BASE + 0x5800UL)
-#endif
 #endif
 
 static uint16_t i2c_timeout_ms[MICROPY_HW_MAX_I2C];
@@ -337,6 +334,16 @@ int i2c_init(i2c_t *i2c, mp_hal_pin_obj_t scl, mp_hal_pin_obj_t sda, uint32_t fr
         i2c->TIMINGR = 0x00702991;
     } else if (freq >= 100000) {
         i2c->TIMINGR = 0x10909CEC;
+    } else {
+        return -MP_EINVAL;
+    }
+    #elif defined(STM32U5)
+    if (freq >= 1000000) {
+        i2c->TIMINGR = 0x30909DEC;
+    } else if (freq >= 400000) {
+        i2c->TIMINGR = 0x00F07BFF;
+    } else if (freq >= 100000) {
+        i2c->TIMINGR = 0x00701F6B;
     } else {
         return -MP_EINVAL;
     }
@@ -515,7 +522,7 @@ int i2c_write(i2c_t *i2c, const uint8_t *src, size_t len, size_t next_len) {
 
 #endif
 
-#if defined(STM32F0) || defined(STM32F4) || defined(STM32F7) || defined(STM32H7)
+#if defined(STM32F0) || defined(STM32F4) || defined(STM32F7) || defined(STM32H7) || defined(STM32U5)
 
 int i2c_readfrom(i2c_t *i2c, uint16_t addr, uint8_t *dest, size_t len, bool stop) {
     int ret;
@@ -550,6 +557,10 @@ static const uint8_t i2c_available =
     | 1 << 4
     #endif
 ;
+
+#if MICROPY_HW_ENABLE_HW_I2C_TARGET
+uint8_t i2c_target_enabled;
+#endif
 
 int i2c_find_peripheral(mp_obj_t id) {
     int i2c_id = 0;
@@ -589,5 +600,145 @@ int i2c_find_peripheral(mp_obj_t id) {
 
     return i2c_id;
 }
+
+#if MICROPY_HW_ENABLE_HW_I2C_TARGET || MICROPY_PY_PYB_LEGACY
+
+#if defined(MICROPY_HW_I2C1_SCL)
+void I2C1_EV_IRQHandler(void) {
+    MP_STATIC_ASSERT(I2C1_EV_IRQn > 0);
+    IRQ_ENTER(I2C1_EV_IRQn);
+    #if MICROPY_HW_ENABLE_HW_I2C_TARGET
+    if (i2c_target_enabled & 1) {
+        i2c_slave_irq_handler(I2C1);
+    } else
+    #endif
+    {
+        #if MICROPY_PY_PYB_LEGACY
+        i2c_ev_irq_handler(1);
+        #endif
+    }
+    IRQ_EXIT(I2C1_EV_IRQn);
+}
+
+void I2C1_ER_IRQHandler(void) {
+    MP_STATIC_ASSERT(I2C1_ER_IRQn > 0);
+    IRQ_ENTER(I2C1_ER_IRQn);
+    #if MICROPY_HW_ENABLE_HW_I2C_TARGET
+    if (i2c_target_enabled & 1) {
+        i2c_slave_irq_handler(I2C1);
+    } else
+    #endif
+    {
+        #if MICROPY_PY_PYB_LEGACY
+        i2c_er_irq_handler(1);
+        #endif
+    }
+    IRQ_EXIT(I2C1_ER_IRQn);
+}
+#endif // defined(MICROPY_HW_I2C1_SCL)
+
+#if defined(MICROPY_HW_I2C2_SCL)
+void I2C2_EV_IRQHandler(void) {
+    MP_STATIC_ASSERT(I2C2_EV_IRQn > 0);
+    IRQ_ENTER(I2C2_EV_IRQn);
+    #if MICROPY_HW_ENABLE_HW_I2C_TARGET
+    if (i2c_target_enabled & 2) {
+        i2c_slave_irq_handler(I2C2);
+    } else
+    #endif
+    {
+        #if MICROPY_PY_PYB_LEGACY
+        i2c_ev_irq_handler(2);
+        #endif
+    }
+    IRQ_EXIT(I2C2_EV_IRQn);
+}
+
+void I2C2_ER_IRQHandler(void) {
+    MP_STATIC_ASSERT(I2C2_ER_IRQn > 0);
+    IRQ_ENTER(I2C2_ER_IRQn);
+    #if MICROPY_HW_ENABLE_HW_I2C_TARGET
+    if (i2c_target_enabled & 2) {
+        i2c_slave_irq_handler(I2C2);
+    } else
+    #endif
+    {
+        #if MICROPY_PY_PYB_LEGACY
+        i2c_er_irq_handler(2);
+        #endif
+    }
+    IRQ_EXIT(I2C2_ER_IRQn);
+}
+#endif // defined(MICROPY_HW_I2C2_SCL)
+
+#if defined(MICROPY_HW_I2C3_SCL)
+void I2C3_EV_IRQHandler(void) {
+    MP_STATIC_ASSERT(I2C3_EV_IRQn > 0);
+    IRQ_ENTER(I2C3_EV_IRQn);
+    #if MICROPY_HW_ENABLE_HW_I2C_TARGET
+    if (i2c_target_enabled & 4) {
+        i2c_slave_irq_handler(I2C3);
+    } else
+    #endif
+    {
+        #if MICROPY_PY_PYB_LEGACY
+        i2c_ev_irq_handler(3);
+        #endif
+    }
+    IRQ_EXIT(I2C3_EV_IRQn);
+}
+
+void I2C3_ER_IRQHandler(void) {
+    MP_STATIC_ASSERT(I2C3_ER_IRQn > 0);
+    IRQ_ENTER(I2C3_ER_IRQn);
+    #if MICROPY_HW_ENABLE_HW_I2C_TARGET
+    if (i2c_target_enabled & 4) {
+        i2c_slave_irq_handler(I2C3);
+    } else
+    #endif
+    {
+        #if MICROPY_PY_PYB_LEGACY
+        i2c_er_irq_handler(3);
+        #endif
+    }
+    IRQ_EXIT(I2C3_ER_IRQn);
+}
+#endif // defined(MICROPY_HW_I2C3_SCL)
+
+#if defined(MICROPY_HW_I2C4_SCL)
+void I2C4_EV_IRQHandler(void) {
+    MP_STATIC_ASSERT(I2C4_EV_IRQn > 0);
+    IRQ_ENTER(I2C4_EV_IRQn);
+    #if MICROPY_HW_ENABLE_HW_I2C_TARGET
+    if (i2c_target_enabled & 8) {
+        i2c_slave_irq_handler(I2C4);
+    } else
+    #endif
+    {
+        #if MICROPY_PY_PYB_LEGACY
+        i2c_ev_irq_handler(4);
+        #endif
+    }
+    IRQ_EXIT(I2C4_EV_IRQn);
+}
+
+void I2C4_ER_IRQHandler(void) {
+    MP_STATIC_ASSERT(I2C4_ER_IRQn > 0);
+    IRQ_ENTER(I2C4_ER_IRQn);
+    #if MICROPY_HW_ENABLE_HW_I2C_TARGET
+    if (i2c_target_enabled & 8) {
+        i2c_slave_irq_handler(I2C4);
+    } else
+    #endif
+    {
+        #if MICROPY_PY_PYB_LEGACY
+        i2c_er_irq_handler(4);
+        #endif
+    }
+    IRQ_EXIT(I2C4_ER_IRQn);
+}
+#endif // defined(MICROPY_HW_I2C4_SCL)
+
+#endif // MICROPY_PY_PYB_LEGACY
 
 #endif // MICROPY_HW_ENABLE_HW_I2C

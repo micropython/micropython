@@ -1,6 +1,5 @@
 # Miscellaneous viper tests.
-
-import micropython
+# requires: viper
 
 
 # viper function taking and returning ints

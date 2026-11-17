@@ -25,7 +25,8 @@ Python 3.6 beta 1 was released on 12 Sep 2016, and a summary of the new features
   +--------------------------------------------------------+--------------------------------------------------+-----------------+
   | `PEP 468 <https://www.python.org/dev/peps/pep-0468/>`_ | Preserving the order of *kwargs* in a function   |                 |
   +--------------------------------------------------------+--------------------------------------------------+-----------------+
-  | `PEP 487 <https://www.python.org/dev/peps/pep-0487/>`_ | Simpler customization of class creation          |                 |
+  | `PEP 487 <https://www.python.org/dev/peps/pep-0487/>`_ | Simpler customization of class creation          | Partial         |
+  |                                                        |                                                  | [#setname]_     |
   +--------------------------------------------------------+--------------------------------------------------+-----------------+
   | `PEP 520 <https://www.python.org/dev/peps/pep-0520/>`_ | Preserving Class Attribute Definition Order      |                 |
   +--------------------------------------------------------+--------------------------------------------------+-----------------+
@@ -198,3 +199,7 @@ Changes to built-in modules:
   +--------------------------------------------------------------------------------------------------------------+----------------+
   | The *compress()* and *decompress()* functions now accept keyword arguments                                   |                |
   +--------------------------------------------------------------------------------------------------------------+----------------+
+
+.. rubric:: Notes
+
+.. [#setname] Currently, only :func:`__set_name__` is implemented.

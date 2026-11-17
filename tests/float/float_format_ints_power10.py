@@ -1,5 +1,6 @@
 # Test that integers format to exact values.
 # This test requires at least 32-bit floats (won't work with 30-bit).
+# requires: float-32bit
 
 # Check that powers of 10 (that fit in float32) format correctly.
 for i in range(31):

@@ -23,8 +23,8 @@ def main():
     print(esp.check_fw())
 
     print("\nNetworking:")
-    print("STA ifconfig:", network.WLAN(network.STA_IF).ifconfig())
-    print("AP ifconfig:", network.WLAN(network.AP_IF).ifconfig())
+    print("STA ifconfig:", network.WLAN(network.WLAN.IF_STA).ifconfig())
+    print("AP ifconfig:", network.WLAN(network.WLAN.IF_AP).ifconfig())
     print("Free WiFi driver buffers of type:")
     for i, comm in enumerate(
         ("1,2 TX", "4 Mngmt TX(len: 0x41-0x100)", "5 Mngmt TX (len: 0-0x40)", "7", "8 RX")

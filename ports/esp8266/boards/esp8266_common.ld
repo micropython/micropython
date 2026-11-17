@@ -93,6 +93,7 @@ SECTIONS
         *py/binary.o*(.literal* .text*)
         *py/builtin*.o*(.literal* .text*)
         *py/compile.o*(.literal* .text*)
+        *py/cstack.o*(.literal* .text*)
         *py/emit*.o*(.literal* .text*)
         *py/persistentcode*.o*(.literal* .text*)
         *py/formatfloat.o*(.literal* .text*)
@@ -121,7 +122,6 @@ SECTIONS
         *py/sequence.o*(.literal* .text*)
         *py/showbc.o*(.literal* .text*)
         *py/smallint.o*(.literal* .text*)
-        *py/stackctrl.o*(.literal* .text*)
         *py/stream.o*(.literal* .text*)
         *py/unicode.o*(.literal* .text*)
         *py/vm.o*(.literal* .text*)
@@ -170,6 +170,7 @@ SECTIONS
         *modonewire.o(.literal* .text*)
         *network_wlan.o(.literal* .text*)
         *esp_mphal.o(.literal* .text*)
+        *vfs_rom_ioctl.o(.literal* .text*)
 
         /* we put as much rodata as possible in this section */
         /* note that only rodata accessed as a machine word is allowed here */

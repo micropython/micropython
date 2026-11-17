@@ -1,4 +1,5 @@
 # test errors from bad operations (unary, binary, etc)
+# requires: int-big
 
 def test_exc(code, exc):
     try:

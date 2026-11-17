@@ -27,7 +27,9 @@
 #include "py/runtime.h"
 #include "py/mperrno.h"
 #include "py/mphal.h"
+#include "py/gc.h"
 #include "pico/time.h"
+#include "shared/runtime/mpirq.h"
 
 #define ALARM_ID_INVALID (-1)
 #define TIMER_MODE_ONE_SHOT (0)
@@ -40,14 +42,18 @@ typedef struct _machine_timer_obj_t {
     uint32_t mode;
     uint64_t delta_us; // for periodic mode
     mp_obj_t callback;
+    bool ishard;
 } machine_timer_obj_t;
 
 const mp_obj_type_t machine_timer_type;
 
 static int64_t alarm_callback(alarm_id_t id, void *user_data) {
     machine_timer_obj_t *self = user_data;
-    mp_sched_schedule(self->callback, MP_OBJ_FROM_PTR(self));
-    if (self->mode == TIMER_MODE_ONE_SHOT) {
+
+    if (mp_irq_dispatch(self->callback, MP_OBJ_FROM_PTR(self), self->ishard) < 0) {
+        // Uncaught exception; don't run the callback again.
+        return 0;
+    } else if (self->mode == TIMER_MODE_ONE_SHOT) {
         return 0;
     } else {
         return -self->delta_us;
@@ -66,13 +72,14 @@ static void machine_timer_print(const mp_print_t *print, mp_obj_t self_in, mp_pr
 }
 
 static mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_mode, ARG_callback, ARG_period, ARG_tick_hz, ARG_freq, };
+    enum { ARG_mode, ARG_callback, ARG_period, ARG_tick_hz, ARG_freq, ARG_hard, };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_mode,         MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = TIMER_MODE_PERIODIC} },
         { MP_QSTR_callback,     MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
         { MP_QSTR_period,       MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0xffffffff} },
         { MP_QSTR_tick_hz,      MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1000} },
         { MP_QSTR_freq,         MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+        { MP_QSTR_hard,         MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
     };
 
     // Parse args
@@ -96,6 +103,7 @@ static mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self, size_t n_ar
     }
 
     self->callback = args[ARG_callback].u_obj;
+    self->ishard = args[ARG_hard].u_bool;
     self->alarm_id = alarm_pool_add_alarm_in_us(self->pool, self->delta_us, alarm_callback, self, true);
     if (self->alarm_id == -1) {
         mp_raise_OSError(MP_ENOMEM);

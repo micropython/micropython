@@ -2,6 +2,7 @@
 # This is split out from math_domain.py because math.pow(0, -inf) was changed
 # in Python 3.11, and so this test requires a .py.exp file.
 # (See https://github.com/python/cpython/issues/88505)
+# requires: float
 
 try:
     import math

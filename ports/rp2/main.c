@@ -26,6 +26,7 @@
 
 #include <stdio.h>
 
+#include "rp2_flash.h"
 #include "py/compile.h"
 #include "py/cstack.h"
 #include "py/runtime.h"
@@ -33,6 +34,7 @@
 #include "py/mperrno.h"
 #include "py/mphal.h"
 #include "extmod/modbluetooth.h"
+#include "extmod/modmachine.h"
 #include "extmod/modnetwork.h"
 #include "shared/readline/readline.h"
 #include "shared/runtime/gchelper.h"
@@ -50,7 +52,6 @@
 #include "pico/stdlib.h"
 #include "pico/binary_info.h"
 #include "pico/unique_id.h"
-#include "hardware/structs/rosc.h"
 #if MICROPY_PY_LWIP
 #include "lwip/init.h"
 #include "lwip/apps/mdns.h"
@@ -65,9 +66,22 @@
 #endif
 #include "pico/aon_timer.h"
 #include "shared/timeutils/timeutils.h"
+#if MICROPY_HW_ENABLE_PSRAM
+#include "hardware/psram.h"
+// When the pico-sdk board header configures the PSRAM chip-select, make sure the
+// downstream MicroPython config (MICROPY_HW_PSRAM_CS_PIN) agrees with it.
+#if defined(PICO_PSRAM_CS_PIN) && defined(MICROPY_HW_PSRAM_CS_PIN) && (PICO_PSRAM_CS_PIN != MICROPY_HW_PSRAM_CS_PIN)
+#error "MICROPY_HW_PSRAM_CS_PIN does not match the board header's PICO_PSRAM_CS_PIN"
+#endif
+#endif
 
 extern uint8_t __StackTop, __StackBottom;
 extern uint8_t __GcHeapStart, __GcHeapEnd;
+#if MICROPY_HW_ENABLE_PSRAM
+// Provided by the SDK's PSRAM linker sections: __psram_start__ is ORIGIN(PSRAM)
+// (the PSRAM base) and __psram_end__ is the end of any __in_psram data.
+extern uint8_t __psram_start__, __psram_end__;
+#endif
 
 // Embed version info in the binary in machine readable form
 bi_decl(bi_program_version_string(MICROPY_GIT_TAG));
@@ -90,8 +104,20 @@ int main(int argc, char **argv) {
     // Set the MCU frequency and as a side effect the peripheral clock to 48 MHz.
     set_sys_clock_khz(SYS_CLK_KHZ, false);
 
-    // Hook for setting up anything that needs to be super early in the bootup process.
+    // Hook for setting up anything that needs to be super early in the boot-up process.
     MICROPY_BOARD_STARTUP();
+
+    // Set the flash divisor to an appropriate value
+    rp2_flash_set_timing();
+
+    #if MICROPY_HW_ENABLE_PSRAM
+    // The SDK's runtime_init brought PSRAM up at the boot clock; re-tune the QMI
+    // timing now that the system clock has been set to its final value.
+    if (psram_is_available()) {
+        psram_configure_params(PICO_DEFAULT_PSRAM_MAX_FREQ, PICO_DEFAULT_PSRAM_MAX_SELECT, PICO_DEFAULT_PSRAM_MIN_DESELECT);
+        psram_reinitialize();
+    }
+    #endif
 
     #if MICROPY_HW_ENABLE_UART_REPL
     bi_decl(bi_program_feature("UART REPL"))
@@ -112,15 +138,35 @@ int main(int argc, char **argv) {
     mp_thread_init();
     #endif
 
-    // Start and initialise the RTC
-    struct timespec ts = { 0, 0 };
-    ts.tv_sec = timeutils_seconds_since_epoch(2021, 1, 1, 0, 0, 0);
-    aon_timer_start(&ts);
+    if (!aon_timer_is_running()) {
+        // Start and initialise the RTC if not already running
+        struct timespec ts = { 0, 0 };
+        ts.tv_sec = timeutils_seconds_since_epoch(2021, 1, 1, 0, 0, 0);
+        aon_timer_start(&ts);
+    }
     mp_hal_time_ns_set_from_rtc();
 
     // Initialise stack extents and GC heap.
     mp_cstack_init_with_top(&__StackTop, &__StackTop - &__StackBottom);
+
+    #if MICROPY_HW_ENABLE_PSRAM
+    size_t psram_size = psram_get_size(); // 0 if PSRAM was not brought up
+    if (psram_size) {
+        // Use PSRAM from the end of any __in_psram data up to the top of the chip.
+        void *psram_heap_start = &__psram_end__;
+        void *psram_heap_end = &__psram_start__ + psram_size;
+        #if MICROPY_GC_SPLIT_HEAP
+        gc_init(&__GcHeapStart, &__GcHeapEnd);
+        gc_add(psram_heap_start, psram_heap_end);
+        #else
+        gc_init(psram_heap_start, psram_heap_end);
+        #endif
+    } else {
+        gc_init(&__GcHeapStart, &__GcHeapEnd);
+    }
+    #else
     gc_init(&__GcHeapStart, &__GcHeapEnd);
+    #endif
 
     #if MICROPY_PY_LWIP
     // lwIP doesn't allow to reinitialise itself by subsequent calls to this function
@@ -168,7 +214,9 @@ int main(int argc, char **argv) {
         machine_pin_init();
         rp2_pio_init();
         rp2_dma_init();
+        #if MICROPY_PY_MACHINE_I2S
         machine_i2s_init0();
+        #endif
 
         #if MICROPY_PY_BLUETOOTH
         mp_bluetooth_hci_init();
@@ -225,15 +273,24 @@ int main(int argc, char **argv) {
         #if MICROPY_PY_NETWORK
         mod_network_deinit();
         #endif
+        #if MICROPY_PY_MACHINE_I2S
         machine_i2s_deinit_all();
+        #endif
         rp2_dma_deinit();
         rp2_pio_deinit();
         #if MICROPY_PY_BLUETOOTH
         mp_bluetooth_deinit();
         #endif
+        #if MICROPY_PY_MACHINE_PWM
         machine_pwm_deinit_all();
+        #endif
         machine_pin_deinit();
+        #if MICROPY_PY_MACHINE_UART
         machine_uart_deinit_all();
+        #endif
+        #if MICROPY_PY_MACHINE_I2C_TARGET
+        mp_machine_i2c_target_deinit_all();
+        #endif
         #if MICROPY_PY_THREAD
         mp_thread_deinit();
         #endif
@@ -279,22 +336,3 @@ void MP_WEAK __assert_func(const char *file, int line, const char *func, const c
     panic("Assertion failed");
 }
 #endif
-
-#define POLY (0xD5)
-
-uint8_t rosc_random_u8(size_t cycles) {
-    static uint8_t r;
-    for (size_t i = 0; i < cycles; ++i) {
-        r = ((r << 1) | rosc_hw->randombit) ^ (r & 0x80 ? POLY : 0);
-        mp_hal_delay_us_fast(1);
-    }
-    return r;
-}
-
-uint32_t rosc_random_u32(void) {
-    uint32_t value = 0;
-    for (size_t i = 0; i < 4; ++i) {
-        value = value << 8 | rosc_random_u8(32);
-    }
-    return value;
-}

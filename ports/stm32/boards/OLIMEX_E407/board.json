@@ -8,8 +8,8 @@
         "olimex_e407.jpg"
     ],
     "mcu": "stm32f4",
-    "product": "E407",
+    "product": "STM32-E407",
     "thumbnail": "",
-    "url": "",
-    "vendor": "OLIMEX"
+    "url": "https://www.olimex.com/Products/ARM/ST/STM32-E407",
+    "vendor": "Olimex"
 }

@@ -25,6 +25,8 @@
  */
 
 #include "py/mphal.h"
+#include "py/runtime.h"
+#include "py/stream.h"
 #include "shared/runtime/semihosting_arm.h"
 #include "uart.h"
 
@@ -32,8 +34,15 @@
 #define USE_UART (1)
 #define USE_SEMIHOSTING (0)
 
+uintptr_t ticks_ms(void);
+uintptr_t ticks_us(void);
+
 uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags) {
-    // Not implemented.
+    #if USE_UART
+    if ((poll_flags & MP_STREAM_POLL_RD) && uart_rx_any()) {
+        return MP_STREAM_POLL_RD;
+    }
+    #endif
     return 0;
 }
 
@@ -63,4 +72,52 @@ mp_uint_t mp_hal_stdout_tx_strn(const char *str, size_t len) {
     mp_semihosting_tx_strn(str, len);
     #endif
     return len;
+}
+
+mp_uint_t mp_hal_ticks_ms(void) {
+    return ticks_ms();
+}
+
+mp_uint_t mp_hal_ticks_us(void) {
+    return ticks_us();
+}
+
+void mp_hal_delay_ms(mp_uint_t ms) {
+    mp_uint_t start = mp_hal_ticks_ms();
+    do {
+        mp_event_handle_nowait();
+    } while (mp_hal_ticks_ms() - start < ms);
+}
+
+void mp_hal_delay_us(mp_uint_t us) {
+    mp_uint_t start = mp_hal_ticks_us();
+    while (mp_hal_ticks_us() - start < us) {
+    }
+}
+
+mp_uint_t mp_hal_ticks_cpu(void) {
+    return 0;
+}
+
+// Provide a pseudo-random number generator using a LCG.
+static uint32_t random_state;
+uint32_t mp_hal_get_pseudo_random_u32(void) {
+    random_state = random_state * 1664525 + 1013904223;
+    return random_state;
+}
+
+void mp_hal_get_random(size_t n, uint8_t *buf) {
+    for (size_t i = 0; i < n; ++i) {
+        buf[i] = mp_hal_get_pseudo_random_u32() >> 24;
+    }
+}
+
+// QEMU has no unique hardware ID, so return a fixed LAA.
+void mp_hal_get_mac(int idx, uint8_t buf[6]) {
+    buf[0] = 0x02;
+    buf[1] = 0x00;
+    buf[2] = 0x00;
+    buf[3] = 0x12;
+    buf[4] = 0x34;
+    buf[5] = 0x56 + idx;
 }

@@ -1,5 +1,8 @@
-import pyb
-from pyb import I2C
+try:
+    from pyb import I2C
+except ImportError:
+    print("SKIP")
+    raise SystemExit
 
 # test we can correctly create by id
 for bus in (-1, 0, 1):

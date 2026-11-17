@@ -207,9 +207,15 @@ for more tips about using the BMP with GDB.
 
 ## nRFUtil Targets
 
-Install the necessary Python packages that will be used for flashing using the bootloader:
+First install the base `nrfutil` CLI tool from
+[Nordic Semiconductor](https://www.nordicsemi.com/Products/Development-tools/nRF-Util).
+Then install the SDK sub-package of that tool in order to get access to the `pkg`
+and `dfu` commands:
 
-    sudo pip install nrfutil
+    nrfutil install nrf5sdk-tools
+
+Then install the necessary Python packages:
+
     sudo pip install intelhex
 
 The `intelhex` provides the `hexmerge.py` utility which is used by the Makefile

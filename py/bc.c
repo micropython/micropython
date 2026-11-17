@@ -88,7 +88,7 @@ const byte *mp_decode_uint_skip(const byte *ptr) {
     return ptr;
 }
 
-static NORETURN void fun_pos_args_mismatch(mp_obj_fun_bc_t *f, size_t expected, size_t given) {
+static MP_NORETURN void fun_pos_args_mismatch(mp_obj_fun_bc_t *f, size_t expected, size_t given) {
     #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
     // generic message, used also for other argument issues
     (void)f;
@@ -102,7 +102,7 @@ static NORETURN void fun_pos_args_mismatch(mp_obj_fun_bc_t *f, size_t expected, 
     #elif MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_DETAILED
     mp_raise_msg_varg(&mp_type_TypeError,
         MP_ERROR_TEXT("%q() takes %d positional arguments but %d were given"),
-        mp_obj_fun_get_name(MP_OBJ_FROM_PTR(f)), expected, given);
+        mp_obj_fun_bc_get_name(f), expected, given);
     #endif
 }
 
@@ -332,7 +332,7 @@ void mp_setup_code_state(mp_code_state_t *code_state, size_t n_args, size_t n_kw
     mp_setup_code_state_helper(code_state, n_args, n_kw, args);
 }
 
-#if MICROPY_EMIT_NATIVE
+#if MICROPY_ENABLE_NATIVE_CODE
 // On entry code_state should be allocated somewhere (stack/heap) and
 // contain the following valid entries:
 //    - code_state->fun_bc should contain a pointer to the function object

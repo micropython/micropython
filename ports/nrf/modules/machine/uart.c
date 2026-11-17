@@ -46,6 +46,11 @@
 #include "nrfx_uarte.h"
 #endif
 
+#if defined(NRF52832)
+// The nRF52832 cannot write more than 255 bytes at a time.
+#define UART_MAX_TX_CHUNK (255)
+#endif
+
 typedef struct _machine_uart_buf_t {
     uint8_t tx_buf[1];
     uint8_t rx_buf[1];
@@ -59,7 +64,7 @@ typedef struct _machine_uart_buf_t {
 #define nrfx_uart_config_t        nrfx_uarte_config_t
 
 #define nrfx_uart_rx              nrfx_uarte_rx
-#define nrfx_uart_tx              nrfx_uarte_tx
+#define nrfx_uart_tx(inst, buf, len) nrfx_uarte_tx(inst, buf, len, 0)
 #define nrfx_uart_tx_in_progress  nrfx_uarte_tx_in_progress
 #define nrfx_uart_init            nrfx_uarte_init
 #define nrfx_uart_uninit          nrfx_uarte_uninit
@@ -104,6 +109,7 @@ typedef struct _machine_uart_obj_t {
     uint16_t timeout_char;  // timeout waiting between chars (in ms)
     uint8_t uart_id;
     bool initialized;       // static flag. Initialized to False
+    bool attached_to_repl;
     #if MICROPY_PY_MACHINE_UART_IRQ
     uint16_t mp_irq_trigger;   // user IRQ trigger mask
     uint16_t mp_irq_flags;     // user IRQ active IRQ flags
@@ -118,6 +124,13 @@ static machine_uart_obj_t machine_uart_obj[] = {
 };
 
 void uart_init0(void) {
+    for (int i = 0; i < MP_ARRAY_SIZE(machine_uart_obj); i++) {
+        machine_uart_obj[i].attached_to_repl = false;
+    }
+}
+
+void uart_attach_to_repl(machine_uart_obj_t *self, bool attached) {
+    self->attached_to_repl = attached;
 }
 
 static int uart_find(mp_obj_t id) {
@@ -137,14 +150,16 @@ static void uart_event_handler(nrfx_uart_event_t const *p_event, void *p_context
     if (p_event->type == NRFX_UART_EVT_RX_DONE) {
         nrfx_uart_rx(self->p_uart, &self->buf.rx_buf[0], 1);
         int chr = self->buf.rx_buf[0];
-        #if !MICROPY_PY_BLE_NUS && MICROPY_KBD_EXCEPTION
-        if (chr == mp_interrupt_char) {
-            self->buf.rx_ringbuf.iget = 0;
-            self->buf.rx_ringbuf.iput = 0;
-            mp_sched_keyboard_interrupt();
-        } else
-        #endif
-        {
+        if (self->attached_to_repl) {
+            #if MICROPY_KBD_EXCEPTION
+            if (chr == mp_interrupt_char) {
+                mp_sched_keyboard_interrupt();
+            } else
+            #endif
+            {
+                ringbuf_put((ringbuf_t *)&stdin_ringbuf, chr);
+            }
+        } else {
             ringbuf_put((ringbuf_t *)&self->buf.rx_ringbuf, chr);
         }
         #if MICROPY_PY_MACHINE_UART_IRQ
@@ -243,15 +258,24 @@ static mp_obj_t mp_machine_uart_make_new(const mp_obj_type_t *type, size_t n_arg
     machine_uart_obj_t *self = &machine_uart_obj[uart_id];
 
     nrfx_uart_config_t config;
+    memset(&config, 0, sizeof(config));
 
     // flow control
+    #if NRFX_UART_ENABLED
     #if MICROPY_HW_UART1_HWFC
     config.hal_cfg.hwfc = NRF_UART_HWFC_ENABLED;
     #else
     config.hal_cfg.hwfc = NRF_UART_HWFC_DISABLED;
     #endif
-
     config.hal_cfg.parity = NRF_UART_PARITY_EXCLUDED;
+    #else
+    #if MICROPY_HW_UART1_HWFC
+    config.config.hwfc = NRF_UART_HWFC_ENABLED;
+    #else
+    config.config.hwfc = NRF_UART_HWFC_DISABLED;
+    #endif
+    config.config.parity = NRF_UART_PARITY_EXCLUDED;
+    #endif
 
     // Higher priority than pin interrupts, otherwise printing exceptions from
     // interrupt handlers gets stuck.
@@ -273,12 +297,26 @@ static mp_obj_t mp_machine_uart_make_new(const mp_obj_type_t *type, size_t n_arg
     config.baudrate = args[ARG_baudrate].u_int / 400 * (uint32_t)(400ULL * (uint64_t)UINT32_MAX / 16000000ULL);
     config.baudrate = (config.baudrate + 0x800) & 0xffffff000; // rounding
 
+    #if NRFX_UART_ENABLED
     config.pseltxd = MICROPY_HW_UART1_TX;
     config.pselrxd = MICROPY_HW_UART1_RX;
-
     #if MICROPY_HW_UART1_HWFC
     config.pselrts = MICROPY_HW_UART1_RTS;
     config.pselcts = MICROPY_HW_UART1_CTS;
+    #else
+    config.pselrts = NRF_UART_PSEL_DISCONNECTED;
+    config.pselcts = NRF_UART_PSEL_DISCONNECTED;
+    #endif
+    #else
+    config.txd_pin = MICROPY_HW_UART1_TX;
+    config.rxd_pin = MICROPY_HW_UART1_RX;
+    #if MICROPY_HW_UART1_HWFC
+    config.rts_pin = MICROPY_HW_UART1_RTS;
+    config.cts_pin = MICROPY_HW_UART1_CTS;
+    #else
+    config.rts_pin = NRF_UARTE_PSEL_DISCONNECTED;
+    config.cts_pin = NRF_UARTE_PSEL_DISCONNECTED;
+    #endif
     #endif
     self->timeout = args[ARG_timeout].u_int;
     self->timeout_char = args[ARG_timeout_char].u_int;
@@ -446,32 +484,43 @@ static mp_uint_t mp_machine_uart_write(mp_obj_t self_in, const void *buf, mp_uin
     #endif
 
     machine_uart_obj_t *self = self_in;
-    nrfx_err_t err = nrfx_uart_tx(self->p_uart, buf, size);
-    if (err == NRFX_SUCCESS) {
+
+    // Send data out, in chunks if needed.
+    mp_uint_t remaining = size;
+    while (remaining) {
+        #ifdef UART_MAX_TX_CHUNK
+        mp_uint_t chunk = MIN(UART_MAX_TX_CHUNK, remaining);
+        #else
+        mp_uint_t chunk = remaining;
+        #endif
+        nrfx_err_t err = nrfx_uart_tx(self->p_uart, buf, chunk);
+        if (err != NRFX_SUCCESS) {
+            *errcode = mp_hal_status_to_errno_table[err];
+            return MP_STREAM_ERROR;
+        }
         while (nrfx_uart_tx_in_progress(self->p_uart)) {
             MICROPY_EVENT_POLL_HOOK;
         }
-        // return number of bytes written
-        return size;
-    } else {
-        *errcode = mp_hal_status_to_errno_table[err];
-        return MP_STREAM_ERROR;
+        buf += chunk;
+        remaining -= chunk;
     }
+
+    // return number of bytes written
+    return size;
 }
 
 static mp_uint_t mp_machine_uart_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *errcode) {
     machine_uart_obj_t *self = self_in;
-    (void)self;
-    mp_uint_t ret = 0;
-
     if (request == MP_STREAM_POLL) {
         uintptr_t flags = arg;
+        mp_uint_t ret = 0;
         if ((flags & MP_STREAM_POLL_RD) && uart_rx_any(self) != 0) {
             ret |= MP_STREAM_POLL_RD;
         }
         if ((flags & MP_STREAM_POLL_WR) && !nrfx_uart_tx_in_progress(self->p_uart)) {
             ret |= MP_STREAM_POLL_WR;
         }
+        return ret;
     } else if (request == MP_STREAM_FLUSH) {
         while (nrfx_uart_tx_in_progress(self->p_uart)) {
             MICROPY_EVENT_POLL_HOOK;

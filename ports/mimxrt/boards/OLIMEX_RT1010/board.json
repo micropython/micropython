@@ -12,8 +12,8 @@
         "OLIMEX_RT1010Py.jpg"
     ],
     "mcu": "mimxrt",
-    "product": "Olimex_RT1010Py",
+    "product": "RT1010-Py",
     "thumbnail": "",
-    "url": "https://www.olimex.com/Products/ARM/NXP",
-    "vendor": "OLIMEX"
+    "url": "https://www.olimex.com/Products/MicroPython/RT1010-Py",
+    "vendor": "Olimex"
 }

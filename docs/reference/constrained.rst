@@ -116,6 +116,9 @@ to a constant e.g. ``0x100``, ``1 << 8`` or ``(True, "string", b"bytes")``
 (see section below for details).  It can even include other const
 symbols that have already been defined, e.g. ``1 << BIT``.
 
+See :func:`micropython.const` for complete documentation including scope
+requirements, import syntax, and other important limitations.
+
 **Constant data structures**
 
 Where there is a substantial volume of constant data and the platform supports
@@ -251,7 +254,26 @@ instances so the process of eliminating Unicode can be painless.
     b = b'the quick brown fox'  # A bytes instance
 
 Where it is necessary to convert between strings and bytes the :meth:`str.encode`
-and the :meth:`bytes.decode` methods can be used. Note that both strings and bytes
+and the :meth:`bytes.decode` methods can be used. MicroPython validates the
+encoding parameter and only supports UTF-8 and ASCII. The :meth:`bytes.decode`
+method also supports error handlers (``'ignore'`` and ``'replace'``) for handling
+invalid UTF-8, when enabled in the build configuration.
+
+For memory-conscious applications processing untrusted data, using the ``'ignore'``
+error handler can be more efficient than ``'strict'`` mode (the default), as it
+avoids raising exceptions while still recovering valid text::
+
+    # Strict mode (default) raises an error on invalid UTF-8
+    try:
+        s = data.decode('utf-8')
+    except UnicodeError:
+        # Handle error
+        pass
+
+    # Ignore mode skips invalid bytes (more memory-efficient)
+    s = data.decode('utf-8', 'ignore')
+
+Note that both strings and bytes
 are immutable. Any operation which takes as input such an object and produces
 another implies at least one RAM allocation to produce the result. In the
 second line below a new bytes object is allocated. This would also occur if ``foo``
@@ -264,10 +286,11 @@ were a string.
 
 **Runtime compiler execution**
 
-The Python functions `eval` and `exec` invoke the compiler at runtime, which
-requires significant amounts of RAM. Note that the ``pickle`` library from
-`micropython-lib` employs `exec`. It may be more RAM efficient to use the
-`json` library for object serialisation.
+The Python functions :func:`~builtins.eval` and :func:`~builtins.exec` invoke
+the compiler at runtime, which requires significant amounts of RAM. Note that
+the ``pickle`` library from `micropython-lib` employs
+:func:`~builtins.exec`. It may be more RAM efficient to use the `json` library
+for object serialisation.
 
 **Storing strings in flash**
 
@@ -315,6 +338,12 @@ following periodically:
 
     gc.collect()
     gc.threshold(gc.mem_free() // 4 + gc.mem_alloc())
+
+For more information, see below and the documentation for built-in module
+:mod:`gc`.
+
+For details from MicroPython internals/developer perspective, see also
+:doc:`/develop/memorymgt`.
 
 Fragmentation
 ~~~~~~~~~~~~~
@@ -376,28 +405,8 @@ Running the function uses over 10KiB, but on return ``a`` is garbage because it
 is out of scope and cannot be referenced. The final `gc.collect()` recovers
 that memory.
 
-The final output produced by ``micropython.mem_info(1)`` will vary in detail but
-may be interpreted as follows:
-
-====== =================
-Symbol Meaning
-====== =================
-   .   free block
-   h   head block
-   =   tail block
-   m   marked head block
-   T   tuple
-   L   list
-   D   dict
-   F   float
-   B   byte code
-   M   module
-   S   string or bytes
-   A   bytearray
-====== =================
-
-Each letter represents a single block of memory, a block being 16 bytes. So each
-line of the heap dump represents 0x400 bytes or 1KiB of RAM.
+The verbose output from ``micropython.mem_info(1)`` is documented at
+`micropython.mem_info()`.
 
 Control of garbage collection
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

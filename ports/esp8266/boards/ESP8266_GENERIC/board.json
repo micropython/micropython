@@ -15,9 +15,12 @@
     "thumbnail": "",
     "url": "https://www.espressif.com/en/products/modules",
     "variants": {
-        "OTA": "OTA compatible",
         "FLASH_1M": "1MiB flash",
-        "FLASH_512K": "512kiB flash"
+        "FLASH_512K": "512kiB flash",
+        "FLASH_2M_ROMFS": "2MiB flash with ROMFS"
+    },
+    "old_variants": {
+        "OTA": ["OTA compatible", "OTA firmware is no longer supported."]
     },
     "vendor": "Espressif"
 }

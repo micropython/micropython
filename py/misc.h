@@ -26,6 +26,9 @@
 #ifndef MICROPY_INCLUDED_PY_MISC_H
 #define MICROPY_INCLUDED_PY_MISC_H
 
+#include <string.h>
+#include "py/mpconfig.h"
+
 // a mini library of useful types and functions
 
 /** types *******************************************************/
@@ -33,9 +36,23 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stddef.h>
+#if __cplusplus // Required on at least one compiler to get ULLONG_MAX
+#include <climits>
+#else
+#include <limits.h>
+#endif
 
 typedef unsigned char byte;
 typedef unsigned int uint;
+
+#ifndef __has_builtin
+#define __has_builtin(x) (0)
+#endif
+#ifndef __has_feature
+// This macro is supported by Clang and gcc>=14
+#define __has_feature(x) (0)
+#endif
+
 
 /** generic ops *************************************************/
 
@@ -51,7 +68,14 @@ typedef unsigned int uint;
 #define MP_STRINGIFY(x) MP_STRINGIFY_HELPER(x)
 
 // Static assertion macro
+#if __cplusplus
+#define MP_STATIC_ASSERT(cond) static_assert((cond), #cond)
+#elif __GNUC__ >= 5 || __STDC_VERSION__ >= 201112L
+#define MP_STATIC_ASSERT(cond) _Static_assert((cond), #cond)
+#else
 #define MP_STATIC_ASSERT(cond) ((void)sizeof(char[1 - 2 * !(cond)]))
+#endif
+
 // In C++ things like comparing extern const pointers are not constant-expressions so cannot be used
 // in MP_STATIC_ASSERT. Note that not all possible compiler versions will reject this. Some gcc versions
 // do, others only with -Werror=vla, msvc always does.
@@ -60,7 +84,10 @@ typedef unsigned int uint;
 #if defined(_MSC_VER) || defined(__cplusplus)
 #define MP_STATIC_ASSERT_NONCONSTEXPR(cond) ((void)1)
 #else
-#define MP_STATIC_ASSERT_NONCONSTEXPR(cond) MP_STATIC_ASSERT(cond)
+#if __clang__
+#pragma GCC diagnostic ignored "-Wgnu-folding-constant"
+#endif
+#define MP_STATIC_ASSERT_NONCONSTEXPR(cond) ((void)sizeof(char[1 - 2 * !(cond)]))
 #endif
 
 // Round-up integer division
@@ -105,12 +132,13 @@ void *m_realloc(void *ptr, size_t new_num_bytes);
 void *m_realloc_maybe(void *ptr, size_t new_num_bytes, bool allow_move);
 void m_free(void *ptr);
 #endif
-NORETURN void m_malloc_fail(size_t num_bytes);
+MP_NORETURN void m_malloc_fail(size_t num_bytes);
 
 #if MICROPY_TRACKED_ALLOC
 // These alloc/free functions track the pointers in a linked list so the GC does not reclaim
 // them.  They can be used by code that requires traditional C malloc/free semantics.
 void *m_tracked_calloc(size_t nmemb, size_t size);
+void *m_tracked_realloc(void *ptr_in, size_t n_bytes);
 void m_tracked_free(void *ptr_in);
 #endif
 
@@ -208,33 +236,31 @@ void vstr_add_byte(vstr_t *vstr, byte v);
 void vstr_add_char(vstr_t *vstr, unichar chr);
 void vstr_add_str(vstr_t *vstr, const char *str);
 void vstr_add_strn(vstr_t *vstr, const char *str, size_t len);
-void vstr_ins_byte(vstr_t *vstr, size_t byte_pos, byte b);
-void vstr_ins_char(vstr_t *vstr, size_t char_pos, unichar chr);
+char *vstr_ins_blank_bytes(vstr_t *vstr, size_t byte_pos, size_t byte_len);
+static inline void vstr_ins_byte(vstr_t *vstr, size_t byte_pos, byte b) {
+    char *s = vstr_ins_blank_bytes(vstr, byte_pos, 1);
+    *s = b;
+}
+static inline void vstr_ins_char(vstr_t *vstr, size_t char_pos, unichar chr) {
+    // TODO UNICODE
+    char *s = vstr_ins_blank_bytes(vstr, char_pos, 1);
+    *s = (char)chr;
+}
+static inline void vstr_ins_strn(vstr_t *vstr, size_t byte_pos, const char *str, size_t len) {
+    char *s = vstr_ins_blank_bytes(vstr, byte_pos, len);
+    memcpy(s, str, len);
+}
 void vstr_cut_head_bytes(vstr_t *vstr, size_t bytes_to_cut);
 void vstr_cut_tail_bytes(vstr_t *vstr, size_t bytes_to_cut);
 void vstr_cut_out_bytes(vstr_t *vstr, size_t byte_pos, size_t bytes_to_cut);
 void vstr_printf(vstr_t *vstr, const char *fmt, ...);
-
-/** non-dynamic size-bounded variable buffer/string *************/
-
-#define CHECKBUF(buf, max_size) char buf[max_size + 1]; size_t buf##_len = max_size; char *buf##_p = buf;
-#define CHECKBUF_RESET(buf, max_size) buf##_len = max_size; buf##_p = buf;
-#define CHECKBUF_APPEND(buf, src, src_len) \
-    { size_t l = MIN(src_len, buf##_len); \
-      memcpy(buf##_p, src, l); \
-      buf##_len -= l; \
-      buf##_p += l; }
-#define CHECKBUF_APPEND_0(buf) { *buf##_p = 0; }
-#define CHECKBUF_LEN(buf) (buf##_p - buf)
-
 #ifdef va_start
 void vstr_vprintf(vstr_t *vstr, const char *fmt, va_list ap);
 #endif
 
-// Debugging helpers
-int DEBUG_printf(const char *fmt, ...);
+/** debugging helpers *******************************************/
 
-extern mp_uint_t mp_verbose_flag;
+int DEBUG_printf(const char *fmt, ...);
 
 /** float internals *************/
 
@@ -271,6 +297,25 @@ typedef union _mp_float_union_t {
     #endif
     mp_float_uint_t i;
 } mp_float_union_t;
+
+#if MICROPY_FLOAT_FORMAT_IMPL == MICROPY_FLOAT_FORMAT_IMPL_EXACT
+
+#if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
+// Exact float conversion requires using internally a bigger sort of floating point
+typedef double mp_large_float_t;
+#elif MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
+typedef long double mp_large_float_t;
+#endif
+// Always use a 64 bit mantissa for formatting and parsing
+typedef uint64_t mp_large_float_uint_t;
+
+#else // MICROPY_FLOAT_FORMAT_IMPL != MICROPY_FLOAT_FORMAT_IMPL_EXACT
+
+// No bigger floating points
+typedef mp_float_t mp_large_float_t;
+typedef mp_float_uint_t mp_large_float_uint_t;
+
+#endif
 
 #endif // MICROPY_PY_BUILTINS_FLOAT
 
@@ -357,7 +402,7 @@ static inline uint32_t mp_clzll(unsigned long long x) {
 // Microsoft don't ship _BitScanReverse64 on Win32, so emulate it
 static inline uint32_t mp_clzll(unsigned long long x) {
     unsigned long h = x >> 32;
-    return h ? mp_clzl(h) : (mp_clzl(x) + 32);
+    return h ? mp_clzl(h) : (mp_clzl((unsigned long)x) + 32);
 }
 #endif
 
@@ -366,17 +411,30 @@ static inline uint32_t mp_ctz(uint32_t x) {
     return _BitScanForward(&tz, x) ? tz : 0;
 }
 
-// Workaround for 'warning C4127: conditional expression is constant'.
-static inline bool mp_check(bool value) {
-    return value;
+static inline uint32_t mp_popcount(uint32_t x) {
+    return __popcnt(x);
 }
-#else
+#else // _MSC_VER
 #define mp_clz(x) __builtin_clz(x)
 #define mp_clzl(x) __builtin_clzl(x)
 #define mp_clzll(x) __builtin_clzll(x)
 #define mp_ctz(x) __builtin_ctz(x)
-#define mp_check(x) (x)
-#endif
+#if __has_builtin(__builtin_popcount)
+#define mp_popcount(x) __builtin_popcount(x)
+#else
+static inline uint32_t mp_popcount(uint32_t x) {
+    x = x - ((x >> 1) & 0x55555555);
+    x = (x & 0x33333333) + ((x >> 2) & 0x33333333);
+    x = (x + (x >> 4)) & 0x0F0F0F0F;
+    return (x * 0x01010101) >> 24;
+}
+#endif // __has_builtin(__builtin_popcount)
+#endif // _MSC_VER
+
+#define MP_FIT_UNSIGNED(bits, value) (((value) & (~0U << (bits))) == 0)
+#define MP_FIT_SIGNED(bits, value) \
+    (MP_FIT_UNSIGNED(((bits) - 1), (value)) || \
+    (((value) & (~0U << ((bits) - 1))) == (~0U << ((bits) - 1))))
 
 // mp_int_t can be larger than long, i.e. Windows 64-bit, nan-box variants
 static inline uint32_t mp_clz_mpi(mp_int_t x) {
@@ -392,16 +450,133 @@ static inline uint32_t mp_clz_mpi(mp_int_t x) {
     }
     return zeroes;
     #else
-    MP_STATIC_ASSERT(sizeof(mp_int_t) == sizeof(long long)
-        || sizeof(mp_int_t) == sizeof(long));
-
-    // ugly, but should compile to single intrinsic unless O0 is set
-    if (mp_check(sizeof(mp_int_t) == sizeof(long))) {
-        return mp_clzl((unsigned long)x);
-    } else {
-        return mp_clzll((unsigned long long)x);
-    }
+    #if MP_INT_MAX == INT_MAX
+    return mp_clz((unsigned)x);
+    #elif MP_INT_MAX == LONG_MAX
+    return mp_clzl((unsigned long)x);
+    #elif MP_INT_MAX == LLONG_MAX
+    return mp_clzll((unsigned long long)x);
+    #else
+    #error Unexpected MP_INT_MAX value
+    #endif
     #endif
 }
+
+// Overflow-checked operations
+
+// Integer overflow builtins were added to GCC 5, but __has_builtin only in GCC 10
+//
+// Note that the builtins has a defined result when overflow occurs, whereas the custom
+// functions below don't update the result if an overflow would occur (to avoid UB).
+#define MP_GCC_HAS_BUILTIN_OVERFLOW (__GNUC__ >= 5)
+
+#if MICROPY_USE_GCC_MUL_OVERFLOW_INTRINSIC
+
+#define mp_mul_ull_overflow __builtin_umulll_overflow
+#define mp_mul_ll_overflow __builtin_smulll_overflow
+static inline bool mp_mul_mp_int_t_overflow(mp_int_t x, mp_int_t y, mp_int_t *res) {
+    // __builtin_mul_overflow is a type-generic function, this inline ensures the argument
+    // types are checked to match mp_int_t.
+    return __builtin_mul_overflow(x, y, res);
+}
+
+#else
+
+bool mp_mul_ll_overflow(long long int x, long long int y, long long int *res);
+bool mp_mul_mp_int_t_overflow(mp_int_t x, mp_int_t y, mp_int_t *res);
+static inline bool mp_mul_ull_overflow(unsigned long long int x, unsigned long long int y, unsigned long long int *res) {
+    if (y > 0 && x > (ULLONG_MAX / y)) {
+        return true; // overflow
+    }
+    *res = x * y;
+    return false;
+}
+
+#endif
+
+#if __has_builtin(__builtin_saddll_overflow) || MP_GCC_HAS_BUILTIN_OVERFLOW
+#define mp_add_ll_overflow __builtin_saddll_overflow
+#else
+static inline bool mp_add_ll_overflow(long long int lhs, long long int rhs, long long int *res) {
+    bool overflow;
+
+    if (rhs > 0) {
+        overflow = (lhs > LLONG_MAX - rhs);
+    } else {
+        overflow = (lhs < LLONG_MIN - rhs);
+    }
+
+    if (!overflow) {
+        *res = lhs + rhs;
+    }
+
+    return overflow;
+}
+#endif
+
+#if __has_builtin(__builtin_ssubll_overflow) || MP_GCC_HAS_BUILTIN_OVERFLOW
+#define mp_sub_ll_overflow __builtin_ssubll_overflow
+#else
+static inline bool mp_sub_ll_overflow(long long int lhs, long long int rhs, long long int *res) {
+    bool overflow;
+
+    if (rhs > 0) {
+        overflow = (lhs < LLONG_MIN + rhs);
+    } else {
+        overflow = (lhs > LLONG_MAX + rhs);
+    }
+
+    if (!overflow) {
+        *res = lhs - rhs;
+    }
+
+    return overflow;
+}
+#endif
+
+
+// Helper macros for detecting if sanitizers are enabled
+//
+// Use sparingly, not for masking issues reported by sanitizers!
+//
+// Can be detected automatically in Clang and gcc>=14, need to be
+// set manually otherwise.
+#ifndef MP_UBSAN
+#define MP_UBSAN __has_feature(undefined_behavior_sanitizer)
+#endif
+
+#ifndef MP_ASAN
+#define MP_ASAN __has_feature(address_sanitizer)
+#endif
+
+#ifndef MP_SANITIZER_BUILD
+#define MP_SANITIZER_BUILD (MP_UBSAN || MP_ASAN)
+#endif
+
+// halfword/word/longword swapping macros
+
+#if __has_builtin(__builtin_bswap16)
+#define MP_BSWAP16(x) __builtin_bswap16(x)
+#else
+#define MP_BSWAP16(x) ((uint16_t)((((x) & 0xFF) << 8) | (((x) >> 8) & 0xFF)))
+#endif
+
+#if __has_builtin(__builtin_bswap32)
+#define MP_BSWAP32(x) __builtin_bswap32(x)
+#else
+#define MP_BSWAP32(x) \
+    ((uint32_t)((((x) & 0xFF) << 24) | (((x) & 0xFF00) << 8) | \
+    (((x) >> 8) & 0xFF00) | (((x) >> 24) & 0xFF)))
+#endif
+
+#if __has_builtin(__builtin_bswap64)
+#define MP_BSWAP64(x) __builtin_bswap64(x)
+#else
+#define MP_BSWAP64(x) \
+    ((uint64_t)((((x) & 0xFF) << 56) | (((x) & 0xFF00) << 40) | \
+    (((x) & 0xFF0000) << 24) | (((x) & 0xFF000000) << 8) | \
+    (((x) >> 8) & 0xFF000000) | (((x) >> 24) & 0xFF0000) | \
+    (((x) >> 40) & 0xFF00) | (((x) >> 56) & 0xFF)))
+#endif
 
 #endif // MICROPY_INCLUDED_PY_MISC_H

@@ -1,3 +1,5 @@
+# requires: bytearray
+
 try:
     bytearray.partition
 except AttributeError:

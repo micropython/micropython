@@ -86,3 +86,20 @@ int __wrap_mbedtls_ecdsa_write_signature(mbedtls_ecdsa_context *ctx,
     return ret;
 }
 #endif
+
+#include "py/mpconfig.h"
+
+#if MICROPY_PY_SSL && MICROPY_SSL_MBEDTLS
+#include "mbedtls/mbedtls_config_port.h"
+
+#if defined(MBEDTLS_ENTROPY_HARDWARE_ALT)
+#include "py/mphal.h"
+
+int mbedtls_hardware_poll(void *data, unsigned char *output, size_t len, size_t *olen) {
+    *olen = len;
+    mp_hal_get_random(len, output);
+    return 0;
+}
+#endif
+
+#endif

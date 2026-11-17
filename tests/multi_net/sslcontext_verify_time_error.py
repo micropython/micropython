@@ -8,18 +8,15 @@ except ImportError:
     print("SKIP")
     raise SystemExit
 
+if not hasattr(ssl, "CERT_REQUIRED"):
+    print("SKIP")
+    raise SystemExit
+
 PORT = 8000
 
 # These are test certificates. See tests/README.md for details.
 cert = cafile = "expired_cert.der"
 key = "ec_key.der"
-
-try:
-    os.stat(cafile)
-    os.stat(key)
-except OSError:
-    print("SKIP")
-    raise SystemExit
 
 
 # Server

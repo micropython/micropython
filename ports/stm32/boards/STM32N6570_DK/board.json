@@ -1,0 +1,18 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "External Flash",
+        "USB-C"
+    ],
+    "images": [
+        "stm32n6570_dk.jpg"
+    ],
+    "mcu": "stm32n6",
+    "product": "Discovery Kit N6570",
+    "thumbnail": "",
+    "url": "https://www.st.com/en/evaluation-tools/stm32n6570-dk.html",
+    "vendor": "ST Microelectronics"
+}

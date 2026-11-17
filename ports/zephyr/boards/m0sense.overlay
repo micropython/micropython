@@ -1,0 +1,70 @@
+/*
+ * Copyright (c) 2026 MASSDRIVER EI (massdriver.space)
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+/delete-node/ &flash0;
+
+/ {
+	fstab {
+		compatible = "zephyr,fstab";
+		lfs: lfs {
+			compatible = "zephyr,fstab,littlefs";
+			mount-point = "/flash";
+			partition = <&storage_partition>;
+			read-size=<16>;
+			prog-size=<256>;
+			cache-size=<1024>;
+			lookahead-size=<32>;
+			block-cycles=<4>;
+		};
+	};
+
+	heap_sram1 {
+		compatible = "micropython,heap";
+		size = <DT_SIZE_K(3)>;
+		memory-region = <&itcm>;
+	};
+
+	heap_dtcm {
+		compatible = "micropython,heap";
+		size = <DT_SIZE_K(4)>;
+		memory-region = <&dtcm>;
+	};
+};
+
+&flashctrl {
+	flash0: flash@23000000 {
+		compatible = "soc-nv-flash";
+		reg = <0x23000000 DT_SIZE_K(512)>;
+		ranges = <0x0 0x23000000 DT_SIZE_K(512)>;
+		#address-cells = <1>;
+		#size-cells = <1>;
+		write-block-size = <256>;
+		erase-block-size = <DT_SIZE_K(4)>;
+
+		partitions {
+			ranges;
+			#address-cells = <1>;
+			#size-cells = <1>;
+
+			slot0_partition: partition@0 {
+				compatible = "zephyr,mapped-partition";
+				label = "image-0";
+				reg = <0x00000000 (0x78000 - 0x2000)>;
+				read-only;
+			};
+
+			storage_partition: partition@78000 {
+				compatible = "zephyr,mapped-partition";
+				label = "storage";
+				reg = <0x00078000 0x8000>;
+			};
+		};
+	};
+};
+
+&wdt0 {
+	status = "okay";
+};

@@ -1,0 +1,9 @@
+# ESP32-P4 sdkconfig variant for revision 0.x and 1.x chips
+# - https://docs.espressif.com/projects/esp-idf/en/stable/esp32p4/api-reference/kconfig-reference.html
+#
+# Override and set the minimum chip revision to cover all possible boards.
+CONFIG_ESP32P4_REV_MIN_300=n
+CONFIG_ESP32P4_REV_MIN_0=y
+#
+# Enable support for ESP32-P4 revisions 0.x and 1.x
+CONFIG_ESP32P4_SELECTS_REV_LESS_V3=y

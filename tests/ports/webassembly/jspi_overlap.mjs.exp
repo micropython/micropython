@@ -1,0 +1,3 @@
+second can_run_sync: False
+second RuntimeError: True
+first: 99

@@ -16,6 +16,8 @@ There are soft resets and hard resets.
         import machine
         machine.reset()
 
+For more information, see :doc:`/reference/reset_boot`.
+
 Safe boot
 ---------
 

@@ -31,6 +31,7 @@
 #include "py/runtime.h"
 #include "py/mpthread.h"
 #include "py/gc.h"
+#include "stack_size.h"
 
 #if MICROPY_PY_THREAD
 
@@ -45,8 +46,14 @@
 // potential conflict with other uses of the more commonly used SIGUSR1.
 #ifdef SIGRTMIN
 #define MP_THREAD_GC_SIGNAL (SIGRTMIN + 5)
+#ifdef __ANDROID__
+#define MP_THREAD_TERMINATE_SIGNAL (SIGRTMIN + 6)
+#endif
 #else
 #define MP_THREAD_GC_SIGNAL (SIGUSR1)
+#ifdef __ANDROID__
+#define MP_THREAD_TERMINATE_SIGNAL (SIGUSR2)
+#endif
 #endif
 
 // This value seems to be about right for both 32-bit and 64-bit builds.
@@ -65,7 +72,7 @@ static pthread_key_t tls_key;
 // The mutex is used for any code in this port that needs to be thread safe.
 // Specifically for thread management, access to the linked list is one example.
 // But also, e.g. scheduler state.
-static pthread_mutex_t thread_mutex;
+static mp_thread_recursive_mutex_t thread_mutex;
 static mp_thread_t *thread;
 
 // this is used to synchronise the signal handler of the thread
@@ -78,11 +85,11 @@ static sem_t thread_signal_done;
 #endif
 
 void mp_thread_unix_begin_atomic_section(void) {
-    pthread_mutex_lock(&thread_mutex);
+    mp_thread_recursive_mutex_lock(&thread_mutex, true);
 }
 
 void mp_thread_unix_end_atomic_section(void) {
-    pthread_mutex_unlock(&thread_mutex);
+    mp_thread_recursive_mutex_unlock(&thread_mutex);
 }
 
 // this signal handler is used to scan the regs and stack of a thread
@@ -107,16 +114,25 @@ static void mp_thread_gc(int signo, siginfo_t *info, void *context) {
     }
 }
 
+// On Android, pthread_cancel and pthread_setcanceltype are not implemented.
+// To achieve that result a new signal handler responding on either
+// (SIGRTMIN + 6) or SIGUSR2 is installed on every child thread.  The sole
+// purpose of this new signal handler is to terminate the thread in a safe
+// asynchronous manner.
+
+#ifdef __ANDROID__
+static void mp_thread_terminate(int signo, siginfo_t *info, void *context) {
+    pthread_exit(NULL);
+}
+#endif
+
 void mp_thread_init(void) {
     pthread_key_create(&tls_key, NULL);
     pthread_setspecific(tls_key, &mp_state_ctx.thread);
 
     // Needs to be a recursive mutex to emulate the behavior of
     // BEGIN_ATOMIC_SECTION on bare metal.
-    pthread_mutexattr_t thread_mutex_attr;
-    pthread_mutexattr_init(&thread_mutex_attr);
-    pthread_mutexattr_settype(&thread_mutex_attr, PTHREAD_MUTEX_RECURSIVE);
-    pthread_mutex_init(&thread_mutex, &thread_mutex_attr);
+    mp_thread_recursive_mutex_init(&thread_mutex);
 
     // create first entry in linked list of all threads
     thread = malloc(sizeof(mp_thread_t));
@@ -138,6 +154,14 @@ void mp_thread_init(void) {
     sa.sa_sigaction = mp_thread_gc;
     sigemptyset(&sa.sa_mask);
     sigaction(MP_THREAD_GC_SIGNAL, &sa, NULL);
+
+    // Install a signal handler for asynchronous termination if needed.
+    #if defined(__ANDROID__)
+    sa.sa_flags = SA_SIGINFO;
+    sa.sa_sigaction = mp_thread_terminate;
+    sigemptyset(&sa.sa_mask);
+    sigaction(MP_THREAD_TERMINATE_SIGNAL, &sa, NULL);
+    #endif
 }
 
 void mp_thread_deinit(void) {
@@ -145,7 +169,11 @@ void mp_thread_deinit(void) {
     while (thread->next != NULL) {
         mp_thread_t *th = thread;
         thread = thread->next;
+        #if defined(__ANDROID__)
+        pthread_kill(th->id, MP_THREAD_TERMINATE_SIGNAL);
+        #else
         pthread_cancel(th->id);
+        #endif
         free(th);
     }
     mp_thread_unix_end_atomic_section();
@@ -203,7 +231,9 @@ void mp_thread_start(void) {
     }
     #endif
 
+    #if !defined(__ANDROID__)
     pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, NULL);
+    #endif
     mp_thread_unix_begin_atomic_section();
     for (mp_thread_t *th = thread; th != NULL; th = th->next) {
         if (th->id == pthread_self()) {
@@ -215,14 +245,14 @@ void mp_thread_start(void) {
 }
 
 mp_uint_t mp_thread_create(void *(*entry)(void *), void *arg, size_t *stack_size) {
-    // default stack size is 8k machine-words
+    // default stack size
     if (*stack_size == 0) {
-        *stack_size = 8192 * sizeof(void *);
+        *stack_size = 32768 * UNIX_STACK_MULTIPLIER;
     }
 
     // minimum stack size is set by pthreads
-    if (*stack_size < PTHREAD_STACK_MIN) {
-        *stack_size = PTHREAD_STACK_MIN;
+    if (*stack_size < (size_t)PTHREAD_STACK_MIN) {
+        *stack_size = (size_t)PTHREAD_STACK_MIN;
     }
 
     // ensure there is enough stack to include a stack-overflow margin
@@ -320,6 +350,26 @@ void mp_thread_mutex_unlock(mp_thread_mutex_t *mutex) {
     pthread_mutex_unlock(mutex);
     // TODO check return value
 }
+
+#if MICROPY_PY_THREAD_RECURSIVE_MUTEX
+
+void mp_thread_recursive_mutex_init(mp_thread_recursive_mutex_t *mutex) {
+    pthread_mutexattr_t attr;
+    pthread_mutexattr_init(&attr);
+    pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
+    pthread_mutex_init(mutex, &attr);
+    pthread_mutexattr_destroy(&attr);
+}
+
+int mp_thread_recursive_mutex_lock(mp_thread_recursive_mutex_t *mutex, int wait) {
+    return mp_thread_mutex_lock(mutex, wait);
+}
+
+void mp_thread_recursive_mutex_unlock(mp_thread_recursive_mutex_t *mutex) {
+    mp_thread_mutex_unlock(mutex);
+}
+
+#endif // MICROPY_PY_THREAD_RECURSIVE_MUTEX
 
 #endif // MICROPY_PY_THREAD
 

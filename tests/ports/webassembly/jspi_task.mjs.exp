@@ -1,0 +1,6 @@
+first: can_run_sync True
+first: 42
+first done
+second done
+interrupted: KeyboardInterrupt
+after done

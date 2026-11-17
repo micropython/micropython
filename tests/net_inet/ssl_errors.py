@@ -3,6 +3,10 @@
 
 import sys, errno, select, socket, ssl
 
+if not hasattr(ssl, "CERT_REQUIRED"):
+    print("SKIP")
+    raise SystemExit
+
 
 def test(addr, hostname, block=True):
     print("---", hostname)
@@ -13,7 +17,7 @@ def test(addr, hostname, block=True):
         print("connected")
     except OSError as e:
         if e.errno != errno.EINPROGRESS:
-            raise
+            raise e
         print("EINPROGRESS")
 
     if sys.implementation.name != "micropython":

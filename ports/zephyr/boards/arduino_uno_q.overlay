@@ -1,0 +1,100 @@
+# -----------------------------------------------------------------------------
+#
+# Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
+# SPDX-License-Identifier: MIT
+#
+# -----------------------------------------------------------------------------
+
+/*
+ * MicroPython on Arduino UNO Q — DTS Overlay
+ *
+ * Three additions over the upstream board DTS:
+ *
+ * 1. Console redirect: The board DTS sets zephyr,console = &usart1
+ *    which routes to Arduino header pins D0/D1. LPUART1 (PG7/PG8)
+ *    is the internal MCU↔QRB2210 UART, exposed as /dev/ttyHS1 on
+ *    the Linux side at 115200 baud.
+ *
+ * 2. Storage partition: Adds a 256 KB littlefs partition for
+ *    MicroPython's /flash filesystem. Placed at 0xF0000, after
+ *    the existing scratch_partition (0xE0000, 64 KB). The region
+ *    from 0xF0000 to 0x200000 (1088 KB) is unused in the stock
+ *    partition layout.
+ *
+ * 3. FSTAB entry: Registers the storage partition with Zephyr's
+ *    filesystem table so that zephyr.FileSystem("/flash") works from
+ *    Python and Zephyr auto-mounts the partition at boot. Parameters
+ *    match the STM32U5 flash: write-block-size=16, erase-block-size=8192.
+ *
+ * Flash layout (2 MB total):
+ *   0x00000 - 0x0FFFF  boot_partition     64 KB  (MCUboot, stock)
+ *   0x10000 - 0x7FFFF  slot0_partition   448 KB  (primary image, stock)
+ *   0x80000 - 0xDFFFF  slot1_partition   384 KB  (secondary image, stock)
+ *   0xE0000 - 0xEFFFF  scratch_partition  64 KB  (MCUboot swap, stock)
+ *   0xF0000 - 0x12FFFF storage_partition 256 KB  (MicroPython /flash) <- added
+ *   0x130000 - 0x1FFFFF (unused)         832 KB
+ */
+
+/ {
+	chosen {
+		zephyr,console = &lpuart1;
+		zephyr,shell-uart = &lpuart1;
+	};
+
+	/*
+	 * ADC channels exposed to MicroPython via machine.ADC(("adc1", ch)).
+	 * Maps Arduino analog pins to STM32 ADC1 channel numbers:
+	 *   A0 = PA4 = ch 9    A1 = PA5 = ch 10   A2 = PA6 = ch 11
+	 *   A3 = PA7 = ch 12   A4 = PC1 = ch  2   A5 = PC0 = ch  1
+	 */
+	zephyr,user {
+		io-channels = <&adc1 9>, <&adc1 10>, <&adc1 11>,
+		              <&adc1 12>, <&adc1 2>, <&adc1 1>;
+	};
+};
+
+&lpuart1 {
+	status = "okay";
+	current-speed = <115200>;
+};
+
+&flash0 {
+	partitions {
+		compatible = "fixed-partitions";
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		/* 256 KB littlefs partition for MicroPython /flash filesystem */
+		storage_partition: partition@f0000 {
+			label = "storage";
+			reg = <0x000f0000 DT_SIZE_K(256)>;
+		};
+	};
+};
+
+/*
+ * FSTAB entry for MicroPython /flash filesystem.
+ *
+ * Enables zephyr.FileSystem("/flash") in Python and causes Zephyr to
+ * auto-mount the littlefs partition at boot (before _boot.py runs).
+ *
+ * STM32U5 flash parameters (from stm32u5.dtsi):
+ *   write-block-size = 16   -> prog-size = 16
+ *   erase-block-size = 8192 -> block size handled by littlefs automatically
+ */
+/ {
+	fstab: fstab {
+		compatible = "zephyr,fstab";
+		lfs1: lfs1 {
+			compatible = "zephyr,fstab,littlefs";
+			mount-point = "/flash";
+			partition = <&storage_partition>;
+			automount;
+			read-size = <16>;
+			prog-size = <16>;
+			cache-size = <64>;
+			lookahead-size = <32>;
+			block-cycles = <512>;
+		};
+	};
+};

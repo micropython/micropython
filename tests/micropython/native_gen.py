@@ -1,4 +1,5 @@
 # test for native generators
+# requires: native
 
 
 # simple generator with yield and return

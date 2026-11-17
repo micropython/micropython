@@ -1,4 +1,11 @@
-import frozen_asm
+try:
+    import frozen_asm_thumb as frozen_asm
+except ImportError:
+    try:
+        import frozen_asm_rv32 as frozen_asm
+    except ImportError:
+        print("SKIP")
+        raise SystemExit
 
 print(frozen_asm.asm_add(1, 2))
 print(frozen_asm.asm_add1(3))

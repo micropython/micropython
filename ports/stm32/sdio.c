@@ -77,7 +77,11 @@ static volatile uint8_t *sdmmc_buf_top;
 #define SDMMC_IRQHandler        SDMMC2_IRQHandler
 #define SDMMC_CLK_ENABLE()      __HAL_RCC_SDMMC2_CLK_ENABLE()
 #define SDMMC_CLK_DISABLE()     __HAL_RCC_SDMMC2_CLK_DISABLE()
+#if defined(STM32N6)
+#define SDMMC_IS_CLK_DISABLED() (!__HAL_RCC_SDMMC2_IS_CLK_ENABLED())
+#else
 #define SDMMC_IS_CLK_DISABLED() __HAL_RCC_SDMMC2_IS_CLK_DISABLED()
+#endif
 #define STATIC_AF_SDMMC_CK      STATIC_AF_SDMMC2_CK
 #define STATIC_AF_SDMMC_CMD     STATIC_AF_SDMMC2_CMD
 #define STATIC_AF_SDMMC_D0      STATIC_AF_SDMMC2_D0
@@ -96,9 +100,17 @@ static volatile uint8_t *sdmmc_buf_top;
 #define MICROPY_HW_SDIO_CMD     (pin_D2)
 #endif
 
-#if defined(STM32H7)
+#if defined(STM32H7) || defined(STM32N6)
 static uint32_t safe_divide(uint32_t denom) {
+    #if defined(STM32N6)
+    #if MICROPY_HW_SDIO_SDMMC == 1
+    uint32_t num = LL_RCC_GetSDMMCClockFreq(LL_RCC_SDMMC1_CLKSOURCE);
+    #else
+    uint32_t num = LL_RCC_GetSDMMCClockFreq(LL_RCC_SDMMC2_CLKSOURCE);
+    #endif
+    #else
     uint32_t num = HAL_RCCEx_GetPeriphCLKFreq(RCC_PERIPHCLK_SDMMC);
+    #endif
     uint32_t divres;
 
     divres = num / (2U * denom);
@@ -123,7 +135,7 @@ void sdio_init(uint32_t irq_pri) {
     SDMMC_TypeDef *SDIO = SDMMC;
     #if defined(STM32F7)
     SDIO->CLKCR = SDMMC_CLKCR_HWFC_EN | SDMMC_CLKCR_PWRSAV | (120 - 2); // 1-bit, 400kHz
-    #elif defined(STM32H7)
+    #elif defined(STM32H7) || defined(STM32N6)
     SDIO->CLKCR = SDMMC_CLKCR_HWFC_EN | SDMMC_CLKCR_PWRSAV | safe_divide(400000U); // 1-bit, 400kHz
     #else
     SDIO->CLKCR = SDMMC_CLKCR_HWFC_EN | SDMMC_CLKCR_PWRSAV | (120 / 2); // 1-bit, 400kHz
@@ -172,7 +184,7 @@ void sdio_enable_high_speed_4bit(void) {
     mp_hal_delay_us(10);
     #if defined(STM32F7)
     SDIO->CLKCR = SDMMC_CLKCR_HWFC_EN | SDMMC_CLKCR_WIDBUS_0 | SDMMC_CLKCR_BYPASS /*| SDMMC_CLKCR_PWRSAV*/; // 4-bit, 48MHz
-    #elif defined(STM32H7)
+    #elif defined(STM32H7) || defined(STM32N6)
     SDIO->CLKCR = SDMMC_CLKCR_HWFC_EN | SDMMC_CLKCR_WIDBUS_0 | safe_divide(48000000U); // 4-bit, 48MHz
     #else
     SDIO->CLKCR = SDMMC_CLKCR_HWFC_EN | SDMMC_CLKCR_WIDBUS_0; // 4-bit, 48MHz
@@ -199,7 +211,7 @@ void SDMMC_IRQHandler(void) {
             sdmmc_irq_state = SDMMC_IRQ_STATE_DONE;
             return;
         }
-        #if defined(STM32H7)
+        #if defined(STM32H7) || defined(STM32N6)
         if (!sdmmc_dma) {
             while (sdmmc_buf_cur < sdmmc_buf_top && (SDMMC->STA & SDMMC_STA_DPSMACT) && !(SDMMC->STA & SDMMC_STA_RXFIFOE)) {
                 *(uint32_t *)sdmmc_buf_cur = SDMMC->FIFO;
@@ -413,11 +425,15 @@ int sdio_transfer_cmd53(bool write, uint32_t block_size, uint32_t arg, size_t le
         dma_nohal_init(&dma_SDIO_0, dma_config);
         dma_nohal_start(&dma_SDIO_0, dma_src, dma_dest, dma_len);
         #else
+        #if defined(STM32N6)
+        SDMMC->IDMABASER = (uint32_t)buf;
+        #else
         SDMMC->IDMABASE0 = (uint32_t)buf;
+        #endif
         SDMMC->IDMACTRL = SDMMC_IDMA_IDMAEN;
         #endif
     } else {
-        #if defined(STM32H7)
+        #if defined(STM32H7) || defined(STM32N6)
         SDMMC->IDMACTRL = 0;
         #endif
     }
@@ -502,6 +518,29 @@ int sdio_transfer_cmd53(bool write, uint32_t block_size, uint32_t arg, size_t le
     }
 
     return 0;
+}
+
+// Wait for a DMA write to finish, so that the caller can take memory-mapped flash
+// out of memory-mapped mode without breaking a transfer that reads from it (for
+// example, the cyw43 firmware may be DMA'd directly out of memory-mapped flash).
+// Only waits while the data path is active, which relies on this being called
+// from a higher priority than SDMMC_IRQn, as the USB MSC and flash IRQs that leave
+// memory-mapped mode are: the SDMMC IRQ that starts a write's data path then can't
+// run until the caller returns, and before the data path starts nothing has been
+// read from flash.  The DMA doesn't need an IRQ to finish, so this works with IRQs
+// disabled too, as does mp_hal_delay_us(), which bounds the wait at 10 ms.
+void sdio_wait_dma_write(void) {
+    if (sdmmc_irq_state == SDMMC_IRQ_STATE_DONE || !sdmmc_dma || !sdmmc_write) {
+        return;
+    }
+    #if defined(STM32F7)
+    const uint32_t active = SDMMC_STA_TXACT;
+    #else
+    const uint32_t active = SDMMC_STA_DPSMACT;
+    #endif
+    for (uint32_t us = 0; us < 10000 && (SDMMC->STA & active); ++us) {
+        mp_hal_delay_us(1);
+    }
 }
 
 #endif

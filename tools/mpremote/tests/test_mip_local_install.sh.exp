@@ -1,0 +1,11 @@
+----- Setup
+mkdir :/__ramdisk/lib
+
+---- Install package
+Install ${TMP}/example/package.json
+Installing: /__ramdisk/lib/mip_example/__init__.py
+Installing: /__ramdisk/lib/mip_example/hello.py
+Done
+
+---- Test package
+Hello, world!

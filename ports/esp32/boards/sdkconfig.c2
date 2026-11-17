@@ -1,0 +1,17 @@
+#
+# Main XTAL Config
+#
+CONFIG_XTAL_FREQ_26=y
+# CONFIG_XTAL_FREQ_40 is not set
+CONFIG_XTAL_FREQ=26
+
+# When using 26MHz crystal the baud rate defaults to 74880,
+# same as ESP8266 - MicroPython uses 115200, so switch early
+CONFIG_ESP_CONSOLE_UART_CUSTOM=y
+CONFIG_ESP_CONSOLE_UART_BAUDRATE=115200
+
+# Increase NimBLE stack size for functional BT
+CONFIG_BT_NIMBLE_TASK_STACK_SIZE=5120
+
+# Decrease mDNS stack size to save RAM
+CONFIG_MDNS_TASK_STACK_SIZE=3072

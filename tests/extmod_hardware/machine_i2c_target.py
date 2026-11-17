@@ -1,0 +1,278 @@
+# Test machine.I2CTarget.
+#
+# IMPORTANT: This test requires hardware connections: a SoftI2C instance must be
+# wired to a hardware I2C target.  See pin definitions below.
+#
+# requires: slice target-wiring
+
+import sys
+
+try:
+    from machine import Pin, SoftI2C, I2CTarget
+except ImportError:
+    print("SKIP")
+    raise SystemExit
+
+import unittest
+
+ADDR = 67
+
+from target_wiring import (
+    i2c_loopback_controller_kwargs,
+    i2c_loopback_target_args,
+    i2c_loopback_target_kwargs,
+)
+
+
+def config_pull_up():
+    Pin(i2c_loopback_controller_kwargs["scl"], Pin.OPEN_DRAIN, Pin.PULL_UP)
+    Pin(i2c_loopback_controller_kwargs["sda"], Pin.OPEN_DRAIN, Pin.PULL_UP)
+
+
+class TestMemory(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.mem = bytearray(8)
+        cls.i2c = SoftI2C(**i2c_loopback_controller_kwargs)
+        cls.i2c_target = I2CTarget(
+            *i2c_loopback_target_args, **i2c_loopback_target_kwargs, addr=ADDR, mem=cls.mem
+        )
+        config_pull_up()
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.i2c_target.deinit()
+
+    def test_scan(self):
+        self.assertIn(ADDR, self.i2c.scan())
+
+    def test_write(self):
+        self.mem[:] = b"01234567"
+        self.i2c.writeto_mem(ADDR, 0, b"test")
+        self.assertEqual(self.mem, bytearray(b"test4567"))
+        self.i2c.writeto_mem(ADDR, 4, b"TEST")
+        self.assertEqual(self.mem, bytearray(b"testTEST"))
+
+    def test_write_wrap(self):
+        self.mem[:] = b"01234567"
+        self.i2c.writeto_mem(ADDR, 6, b"test")
+        self.assertEqual(self.mem, bytearray(b"st2345te"))
+
+    @unittest.skipIf(sys.platform == "esp32", "write lengths larger than buffer unsupported")
+    def test_write_wrap_large(self):
+        self.mem[:] = b"01234567"
+        self.i2c.writeto_mem(ADDR, 0, b"testTESTmore")
+        self.assertEqual(self.mem, bytearray(b"moreTEST"))
+
+    def test_read(self):
+        self.mem[:] = b"01234567"
+        self.assertEqual(self.i2c.readfrom_mem(ADDR, 0, 4), b"0123")
+        self.assertEqual(self.i2c.readfrom_mem(ADDR, 4, 4), b"4567")
+
+    def test_read_wrap(self):
+        self.mem[:] = b"01234567"
+        self.assertEqual(self.i2c.readfrom_mem(ADDR, 0, 4), b"0123")
+        self.assertEqual(self.i2c.readfrom_mem(ADDR, 2, 4), b"2345")
+        self.assertEqual(self.i2c.readfrom_mem(ADDR, 6, 4), b"6701")
+
+    @unittest.skipIf(sys.platform == "esp32", "read lengths larger than buffer unsupported")
+    def test_read_wrap_large(self):
+        self.mem[:] = b"01234567"
+        self.assertEqual(self.i2c.readfrom_mem(ADDR, 0, 12), b"012345670123")
+
+    def test_write_read(self):
+        self.mem[:] = b"01234567"
+        self.assertEqual(self.i2c.writeto(ADDR, b"\x02"), 1)
+        self.assertEqual(self.i2c.readfrom(ADDR, 4), b"2345")
+
+    @unittest.skipIf(sys.platform == "esp32", "read after read unsupported")
+    def test_write_read_read(self):
+        self.mem[:] = b"01234567"
+        self.assertEqual(self.i2c.writeto(ADDR, b"\x02"), 1)
+        self.assertEqual(self.i2c.readfrom(ADDR, 4), b"2345")
+        self.assertEqual(self.i2c.readfrom(ADDR, 4), b"7012")
+
+
+@unittest.skipUnless(hasattr(I2CTarget, "IRQ_END_READ"), "IRQ unsupported")
+class TestMemoryIRQ(unittest.TestCase):
+    @staticmethod
+    def irq_handler(i2c_target):
+        flags = i2c_target.irq().flags()
+        TestMemoryIRQ.events[TestMemoryIRQ.num_events] = flags
+        TestMemoryIRQ.events[TestMemoryIRQ.num_events + 1] = i2c_target.memaddr
+        TestMemoryIRQ.num_events += 2
+
+    @classmethod
+    def setUpClass(cls):
+        cls.mem = bytearray(8)
+        cls.events = [0] * 8
+        cls.num_events = 0
+        cls.i2c = SoftI2C(**i2c_loopback_controller_kwargs)
+        cls.i2c_target = I2CTarget(
+            *i2c_loopback_target_args, **i2c_loopback_target_kwargs, addr=ADDR, mem=cls.mem
+        )
+        cls.i2c_target.irq(TestMemoryIRQ.irq_handler)
+        config_pull_up()
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.i2c_target.deinit()
+
+    @unittest.skipIf(sys.platform == "esp32", "scan doesn't trigger IRQ_END_WRITE")
+    def test_scan(self):
+        TestMemoryIRQ.num_events = 0
+        self.i2c.scan()
+        self.assertEqual(self.events[: self.num_events], [I2CTarget.IRQ_END_WRITE, 0])
+
+    def test_write(self):
+        TestMemoryIRQ.num_events = 0
+        self.mem[:] = b"01234567"
+        self.i2c.writeto_mem(ADDR, 2, b"test")
+        self.assertEqual(self.mem, bytearray(b"01test67"))
+        self.assertEqual(self.events[: self.num_events], [I2CTarget.IRQ_END_WRITE, 2])
+
+    def test_read(self):
+        TestMemoryIRQ.num_events = 0
+        self.mem[:] = b"01234567"
+        self.assertEqual(self.i2c.readfrom_mem(ADDR, 2, 4), b"2345")
+        self.assertEqual(self.events[: self.num_events], [I2CTarget.IRQ_END_READ, 2])
+
+
+@unittest.skipUnless(hasattr(I2CTarget, "IRQ_WRITE_REQ"), "IRQ unsupported")
+@unittest.skipIf(sys.platform == "mimxrt", "not working")
+@unittest.skipIf(sys.platform == "pyboard", "can't queue more than one byte")
+@unittest.skipIf(sys.platform == "samd", "not working")
+@unittest.skipIf(sys.platform == "zephyr", "must call readinto/write in IRQ handler")
+class TestPolling(unittest.TestCase):
+    @staticmethod
+    def irq_handler(i2c_target, buf=bytearray(1)):
+        flags = i2c_target.irq().flags()
+        if flags & I2CTarget.IRQ_READ_REQ:
+            i2c_target.write(b"0123")
+
+    @classmethod
+    def setUpClass(cls):
+        cls.i2c = SoftI2C(**i2c_loopback_controller_kwargs)
+        cls.i2c_target = I2CTarget(*i2c_loopback_target_args, addr=ADDR)
+        cls.i2c_target.irq(
+            TestPolling.irq_handler,
+            I2CTarget.IRQ_WRITE_REQ | I2CTarget.IRQ_READ_REQ,
+            hard=True,
+        )
+        config_pull_up()
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.i2c_target.deinit()
+
+    def test_read(self):
+        # Can't write data up front, must wait until IRQ_READ_REQ.
+        # self.assertEqual(self.i2c_target.write(b"abcd"), 4)
+        self.assertEqual(self.i2c.readfrom(ADDR, 4), b"0123")
+
+    def test_write(self):
+        # Can do the read outside the IRQ, but requires IRQ_WRITE_REQ trigger to be set.
+        self.assertEqual(self.i2c.writeto(ADDR, b"0123"), 4)
+        buf = bytearray(8)
+        self.assertEqual(self.i2c_target.readinto(buf), 4)
+        self.assertEqual(buf, b"0123\x00\x00\x00\x00")
+
+
+@unittest.skipUnless(hasattr(I2CTarget, "IRQ_ADDR_MATCH_READ"), "IRQ unsupported")
+class TestIRQ(unittest.TestCase):
+    @staticmethod
+    def irq_handler(i2c_target, buf=bytearray(1)):
+        flags = i2c_target.irq().flags()
+        TestIRQ.events[TestIRQ.num_events] = flags
+        TestIRQ.num_events += 1
+        if flags & I2CTarget.IRQ_READ_REQ:
+            i2c_target.write(b"Y")
+        if flags & I2CTarget.IRQ_WRITE_REQ:
+            i2c_target.readinto(buf)
+            TestIRQ.events[TestIRQ.num_events] = buf[0]
+            TestIRQ.num_events += 1
+
+    @classmethod
+    def setUpClass(cls):
+        cls.events = [0] * 8
+        cls.num_events = 0
+        cls.i2c = SoftI2C(**i2c_loopback_controller_kwargs)
+        cls.i2c_target = I2CTarget(*i2c_loopback_target_args, addr=ADDR)
+        cls.i2c_target.irq(
+            TestIRQ.irq_handler,
+            I2CTarget.IRQ_ADDR_MATCH_READ
+            | I2CTarget.IRQ_ADDR_MATCH_WRITE
+            | I2CTarget.IRQ_WRITE_REQ
+            | I2CTarget.IRQ_READ_REQ
+            | I2CTarget.IRQ_END_READ
+            | I2CTarget.IRQ_END_WRITE,
+            hard=True,
+        )
+        config_pull_up()
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.i2c_target.deinit()
+
+    def test_scan(self):
+        TestIRQ.num_events = 0
+        self.i2c.scan()
+        self.assertEqual(
+            self.events[: self.num_events],
+            [
+                I2CTarget.IRQ_ADDR_MATCH_WRITE,
+                I2CTarget.IRQ_END_WRITE,
+            ],
+        )
+
+    def test_write(self):
+        TestIRQ.num_events = 0
+        self.i2c.writeto(ADDR, b"XYZ")
+        self.assertEqual(
+            self.events[: self.num_events],
+            [
+                I2CTarget.IRQ_ADDR_MATCH_WRITE,
+                I2CTarget.IRQ_WRITE_REQ,
+                ord(b"X"),
+                I2CTarget.IRQ_WRITE_REQ,
+                ord(b"Y"),
+                I2CTarget.IRQ_WRITE_REQ,
+                ord(b"Z"),
+                I2CTarget.IRQ_END_WRITE,
+            ],
+        )
+
+    def test_read(self):
+        TestIRQ.num_events = 0
+        self.assertEqual(self.i2c.readfrom(ADDR, 1), b"Y")
+        self.assertEqual(
+            self.events[: self.num_events],
+            [
+                I2CTarget.IRQ_ADDR_MATCH_READ,
+                I2CTarget.IRQ_READ_REQ,
+                I2CTarget.IRQ_READ_REQ,
+                I2CTarget.IRQ_END_READ,
+            ],
+        )
+
+    def test_write_read(self):
+        TestIRQ.num_events = 0
+        self.i2c.writeto(ADDR, b"X", False)
+        self.assertEqual(self.i2c.readfrom(ADDR, 1), b"Y")
+        self.assertEqual(
+            self.events[: self.num_events],
+            [
+                I2CTarget.IRQ_ADDR_MATCH_WRITE,
+                I2CTarget.IRQ_WRITE_REQ,
+                ord(b"X"),
+                I2CTarget.IRQ_END_WRITE,
+                I2CTarget.IRQ_ADDR_MATCH_READ,
+                I2CTarget.IRQ_READ_REQ,
+                I2CTarget.IRQ_READ_REQ,
+                I2CTarget.IRQ_END_READ,
+            ],
+        )
+
+
+if __name__ == "__main__":
+    unittest.main()

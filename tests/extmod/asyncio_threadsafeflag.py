@@ -1,4 +1,5 @@
 # Test Event class
+# requires: async
 
 try:
     import asyncio

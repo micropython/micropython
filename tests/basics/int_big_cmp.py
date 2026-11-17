@@ -1,4 +1,5 @@
 # test bignum comparisons
+# requires: int-big
 
 i = 1 << 65
 cases = (0, 1, -1, i, -i, i + 1, -(i + 1))

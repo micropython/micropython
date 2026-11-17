@@ -38,7 +38,7 @@ browser. The latest versions of Firefox and Chrome are supported.
 
 For your convenience, WebREPL client is hosted at
 `<http://micropython.org/webrepl>`__. Alternatively, you can install it
-locally from the the GitHub repository
+locally from the GitHub repository
 `<https://github.com/micropython/webrepl>`__.
 
 Before connecting to WebREPL, you should set a password and enable it via

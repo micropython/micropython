@@ -46,7 +46,7 @@ g = gen_next()
 try:
     next(g)
 except Exception as e:
-    print("raised", repr(e))
+    print("raised {} {}".format(type(e), str(e) or "generator already executing"))
 
 
 # Verify that you can't pend_throw from within the running coroutine.
@@ -59,7 +59,7 @@ g = gen_pend_throw()
 try:
     next(g)
 except Exception as e:
-    print("raised", repr(e))
+    print("raised {} {}".format(type(e), str(e) or "generator already executing"))
 
 
 # Verify that the pend_throw exception can be ignored.

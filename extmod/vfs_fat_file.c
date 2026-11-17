@@ -103,15 +103,15 @@ static mp_uint_t file_obj_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_t arg,
         struct mp_stream_seek_t *s = (struct mp_stream_seek_t *)(uintptr_t)arg;
 
         switch (s->whence) {
-            case 0: // SEEK_SET
+            case MP_SEEK_SET:
                 f_lseek(&self->fp, s->offset);
                 break;
 
-            case 1: // SEEK_CUR
+            case MP_SEEK_CUR:
                 f_lseek(&self->fp, f_tell(&self->fp) + s->offset);
                 break;
 
-            case 2: // SEEK_END
+            case MP_SEEK_END:
                 f_lseek(&self->fp, f_size(&self->fp) + s->offset);
                 break;
         }

@@ -1,0 +1,23 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "deploy_options": {
+        "flash_offset": "0"
+    },
+    "docs": "",
+    "features": [
+        "BLE",
+        "External Flash",
+        "External RAM",
+        "WiFi"
+    ],
+    "images": [
+        "waveshare_esp32_s3_pico.jpg"
+    ],
+    "mcu": "esp32s3",
+    "product": "Waveshare ESP32-S3-Pico",
+    "thumbnail": "",
+    "url": "https://www.waveshare.com/ESP32-S3-Pico.htm",
+    "vendor": "Waveshare"
+}

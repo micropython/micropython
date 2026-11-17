@@ -180,12 +180,6 @@ static const uint8_t reg_local_table[MAX_REGS_FOR_LOCAL_VARS] = {REG_LOCAL_1, RE
         *emit->error_slot = mp_obj_new_exception_msg_varg(&mp_type_ViperTypeError, __VA_ARGS__); \
 } while (0)
 
-#if N_RV32
-#define FIT_SIGNED(value, bits)                                                                                     \
-    ((((value) & ~((1U << ((bits) - 1)) - 1)) == 0) ||                                      \
-    (((value) & ~((1U << ((bits) - 1)) - 1)) == ~((1U << ((bits) - 1)) - 1)))
-#endif
-
 typedef enum {
     STACK_VALUE,
     STACK_REG,
@@ -210,6 +204,7 @@ typedef enum {
     VTYPE_BUILTIN_CAST = 0x70 | MP_NATIVE_TYPE_OBJ,
 } vtype_kind_t;
 
+#if MICROPY_ERROR_REPORTING != MICROPY_ERROR_REPORTING_NONE
 static qstr vtype_to_qstr(vtype_kind_t vtype) {
     switch (vtype) {
         case VTYPE_PYOBJ:
@@ -233,6 +228,7 @@ static qstr vtype_to_qstr(vtype_kind_t vtype) {
             return MP_QSTR_None;
     }
 }
+#endif
 
 typedef struct _stack_info_t {
     vtype_kind_t vtype;
@@ -288,12 +284,28 @@ struct _emit_t {
     ASM_T *as;
 };
 
+#ifdef REG_ZERO
+#define ASM_MOV_LOCAL_MP_OBJ_NULL(as, local_num, reg_temp) \
+    ASM_MOV_LOCAL_REG(as, local_num, REG_ZERO)
+#else
+#define REG_ZERO REG_TEMP0
+#define ASM_MOV_LOCAL_MP_OBJ_NULL(as, local_num, reg_temp) \
+    ASM_CLR_REG(as, reg_temp); \
+    ASM_MOV_LOCAL_REG(as, local_num, reg_temp)
+#endif
+
 static void emit_load_reg_with_object(emit_t *emit, int reg, mp_obj_t obj);
 static void emit_native_global_exc_entry(emit_t *emit);
 static void emit_native_global_exc_exit(emit_t *emit);
 static void emit_native_load_const_obj(emit_t *emit, mp_obj_t obj);
 
 emit_t *EXPORT_FUN(new)(mp_emit_common_t * emit_common, mp_obj_t *error_slot, uint *label_slot, mp_uint_t max_num_labels) {
+    // Generated code performing exception handling assumes that MP_OBJ_NULL
+    // equals to 0 to simplify some checks, leveraging dedicated opcodes for
+    // comparisons against 0.  If this assumption does not hold true anymore
+    // then generated code won't work correctly.
+    MP_STATIC_ASSERT(MP_OBJ_NULL == 0);
+
     emit_t *emit = m_new0(emit_t, 1);
     emit->emit_common = emit_common;
     emit->error_slot = error_slot;
@@ -420,6 +432,30 @@ static void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
         emit->stack_info[i].vtype = VTYPE_UNBOUND;
     }
 
+    char *qualified_name = NULL;
+
+    #if N_DEBUG
+    scope_t *current_scope = scope;
+    vstr_t *qualified_name_vstr = vstr_new(qstr_len(current_scope->simple_name));
+    size_t fragment_length = 0;
+    const byte *fragment_pointer;
+    for (;;) {
+        fragment_pointer = qstr_data(current_scope->simple_name, &fragment_length);
+        vstr_hint_size(qualified_name_vstr, fragment_length);
+        memmove(qualified_name_vstr->buf + fragment_length, qualified_name_vstr->buf, qualified_name_vstr->len);
+        memcpy(qualified_name_vstr->buf, fragment_pointer, fragment_length);
+        qualified_name_vstr->len += fragment_length;
+        if (current_scope->parent == NULL || current_scope->parent->simple_name == MP_QSTR__lt_module_gt_) {
+            break;
+        }
+        vstr_ins_char(qualified_name_vstr, 0, '.');
+        current_scope = current_scope->parent;
+    }
+    qualified_name = vstr_null_terminated_str(qualified_name_vstr);
+    #else
+    (void)qualified_name;
+    #endif
+
     mp_asm_base_start_pass(&emit->as->base, pass == MP_PASS_EMIT ? MP_ASM_PASS_EMIT : MP_ASM_PASS_COMPUTE);
 
     // generate code for entry to function
@@ -466,7 +502,7 @@ static void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
         }
 
         // Entry to function
-        ASM_ENTRY(emit->as, emit->stack_start + emit->n_state - num_locals_in_regs);
+        ASM_ENTRY(emit->as, emit->stack_start + emit->n_state - num_locals_in_regs, qualified_name);
 
         #if N_X86
         asm_x86_mov_arg_to_r32(emit->as, 0, REG_PARENT_ARG_1);
@@ -537,7 +573,7 @@ static void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
 
         if (emit->scope->scope_flags & MP_SCOPE_FLAG_GENERATOR) {
             mp_asm_base_data(&emit->as->base, ASM_WORD_SIZE, (uintptr_t)emit->start_offset);
-            ASM_ENTRY(emit->as, emit->code_state_start);
+            ASM_ENTRY(emit->as, emit->code_state_start, qualified_name);
 
             // Reset the state size for the state pointed to by REG_GENERATOR_STATE
             emit->code_state_start = 0;
@@ -569,7 +605,7 @@ static void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
             emit->stack_start = emit->code_state_start + SIZEOF_CODE_STATE;
 
             // Allocate space on C-stack for code_state structure, which includes state
-            ASM_ENTRY(emit->as, emit->stack_start + emit->n_state);
+            ASM_ENTRY(emit->as, emit->stack_start + emit->n_state, qualified_name);
 
             // Prepare incoming arguments for call to mp_setup_code_state
 
@@ -635,6 +671,10 @@ static void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
             }
         }
     }
+
+    #if N_DEBUG
+    vstr_free(qualified_name_vstr);
+    #endif
 }
 
 static inline void emit_native_write_code_info_byte(emit_t *emit, byte val) {
@@ -664,12 +704,14 @@ static bool emit_native_end_pass(emit_t *emit) {
         size_t info_start = mp_asm_base_get_code_pos(&emit->as->base);
         emit_native_write_code_info_qstr(emit, emit->scope->simple_name);
         for (int i = 0; i < emit->scope->num_pos_args + emit->scope->num_kwonly_args; i++) {
-            qstr qst = MP_QSTR__star_;
-            for (int j = 0; j < emit->scope->id_info_len; ++j) {
-                id_info_t *id = &emit->scope->id_info[j];
-                if ((id->flags & ID_FLAG_IS_PARAM) && id->local_num == i) {
-                    qst = id->qst;
-                    break;
+            qstr qst = MP_QSTRnull;
+            if (i >= emit->scope->num_pos_only_args) {
+                for (int j = 0; j < emit->scope->id_info_len; ++j) {
+                    id_info_t *id = &emit->scope->id_info[j];
+                    if ((id->flags & ID_FLAG_IS_PARAM) && id->local_num == i) {
+                        qst = id->qst;
+                        break;
+                    }
                 }
             }
             emit_native_write_code_info_qstr(emit, qst);
@@ -1103,7 +1145,7 @@ static void emit_native_leave_exc_stack(emit_t *emit, bool start_of_handler) {
             // Optimisation: PC is already cleared by global exc handler
             return;
         }
-        ASM_XOR_REG_REG(emit->as, REG_RET, REG_RET);
+        ASM_CLR_REG(emit->as, REG_RET);
     } else {
         // Found new active handler, get its PC
         ASM_MOV_REG_PCREL(emit->as, REG_RET, e->label);
@@ -1200,12 +1242,11 @@ static void emit_native_global_exc_entry(emit_t *emit) {
             ASM_JUMP_IF_REG_ZERO(emit->as, REG_RET, start_label, true);
         } else {
             // Clear the unwind state
-            ASM_XOR_REG_REG(emit->as, REG_TEMP0, REG_TEMP0);
-            ASM_MOV_LOCAL_REG(emit->as, LOCAL_IDX_EXC_HANDLER_UNWIND(emit), REG_TEMP0);
+            ASM_MOV_LOCAL_MP_OBJ_NULL(emit->as, LOCAL_IDX_EXC_HANDLER_UNWIND(emit), REG_ZERO);
 
             // clear nlr.ret_val, because it's passed to mp_native_raise regardless
             // of whether there was an exception or not
-            ASM_MOV_LOCAL_REG(emit->as, LOCAL_IDX_EXC_VAL(emit), REG_TEMP0);
+            ASM_MOV_LOCAL_REG(emit->as, LOCAL_IDX_EXC_VAL(emit), REG_ZERO);
 
             // Put PC of start code block into REG_LOCAL_1
             ASM_MOV_REG_PCREL(emit->as, REG_LOCAL_1, start_label);
@@ -1221,8 +1262,7 @@ static void emit_native_global_exc_entry(emit_t *emit) {
             ASM_JUMP_IF_REG_NONZERO(emit->as, REG_RET, global_except_label, true);
 
             // Clear PC of current code block, and jump there to resume execution
-            ASM_XOR_REG_REG(emit->as, REG_TEMP0, REG_TEMP0);
-            ASM_MOV_LOCAL_REG(emit->as, LOCAL_IDX_EXC_HANDLER_PC(emit), REG_TEMP0);
+            ASM_MOV_LOCAL_MP_OBJ_NULL(emit->as, LOCAL_IDX_EXC_HANDLER_PC(emit), REG_ZERO);
             ASM_JUMP_REG(emit->as, REG_LOCAL_1);
 
             // Global exception handler: check for valid exception handler
@@ -1264,8 +1304,7 @@ static void emit_native_global_exc_entry(emit_t *emit) {
 
             // Check LOCAL_IDX_THROW_VAL for any injected value
             ASM_MOV_REG_LOCAL(emit->as, REG_ARG_1, LOCAL_IDX_THROW_VAL(emit));
-            ASM_MOV_REG_IMM(emit->as, REG_ARG_2, (mp_uint_t)MP_OBJ_NULL);
-            ASM_MOV_LOCAL_REG(emit->as, LOCAL_IDX_THROW_VAL(emit), REG_ARG_2);
+            ASM_MOV_LOCAL_MP_OBJ_NULL(emit->as, LOCAL_IDX_THROW_VAL(emit), REG_ARG_2);
             emit_call(emit, MP_F_NATIVE_RAISE);
         }
     }
@@ -1532,72 +1571,50 @@ static void emit_native_load_subscr(emit_t *emit) {
             switch (vtype_base) {
                 case VTYPE_PTR8: {
                     // pointer to 8-bit memory
-                    // TODO optimise to use thumb ldrb r1, [r2, r3]
+                    #ifdef ASM_LOAD8_REG_REG_OFFSET
+                    ASM_LOAD8_REG_REG_OFFSET(emit->as, REG_RET, reg_base, index_value);
+                    #else
                     if (index_value != 0) {
                         // index is non-zero
-                        #if N_THUMB
-                        if (index_value > 0 && index_value < 32) {
-                            asm_thumb_ldrb_rlo_rlo_i5(emit->as, REG_RET, reg_base, index_value);
-                            break;
-                        }
-                        #elif N_RV32
-                        if (FIT_SIGNED(index_value, 12)) {
-                            asm_rv32_opcode_lbu(emit->as, REG_RET, reg_base, index_value);
-                            break;
-                        }
-                        #endif
                         need_reg_single(emit, reg_index, 0);
                         ASM_MOV_REG_IMM(emit->as, reg_index, index_value);
                         ASM_ADD_REG_REG(emit->as, reg_index, reg_base); // add index to base
                         reg_base = reg_index;
                     }
                     ASM_LOAD8_REG_REG(emit->as, REG_RET, reg_base); // load from (base+index)
+                    #endif
                     break;
                 }
                 case VTYPE_PTR16: {
                     // pointer to 16-bit memory
+                    #ifdef ASM_LOAD16_REG_REG_OFFSET
+                    ASM_LOAD16_REG_REG_OFFSET(emit->as, REG_RET, reg_base, index_value);
+                    #else
                     if (index_value != 0) {
                         // index is a non-zero immediate
-                        #if N_THUMB
-                        if (index_value > 0 && index_value < 32) {
-                            asm_thumb_ldrh_rlo_rlo_i5(emit->as, REG_RET, reg_base, index_value);
-                            break;
-                        }
-                        #elif N_RV32
-                        if (FIT_SIGNED(index_value, 11)) {
-                            asm_rv32_opcode_lhu(emit->as, REG_RET, reg_base, index_value << 1);
-                            break;
-                        }
-                        #endif
                         need_reg_single(emit, reg_index, 0);
                         ASM_MOV_REG_IMM(emit->as, reg_index, index_value << 1);
                         ASM_ADD_REG_REG(emit->as, reg_index, reg_base); // add 2*index to base
                         reg_base = reg_index;
                     }
                     ASM_LOAD16_REG_REG(emit->as, REG_RET, reg_base); // load from (base+2*index)
+                    #endif
                     break;
                 }
                 case VTYPE_PTR32: {
                     // pointer to 32-bit memory
+                    #ifdef ASM_LOAD32_REG_REG_OFFSET
+                    ASM_LOAD32_REG_REG_OFFSET(emit->as, REG_RET, reg_base, index_value);
+                    #else
                     if (index_value != 0) {
                         // index is a non-zero immediate
-                        #if N_THUMB
-                        if (index_value > 0 && index_value < 32) {
-                            asm_thumb_ldr_rlo_rlo_i5(emit->as, REG_RET, reg_base, index_value);
-                            break;
-                        }
-                        #elif N_RV32
-                        if (FIT_SIGNED(index_value, 10)) {
-                            asm_rv32_opcode_lw(emit->as, REG_RET, reg_base, index_value << 2);
-                            break;
-                        }
-                        #endif
                         need_reg_single(emit, reg_index, 0);
                         ASM_MOV_REG_IMM(emit->as, reg_index, index_value << 2);
                         ASM_ADD_REG_REG(emit->as, reg_index, reg_base); // add 4*index to base
                         reg_base = reg_index;
                     }
                     ASM_LOAD32_REG_REG(emit->as, REG_RET, reg_base); // load from (base+4*index)
+                    #endif
                     break;
                 }
                 default:
@@ -1618,31 +1635,36 @@ static void emit_native_load_subscr(emit_t *emit) {
             switch (vtype_base) {
                 case VTYPE_PTR8: {
                     // pointer to 8-bit memory
-                    // TODO optimise to use thumb ldrb r1, [r2, r3]
+                    #ifdef ASM_LOAD8_REG_REG_REG
+                    ASM_LOAD8_REG_REG_REG(emit->as, REG_RET, REG_ARG_1, reg_index);
+                    #else
                     ASM_ADD_REG_REG(emit->as, REG_ARG_1, reg_index); // add index to base
                     ASM_LOAD8_REG_REG(emit->as, REG_RET, REG_ARG_1); // store value to (base+index)
+                    #endif
                     break;
                 }
                 case VTYPE_PTR16: {
                     // pointer to 16-bit memory
+                    #ifdef ASM_LOAD16_REG_REG_REG
+                    ASM_LOAD16_REG_REG_REG(emit->as, REG_RET, REG_ARG_1, reg_index);
+                    #else
                     ASM_ADD_REG_REG(emit->as, REG_ARG_1, reg_index); // add index to base
                     ASM_ADD_REG_REG(emit->as, REG_ARG_1, reg_index); // add index to base
                     ASM_LOAD16_REG_REG(emit->as, REG_RET, REG_ARG_1); // load from (base+2*index)
+                    #endif
                     break;
                 }
                 case VTYPE_PTR32: {
                     // pointer to word-size memory
-                    #if N_RV32
-                    asm_rv32_opcode_slli(emit->as, REG_TEMP2, reg_index, 2);
-                    asm_rv32_opcode_cadd(emit->as, REG_ARG_1, REG_TEMP2);
-                    asm_rv32_opcode_lw(emit->as, REG_RET, REG_ARG_1, 0);
-                    break;
-                    #endif
+                    #ifdef ASM_LOAD32_REG_REG_REG
+                    ASM_LOAD32_REG_REG_REG(emit->as, REG_RET, REG_ARG_1, reg_index);
+                    #else
                     ASM_ADD_REG_REG(emit->as, REG_ARG_1, reg_index); // add index to base
                     ASM_ADD_REG_REG(emit->as, REG_ARG_1, reg_index); // add index to base
                     ASM_ADD_REG_REG(emit->as, REG_ARG_1, reg_index); // add index to base
                     ASM_ADD_REG_REG(emit->as, REG_ARG_1, reg_index); // add index to base
                     ASM_LOAD32_REG_REG(emit->as, REG_RET, REG_ARG_1); // load from (base+4*index)
+                    #endif
                     break;
                 }
                 default:
@@ -1785,77 +1807,47 @@ static void emit_native_store_subscr(emit_t *emit) {
             switch (vtype_base) {
                 case VTYPE_PTR8: {
                     // pointer to 8-bit memory
-                    // TODO optimise to use thumb strb r1, [r2, r3]
+                    #ifdef ASM_STORE8_REG_REG_OFFSET
+                    ASM_STORE8_REG_REG_OFFSET(emit->as, reg_value, reg_base, index_value);
+                    #else
                     if (index_value != 0) {
                         // index is non-zero
-                        #if N_THUMB
-                        if (index_value > 0 && index_value < 32) {
-                            asm_thumb_strb_rlo_rlo_i5(emit->as, reg_value, reg_base, index_value);
-                            break;
-                        }
-                        #elif N_RV32
-                        if (FIT_SIGNED(index_value, 12)) {
-                            asm_rv32_opcode_sb(emit->as, reg_value, reg_base, index_value);
-                            break;
-                        }
-                        #endif
                         ASM_MOV_REG_IMM(emit->as, reg_index, index_value);
-                        #if N_ARM
-                        asm_arm_strb_reg_reg_reg(emit->as, reg_value, reg_base, reg_index);
-                        return;
-                        #endif
                         ASM_ADD_REG_REG(emit->as, reg_index, reg_base); // add index to base
                         reg_base = reg_index;
                     }
                     ASM_STORE8_REG_REG(emit->as, reg_value, reg_base); // store value to (base+index)
+                    #endif
                     break;
                 }
                 case VTYPE_PTR16: {
                     // pointer to 16-bit memory
+                    #ifdef ASM_STORE16_REG_REG_OFFSET
+                    ASM_STORE16_REG_REG_OFFSET(emit->as, reg_value, reg_base, index_value);
+                    #else
                     if (index_value != 0) {
                         // index is a non-zero immediate
-                        #if N_THUMB
-                        if (index_value > 0 && index_value < 32) {
-                            asm_thumb_strh_rlo_rlo_i5(emit->as, reg_value, reg_base, index_value);
-                            break;
-                        }
-                        #elif N_RV32
-                        if (FIT_SIGNED(index_value, 11)) {
-                            asm_rv32_opcode_sh(emit->as, reg_value, reg_base, index_value << 1);
-                            break;
-                        }
-                        #endif
                         ASM_MOV_REG_IMM(emit->as, reg_index, index_value << 1);
                         ASM_ADD_REG_REG(emit->as, reg_index, reg_base); // add 2*index to base
                         reg_base = reg_index;
                     }
                     ASM_STORE16_REG_REG(emit->as, reg_value, reg_base); // store value to (base+2*index)
+                    #endif
                     break;
                 }
                 case VTYPE_PTR32: {
                     // pointer to 32-bit memory
+                    #ifdef ASM_STORE32_REG_REG_OFFSET
+                    ASM_STORE32_REG_REG_OFFSET(emit->as, reg_value, reg_base, index_value);
+                    #else
                     if (index_value != 0) {
                         // index is a non-zero immediate
-                        #if N_THUMB
-                        if (index_value > 0 && index_value < 32) {
-                            asm_thumb_str_rlo_rlo_i5(emit->as, reg_value, reg_base, index_value);
-                            break;
-                        }
-                        #elif N_RV32
-                        if (FIT_SIGNED(index_value, 10)) {
-                            asm_rv32_opcode_sw(emit->as, reg_value, reg_base, index_value << 2);
-                            break;
-                        }
-                        #elif N_ARM
-                        ASM_MOV_REG_IMM(emit->as, reg_index, index_value);
-                        asm_arm_str_reg_reg_reg(emit->as, reg_value, reg_base, reg_index);
-                        return;
-                        #endif
                         ASM_MOV_REG_IMM(emit->as, reg_index, index_value << 2);
                         ASM_ADD_REG_REG(emit->as, reg_index, reg_base); // add 4*index to base
                         reg_base = reg_index;
                     }
                     ASM_STORE32_REG_REG(emit->as, reg_value, reg_base); // store value to (base+4*index)
+                    #endif
                     break;
                 }
                 default:
@@ -1886,42 +1878,36 @@ static void emit_native_store_subscr(emit_t *emit) {
             switch (vtype_base) {
                 case VTYPE_PTR8: {
                     // pointer to 8-bit memory
-                    // TODO optimise to use thumb strb r1, [r2, r3]
-                    #if N_ARM
-                    asm_arm_strb_reg_reg_reg(emit->as, reg_value, REG_ARG_1, reg_index);
-                    break;
-                    #endif
+                    #ifdef ASM_STORE8_REG_REG_REG
+                    ASM_STORE8_REG_REG_REG(emit->as, reg_value, REG_ARG_1, reg_index);
+                    #else
                     ASM_ADD_REG_REG(emit->as, REG_ARG_1, reg_index); // add index to base
                     ASM_STORE8_REG_REG(emit->as, reg_value, REG_ARG_1); // store value to (base+index)
+                    #endif
                     break;
                 }
                 case VTYPE_PTR16: {
                     // pointer to 16-bit memory
-                    #if N_ARM
-                    asm_arm_strh_reg_reg_reg(emit->as, reg_value, REG_ARG_1, reg_index);
-                    break;
-                    #endif
+                    #ifdef ASM_STORE16_REG_REG_REG
+                    ASM_STORE16_REG_REG_REG(emit->as, reg_value, REG_ARG_1, reg_index);
+                    #else
                     ASM_ADD_REG_REG(emit->as, REG_ARG_1, reg_index); // add index to base
                     ASM_ADD_REG_REG(emit->as, REG_ARG_1, reg_index); // add index to base
                     ASM_STORE16_REG_REG(emit->as, reg_value, REG_ARG_1); // store value to (base+2*index)
+                    #endif
                     break;
                 }
                 case VTYPE_PTR32: {
                     // pointer to 32-bit memory
-                    #if N_ARM
-                    asm_arm_str_reg_reg_reg(emit->as, reg_value, REG_ARG_1, reg_index);
-                    break;
-                    #elif N_RV32
-                    asm_rv32_opcode_slli(emit->as, REG_TEMP2, reg_index, 2);
-                    asm_rv32_opcode_cadd(emit->as, REG_ARG_1, REG_TEMP2);
-                    asm_rv32_opcode_sw(emit->as, reg_value, REG_ARG_1, 0);
-                    break;
-                    #endif
+                    #ifdef ASM_STORE32_REG_REG_REG
+                    ASM_STORE32_REG_REG_REG(emit->as, reg_value, REG_ARG_1, reg_index);
+                    #else
                     ASM_ADD_REG_REG(emit->as, REG_ARG_1, reg_index); // add index to base
                     ASM_ADD_REG_REG(emit->as, REG_ARG_1, reg_index); // add index to base
                     ASM_ADD_REG_REG(emit->as, REG_ARG_1, reg_index); // add index to base
                     ASM_ADD_REG_REG(emit->as, REG_ARG_1, reg_index); // add index to base
                     ASM_STORE32_REG_REG(emit->as, reg_value, REG_ARG_1); // store value to (base+4*index)
+                    #endif
                     break;
                 }
                 default:
@@ -1957,7 +1943,7 @@ static void emit_native_delete_attr(emit_t *emit, qstr qst) {
     vtype_kind_t vtype_base;
     emit_pre_pop_reg(emit, &vtype_base, REG_ARG_1); // arg1 = base
     assert(vtype_base == VTYPE_PYOBJ);
-    ASM_XOR_REG_REG(emit->as, REG_ARG_3, REG_ARG_3); // arg3 = value (null for delete)
+    ASM_CLR_REG(emit->as, REG_ARG_3); // arg3 = value (null for delete)
     emit_call_with_qstr_arg(emit, MP_F_STORE_ATTR, qst, REG_ARG_2); // arg2 = attribute name
     emit_post(emit);
 }
@@ -2103,7 +2089,7 @@ static void emit_native_unwind_jump(emit_t *emit, mp_uint_t label, mp_uint_t exc
             // No finally, handle the jump ourselves
             // First, restore the exception handler address for the jump
             if (e < emit->exc_stack) {
-                ASM_XOR_REG_REG(emit->as, REG_RET, REG_RET);
+                ASM_CLR_REG(emit->as, REG_RET);
             } else {
                 ASM_MOV_REG_PCREL(emit->as, REG_RET, e->label);
             }
@@ -2234,8 +2220,7 @@ static void emit_native_with_cleanup(emit_t *emit, mp_uint_t label) {
 
     // Replace exception with MP_OBJ_NULL.
     emit_native_label_assign(emit, *emit->label_slot);
-    ASM_MOV_REG_IMM(emit->as, REG_TEMP0, (mp_uint_t)MP_OBJ_NULL);
-    ASM_MOV_LOCAL_REG(emit->as, LOCAL_IDX_EXC_VAL(emit), REG_TEMP0);
+    ASM_MOV_LOCAL_MP_OBJ_NULL(emit->as, LOCAL_IDX_EXC_VAL(emit), REG_TEMP0);
 
     // end of with cleanup nlr_catch block
     emit_native_label_assign(emit, *emit->label_slot + 1);
@@ -2342,8 +2327,7 @@ static void emit_native_for_iter_end(emit_t *emit) {
 static void emit_native_pop_except_jump(emit_t *emit, mp_uint_t label, bool within_exc_handler) {
     if (within_exc_handler) {
         // Cancel any active exception so subsequent handlers don't see it
-        ASM_MOV_REG_IMM(emit->as, REG_TEMP0, (mp_uint_t)MP_OBJ_NULL);
-        ASM_MOV_LOCAL_REG(emit->as, LOCAL_IDX_EXC_VAL(emit), REG_TEMP0);
+        ASM_MOV_LOCAL_MP_OBJ_NULL(emit->as, LOCAL_IDX_EXC_VAL(emit), REG_TEMP0);
     } else {
         emit_native_leave_exc_stack(emit, false);
     }
@@ -2356,22 +2340,23 @@ static void emit_native_unary_op(emit_t *emit, mp_unary_op_t op) {
         if (op == MP_UNARY_OP_POSITIVE) {
             // No-operation, just leave the argument on the stack.
         } else if (op == MP_UNARY_OP_NEGATIVE) {
-            int reg = REG_RET;
-            emit_pre_pop_reg_flexible(emit, &vtype, &reg, reg, reg);
-            ASM_NEG_REG(emit->as, reg);
-            emit_post_push_reg(emit, vtype, reg);
+            emit_pre_pop_reg(emit, &vtype, REG_RET);
+            ASM_NEG_REG(emit->as, REG_RET);
+            emit_post_push_reg(emit, vtype, REG_RET);
         } else if (op == MP_UNARY_OP_INVERT) {
+            emit_pre_pop_reg(emit, &vtype, REG_RET);
             #ifdef ASM_NOT_REG
-            int reg = REG_RET;
-            emit_pre_pop_reg_flexible(emit, &vtype, &reg, reg, reg);
-            ASM_NOT_REG(emit->as, reg);
+            ASM_NOT_REG(emit->as, REG_RET);
             #else
-            int reg = REG_RET;
-            emit_pre_pop_reg_flexible(emit, &vtype, &reg, REG_ARG_1, reg);
-            ASM_MOV_REG_IMM(emit->as, REG_ARG_1, -1);
-            ASM_XOR_REG_REG(emit->as, reg, REG_ARG_1);
+            #if REG_RET != REG_ARG_1
+            int reg = REG_ARG_1;
+            #else
+            int reg = REG_ARG_2;
             #endif
-            emit_post_push_reg(emit, vtype, reg);
+            ASM_MOV_REG_IMM(emit->as, reg, -1);
+            ASM_XOR_REG_REG(emit->as, REG_RET, reg);
+            #endif
+            emit_post_push_reg(emit, vtype, REG_RET);
         } else {
             EMIT_NATIVE_VIPER_TYPE_ERROR(emit,
                 MP_ERROR_TEXT("'not' not implemented"), mp_binary_op_method_name[op]);
@@ -2491,7 +2476,7 @@ static void emit_native_binary_op(emit_t *emit, mp_binary_op_t op) {
             #if N_X64
             asm_x64_xor_r64_r64(emit->as, REG_RET, REG_RET);
             asm_x64_cmp_r64_with_r64(emit->as, reg_rhs, REG_ARG_2);
-            static byte ops[6 + 6] = {
+            static const byte ops[6 + 6] = {
                 // unsigned
                 ASM_X64_CC_JB,
                 ASM_X64_CC_JA,
@@ -2511,7 +2496,7 @@ static void emit_native_binary_op(emit_t *emit, mp_binary_op_t op) {
             #elif N_X86
             asm_x86_xor_r32_r32(emit->as, REG_RET, REG_RET);
             asm_x86_cmp_r32_with_r32(emit->as, reg_rhs, REG_ARG_2);
-            static byte ops[6 + 6] = {
+            static const byte ops[6 + 6] = {
                 // unsigned
                 ASM_X86_CC_JB,
                 ASM_X86_CC_JA,
@@ -2531,7 +2516,7 @@ static void emit_native_binary_op(emit_t *emit, mp_binary_op_t op) {
             #elif N_THUMB
             asm_thumb_cmp_rlo_rlo(emit->as, REG_ARG_2, reg_rhs);
             if (asm_thumb_allow_armv7m(emit->as)) {
-                static uint16_t ops[6 + 6] = {
+                static const uint16_t ops[6 + 6] = {
                     // unsigned
                     ASM_THUMB_OP_ITE_CC,
                     ASM_THUMB_OP_ITE_HI,
@@ -2551,7 +2536,7 @@ static void emit_native_binary_op(emit_t *emit, mp_binary_op_t op) {
                 asm_thumb_mov_rlo_i8(emit->as, REG_RET, 1);
                 asm_thumb_mov_rlo_i8(emit->as, REG_RET, 0);
             } else {
-                static uint16_t ops[6 + 6] = {
+                static const uint16_t ops[6 + 6] = {
                     // unsigned
                     ASM_THUMB_CC_CC,
                     ASM_THUMB_CC_HI,
@@ -2574,7 +2559,7 @@ static void emit_native_binary_op(emit_t *emit, mp_binary_op_t op) {
             }
             #elif N_ARM
             asm_arm_cmp_reg_reg(emit->as, REG_ARG_2, reg_rhs);
-            static uint ccs[6 + 6] = {
+            static const uint ccs[6 + 6] = {
                 // unsigned
                 ASM_ARM_CC_CC,
                 ASM_ARM_CC_HI,
@@ -2592,7 +2577,7 @@ static void emit_native_binary_op(emit_t *emit, mp_binary_op_t op) {
             };
             asm_arm_setcc_reg(emit->as, REG_RET, ccs[op_idx]);
             #elif N_XTENSA || N_XTENSAWIN
-            static uint8_t ccs[6 + 6] = {
+            static const uint8_t ccs[6 + 6] = {
                 // unsigned
                 ASM_XTENSA_CC_LTU,
                 0x80 | ASM_XTENSA_CC_LTU, // for GTU we'll swap args
@@ -2954,8 +2939,9 @@ static void emit_native_return_value(emit_t *emit) {
 
 static void emit_native_raise_varargs(emit_t *emit, mp_uint_t n_args) {
     DEBUG_printf("raise_varargs(%d)\n", n_args);
-    (void)n_args;
-    assert(n_args == 1);
+    if (n_args != 1) {
+        mp_raise_NotImplementedError(MP_ERROR_TEXT("native raise"));
+    }
     vtype_kind_t vtype_exc;
     emit_pre_pop_reg(emit, &vtype_exc, REG_ARG_1); // arg1 = object to raise
     if (vtype_exc != VTYPE_PYOBJ) {
@@ -3028,8 +3014,7 @@ static void emit_native_yield(emit_t *emit, int kind) {
     if (kind == MP_EMIT_YIELD_VALUE) {
         // Check LOCAL_IDX_THROW_VAL for any injected value
         ASM_MOV_REG_LOCAL(emit->as, REG_ARG_1, LOCAL_IDX_THROW_VAL(emit));
-        ASM_MOV_REG_IMM(emit->as, REG_ARG_2, (mp_uint_t)MP_OBJ_NULL);
-        ASM_MOV_LOCAL_REG(emit->as, LOCAL_IDX_THROW_VAL(emit), REG_ARG_2);
+        ASM_MOV_LOCAL_MP_OBJ_NULL(emit->as, LOCAL_IDX_THROW_VAL(emit), REG_ARG_2);
         emit_call(emit, MP_F_NATIVE_RAISE);
     } else {
         // Label loop entry

@@ -1,0 +1,13 @@
+--- instance0 ---
+3
+b'sent to right channel 1'
+b'sent to right channel 1'
+b'sent to right channel 1'
+b'sent to right channel 2'
+b'sent to right channel 2'
+b'sent to right channel 2'
+Timeout
+--- instance1 ---
+3
+8
+3

@@ -105,7 +105,7 @@ static const char *const ssl_error_tab2[] = {
     "NOT_SUPPORTED",
 };
 
-static NORETURN void ssl_raise_error(int err) {
+static MP_NORETURN void ssl_raise_error(int err) {
     MP_STATIC_ASSERT(SSL_NOT_OK - 3 == SSL_EAGAIN);
     MP_STATIC_ASSERT(SSL_ERROR_CONN_LOST - 18 == SSL_ERROR_NOT_SUPPORTED);
 
@@ -390,6 +390,12 @@ static mp_uint_t ssl_socket_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_t ar
         ssl_ctx_free(self->ssl_ctx);
         self->ssl_sock = NULL;
     }
+    #if MICROPY_STREAMS_DELEGATE_ERROR
+    else if (request == MP_STREAM_RAISE_ERROR) {
+        // Raise error with detailed error string
+        ssl_raise_error((int)arg);
+    }
+    #endif
 
     if (self->sock == MP_OBJ_NULL) {
         // Underlying socket may be null if the constructor raised an exception.

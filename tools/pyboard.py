@@ -70,6 +70,7 @@ Or:
 import ast
 import errno
 import os
+import stat
 import struct
 import sys
 import time
@@ -244,6 +245,8 @@ class ProcessPtyToTerminal:
             self.close()
             sys.exit(1)
         pty = m.group()
+        # Compensate for some boards taking a bit longer to start
+        time.sleep(0.1)
         # rtscts, dsrdtr params are to workaround pyserial bug:
         # http://stackoverflow.com/questions/34831131/pyserial-does-not-play-well-with-virtual-port
         self.serial = serial.Serial(pty, interCharTimeout=1, rtscts=True, dsrdtr=True)
@@ -265,14 +268,22 @@ class ProcessPtyToTerminal:
 
 class Pyboard:
     def __init__(
-        self, device, baudrate=115200, user="micro", password="python", wait=0, exclusive=True
+        self,
+        device,
+        baudrate=115200,
+        user="micro",
+        password="python",
+        wait=0,
+        exclusive=True,
+        timeout=None,
+        write_timeout=5,
     ):
         self.in_raw_repl = False
         self.use_raw_paste = True
         if device.startswith("exec:"):
             self.serial = ProcessToSerial(device[len("exec:") :])
         elif device.startswith("execpty:"):
-            self.serial = ProcessPtyToTerminal(device[len("qemupty:") :])
+            self.serial = ProcessPtyToTerminal(device[len("execpty:") :])
         elif device and device[0].isdigit() and device[-1].isdigit() and device.count(".") == 3:
             # device looks like an IP address
             self.serial = TelnetToSerial(device, user, password, read_timeout=10)
@@ -281,7 +292,12 @@ class Pyboard:
             import serial.tools.list_ports
 
             # Set options, and exclusive if pyserial supports it
-            serial_kwargs = {"baudrate": baudrate, "interCharTimeout": 1}
+            serial_kwargs = {
+                "baudrate": baudrate,
+                "timeout": timeout,
+                "write_timeout": write_timeout,
+                "interCharTimeout": 1,
+            }
             if serial.__version__ >= "3.3":
                 serial_kwargs["exclusive"] = exclusive
 
@@ -318,36 +334,76 @@ class Pyboard:
             if delayed:
                 print("")
 
+        if device.startswith("execpty:"):
+            self.is_pty = True
+        else:
+            self.is_pty = self._is_pty_device(device)
+
+    @staticmethod
+    def _is_pty_device(device):
+        """Detect if device is a PTY (pseudo-terminal), e.g. used by QEMU."""
+        if device.startswith("/dev/pts/"):
+            try:
+                st = os.stat(device)
+                if stat.S_ISCHR(st.st_mode) and os.major(st.st_rdev) == 136:
+                    return True
+            except (OSError, AttributeError):
+                pass
+        return False
+
     def close(self):
         self.serial.close()
 
-    def read_until(self, min_num_bytes, ending, timeout=10, data_consumer=None):
-        # if data_consumer is used then data is not accumulated and the ending must be 1 byte long
-        assert data_consumer is None or len(ending) == 1
+    def read_until(
+        self, min_num_bytes, ending, timeout=10, data_consumer=None, timeout_overall=None
+    ):
+        """
+        min_num_bytes: Obsolete.
+        ending: Return if 'ending' matches.
+        timeout [s]: Return if timeout between characters. None: Infinite timeout.
+        timeout_overall [s]: Return not later than timeout_overall. None: Infinite timeout.
+        data_consumer: Use callback for incoming characters.
+            If data_consumer is used then data is not accumulated and the ending must be 1 byte long
 
-        data = self.serial.read(min_num_bytes)
-        if data_consumer:
-            data_consumer(data)
-        timeout_count = 0
+        It is not visible to the caller why the function returned. It could be ending or timeout.
+        """
+        assert data_consumer is None or len(ending) == 1
+        assert isinstance(timeout, (type(None), int, float))
+        assert isinstance(timeout_overall, (type(None), int, float))
+
+        data = b""
+        begin_overall_s = begin_char_s = time.monotonic()
         while True:
             if data.endswith(ending):
                 break
-            elif self.serial.inWaiting() > 0:
+            new_data = None
+            if self.is_pty or self.serial.inWaiting() > 0:
                 new_data = self.serial.read(1)
+            if new_data:
                 if data_consumer:
                     data_consumer(new_data)
                     data = new_data
                 else:
                     data = data + new_data
-                timeout_count = 0
+                begin_char_s = time.monotonic()
             else:
-                timeout_count += 1
-                if timeout is not None and timeout_count >= 100 * timeout:
+                if timeout is not None and time.monotonic() >= begin_char_s + timeout:
+                    break
+                if (
+                    timeout_overall is not None
+                    and time.monotonic() >= begin_overall_s + timeout_overall
+                ):
                     break
                 time.sleep(0.01)
         return data
 
-    def enter_raw_repl(self, soft_reset=True):
+    def enter_raw_repl(self, soft_reset=True, timeout_overall=10):
+        try:
+            self._enter_raw_repl_unprotected(soft_reset, timeout_overall)
+        except OSError as er:
+            raise PyboardError("could not enter raw repl: {}".format(er))
+
+    def _enter_raw_repl_unprotected(self, soft_reset, timeout_overall):
         self.serial.write(b"\r\x03")  # ctrl-C: interrupt any running program
 
         # flush input (without relying on serial.flushInput())
@@ -359,7 +415,9 @@ class Pyboard:
         self.serial.write(b"\r\x01")  # ctrl-A: enter raw REPL
 
         if soft_reset:
-            data = self.read_until(1, b"raw REPL; CTRL-B to exit\r\n>")
+            data = self.read_until(
+                1, b"raw REPL; CTRL-B to exit\r\n>", timeout_overall=timeout_overall
+            )
             if not data.endswith(b"raw REPL; CTRL-B to exit\r\n>"):
                 print(data)
                 raise PyboardError("could not enter raw repl")
@@ -369,12 +427,12 @@ class Pyboard:
             # Waiting for "soft reboot" independently to "raw REPL" (done below)
             # allows boot.py to print, which will show up after "soft reboot"
             # and before "raw REPL".
-            data = self.read_until(1, b"soft reboot\r\n")
+            data = self.read_until(1, b"soft reboot\r\n", timeout_overall=timeout_overall)
             if not data.endswith(b"soft reboot\r\n"):
                 print(data)
                 raise PyboardError("could not enter raw repl")
 
-        data = self.read_until(1, b"raw REPL; CTRL-B to exit\r\n")
+        data = self.read_until(1, b"raw REPL; CTRL-B to exit\r\n", timeout_overall=timeout_overall)
         if not data.endswith(b"raw REPL; CTRL-B to exit\r\n"):
             print(data)
             raise PyboardError("could not enter raw repl")
@@ -492,8 +550,8 @@ class Pyboard:
             return ret
 
     # In Python3, call as pyboard.exec(), see the setattr call below.
-    def exec_(self, command, data_consumer=None):
-        ret, ret_err = self.exec_raw(command, data_consumer=data_consumer)
+    def exec_(self, command, timeout=10, data_consumer=None):
+        ret, ret_err = self.exec_raw(command, timeout, data_consumer)
         if ret_err:
             raise PyboardError("exception", ret, ret_err)
         return ret
@@ -504,7 +562,7 @@ class Pyboard:
         return self.exec_(pyfile)
 
     def get_time(self):
-        t = str(self.eval("pyb.RTC().datetime()"), encoding="utf8")[1:-1].split(", ")
+        t = str(self.eval("machine.RTC().datetime()"), encoding="utf8")[1:-1].split(", ")
         return int(t[4]) * 3600 + int(t[5]) * 60 + int(t[6])
 
     def fs_exists(self, src):
@@ -528,7 +586,7 @@ class Pyboard:
         def repr_consumer(b):
             buf.extend(b.replace(b"\x04", b""))
 
-        cmd = "import os\nfor f in os.ilistdir(%s):\n" " print(repr(f), end=',')" % (
+        cmd = "import os\nfor f in os.ilistdir(%s):\n print(repr(f), end=',')" % (
             ("'%s'" % src) if src else ""
         )
         try:

@@ -34,7 +34,6 @@
 // Board data
 #define MICROPY_HW_BOARD_NAME       "EVK_NINA_B3"
 #define MICROPY_HW_MCU_NAME         "NRF52840"
-#define MICROPY_PY_SYS_PLATFORM     "nrf52"
 
 // Enable @viper and @native
 #define MICROPY_EMIT_THUMB          (1)

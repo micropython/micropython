@@ -101,3 +101,19 @@ Classes
         a 2
         w 5
         b 3
+
+    .. method:: OrderedDict.popitem()
+
+        Remove and return a (key, value) pair from the dictionary.
+        Pairs are returned in LIFO order.
+
+        .. admonition:: Difference to CPython
+            :class: attention
+
+            ``OrderedDict.popitem()`` does not support the ``last=False`` argument and
+            will always remove and return the last item if present.
+
+            A workaround for this is to use ``pop(<first_key>)`` to remove the first item::
+
+                first_key = next(iter(d))
+                d.pop(first_key)

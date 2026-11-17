@@ -2,5 +2,5 @@
 <JsProxy 2>
 1
 1
-PyProxy { _ref: 3 }
+Proxy(PyProxy { _ref: 3 })
 [ 2 ]

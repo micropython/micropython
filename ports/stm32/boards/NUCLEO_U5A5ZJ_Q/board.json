@@ -1,0 +1,15 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [],
+    "images": [
+        "nucleo_u5a5zj_q.jpg"
+    ],
+    "mcu": "stm32u5",
+    "product": "Nucleo U5A5ZJ_Q",
+    "thumbnail": "",
+    "url": "",
+    "vendor": "ST Microelectronics"
+}

@@ -25,8 +25,9 @@ Functions
      Note that for mbedtls based ports, ``ssl.CERT_NONE`` and ``ssl.CERT_OPTIONAL`` will not
      validate any certificate, only ``ssl.CERT_REQUIRED`` will.
 
-   - *cadata* is a bytes object containing the CA certificate chain (in DER format) that will
-     validate the peer's certificate.  Currently only a single DER-encoded certificate is supported.
+   - *cadata* is a str or bytes object containing the CA certificate chain that will validate the
+     peer's certificate.  It can be one or more certificates in PEM format, or single DER-encoded
+     certificate.
 
    Depending on the underlying module implementation in a particular
    :term:`MicroPython port`, some or all keyword arguments above may be not supported.
@@ -66,7 +67,32 @@ class SSLContext
    Set the available ciphers for sockets created with this context.  *ciphers* should be
    a list of strings in the `IANA cipher suite format <https://wiki.mozilla.org/Security/Cipher_Suites>`_ .
 
-.. method:: SSLContext.wrap_socket(sock, *, server_side=False, do_handshake_on_connect=True, server_hostname=None)
+.. attribute:: SSLContext.psk_identity
+               SSLContext.psk_key
+
+   The pre-shared key (PSK) identity and key to authenticate with as a client.
+   Set both to use PSK: *psk_identity* is the identity sent to the server and
+   *psk_key* is the shared key, both as `bytes` objects.
+
+   While PSK is configured the context offers only PSK cipher suites, so the
+   connection cannot fall back to a non-PSK (e.g. certificate-based) suite.
+
+   Availability depends on the port's mbedTLS being built with PSK support.
+
+.. attribute:: SSLContext.server_psk_keys
+
+   A mapping used by a server to look up the key for the identity presented by a
+   connecting client.  Set it to accept PSK clients::
+
+      ctx.server_psk_keys = {b"my-identity": b"my-key"}
+
+   Its ``get()`` method is called with the client's identity (a `bytes` object)
+   and should return the corresponding key as a `bytes` object, or ``None`` to
+   reject an unknown identity.  Any object providing such a ``get()`` method may
+   be used, so keys can be computed or fetched on demand.  As with the client,
+   the context is restricted to PSK cipher suites while this is set.
+
+.. method:: SSLContext.wrap_socket(sock, *, server_side=False, do_handshake_on_connect=True, server_hostname=None, client_id=None)
 
    Takes a `stream` *sock* (usually socket.socket instance of ``SOCK_STREAM`` type),
    and returns an instance of ssl.SSLSocket, wrapping the underlying stream.
@@ -88,6 +114,9 @@ class SSLContext
    - *server_hostname* is for use as a client, and sets the hostname to check against the received
      server certificate.  It also sets the name for Server Name Indication (SNI), allowing the server
      to present the proper certificate.
+
+   - *client_id* is a MicroPython-specific extension argument used only when implementing a DTLS
+     Server. See :ref:`dtls` for details.
 
 .. warning::
 
@@ -117,11 +146,65 @@ Exceptions
 
    This exception does NOT exist. Instead its base class, OSError, is used.
 
+.. _dtls:
+
+DTLS support
+------------
+
+.. admonition:: Difference to CPython
+   :class: attention
+
+   This is a MicroPython extension.
+
+On most ports, this module supports DTLS in client and server mode via the
+`PROTOCOL_DTLS_CLIENT` and `PROTOCOL_DTLS_SERVER` constants that can be used as
+the ``protocol`` argument of `SSLContext`.
+
+In this case the underlying socket is expected to behave as a datagram socket (i.e.
+like the socket opened with ``socket.socket`` with ``socket.AF_INET`` as ``af`` and
+``socket.SOCK_DGRAM`` as ``type``).
+
+DTLS is only supported on ports that use mbedTLS, and it is enabled by default
+in most configurations but can be manually disabled by defining
+``MICROPY_PY_SSL_DTLS`` to 0.
+
+DTLS server support
+^^^^^^^^^^^^^^^^^^^
+
+MicroPython's DTLS server support is configured with "Hello Verify" as required
+for DTLS 1.2. This is transparent for DTLS clients, but there are relevant
+considerations when implementing a DTLS server in MicroPython:
+
+- The server should pass an additional argument *client_id* when calling
+  `SSLContext.wrap_socket()`. This ID must be a `bytes` object (or similar) with
+  a transport-specific identifier representing the client.
+
+  The simplest approach is to convert the tuple of ``(client_ip, client_port)``
+  returned from ``socket.recv_from()`` into a byte string, i.e.::
+
+        _, client_addr = sock.recvfrom(1, socket.MSG_PEEK)
+        sock.connect(client_addr)  # Connect back to the client
+        sock = ssl_ctx.wrap_socket(sock, server_side=True,
+                                   client_id=repr(client_addr).encode())
+
+- The first time a client connects, the server call to ``wrap_socket`` will fail
+  with a `OSError` error "Hello Verify Required". This is because the DTLS
+  "Hello Verify" cookie is not yet known by the client. If the same client
+  connects a second time then ``wrap_socket`` will succeed.
+
+- DTLS cookies for "Hello Verify" are associated with the `SSLContext` object,
+  so the same `SSLContext` object should be used to wrap a subsequent connection
+  from the same client. The cookie implementation includes a timeout and has
+  constant memory use regardless of how many clients connect, so it's OK to
+  reuse the same `SSLContext` object for the lifetime of the server.
+
 Constants
 ---------
 
 .. data:: ssl.PROTOCOL_TLS_CLIENT
           ssl.PROTOCOL_TLS_SERVER
+          ssl.PROTOCOL_DTLS_CLIENT (when DTLS support is enabled)
+          ssl.PROTOCOL_DTLS_SERVER (when DTLS support is enabled)
 
     Supported values for the *protocol* parameter.
 

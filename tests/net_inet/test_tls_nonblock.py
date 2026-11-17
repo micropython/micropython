@@ -1,5 +1,12 @@
 import socket, ssl, errno, sys, time, select
 
+# Although this test doesn't need ssl.CERT_REQUIRED, it does require the ssl module
+# to support modern ciphers.  So exclude the test on axTLS which doesn't have
+# CERT_REQUIRED.
+if not hasattr(ssl, "CERT_REQUIRED"):
+    print("SKIP")
+    raise SystemExit
+
 
 def test_one(site, opts):
     ai = socket.getaddrinfo(site, 443, socket.AF_INET)
@@ -14,7 +21,7 @@ def test_one(site, opts):
         raise OSError(-1, "connect blocks")
     except OSError as e:
         if e.errno != errno.EINPROGRESS:
-            raise
+            raise e
 
     # Create SSLContext.
     ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
@@ -34,7 +41,7 @@ def test_one(site, opts):
             s = ssl_context.wrap_socket(s, do_handshake_on_connect=False)
         except OSError as e:
             if e.errno != errno.EINPROGRESS:
-                raise
+                raise e
         print("wrapped")
 
         # CPython needs to be told to do the handshake
@@ -49,12 +56,12 @@ def test_one(site, opts):
                     elif err.args[0] == ssl.SSL_ERROR_WANT_WRITE:
                         select.select([], [s], [])
                     else:
-                        raise
+                        raise err
                 time.sleep(0.1)
             # print("shook hands")
 
         # Write HTTP request
-        out = b"GET / HTTP/1.0\r\nHost: %s\r\n\r\n" % bytes(site, "latin")
+        out = b"GET / HTTP/1.0\r\nHost: %s\r\n\r\n" % bytes(site, "ascii")
         while len(out) > 0:
             n = s.write(out)
             if n is None:
@@ -73,7 +80,7 @@ def test_one(site, opts):
             except OSError as err:
                 if err.errno == 2:  # 2=ssl.SSL_ERROR_WANT_READ:
                     continue
-                raise
+                raise err
             if b is None:
                 continue
             if len(b) > 0:

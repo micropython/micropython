@@ -36,7 +36,7 @@ void PWM_UpdatePwmDutycycle_u16(
 
     // Setup the PWM dutycycle of channel A or B
     if (pwmSignal == kPWM_PwmA) {
-        if (dutyCycle >= 65536) {
+        if (dutyCycle >= PWM_FULL_SCALE) {
             base->SM[subModule].VAL2 = 0;
             base->SM[subModule].VAL3 = pulseCnt;
         } else {
@@ -44,7 +44,7 @@ void PWM_UpdatePwmDutycycle_u16(
             base->SM[subModule].VAL3 = base->SM[subModule].VAL2 + pwmHighPulse;
         }
     } else {
-        if (dutyCycle >= 65536) {
+        if (dutyCycle >= PWM_FULL_SCALE) {
             base->SM[subModule].VAL4 = 0;
             base->SM[subModule].VAL5 = pulseCnt;
         } else {
@@ -110,12 +110,8 @@ void PWM_SetupPwmx_u16(PWM_Type *base, pwm_submodule_t subModule,
 
     base->SM[subModule].OCTRL = (base->SM[subModule].OCTRL & ~PWM_OCTRL_POLX_MASK) | PWM_OCTRL_POLX(!invert);
 
-    // Switch the output on or off.
-    if (duty_cycle == 0) {
-        base->OUTEN &= ~(1U << subModule);
-    } else {
-        base->OUTEN |= (1U << subModule);
-    }
+    // Enable PWM output
+    base->OUTEN |= (1U << subModule);
 }
 
 #ifdef FSL_FEATURE_SOC_TMR_COUNT
@@ -160,7 +156,7 @@ status_t QTMR_SetupPwm_u16(TMR_Type *base, qtmr_channel_selection_t channel, uin
     if (dutyCycleU16 == 0) {
         // Clear the output at the next compare
         reg |= (TMR_CTRL_LENGTH_MASK | TMR_CTRL_OUTMODE(kQTMR_ClearOnCompare));
-    } else if (dutyCycleU16 >= 65536) {
+    } else if (dutyCycleU16 >= PWM_FULL_SCALE) {
         // Set the output at the next compare
         reg |= (TMR_CTRL_LENGTH_MASK | TMR_CTRL_OUTMODE(kQTMR_SetOnCompare));
     } else {

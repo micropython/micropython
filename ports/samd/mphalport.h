@@ -41,12 +41,21 @@
 #define MICROPY_PY_PENDSV_ENTER   uint32_t atomic_state = raise_irq_pri(IRQ_PRI_PENDSV)
 #define MICROPY_PY_PENDSV_EXIT    restore_irq_pri(atomic_state)
 
+// Port level Wait-for-Event macro.
+#define MICROPY_INTERNAL_WFE(TIMEOUT_MS) \
+    do { \
+        if (TIMEOUT_MS != 0) { \
+            __WFE(); \
+        } \
+    } while (0)
+
 #define MICROPY_HW_USB_CDC_TX_TIMEOUT (500)
 
 extern int mp_interrupt_char;
 extern ringbuf_t stdin_ringbuf;
 extern volatile uint32_t systick_ms;
 uint64_t mp_hal_ticks_us_64(void);
+void mp_hal_time_ns_set_from_rtc(void);
 
 void mp_hal_set_interrupt_char(int c);
 
@@ -93,10 +102,6 @@ static inline mp_uint_t mp_hal_ticks_cpu(void) {
     return (system_time_t)DWT->CYCCNT;
 }
 #endif
-
-static inline uint64_t mp_hal_time_ns(void) {
-    return mp_hal_ticks_us_64() * 1000;
-}
 
 // C-level pin HAL
 
@@ -173,5 +178,7 @@ static inline void mp_hal_pin_od_high(mp_hal_pin_obj_t pin) {
     gpio_set_pin_direction(pin, GPIO_DIRECTION_IN);
     gpio_set_pin_pull_mode(pin, GPIO_PULL_UP);
 }
+
+void mp_hal_get_random(size_t n, uint8_t *buf);
 
 #endif // MICROPY_INCLUDED_SAMD_MPHALPORT_H

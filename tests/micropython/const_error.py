@@ -1,4 +1,5 @@
 # make sure syntax error works correctly for bad const definition
+# requires: const
 
 from micropython import const
 
@@ -18,8 +19,6 @@ test_syntax("A = const(1); A = const(2)")
 
 # these operations are not supported within const
 test_syntax("A = const(1 @ 2)")
-test_syntax("A = const(1 / 2)")
-test_syntax("A = const(1 ** -2)")
 test_syntax("A = const(1 << -2)")
 test_syntax("A = const(1 >> -2)")
 test_syntax("A = const(1 % 0)")

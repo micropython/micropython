@@ -103,6 +103,7 @@ static const emit_method_table_t *emit_native_table[] = {
     &emit_native_xtensa_method_table,
     &emit_native_xtensawin_method_table,
     &emit_native_rv32_method_table,
+    NULL,
     &emit_native_debug_method_table,
 };
 
@@ -146,7 +147,8 @@ static const emit_inline_asm_method_table_t *emit_asm_table[] = {
     &emit_inline_thumb_method_table,
     &emit_inline_thumb_method_table,
     &emit_inline_xtensa_method_table,
-    NULL,
+    &emit_inline_xtensa_method_table,
+    &emit_inline_rv32_method_table,
 };
 
 #elif MICROPY_EMIT_INLINE_ASM
@@ -157,6 +159,9 @@ static const emit_inline_asm_method_table_t *emit_asm_table[] = {
 #elif MICROPY_EMIT_INLINE_XTENSA
 #define ASM_DECORATOR_QSTR MP_QSTR_asm_xtensa
 #define ASM_EMITTER(f) emit_inline_xtensa_##f
+#elif MICROPY_EMIT_INLINE_RV32
+#define ASM_DECORATOR_QSTR MP_QSTR_asm_rv32
+#define ASM_EMITTER(f) emit_inline_rv32_##f
 #else
 #error "unknown asm emitter"
 #endif
@@ -656,6 +661,10 @@ static void compile_funcdef_lambdef_param(compiler_t *comp, mp_parse_node_t pn) 
     int pn_kind;
     if (MP_PARSE_NODE_IS_ID(pn)) {
         pn_kind = -1;
+    } else if (MP_PARSE_NODE_IS_TOKEN(pn)) {
+        // positional-only "/" marker
+        assert(MP_PARSE_NODE_IS_TOKEN_KIND(pn, MP_TOKEN_OP_SLASH));
+        return;
     } else {
         assert(MP_PARSE_NODE_IS_STRUCT(pn));
         pn_kind = MP_PARSE_NODE_STRUCT_KIND((mp_parse_node_struct_t *)pn);
@@ -854,6 +863,8 @@ static bool compile_built_in_decorator(compiler_t *comp, size_t name_len, mp_par
     } else if (attr == MP_QSTR_asm_thumb) {
         *emit_options = MP_EMIT_OPT_ASM;
     } else if (attr == MP_QSTR_asm_xtensa) {
+        *emit_options = MP_EMIT_OPT_ASM;
+    } else if (attr == MP_QSTR_asm_rv32) {
         *emit_options = MP_EMIT_OPT_ASM;
     #else
     } else if (attr == ASM_DECORATOR_QSTR) {
@@ -2414,6 +2425,14 @@ static void compile_trailer_paren_helper(compiler_t *comp, mp_parse_node_t pn_ar
                     compile_syntax_error(comp, (mp_parse_node_t)pns_arg, MP_ERROR_TEXT("* arg after **"));
                     return;
                 }
+                if (n_keyword) {
+                    // Support for *arg after kwarg is a CPython feature omitted
+                    // from MicroPython in order to reduce code size. See
+                    // https://github.com/micropython/micropython/issues/11439 for
+                    // more info.
+                    compile_syntax_error(comp, (mp_parse_node_t)pns_arg, MP_ERROR_TEXT("* arg after kwarg"));
+                    return;
+                }
                 #if MICROPY_DYNAMIC_COMPILER
                 if (i >= (size_t)mp_dynamic_compiler.small_int_bits - 1)
                 #else
@@ -2870,6 +2889,15 @@ static void compile_scope_func_lambda_param(compiler_t *comp, mp_parse_node_t pn
             // comes before a star, so counts as a positional parameter
             comp->scope_cur->num_pos_args += 1;
         }
+    } else if (MP_PARSE_NODE_IS_TOKEN(pn)) {
+        // positional-only "/" marker
+        assert(MP_PARSE_NODE_IS_TOKEN_KIND(pn, MP_TOKEN_OP_SLASH));
+        if (comp->have_star || comp->scope_cur->num_pos_args == 0 || comp->scope_cur->num_pos_only_args != 0) {
+            // slash must be before any star, after at least one positional arg, and only once
+            compile_syntax_error(comp, pn, MP_ERROR_TEXT("invalid syntax"));
+        } else {
+            comp->scope_cur->num_pos_only_args = comp->scope_cur->num_pos_args;
+        }
     } else {
         assert(MP_PARSE_NODE_IS_STRUCT(pn));
         pns = (mp_parse_node_struct_t *)pn;
@@ -3271,7 +3299,9 @@ static void compile_scope_inline_asm(compiler_t *comp, scope_t *scope, pass_kind
         }
 
         // check structure of parse node
-        assert(MP_PARSE_NODE_IS_STRUCT(pns2->nodes[0]));
+        if (!MP_PARSE_NODE_IS_STRUCT(pns2->nodes[0])) {
+            goto not_an_instruction;
+        }
         if (!MP_PARSE_NODE_IS_NULL(pns2->nodes[1])) {
             goto not_an_instruction;
         }
@@ -3455,13 +3485,14 @@ static void scope_compute_things(scope_t *scope) {
                     id->local_num += num_free;
                 }
             }
+            scope->num_pos_only_args += num_free; // free vars come before the params, and are also positional-only
             scope->num_pos_args += num_free; // free vars are counted as params for passing them into the function
             scope->num_locals += num_free;
         }
     }
 }
 
-#if !MICROPY_PERSISTENT_CODE_SAVE
+#if !MICROPY_EXPOSE_MP_COMPILE_TO_RAW_CODE
 static
 #endif
 void mp_compile_to_raw_code(mp_parse_tree_t *parse_tree, qstr source_file, bool is_repl, mp_compiled_module_t *cm) {
@@ -3542,7 +3573,7 @@ void mp_compile_to_raw_code(mp_parse_tree_t *parse_tree, qstr source_file, bool 
             // TODO this can be improved by calculating it during SCOPE pass
             // but that requires some other structural changes to the asm emitters
             #if MICROPY_DYNAMIC_COMPILER
-            if (mp_dynamic_compiler.native_arch == MP_NATIVE_ARCH_XTENSA)
+            if (mp_dynamic_compiler.native_arch == MP_NATIVE_ARCH_XTENSA || mp_dynamic_compiler.native_arch == MP_NATIVE_ARCH_XTENSAWIN)
             #endif
             {
                 compile_scope_inline_asm(comp, s, MP_PASS_CODE_SIZE);
@@ -3563,6 +3594,13 @@ void mp_compile_to_raw_code(mp_parse_tree_t *parse_tree, qstr source_file, bool 
                 case MP_EMIT_OPT_NATIVE_PYTHON:
                 case MP_EMIT_OPT_VIPER:
                     if (emit_native == NULL) {
+                        // The check looks like this to work around a false
+                        // warning in GCC 13 (and possibly later), where it
+                        // assumes that the check will always fail.
+                        if ((uintptr_t)NATIVE_EMITTER_TABLE == (uintptr_t)NULL) {
+                            comp->compile_error = mp_obj_new_exception_msg(&mp_type_NotImplementedError, MP_ERROR_TEXT("cannot emit native code for this architecture"));
+                            goto emit_finished;
+                        }
                         emit_native = NATIVE_EMITTER(new)(&comp->emit_common, &comp->compile_error, &comp->next_label, max_num_labels);
                     }
                     comp->emit_method_table = NATIVE_EMITTER_TABLE;
@@ -3595,6 +3633,10 @@ void mp_compile_to_raw_code(mp_parse_tree_t *parse_tree, qstr source_file, bool 
         }
     }
 
+    #if MICROPY_EMIT_NATIVE
+emit_finished:
+    #endif
+
     if (comp->compile_error != MP_OBJ_NULL) {
         // if there is no line number for the error then use the line
         // number for the start of this scope
@@ -3626,7 +3668,7 @@ void mp_compile_to_raw_code(mp_parse_tree_t *parse_tree, qstr source_file, bool 
 
         #if MICROPY_DEBUG_PRINTERS
         // now that the module context is valid, the raw codes can be printed
-        if (mp_verbose_flag >= 2) {
+        if (MP_STATE_VM(mp_verbose_flag) >= 2) {
             for (scope_t *s = comp->scope_head; s != NULL; s = s->next) {
                 mp_raw_code_t *rc = s->raw_code;
                 if (rc->kind == MP_CODE_BYTECODE) {

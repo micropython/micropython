@@ -19,6 +19,10 @@ Classes
     array are given by *iterable*. If it is not provided, an empty
     array is created.
 
+    In addition to the methods below, array objects also implement the buffer
+    protocol. This means the contents of the entire array can be accessed as raw
+    bytes via a `memoryview` or other interfaces which use this protocol.
+
     .. method:: append(val)
 
         Append new element *val* to the end of array, growing it.

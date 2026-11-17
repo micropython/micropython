@@ -27,6 +27,10 @@
 #ifndef MICROPY_INCLUDED_EXTMOD_MPBTHCI_H
 #define MICROPY_INCLUDED_EXTMOD_MPBTHCI_H
 
+#include <stdint.h>
+#include <stdbool.h>
+#include <stddef.h>
+
 #define MICROPY_PY_BLUETOOTH_HCI_READ_MODE_BYTE  (0)
 #define MICROPY_PY_BLUETOOTH_HCI_READ_MODE_PACKET  (1)
 

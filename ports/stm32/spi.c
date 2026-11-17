@@ -30,6 +30,7 @@
 #include "py/mphal.h"
 #include "spi.h"
 #include "extmod/modmachine.h"
+#include "extmod/modnetwork.h"
 
 // Possible DMA configurations for SPI buses:
 // SPI1_TX: DMA2_Stream3.CHANNEL_3 or DMA2_Stream5.CHANNEL_3
@@ -106,8 +107,8 @@ const spi_t spi_obj[6] = {
 #error "spi_obj needs updating for new value of MICROPY_HW_SUBGHZSPI_ID"
 #endif
 
-#if defined(STM32H5) || defined(STM32H7)
-// STM32H5/H7 HAL requires SPI IRQs to be enabled and handled.
+#if defined(STM32H5) || defined(STM32H7) || defined(STM32N6) || defined(STM32U5)
+// STM32H5/H7/U5 HAL requires SPI IRQs to be enabled and handled.
 #if defined(MICROPY_HW_SPI1_SCK)
 void SPI1_IRQHandler(void) {
     IRQ_ENTER(SPI1_IRQn);
@@ -175,6 +176,18 @@ void spi_init0(void) {
     #endif
     #if defined(MICROPY_HW_SUBGHZSPI_ID)
     SPIHandleSubGhz.Instance = SUBGHZSPI;
+    #endif
+
+    #if defined(STM32N6)
+    // SPI1/2/3/6 clock configuration, PCLKx (max 200MHz).
+    LL_RCC_SetSPIClockSource(LL_RCC_SPI1_CLKSOURCE_PCLK2);
+    LL_RCC_SetSPIClockSource(LL_RCC_SPI2_CLKSOURCE_PCLK1);
+    LL_RCC_SetSPIClockSource(LL_RCC_SPI3_CLKSOURCE_PCLK1);
+    LL_RCC_SetSPIClockSource(LL_RCC_SPI6_CLKSOURCE_PCLK4);
+
+    // SPI4/5 clock configuration, IC14 (max 100MHz).
+    LL_RCC_SetSPIClockSource(LL_RCC_SPI4_CLKSOURCE_IC14);
+    LL_RCC_SetSPIClockSource(LL_RCC_SPI5_CLKSOURCE_IC14);
     #endif
 }
 
@@ -255,6 +268,20 @@ static uint32_t spi_get_source_freq(SPI_HandleTypeDef *spi) {
         return HAL_RCCEx_GetPeriphCLKFreq(RCC_PERIPHCLK_SPI45);
     } else {
         return HAL_RCCEx_GetPeriphCLKFreq(RCC_PERIPHCLK_SPI6);
+    }
+    #elif defined(STM32N6)
+    if (spi->Instance == SPI1) {
+        return LL_RCC_GetSPIClockFreq(LL_RCC_SPI1_CLKSOURCE);
+    } else if (spi->Instance == SPI2) {
+        return LL_RCC_GetSPIClockFreq(LL_RCC_SPI2_CLKSOURCE);
+    } else if (spi->Instance == SPI3) {
+        return LL_RCC_GetSPIClockFreq(LL_RCC_SPI3_CLKSOURCE);
+    } else if (spi->Instance == SPI4) {
+        return LL_RCC_GetSPIClockFreq(LL_RCC_SPI4_CLKSOURCE);
+    } else if (spi->Instance == SPI5) {
+        return LL_RCC_GetSPIClockFreq(LL_RCC_SPI5_CLKSOURCE);
+    } else {
+        return LL_RCC_GetSPIClockFreq(LL_RCC_SPI6_CLKSOURCE);
     }
     #else // !STM32F0, !STM32G0, !STM32H
     #if defined(SPI2)
@@ -455,7 +482,10 @@ int spi_init(const spi_t *self, bool enable_nss_pin) {
         if (pins[i] == NULL) {
             continue;
         }
-        mp_hal_pin_config_alt(pins[i], mode, pull, AF_FN_SPI, (self - &spi_obj[0]) + 1);
+        if (!mp_hal_pin_config_alt(pins[i], mode, pull, AF_FN_SPI, (self - &spi_obj[0]) + 1)) {
+            // Pin does not have SPI alternate function.
+            return -MP_EINVAL;
+        }
     }
 
     // init the SPI device
@@ -470,7 +500,7 @@ int spi_init(const spi_t *self, bool enable_nss_pin) {
     dma_invalidate_channel(self->tx_dma_descr);
     dma_invalidate_channel(self->rx_dma_descr);
 
-    #if defined(STM32H5) || defined(STM32H7)
+    #if defined(STM32H5) || defined(STM32H7) || defined(STM32N6) || defined(STM32U5)
     NVIC_SetPriority(irqn, IRQ_PRI_SPI);
     HAL_NVIC_EnableIRQ(irqn);
     #else
@@ -542,6 +572,29 @@ void spi_deinit(const spi_t *spi_obj) {
         HAL_NVIC_DisableIRQ(SUBGHZSPI_IRQn);
 
     #endif
+    }
+}
+
+void spi_deinit_all(void) {
+    #if MICROPY_PY_LWIP && MICROPY_PY_NETWORK_WIZNET5K && MICROPY_PY_MACHINE_SPI
+    // lwIP and the NIC survive soft reset. Keep their hardware SPI bus alive
+    // so the retained poll callback can continue to access the controller.
+    const spi_t *network_spi = NULL;
+    mp_obj_t nic_spi = wiznet5k_get_active_spi();
+    if (nic_spi != MP_OBJ_NULL && mp_obj_is_type(nic_spi, &machine_spi_type)) {
+        network_spi = spi_from_mp_obj(nic_spi);
+    }
+    #endif
+    for (int i = 0; i < MP_ARRAY_SIZE(spi_obj); i++) {
+        const spi_t *spi = &spi_obj[i];
+        #if MICROPY_PY_LWIP && MICROPY_PY_NETWORK_WIZNET5K && MICROPY_PY_MACHINE_SPI
+        if (spi == network_spi) {
+            continue;
+        }
+        #endif
+        if (spi->spi != NULL && !MICROPY_HW_SPI_IS_RESERVED(i + 1) && !MICROPY_HW_SPI_IS_STATIC(i + 1)) {
+            spi_deinit(spi);
+        }
     }
 }
 
@@ -715,7 +768,7 @@ void spi_print(const mp_print_t *print, const spi_t *spi_obj, bool legacy) {
     if (spi->State != HAL_SPI_STATE_RESET) {
         if (spi->Init.Mode == SPI_MODE_MASTER) {
             // compute baudrate
-            #if defined(STM32H5) || defined(STM32H7)
+            #if defined(STM32H5) || defined(STM32H7) || defined(STM32N6) || defined(STM32U5)
             uint log_prescaler = (spi->Init.BaudRatePrescaler >> 28) + 1;
             #else
             uint log_prescaler = (spi->Init.BaudRatePrescaler >> 3) + 1;

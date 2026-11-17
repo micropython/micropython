@@ -8,20 +8,20 @@ except ImportError:
     print("SKIP")
     raise SystemExit
 
+if not hasattr(tls, "CERT_REQUIRED"):
+    print("SKIP")
+    raise SystemExit
+
 PORT = 8000
 
 # These are test certificates. See tests/README.md for details.
 cert = cafile = "ec_cert.der"
 key = "ec_key.der"
 
-try:
-    with open(cafile, "rb") as f:
-        cadata = f.read()
-    with open(key, "rb") as f:
-        keydata = f.read()
-except OSError:
-    print("SKIP")
-    raise SystemExit
+with open(cafile, "rb") as f:
+    cadata = f.read()
+with open(key, "rb") as f:
+    keydata = f.read()
 
 
 # Server

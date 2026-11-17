@@ -1,4 +1,5 @@
 # test comparison operators with uint type
+# requires: viper
 
 
 @micropython.viper

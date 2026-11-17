@@ -84,10 +84,10 @@ void mp_thread_deinit(void) {
     assert(get_core_num() == 0);
     // Must ensure that core1 is not currently holding the GC lock, otherwise
     // it will be terminated while holding the lock.
-    mp_thread_mutex_lock(&MP_STATE_MEM(gc_mutex), 1);
+    mp_thread_recursive_mutex_lock(&MP_STATE_MEM(gc_mutex), 1);
     multicore_reset_core1();
     core1_entry = NULL;
-    mp_thread_mutex_unlock(&MP_STATE_MEM(gc_mutex));
+    mp_thread_recursive_mutex_unlock(&MP_STATE_MEM(gc_mutex));
 }
 
 void mp_thread_gc_others(void) {
@@ -105,6 +105,9 @@ void mp_thread_gc_others(void) {
 static void core1_entry_wrapper(void) {
     // Allow MICROPY_BEGIN_ATOMIC_SECTION to be invoked from core0.
     multicore_lockout_victim_init();
+
+    // Set PendSV interrupt priority correctly for CPU1
+    pendsv_init();
 
     if (core1_entry) {
         core1_entry(core1_arg);
@@ -126,9 +129,6 @@ mp_uint_t mp_thread_create(void *(*entry)(void *), void *arg, size_t *stack_size
         mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("core1 in use"));
     }
 
-    core1_entry = entry;
-    core1_arg = arg;
-
     if (*stack_size == 0) {
         *stack_size = 4096; // default stack size
     } else if (*stack_size < 2048) {
@@ -139,8 +139,11 @@ mp_uint_t mp_thread_create(void *(*entry)(void *), void *arg, size_t *stack_size
     core1_stack_num_words = *stack_size / sizeof(uint32_t);
     *stack_size = core1_stack_num_words * sizeof(uint32_t);
 
-    // Allocate stack.
+    // Ensure MemoryError in stack allocation does not leave core1_entry
+    // dangling.
     core1_stack = m_new(uint32_t, core1_stack_num_words);
+    core1_entry = entry;
+    core1_arg = arg;
 
     // Create thread on core1.
     multicore_reset_core1();

@@ -6,8 +6,6 @@ These are used to generate a header with the required entries for
 "struct _mp_state_vm_t" in py/mpstate.h
 """
 
-from __future__ import print_function
-
 import argparse
 import io
 import re

@@ -29,7 +29,7 @@ def echo_server(e):
 
         #  Echo the MAC and message back to the sender
         if not e.send(peer, msg, sync):
-            print("ERROR: send() failed to", peer)
+            print("ERROR: send() failed to", peer.hex())
             return
 
         if msg == b"!done":
@@ -50,7 +50,7 @@ def client_send(e, peer, msg, sync):
 
 
 def init(e, sta_active=True, ap_active=False):
-    wlans = [network.WLAN(i) for i in [network.STA_IF, network.AP_IF]]
+    wlans = [network.WLAN(i) for i in [network.WLAN.IF_STA, network.WLAN.IF_AP]]
     e.active(True)
     e.set_pmk(default_pmk)
     wlans[0].active(sta_active)
@@ -65,6 +65,8 @@ async def client(e):
     peer = PEERS[0]
     e.add_peer(peer)
     multitest.next()
+
+    multitest.wait("server ready")
 
     print("airecv() test...")
     msgs = []
@@ -93,6 +95,7 @@ def instance0():
     init(e, True, False)
     multitest.globals(PEERS=[network.WLAN(i).config("mac") for i in (0, 1)])
     multitest.next()
+    multitest.broadcast("server ready")
     print("Server Start")
     echo_server(e)
     print("Server Done")

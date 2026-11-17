@@ -16,7 +16,7 @@ def ffi_open(names):
     raise err
 
 
-libc = ffi_open(("libc.so", "libc.so.0", "libc.so.6", "libc.dylib"))
+libc = ffi_open(("libc.so", "libc.so.0", "libc.so.6", "libc.so.7", "libc.dylib"))
 
 qsort = libc.func("v", "qsort", "piip")
 

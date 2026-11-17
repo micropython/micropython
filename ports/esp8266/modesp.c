@@ -159,25 +159,23 @@ static mp_obj_t esp_flash_size(void) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_0(esp_flash_size_obj, esp_flash_size);
 
-// If there's just 1 loadable segment at the start of flash,
-// we assume there's a yaota8266 bootloader.
-#define IS_OTA_FIRMWARE() ((*(uint32_t *)0x40200000 & 0xff00) == 0x100)
-
 extern byte _firmware_size[];
+#if MICROPY_VFS_ROM_IOCTL
+extern uint8_t _micropy_hw_romfs_part0_size;
+#endif
 
 static mp_obj_t esp_flash_user_start(void) {
-    return MP_OBJ_NEW_SMALL_INT((uint32_t)_firmware_size);
+    uint32_t flash_user_start = (uint32_t)_firmware_size;
+    #if MICROPY_VFS_ROM_IOCTL
+    flash_user_start += (uint32_t)&_micropy_hw_romfs_part0_size;
+    #endif
+    return MP_OBJ_NEW_SMALL_INT(flash_user_start);
 }
 static MP_DEFINE_CONST_FUN_OBJ_0(esp_flash_user_start_obj, esp_flash_user_start);
 
 static mp_obj_t esp_check_fw(void) {
     MD5_CTX ctx;
     char *fw_start = (char *)0x40200000;
-    if (IS_OTA_FIRMWARE()) {
-        // Skip yaota8266 bootloader
-        fw_start += 0x3c000;
-    }
-
     uint32_t size = *(uint32_t *)(fw_start + 0x8ffc);
     printf("size: %d\n", size);
     if (size > 1024 * 1024) {
@@ -236,7 +234,7 @@ static mp_obj_t esp_esf_free_bufs(mp_obj_t idx_in) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(esp_esf_free_bufs_obj, esp_esf_free_bufs);
 
-#if MICROPY_EMIT_XTENSA || MICROPY_EMIT_INLINE_XTENSA
+#if MICROPY_EMIT_XTENSA || MICROPY_EMIT_INLINE_XTENSA || MICROPY_PERSISTENT_CODE_LOAD_NATIVE
 
 // We provide here a way of committing executable data to a region from
 // which it can be executed by the CPU.  There are 2 such writable regions:
@@ -360,7 +358,7 @@ static const mp_rom_map_elem_t esp_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_malloc), MP_ROM_PTR(&esp_malloc_obj) },
     { MP_ROM_QSTR(MP_QSTR_free), MP_ROM_PTR(&esp_free_obj) },
     { MP_ROM_QSTR(MP_QSTR_esf_free_bufs), MP_ROM_PTR(&esp_esf_free_bufs_obj) },
-    #if MICROPY_EMIT_XTENSA || MICROPY_EMIT_INLINE_XTENSA
+    #if MICROPY_EMIT_XTENSA || MICROPY_EMIT_INLINE_XTENSA || MICROPY_PERSISTENT_CODE_LOAD_NATIVE
     { MP_ROM_QSTR(MP_QSTR_set_native_code_location), MP_ROM_PTR(&esp_set_native_code_location_obj) },
     #endif
 

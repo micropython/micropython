@@ -1,6 +1,9 @@
 # This module is not entirely compatible with CPython
 import os
 
+if not hasattr(os, "getenv"):
+    print("SKIP")
+    raise SystemExit
 
 os.putenv("TEST_VARIABLE", "TEST_VALUE")
 

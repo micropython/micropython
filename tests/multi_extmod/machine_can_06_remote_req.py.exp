@@ -1,0 +1,8 @@
+--- instance0 ---
+recv 0x750 True 3
+recv 0x750 False b'abc'
+recv 0x750 True 5
+recv 0x101 True 3
+recv 0x101 False b'hij'
+--- instance1 ---
+done

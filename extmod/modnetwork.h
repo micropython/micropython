@@ -60,6 +60,11 @@ extern char mod_network_country_code[2];
 #define MICROPY_PY_NETWORK_HOSTNAME_MAX_LEN (32)
 #endif
 
+#if MICROPY_PY_NETWORK_NINAW10
+// This Network interface requires the extended socket state.
+#define MICROPY_PY_SOCKET_EXTENDED_STATE    (1)
+#endif
+
 // This is a null-terminated string.
 extern char mod_network_hostname_data[MICROPY_PY_NETWORK_HOSTNAME_MAX_LEN + 1];
 
@@ -72,11 +77,19 @@ mp_obj_t mod_network_hostname(size_t n_args, const mp_obj_t *args);
 
 #include "lwip/init.h"
 
+#if MICROPY_PY_NETWORK_WIZNET5K
+mp_obj_t wiznet5k_get_active_spi(void);
+#endif
+
+
 #if MICROPY_PY_NETWORK_PPP_LWIP
 extern const struct _mp_obj_type_t mp_network_ppp_lwip_type;
 #endif
 
 struct netif;
+
+void sys_untimeout_all_with_arg(void *arg);
+
 void mod_network_lwip_init(void);
 void mod_network_lwip_poll_wrapper(uint32_t ticks_ms);
 mp_obj_t mod_network_nic_ifconfig(struct netif *netif, size_t n_args, const mp_obj_t *args);

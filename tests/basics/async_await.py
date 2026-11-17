@@ -1,5 +1,6 @@
 # test basic await expression
 # adapted from PEP0492
+# requires: async
 
 async def abinary(n):
     print(n)

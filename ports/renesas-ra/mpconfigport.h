@@ -92,6 +92,7 @@
 #define MICROPY_TRACKED_ALLOC       (MICROPY_SSL_MBEDTLS || MICROPY_BLUETOOTH_BTSTACK)
 #define MICROPY_READER_VFS          (1)
 #define MICROPY_ENABLE_GC           (1)
+#define MICROPY_STACK_CHECK_MARGIN  (1024)
 #define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF (1)
 #define MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE (0)
 #define MICROPY_REPL_INFO           (1)
@@ -99,10 +100,12 @@
 #ifndef MICROPY_FLOAT_IMPL // can be configured by each board via mpconfigboard.mk
 #define MICROPY_FLOAT_IMPL          (MICROPY_FLOAT_IMPL_FLOAT)
 #endif
+#define MICROPY_TIME_SUPPORT_Y1969_AND_BEFORE (1)
 #define MICROPY_USE_INTERNAL_ERRNO  (1)
 #define MICROPY_SCHEDULER_DEPTH     (8)
 #define MICROPY_SCHEDULER_STATIC_NODES (1)
 #define MICROPY_VFS                 (1)
+#define MICROPY_VFS_BLOCKDEV_NATIVE (1)
 
 // control over Python builtins
 #ifndef MICROPY_PY_BUILTINS_HELP_TEXT
@@ -126,7 +129,6 @@
 #define MICROPY_PY_TIME_GMTIME_LOCALTIME_MKTIME (1)
 #define MICROPY_PY_TIME_TIME_TIME_NS (1)
 #define MICROPY_PY_TIME_INCLUDEFILE "ports/renesas-ra/modtime.c"
-#define MICROPY_PY_LWIP_SOCK_RAW    (MICROPY_PY_LWIP)
 #ifndef MICROPY_PY_MACHINE
 #define MICROPY_PY_MACHINE          (1)
 #define MICROPY_PY_MACHINE_INCLUDEFILE "ports/renesas-ra/modmachine.c"
@@ -167,7 +169,7 @@
 #endif
 
 // fatfs configuration used in ffconf.h
-#define MICROPY_FATFS_ENABLE_LFN       (1)
+#define MICROPY_FATFS_ENABLE_LFN       (2)
 #define MICROPY_FATFS_LFN_CODE_PAGE    437 /* 1=SFN/ANSI 437=LFN/U.S.(OEM) */
 #define MICROPY_FATFS_USE_LABEL        (1)
 #define MICROPY_FATFS_RPATH            (2)
@@ -210,19 +212,11 @@
 
 #define MP_STATE_PORT MP_STATE_VM
 
-#if MICROPY_PY_NETWORK_ESP_HOSTED
-extern const struct _mp_obj_type_t mod_network_esp_hosted_type;
-#define MICROPY_HW_NIC_ESP_HOSTED   { MP_ROM_QSTR(MP_QSTR_WLAN), MP_ROM_PTR(&mod_network_esp_hosted_type) },
-#else
-#define MICROPY_HW_NIC_ESP_HOSTED
-#endif
-
 #ifndef MICROPY_BOARD_NETWORK_INTERFACES
 #define MICROPY_BOARD_NETWORK_INTERFACES
 #endif
 
 #define MICROPY_PORT_NETWORK_INTERFACES \
-    MICROPY_HW_NIC_ESP_HOSTED \
     MICROPY_BOARD_NETWORK_INTERFACES \
 
 // Miscellaneous settings
@@ -240,39 +234,20 @@ extern const struct _mp_obj_type_t mod_network_esp_hosted_type;
 
 #define MP_SSIZE_MAX (0x7fffffff)
 
-// Assume that if we already defined the obj repr then we also defined these items
-#ifndef MICROPY_OBJ_REPR
-#define UINT_FMT "%u"
-#define INT_FMT "%d"
-typedef int mp_int_t; // must be pointer size
-typedef unsigned int mp_uint_t; // must be pointer size
-#endif
-
 typedef long mp_off_t;
 
 #if MICROPY_PY_THREAD
-#define MICROPY_EVENT_POLL_HOOK \
+#define MICROPY_INTERNAL_EVENT_HOOK \
     do { \
-        extern void mp_handle_pending(bool); \
-        mp_handle_pending(true); \
         if (pyb_thread_enabled) { \
             MP_THREAD_GIL_EXIT(); \
             pyb_thread_yield(); \
             MP_THREAD_GIL_ENTER(); \
-        } else { \
-            __WFI(); \
         } \
     } while (0);
 
 #define MICROPY_THREAD_YIELD() pyb_thread_yield()
 #else
-#define MICROPY_EVENT_POLL_HOOK \
-    do { \
-        extern void mp_handle_pending(bool); \
-        mp_handle_pending(true); \
-        __WFI(); \
-    } while (0);
-
 #define MICROPY_THREAD_YIELD()
 #endif
 

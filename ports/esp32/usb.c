@@ -28,36 +28,31 @@
 #include "py/mphal.h"
 #include "usb.h"
 
-#if MICROPY_HW_USB_CDC
-#include "esp_rom_gpio.h"
+#if MICROPY_HW_ENABLE_USBDEV
+
 #include "esp_mac.h"
+#include "esp_rom_gpio.h"
 #include "esp_private/usb_phy.h"
 
 #include "shared/tinyusb/mp_usbd.h"
 
 static usb_phy_handle_t phy_hdl;
 
-
-void usb_init(void) {
+void usb_phy_init(void) {
     // ref: https://github.com/espressif/esp-usb/blob/4b6a798d0bed444fff48147c8dcdbbd038e92892/device/esp_tinyusb/tinyusb.c
 
     // Configure USB PHY
-    usb_phy_config_t phy_conf = {
+    static const usb_phy_config_t phy_conf = {
         .controller = USB_PHY_CTRL_OTG,
         .otg_mode = USB_OTG_MODE_DEVICE,
+        .target = USB_PHY_TARGET_INT,
     };
-    // Internal USB PHY
-    phy_conf.target = USB_PHY_TARGET_INT;
 
     // Init ESP USB Phy
     usb_new_phy(&phy_conf, &phy_hdl);
-
-    // Init MicroPython / TinyUSB
-    mp_usbd_init();
-
 }
 
-#if CONFIG_IDF_TARGET_ESP32S3
+#if CONFIG_IDF_TARGET_ESP32S3 || CONFIG_IDF_TARGET_ESP32P4
 void usb_usj_mode(void) {
     // Switch the USB PHY back to Serial/Jtag mode, disabling OTG support
     // This should be run before jumping to bootloader.
@@ -77,4 +72,4 @@ void mp_usbd_port_get_serial_number(char *serial_buf) {
     mp_usbd_hex_str(serial_buf, mac, sizeof(mac));
 }
 
-#endif // MICROPY_HW_USB_CDC
+#endif // MICROPY_HW_ENABLE_USBDEV

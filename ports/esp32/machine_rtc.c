@@ -56,10 +56,6 @@ typedef struct _machine_rtc_obj_t {
     If MICROPY_HW_RTC_USER_MEM_MAX is set to 0, the RTC.memory() functionality will be not
     be compiled which frees some extra flash and RTC memory.
 */
-#ifndef MICROPY_HW_RTC_USER_MEM_MAX
-#define MICROPY_HW_RTC_USER_MEM_MAX     2048
-#endif
-
 // A board can enable MICROPY_HW_RTC_MEM_INIT_ALWAYS to always clear out RTC memory on boot.
 // Defaults to RTC_NOINIT_ATTR so the user memory survives WDT resets and the like.
 #if MICROPY_HW_RTC_MEM_INIT_ALWAYS
@@ -82,8 +78,13 @@ _USER_MEM_ATTR uint8_t rtc_user_mem_data[MICROPY_HW_RTC_USER_MEM_MAX];
 static const machine_rtc_obj_t machine_rtc_obj = {{&machine_rtc_type}};
 
 machine_rtc_config_t machine_rtc_config = {
+    #if SOC_PM_SUPPORT_EXT1_WAKEUP
     .ext1_pins = 0,
-    .ext0_pin = -1
+    #endif
+    #if SOC_PM_SUPPORT_EXT0_WAKEUP
+    .ext0_pin = -1,
+    #endif
+    .gpio_pins = 0,
 };
 
 static mp_obj_t machine_rtc_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
@@ -101,7 +102,7 @@ static mp_obj_t machine_rtc_make_new(const mp_obj_type_t *type, size_t n_args, s
     return (mp_obj_t)&machine_rtc_obj;
 }
 
-static mp_obj_t machine_rtc_datetime_helper(mp_uint_t n_args, const mp_obj_t *args) {
+static mp_obj_t machine_rtc_datetime_helper(mp_uint_t n_args, const mp_obj_t *args, int hour_index) {
     if (n_args == 1) {
         // Get time
 
@@ -131,7 +132,14 @@ static mp_obj_t machine_rtc_datetime_helper(mp_uint_t n_args, const mp_obj_t *ar
         mp_obj_get_array_fixed_n(args[1], 8, &items);
 
         struct timeval tv = {0};
-        tv.tv_sec = timeutils_seconds_since_epoch(mp_obj_get_int(items[0]), mp_obj_get_int(items[1]), mp_obj_get_int(items[2]), mp_obj_get_int(items[4]), mp_obj_get_int(items[5]), mp_obj_get_int(items[6]));
+        tv.tv_sec = timeutils_seconds_since_epoch(
+            mp_obj_get_int(items[0]),
+            mp_obj_get_int(items[1]),
+            mp_obj_get_int(items[2]),
+            mp_obj_get_int(items[hour_index]),
+            mp_obj_get_int(items[hour_index + 1]),
+            mp_obj_get_int(items[hour_index + 2])
+            );
         tv.tv_usec = mp_obj_get_int(items[7]);
         settimeofday(&tv, NULL);
 
@@ -139,13 +147,13 @@ static mp_obj_t machine_rtc_datetime_helper(mp_uint_t n_args, const mp_obj_t *ar
     }
 }
 static mp_obj_t machine_rtc_datetime(size_t n_args, const mp_obj_t *args) {
-    return machine_rtc_datetime_helper(n_args, args);
+    return machine_rtc_datetime_helper(n_args, args, 4);
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_rtc_datetime_obj, 1, 2, machine_rtc_datetime);
 
 static mp_obj_t machine_rtc_init(mp_obj_t self_in, mp_obj_t date) {
     mp_obj_t args[2] = {self_in, date};
-    machine_rtc_datetime_helper(2, args);
+    machine_rtc_datetime_helper(2, args, 3);
 
     return mp_const_none;
 }

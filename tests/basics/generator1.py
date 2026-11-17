@@ -1,3 +1,5 @@
+# requires: slice
+
 def f(x):
     print('a')
     y = x

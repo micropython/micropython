@@ -28,6 +28,7 @@
 // External SPI Flash config
 #if !MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE
 
+#define MICROPY_HW_SPI_IS_RESERVED(id)  (id == 1) // Reserve SPI flash bus.
 #define MICROPY_HW_SPIFLASH_SIZE_BITS (16 * 1024 * 1024) // 16 Mbit (2 MByte)
 
 #define MICROPY_HW_SPIFLASH_CS      (MICROPY_HW_SPI1_NSS)

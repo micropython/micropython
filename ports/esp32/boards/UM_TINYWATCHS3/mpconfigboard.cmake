@@ -1,11 +1,7 @@
-set(IDF_TARGET esp32s3)
+include(boards/mpconfigboard_esp32s3_common.cmake)
 
-set(SDKCONFIG_DEFAULTS
-    boards/sdkconfig.base
-    ${SDKCONFIG_IDF_VERSION_SPECIFIC}
-    boards/sdkconfig.usb
-    boards/sdkconfig.ble
+list(APPEND SDKCONFIG_DEFAULTS
     boards/sdkconfig.240mhz
-    boards/sdkconfig.spiram_sx
+    boards/sdkconfig.flash_qio_80m
     boards/UM_TINYWATCHS3/sdkconfig.board
 )

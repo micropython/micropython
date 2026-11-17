@@ -1,5 +1,6 @@
 # Test constant optimisation, with full range of const types.
 # This test will only work when MICROPY_COMP_CONST and MICROPY_COMP_CONST_TUPLE are enabled.
+# requires: const
 
 from micropython import const
 

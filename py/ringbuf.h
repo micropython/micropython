@@ -51,6 +51,11 @@ typedef struct _ringbuf_t {
         (r)->iget = (r)->iput = 0; \
     }
 
+static inline void ringbuf_reset(ringbuf_t *r) {
+    // Reset the ringbuffer to empty
+    r->iget = r->iput = 0;
+}
+
 static inline int ringbuf_get(ringbuf_t *r) {
     if (r->iget == r->iput) {
         return -1;

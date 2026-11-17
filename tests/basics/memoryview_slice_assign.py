@@ -1,4 +1,5 @@
 # test slice assignment to memoryview
+# requires: slice
 
 try:
     memoryview(bytearray(1))[:] = memoryview(bytearray(1))

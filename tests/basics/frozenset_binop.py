@@ -1,8 +1,4 @@
-try:
-    frozenset
-except NameError:
-    print("SKIP")
-    raise SystemExit
+# requires: frozenset
 
 sets = [
     frozenset(), frozenset({1}), frozenset({1, 2}), frozenset({1, 2, 3}), frozenset({2, 3}),

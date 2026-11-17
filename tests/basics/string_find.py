@@ -24,6 +24,7 @@ print("0000".find('1', 5))
 print("aaaaaaaaaaa".find("bbb", 9, 2))
 
 try:
+    # Only works on bytes/bytearray.
     'abc'.find(1)
 except TypeError:
     print('TypeError')

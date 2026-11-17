@@ -1,4 +1,10 @@
-import micropython
+try:
+    import micropython
+
+    micropython.heap_lock
+except (ImportError, AttributeError):
+    print("SKIP")
+    raise SystemExit
 
 # Tests both code paths for built-in exception raising.
 # mp_obj_new_exception_msg_varg (exception requires decompression at raise-time to format)

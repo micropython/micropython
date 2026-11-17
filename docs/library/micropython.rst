@@ -17,15 +17,70 @@ Functions
     CONST_X = const(123)
     CONST_Y = const(2 * CONST_X + 1)
 
-   Constants declared this way are still accessible as global variables from
-   outside the module they are declared in.  On the other hand, if a constant
-   begins with an underscore then it is hidden, it is not available as a global
-   variable, and does not take up any memory during execution.
+   When the parser encounters ``NAME = const(expr)``, it evaluates the expression
+   at compile time and substitutes the resulting value directly into the bytecode at
+   every use of ``NAME``, avoiding a global dictionary lookup each time.
 
-   This `const` function is recognised directly by the MicroPython parser and is
-   provided as part of the :mod:`micropython` module mainly so that scripts can be
-   written which run under both CPython and MicroPython, by following the above
-   pattern.
+   The ``const`` name is recognised directly by the parser so no import is actually
+   required in MicroPython.  However ``from micropython import const`` is recommended
+   so the script also runs on CPython where ``const`` is provided as an identity
+   function.  Note that the parser only recognises the bare name ``const`` -- using
+   ``micropython.const()`` (with module prefix) or an alias will not trigger the
+   optimisation.
+
+   Constants declared this way are still stored as global variables in the module's
+   dictionary, so other modules can access them (e.g.
+   ``import mymodule; print(mymodule.X)``).  Reassigning the global from another
+   module does not affect the inlined values within the defining module.  This global
+   entry costs at least two machine words of RAM.
+
+   **Module-private constants:** To avoid this RAM cost, prefix the name with an
+   underscore (e.g. ``_X = const(1)``).  This prevents the variable from being added
+   to the module dictionary and hides it from other modules.
+
+   The expression passed to ``const()`` must be evaluable at compile time.  Supported
+   types are:
+
+   - ``int`` (including expressions with arithmetic and bitwise operators)
+   - ``float``
+   - ``str``
+   - ``bytes``
+   - ``bool`` (``True``, ``False``), ``None``, ``...`` (Ellipsis)
+   - ``tuple`` of constants
+
+   The expression can reference previously defined constants.  Using runtime values
+   or function calls raises ``SyntaxError: not a constant``.
+
+   Examples::
+
+    BUFFER_SIZE = const(1024)
+    BUFFER_MASK = const(BUFFER_SIZE - 1)
+    FLAGS = const(0x01 | 0x02)
+    _SCALE = const(0.001)
+    _PREFIX = const("data_")
+    _HEADER = const(b"\x00\xff")
+    _MODES = const(("read", "write"))
+
+   Because the compiler evaluates boolean constants at compile time, ``const()``
+   can be used for conditional compilation.  Code guarded by a false constant is
+   eliminated from the bytecode entirely, and when frozen via ``mpy-cross`` the
+   unreachable code is stripped from the output::
+
+    FEATURE_X = const(True)
+
+    if FEATURE_X:
+        def feature_x_handler():
+            ...
+
+   For cross-platform compatibility with CPython, the typical pattern is::
+
+    try:
+        from micropython import const
+    except ImportError:
+        const = lambda x: x
+
+   See also :ref:`constrained` and :ref:`speed_python` for practical guidance on
+   using constants to reduce memory usage and improve performance.
 
 .. function:: opt_level([level])
 
@@ -62,8 +117,33 @@ Functions
    is given then extra information is printed.
 
    The information that is printed is implementation dependent, but currently
-   includes the amount of stack and heap used.  In verbose mode it prints out
-   the entire heap indicating which blocks are used and which are free.
+   includes the amount of stack and heap used. In verbose mode it prints out a
+   summary of the entire heap indicating which blocks are used and which are
+   free.
+
+   The exact output of verbose mode varies between ports, but in general each
+   letter represents a single 16 byte block of memory. Each line of
+   output represents 0x400 bytes or 1KiB of RAM.
+
+   The meaning of each letter:
+
+   ====== =================
+   Symbol Meaning
+   ====== =================
+       .   free block
+       h   head block
+       =   tail block
+       m   marked head block
+       T   tuple
+       L   list
+       D   dict
+       F   float
+       B   byte code
+       M   module
+       S   string or bytes
+       A   bytearray
+   ====== =================
+
 
 .. function:: qstr_info([verbose])
 
@@ -130,6 +210,11 @@ Functions
      a critical region but they will not be executed until that region
      is exited.  An example of a critical region is a preempting interrupt
      handler (an IRQ).
+   - Inside native code functions, scheduled functions are not called unless
+     the native code calls a function that specifically does so.
+   - Certain functions including ``poll.poll``, ``poll.ipoll``,
+     ``time.sleep`` and ``time.sleep_ms`` (including zero-duration sleeps)
+     will call scheduled functions.
 
    A use for this function is to schedule a callback from a preempting IRQ.
    Such an IRQ puts restrictions on the code that runs in the IRQ (for example
@@ -155,6 +240,10 @@ Functions
 
    There is a finite queue to hold the scheduled functions and `schedule()`
    will raise a `RuntimeError` if the queue is full.
+
+   As a special case, it's possible to pass `micropython.kbd_intr` to this function
+   as the first argument (and ``None`` as the second argument), and that will
+   schedule a `KeyboardInterrupt` to be raised "very soon" in the main thread.
 
 Classes
 -------

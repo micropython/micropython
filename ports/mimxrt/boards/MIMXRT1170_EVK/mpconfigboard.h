@@ -3,11 +3,8 @@
 
 #define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT "mpy-1070evk"
 
-#define MICROPY_EVENT_POLL_HOOK \
-    do { \
-        extern void mp_handle_pending(bool); \
-        mp_handle_pending(true); \
-    } while (0);
+// Do not use WFE when waiting for an event.
+#define MICROPY_INTERNAL_WFE(TIMEOUT_MS)
 
 // MIMXRT1170_EVK has 2 user LEDs
 #define MICROPY_HW_LED1_PIN (pin_GPIO_AD_04)
@@ -104,6 +101,17 @@
     { IOMUXC_GPIO_LPSR_05_LPI2C5_SCL }, { IOMUXC_GPIO_LPSR_04_LPI2C5_SDA }, \
     { IOMUXC_GPIO_LPSR_11_LPI2C6_SCL }, { IOMUXC_GPIO_LPSR_10_LPI2C6_SDA },
 
+#define MICROPY_HW_CAN1_NAME "CAN1"
+#define MICROPY_HW_CAN2_NAME "CAN2"
+#define MICROPY_HW_NUM_CAN (2)
+#define MICROPY_HW_CAN_INDEX { 3, 1 }
+#define MICROPY_HW_NUM_CAN_IRQS (2)
+
+#define IOMUX_TABLE_CAN \
+    { IOMUXC_GPIO_AD_06_FLEXCAN1_TX }, { IOMUXC_GPIO_AD_07_FLEXCAN1_RX }, \
+    { 0 }, { 0 }, \
+    { IOMUXC_GPIO_LPSR_00_FLEXCAN3_TX }, { IOMUXC_GPIO_LPSR_01_FLEXCAN3_RX },
+
 #define MICROPY_PY_MACHINE_I2S (1)
 #define MICROPY_HW_I2S_NUM (1)
 #define I2S_CLOCK_MUX { 0, kCLOCK_Root_Sai1, kCLOCK_Root_Sai2, kCLOCK_Root_Sai3, kCLOCK_Root_Sai4 }
@@ -167,18 +175,12 @@
     { IOMUXC_GPIO_AD_33_ENET_MDIO, 0, 0x06u }, \
     { IOMUXC_GPIO_AD_32_ENET_MDC, 0, 0x06u },
 
-// A second ETH port is present.
-#define ENET_DUAL_PORT         (1)
-// 1G Transceiver Phy Parameters
+// 1G Transceiver Phy Parameters (second ETH port)
 #define ENET_1_PHY_ADDRESS     (1)
 #define ENET_1_PHY             RTL8211F
 #define ENET_1_PHY_OPS         phyrtl8211f_ops
 
 // 1G Ethernet PIN definitions
-// No INT pin for ENET_1G
-#define ENET_1_RESET_PIN       &pin_GPIO_DISP_B2_13
-#define ENET_1_INT_PIN         NULL
-
 #define IOMUX_TABLE_ENET_1 \
     { IOMUXC_GPIO_DISP_B1_00_ENET_1G_RX_EN, 0, 0x08U }, \
     { IOMUXC_GPIO_DISP_B1_01_ENET_1G_RX_CLK, 0, 0x08U }, \

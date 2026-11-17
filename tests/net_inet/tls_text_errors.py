@@ -14,14 +14,14 @@ def test(addr):
         s = ssl_context.wrap_socket(s)
         print("wrap: no exception")
     except OSError as e:
-        # mbedtls produces "mbedtls -0x7200: SSL - An invalid SSL record was received"
-        # axtls produces "RECORD_OVERFLOW" but also prints "TLS buffer overflow,..."
-        # CPython produces "[SSL: WRONG_VERSION_NUMBER] wrong version number (_ssl.c:1108)"
-        # CPython newer version produces "[SSL] record layer failure (_ssl.c:1000)"
         ok = (
+            # mbedtls produces "mbedtls -0x7200: SSL_INVALID_RECORD"
             "SSL_INVALID_RECORD" in str(e)
+            # axtls produces "RECORD_OVERFLOW" but also prints "TLS buffer overflow,..."
             or "RECORD_OVERFLOW" in str(e)
+            # CPython produces "[SSL: WRONG_VERSION_NUMBER] wrong version number (_ssl.c:1108)"
             or "wrong version" in str(e)
+            # CPython newer version produces "[SSL] record layer failure (_ssl.c:1000)"
             or "record layer failure" in str(e)
         )
         print("wrap:", ok)

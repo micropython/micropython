@@ -1,4 +1,5 @@
 # test import within viper function
+# requires: viper
 
 
 @micropython.viper

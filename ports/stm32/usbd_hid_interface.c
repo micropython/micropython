@@ -26,7 +26,7 @@
 
 #include "usbd_hid_interface.h"
 
-#include "py/mpstate.h"
+#include "py/runtime.h"
 #include "py/mperrno.h"
 #include "py/mphal.h"
 #include "usb.h"
@@ -53,7 +53,7 @@ int usbd_hid_rx(usbd_hid_itf_t *hid, size_t len, uint8_t *buf, uint32_t timeout_
         if (mp_hal_ticks_ms() - t0 >= timeout_ms || query_irq() == IRQ_STATE_DISABLED) {
             return -MP_ETIMEDOUT;
         }
-        MICROPY_EVENT_POLL_HOOK
+        mp_event_wait_ms(1);
     }
 
     // Copy bytes from report to user buffer

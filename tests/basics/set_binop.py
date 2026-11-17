@@ -1,4 +1,5 @@
 # test set binary operations
+# requires: set
 
 sets = [set(), {1}, {1, 2}, {1, 2, 3}, {2, 3}, {2, 3, 5}, {5}, {7}]
 for s in sets:

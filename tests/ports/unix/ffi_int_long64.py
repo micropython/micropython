@@ -1,4 +1,5 @@
 # test 64-bit long arguments and return types for ffi functions
+# requires: int-big
 
 import struct
 

@@ -4,8 +4,9 @@
 class USBDevice -- USB Device driver
 ====================================
 
-.. note:: ``machine.USBDevice`` is currently only supported on the rp2 and samd
-          ports.
+Availability: **ESP32, RP2, SAMD**
+
+.. note:: Native USB support is required, and not every board supports native USB.
 
 USBDevice provides a low-level Python API for implementing USB device functions using
 Python code.
@@ -32,10 +33,10 @@ Managing a runtime USB interface can be tricky, especially if you are communicat
 with MicroPython over a built-in USB-CDC serial port that's part of the same USB
 device.
 
-- A MicroPython soft reset will always clear all runtime USB interfaces, which
-  results in the entire USB device disconnecting from the host. If MicroPython
-  is also providing a built-in USB-CDC serial port then this will re-appear
-  after the soft reset.
+- A MicroPython :ref:`soft reset <soft_reset>` will always clear all runtime USB
+  interfaces, which results in the entire USB device disconnecting from the
+  host. If MicroPython is also providing a built-in USB-CDC serial port then
+  this will re-appear after the soft reset.
 
   This means some functions (like ``mpremote run``) that target the USB-CDC
   serial port will immediately fail if a runtime USB interface is active,
@@ -44,9 +45,9 @@ device.
   no more runtime USB interface.
 
 - To configure a runtime USB device on every boot, it's recommended to place the
-  configuration code in the ``boot.py`` file on the :ref:`device VFS
+  configuration code in the :ref:`boot.py` file on the :ref:`device VFS
   <filesystem>`. On each reset this file is executed before the USB subsystem is
-  initialised (and before ``main.py``), so it allows the board to come up with the runtime
+  initialised (and before :ref:`main.py`), so it allows the board to come up with the runtime
   USB device immediately.
 
 - For development or debugging, it may be convenient to connect a hardware
@@ -154,10 +155,11 @@ Methods
       The callback has three arguments:
 
       1. The Endpoint number for the completed transfer.
-      2. Result value: ``True`` if the transfer succeeded, ``False``
-         otherwise.
-      3. Number of bytes successfully transferred. In the case of a
-         "short" transfer, The result is ``True`` and ``xferred_bytes``
+      2. Result value. This is an integer which is ``0`` (`XFER_SUCCESS`) on
+         success, or one of the non-zero values `XFER_FAILED` or `XFER_STALLED`
+         if the transfer failed.
+      3. Number of bytes successfully transferred. In the case of a "short"
+         transfer, the result is ``0`` (`XFER_SUCCESS`) and ``xferred_bytes``
          will be smaller than the length of the buffer submitted for the
          transfer.
 
@@ -299,5 +301,21 @@ Constants
             descriptor.
           - ``desc_cfg`` - ``bytes`` object containing the complete built-in USB
             configuration descriptor.
+
+.. data:: USBDevice.XFER_SUCCESS
+.. data:: USBDevice.XFER_FAILED
+.. data:: USBDevice.XFER_STALLED
+
+          These are integer constants that represent the possible transfer
+          result values passed to the ``xfer_cb`` callback (see
+          `USBDevice.config`).
+
+          - ``XFER_SUCCESS`` has value ``0`` and indicates the transfer was
+            successful.
+          - ``XFER_FAILED`` indicates the transfer failed due to low-level
+            integrity errors.
+          - ``XFER_STALLED`` indicates that the host has stalled this endpoint.
+
+          All failure values are non-zero integers.
 
 .. _usb driver modules in micropython-lib: https://github.com/micropython/micropython-lib/tree/master/micropython/usb#readme

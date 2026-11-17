@@ -1,7 +1,7 @@
 # Test for VfsLittle using a RAM device, testing error handling
 
 try:
-    import vfs
+    import errno, vfs
 
     vfs.VfsLfs1
     vfs.VfsLfs2
@@ -41,14 +41,14 @@ def test(bdev, vfs_class):
     # mkfs with too-small block device
     try:
         vfs_class.mkfs(RAMBlockDevice(1))
-    except OSError:
-        print("mkfs OSError")
+    except OSError as er:
+        print("mkfs OSError", er.errno > 0)
 
     # mount with invalid filesystem
     try:
         vfs_class(bdev)
-    except OSError:
-        print("mount OSError")
+    except OSError as er:
+        print("mount OSError", er.errno > 0)
 
     # set up for following tests
     vfs_class.mkfs(bdev)
@@ -60,60 +60,60 @@ def test(bdev, vfs_class):
     # ilistdir
     try:
         fs.ilistdir("noexist")
-    except OSError:
-        print("ilistdir OSError")
+    except OSError as er:
+        print("ilistdir OSError", er)
 
     # remove
     try:
         fs.remove("noexist")
-    except OSError:
-        print("remove OSError")
+    except OSError as er:
+        print("remove OSError", er)
 
     # rmdir
     try:
         fs.rmdir("noexist")
-    except OSError:
-        print("rmdir OSError")
+    except OSError as er:
+        print("rmdir OSError", er)
 
     # rename
     try:
         fs.rename("noexist", "somethingelse")
-    except OSError:
-        print("rename OSError")
+    except OSError as er:
+        print("rename OSError", er)
 
     # mkdir
     try:
         fs.mkdir("testdir")
-    except OSError:
-        print("mkdir OSError")
+    except OSError as er:
+        print("mkdir OSError", er)
 
     # chdir to nonexistent
     try:
         fs.chdir("noexist")
-    except OSError:
-        print("chdir OSError")
+    except OSError as er:
+        print("chdir OSError", er)
     print(fs.getcwd())  # check still at root
 
     # chdir to file
     try:
         fs.chdir("testfile")
-    except OSError:
-        print("chdir OSError")
+    except OSError as er:
+        print("chdir OSError", er)
     print(fs.getcwd())  # check still at root
 
     # stat
     try:
         fs.stat("noexist")
-    except OSError:
-        print("stat OSError")
+    except OSError as er:
+        print("stat OSError", er)
 
     # error during seek
     with fs.open("testfile", "r") as f:
         f.seek(1 << 30)  # SEEK_SET
         try:
             f.seek(1 << 30, 1)  # SEEK_CUR
-        except OSError:
-            print("seek OSError")
+        except OSError as er:
+            print("seek OSError", er)
 
 
 bdev = RAMBlockDevice(30)

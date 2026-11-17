@@ -1,4 +1,5 @@
 # test __complex__ function support
+# requires: complex float
 
 
 class TestFloat:

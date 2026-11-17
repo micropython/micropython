@@ -1,4 +1,6 @@
 # sets, see set_containment
+# requires: slice
+
 for i in 1, 2:
     for o in {1:2}, {1:2}.keys():
         print("{} in {}: {}".format(i, str(o), i in o))

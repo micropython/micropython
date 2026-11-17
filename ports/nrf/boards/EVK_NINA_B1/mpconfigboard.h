@@ -28,7 +28,6 @@
 // https://www.u-blox.com/sites/default/files/EVK-NINA-B1_UserGuide_%28UBX-15028120%29.pdf
 #define MICROPY_HW_BOARD_NAME       "EVK_NINA_B1"
 #define MICROPY_HW_MCU_NAME         "NRF52832"
-#define MICROPY_PY_SYS_PLATFORM     "nrf52"
 
 #define MICROPY_PY_MACHINE_UART     (1)
 #define MICROPY_PY_MACHINE_HW_PWM   (1)

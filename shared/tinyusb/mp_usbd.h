@@ -29,6 +29,26 @@
 
 #include "py/mpconfig.h"
 
+#ifndef MICROPY_WRAP_TUD_SOF_CB
+#define MICROPY_WRAP_TUD_SOF_CB(name) name
+#endif
+
+#ifndef MICROPY_WRAP_TUD_CDC_RX_CB
+#define MICROPY_WRAP_TUD_CDC_RX_CB(name) name
+#endif
+
+#ifndef MICROPY_WRAP_TUD_CDC_LINE_STATE_CB
+#define MICROPY_WRAP_TUD_CDC_LINE_STATE_CB(name) name
+#endif
+
+#ifndef MICROPY_WRAP_TUD_EVENT_HOOK_CB
+#define MICROPY_WRAP_TUD_EVENT_HOOK_CB(name) name
+#endif
+
+#ifndef MICROPY_HW_TINYUSB_LL_INIT
+#define MICROPY_HW_TINYUSB_LL_INIT()
+#endif
+
 #if MICROPY_HW_ENABLE_USBDEV
 
 #include "py/obj.h"
@@ -38,13 +58,21 @@
 #ifndef NO_QSTR
 #include "tusb.h"
 #include "device/dcd.h"
+#include "class/cdc/cdc_device.h"
 #endif
 
 // Initialise TinyUSB device.
 static inline void mp_usbd_init_tud(void) {
     tusb_init();
-    tud_cdc_configure_fifo_t cfg = { .rx_persistent = 0, .tx_persistent = 1 };
-    tud_cdc_configure_fifo(&cfg);
+    #if TUSB_VERSION_NUMBER < 2100 && MICROPY_HW_USB_CDC
+    // TinyUSB prior to 0.21.0 had TX persistence configurable at runtime.
+    tud_cdc_configure_t cfg = {
+        .rx_persistent = 0,
+        .tx_persistent = 1,
+        .tx_overwritabe_if_not_connected = 1,
+    };
+    tud_cdc_configure(&cfg);
+    #endif
 }
 
 // Run the TinyUSB device task
@@ -63,20 +91,38 @@ extern void mp_usbd_port_get_serial_number(char *buf);
 void mp_usbd_hex_str(char *out_str, const uint8_t *bytes, size_t bytes_len);
 
 // Length of built-in configuration descriptor
-#define MP_USBD_BUILTIN_DESC_CFG_LEN (TUD_CONFIG_DESC_LEN +                     \
-    (CFG_TUD_CDC ? (TUD_CDC_DESC_LEN) : 0) +  \
-    (CFG_TUD_MSC ? (TUD_MSC_DESC_LEN) : 0)    \
-    )
+#define MP_USBD_BUILTIN_DESC_CFG_LEN ( \
+    (CFG_TUD_CDC ? (TUD_CDC_DESC_LEN) : 0) + \
+    (CFG_TUD_MSC ? (TUD_MSC_DESC_LEN) : 0) + \
+    (CFG_TUD_NCM ? (TUD_CDC_NCM_DESC_LEN) : 0) + \
+    TUD_CONFIG_DESC_LEN)
 
 // Built-in USB device and configuration descriptor values
 extern const tusb_desc_device_t mp_usbd_builtin_desc_dev;
 extern const uint8_t mp_usbd_builtin_desc_cfg[MP_USBD_BUILTIN_DESC_CFG_LEN];
+#if (CFG_TUD_MAX_SPEED == OPT_MODE_HIGH_SPEED)
+extern const tusb_desc_device_qualifier_t mp_usbd_builtin_desc_qual;
+#endif
 
 void mp_usbd_task_callback(mp_sched_node_t *node);
 
-#if MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
-void mp_usbd_deinit(void);
+#if !MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
+
+static inline void mp_usbd_init(void) {
+    // Without runtime USB support, this can be a thin wrapper wrapper around tusb_init()
+    // which is called in the below helper function.
+    MICROPY_HW_TINYUSB_LL_INIT();
+    mp_usbd_init_tud();
+}
+
+static inline void mp_usbd_deinit(void) {
+    // Called in soft reset path. No-op if no runtime USB devices require cleanup.
+}
+
+#else
+// Runtime USB Device support requires more complex init/deinit
 void mp_usbd_init(void);
+void mp_usbd_deinit(void);
 
 const char *mp_usbd_runtime_string_cb(uint8_t index);
 
@@ -124,19 +170,11 @@ extern const mp_obj_type_t mp_type_usb_device_builtin_default;
 extern const mp_obj_type_t mp_type_usb_device_builtin_none;
 
 // Return true if any built-in driver is enabled
-inline static bool mp_usb_device_builtin_enabled(const mp_obj_usb_device_t *usbd) {
+static inline bool mp_usb_device_builtin_enabled(const mp_obj_usb_device_t *usbd) {
     return usbd->builtin_driver != MP_OBJ_FROM_PTR(&mp_type_usb_device_builtin_none);
 }
 
-#else // Static USBD drivers only
-
-static inline void mp_usbd_init(void) {
-    // Without runtime USB support, this can be a thin wrapper wrapper around tusb_init()
-    // which is called in the below helper function.
-    mp_usbd_init_tud();
-}
-
-#endif
+#endif // MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
 
 #endif // MICROPY_HW_ENABLE_USBDEV
 

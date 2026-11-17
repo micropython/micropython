@@ -26,7 +26,7 @@ IOMUX_REGEXS = [
     r"IOMUXC_(?P<pin>GPIO_SNVS_\d\d_DIG)_(?P<function>\w+) (?P<muxRegister>\w+), (?P<muxMode>\w+), (?P<inputRegister>\w+), (?P<inputDaisy>\w+), (?P<configRegister>\w+)",
 ]
 
-SUPPORTED_AF_FNS = {"GPIO", "USDHC", "FLEXPWM", "TMR"}
+SUPPORTED_AF_FNS = {"GPIO", "USDHC", "FLEXPWM", "TMR", "XBAR"}
 
 
 class MimxrtPin(boardgen.Pin):
@@ -61,18 +61,23 @@ class MimxrtPin(boardgen.Pin):
 
         elif af_name == "ADC":
             adc_regex = r"ADC(?P<instance>\d*)_IN(?P<channel>\d*)"
-            lpadc_regex = r"ADC(?P<instance>\d*)_CH(?P<channel>\d*)"  # LPADC for MIMXRT11xx chips
+            lpadc_regex = r"ADC(?P<instance>\d*)_CH(?P<channel>\d*)(?P<channel_group>.*)"  # LPADC for MIMXRT11xx chips
 
             matches = re.finditer(adc_regex, af, re.MULTILINE)
             for match in matches:
                 self._adc_fns.append(
-                    (int(match.group("instance")), int(match.group("channel")), "ADC")
+                    (int(match.group("instance")), int(match.group("channel")), 0, "ADC")
                 )
 
             matches = re.finditer(lpadc_regex, af, re.MULTILINE)
             for match in matches:
                 self._adc_fns.append(
-                    (int(match.group("instance")), int(match.group("channel")), "LPADC")
+                    (
+                        int(match.group("instance")),
+                        int(match.group("channel")),
+                        ord(match.group("channel_group")[0]) - ord("A"),
+                        "LPADC",
+                    )
                 )
 
     # Use the PIN() macro defined in samd_prefix.c for defining the pin
@@ -122,9 +127,11 @@ class MimxrtPin(boardgen.Pin):
                 "static const machine_pin_adc_obj_t pin_{:s}_adc[] = {{".format(self.name()),
                 file=out_source,
             )
-            for instance, channel, peripheral in self._adc_fns:
+            for instance, channel, channel_group, peripheral in self._adc_fns:
                 print(
-                    "    PIN_ADC({:s}{:d}, {:d}),".format(peripheral, instance, channel),
+                    "    PIN_ADC({:s}{:d}, {:d}, {:d}),".format(
+                        peripheral, instance, channel, channel_group
+                    ),
                     file=out_source,
                 )
             print("};", file=out_source)
@@ -183,7 +190,7 @@ class MimxrtPinGenerator(boardgen.PinGenerator):
     # the CMD pin of the USDHC1 function on the GPIO_SD_B0_00 pin.
     def print_module_instances(self, out_header):
         print(file=out_header)
-        for match_fn in ("USDHC", "FLEXPWM", "TMR"):
+        for match_fn in ("USDHC", "FLEXPWM", "TMR", "XBAR"):
             module_instances = defaultdict(list)
             for pin in self.available_pins():
                 for i, (_af_idx, _input_reg, _input_daisy, instance, fn, af) in enumerate(
@@ -200,6 +207,8 @@ class MimxrtPinGenerator(boardgen.PinGenerator):
                 print("#define {:s}_AVAIL (1)".format(k), file=out_header)
                 if match_fn == "FLEXPWM":
                     print("#define {:s} {:s}".format(k, k[-4:]), file=out_header)
+                if match_fn == "XBAR":
+                    print("#define {:s} {:s}A1".format(k, k[:4]), file=out_header)
                 for i in v:
                     print(i, file=out_header)
 

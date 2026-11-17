@@ -6,7 +6,8 @@ GROUP(-lgcc -lc -lnosys)
 
 _flash_size = 256K;
 _ram_size = 32K;
+_micropy_hw_romfs_part0_size = 12K;
 
 /* Default stack size when there is no SoftDevice */
-_stack_size        = 4K;
+_stack_size        = 6K;
 _minimum_heap_size = 24K;

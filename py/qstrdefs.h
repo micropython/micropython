@@ -53,7 +53,9 @@ Q({:#x})
 Q({:#b})
 Q( )
 Q(\n)
+#if MICROPY_STACK_CHECK
 Q(maximum recursion depth exceeded)
+#endif
 Q(<module>)
 Q(<lambda>)
 Q(<listcomp>)
@@ -68,6 +70,15 @@ Q(utf-8)
 Q(.frozen)
 #endif
 
+#if MICROPY_VFS_ROM && MICROPY_VFS_ROM_IOCTL
+Q(/rom)
+Q(/rom/lib)
+#endif
+
 #if MICROPY_ENABLE_PYSTACK
 Q(pystack exhausted)
+#endif
+
+#if MICROPY_PY_TSTRINGS
+Q(string.templatelib)
 #endif

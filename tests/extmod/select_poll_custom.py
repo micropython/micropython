@@ -1,12 +1,12 @@
 # Test custom pollable objects implemented in Python.
 
-from micropython import const
-
 try:
     import socket, select, io
 except ImportError:
     print("SKIP")
     raise SystemExit
+
+from micropython import const
 
 _MP_STREAM_POLL = const(3)
 _MP_STREAM_GET_FILENO = const(10)

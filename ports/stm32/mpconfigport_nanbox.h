@@ -33,11 +33,5 @@
 #define MICROPY_EMIT_THUMB (0)
 #define MICROPY_EMIT_INLINE_THUMB (0)
 
-// Types needed for nan-boxing
-#define UINT_FMT "%llu"
-#define INT_FMT "%lld"
-typedef int64_t mp_int_t;
-typedef uint64_t mp_uint_t;
-
 // Include base configuration file for rest of configuration
 #include <mpconfigport.h>

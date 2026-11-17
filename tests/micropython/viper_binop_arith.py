@@ -1,4 +1,5 @@
 # test arithmetic operators
+# requires: viper
 
 
 @micropython.viper

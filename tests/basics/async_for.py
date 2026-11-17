@@ -1,5 +1,6 @@
 # test basic async for execution
 # example taken from PEP0492
+# requires: async
 
 
 class AsyncIteratorWrapper:

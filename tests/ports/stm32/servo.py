@@ -1,4 +1,8 @@
-from pyb import Servo
+try:
+    from pyb import Servo
+except ImportError:
+    print("SKIP")
+    raise SystemExit
 
 servo = Servo(1)
 print(servo)

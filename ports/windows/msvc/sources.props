@@ -15,6 +15,7 @@
     <PyExtModSource Include="$(PyBaseDir)extmod\modheapq.c" />
     <PyExtModSource Include="$(PyBaseDir)extmod\modjson.c" />
     <PyExtModSource Include="$(PyBaseDir)extmod\modmachine.c" />
+    <PyExtModSource Include="$(PyBaseDir)extmod\modmarshal.c" />
     <PyExtModSource Include="$(PyBaseDir)extmod\modos.c" />
     <PyExtModSource Include="$(PyBaseDir)extmod\modrandom.c" />
     <PyExtModSource Include="$(PyBaseDir)extmod\modre.c" />

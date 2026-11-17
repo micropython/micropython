@@ -1,4 +1,6 @@
 # test memoryview accessing maximum values for signed/unsigned elements
+# requires: int-big
+
 try:
     memoryview
 except:

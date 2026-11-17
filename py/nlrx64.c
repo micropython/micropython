@@ -100,7 +100,7 @@ unsigned int nlr_push(nlr_buf_t *nlr) {
     #endif
 }
 
-NORETURN void nlr_jump(void *val) {
+MP_NORETURN void nlr_jump(void *val) {
     MP_NLR_JUMP_HEAD(val, top)
 
     __asm volatile (
@@ -126,7 +126,7 @@ NORETURN void nlr_jump(void *val) {
         : "memory"                  // clobbered registers
         );
 
-    MP_UNREACHABLE
+    MP_UNREACHABLE;
 }
 
 #endif // MICROPY_NLR_X64

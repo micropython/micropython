@@ -147,10 +147,10 @@ Power related functions
    (internal oscillator) directly.  The higher frequencies use the HSE to
    drive the PLL (phase locked loop), and then use the output of the PLL.
 
-   Note that if you change the frequency while the USB is enabled then
-   the USB may become unreliable.  It is best to change the frequency
-   in boot.py, before the USB peripheral is started.  Also note that sysclk
-   frequencies below 36MHz do not allow the USB to function correctly.
+   Note that if you change the frequency while the USB is enabled then the USB
+   may become unreliable. It is best to change the frequency in :ref:`boot.py`,
+   before the USB peripheral is started. Also note that sysclk frequencies below
+   36MHz do not allow the USB to function correctly.
 
 .. function:: wfi()
 
@@ -205,8 +205,9 @@ Miscellaneous functions
 
 .. function:: main(filename)
 
-   Set the filename of the main script to run after boot.py is finished.  If
-   this function is not called then the default file main.py will be executed.
+   Set the filename of the main script to run after :ref:`boot.py` is finished.
+   If this function is not called then the default file :ref:`main.py` will be
+   executed.
 
    It only makes sense to call this function from within boot.py.
 

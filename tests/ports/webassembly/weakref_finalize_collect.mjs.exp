@@ -1,0 +1,28 @@
+test basic use of finalize() with a simple callback
+callback((), {})
+(outside Python)
+alive False
+peek None
+detach None
+call None
+test that a callback is passed the correct values
+callback((1, 2), {'kwarg': 3})
+(outside Python)
+alive False
+peek None
+detach None
+call None
+test that calling the finalizer cancels the finalizer
+callback((), {})
+42
+<A object>
+(outside Python)
+test that calling detach cancels the finalizer
+4
+<A object>
+(outside Python)
+test that finalize does not get collected before its ref does
+(outside Python)
+free a
+callback((), {})
+(outside Python)

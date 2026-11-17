@@ -1,4 +1,5 @@
 # test bytes + bytearray
+# requires: bytearray
 
 print(b"123" + bytearray(2))
 

@@ -10,7 +10,9 @@ set(MICROPY_SOURCE_EXTMOD
     ${MICROPY_EXTMOD_DIR}/machine_adc.c
     ${MICROPY_EXTMOD_DIR}/machine_adc_block.c
     ${MICROPY_EXTMOD_DIR}/machine_bitstream.c
+    ${MICROPY_EXTMOD_DIR}/machine_can.c
     ${MICROPY_EXTMOD_DIR}/machine_i2c.c
+    ${MICROPY_EXTMOD_DIR}/machine_i2c_target.c
     ${MICROPY_EXTMOD_DIR}/machine_i2s.c
     ${MICROPY_EXTMOD_DIR}/machine_mem.c
     ${MICROPY_EXTMOD_DIR}/machine_pulse.c
@@ -24,6 +26,7 @@ set(MICROPY_SOURCE_EXTMOD
     ${MICROPY_EXTMOD_DIR}/modframebuf.c
     ${MICROPY_EXTMOD_DIR}/modlwip.c
     ${MICROPY_EXTMOD_DIR}/modmachine.c
+    ${MICROPY_EXTMOD_DIR}/modmarshal.c
     ${MICROPY_EXTMOD_DIR}/modnetwork.c
     ${MICROPY_EXTMOD_DIR}/modonewire.c
     ${MICROPY_EXTMOD_DIR}/modasyncio.c
@@ -50,6 +53,7 @@ set(MICROPY_SOURCE_EXTMOD
     ${MICROPY_EXTMOD_DIR}/network_lwip.c
     ${MICROPY_EXTMOD_DIR}/network_ninaw10.c
     ${MICROPY_EXTMOD_DIR}/network_ppp_lwip.c
+    ${MICROPY_EXTMOD_DIR}/network_usbd_ncm.c
     ${MICROPY_EXTMOD_DIR}/network_wiznet5k.c
     ${MICROPY_EXTMOD_DIR}/os_dupterm.c
     ${MICROPY_EXTMOD_DIR}/vfs.c
@@ -58,6 +62,8 @@ set(MICROPY_SOURCE_EXTMOD
     ${MICROPY_EXTMOD_DIR}/vfs_fat_diskio.c
     ${MICROPY_EXTMOD_DIR}/vfs_fat_file.c
     ${MICROPY_EXTMOD_DIR}/vfs_lfs.c
+    ${MICROPY_EXTMOD_DIR}/vfs_rom.c
+    ${MICROPY_EXTMOD_DIR}/vfs_rom_file.c
     ${MICROPY_EXTMOD_DIR}/vfs_posix.c
     ${MICROPY_EXTMOD_DIR}/vfs_posix_file.c
     ${MICROPY_EXTMOD_DIR}/vfs_reader.c
@@ -104,62 +110,63 @@ set(MICROPY_SOURCE_LIB_LIBM_SQRT_HW ${MICROPY_DIR}/lib/libm/thumb_vfp_sqrtf.c)
 
 if(MICROPY_PY_BTREE)
     set(MICROPY_LIB_BERKELEY_DIR "${MICROPY_DIR}/lib/berkeley-db-1.xx")
-    string(CONCAT GIT_SUBMODULES "${GIT_SUBMODULES} " lib/berkeley-db-1.xx)
+    list(APPEND GIT_SUBMODULES lib/berkeley-db-1.xx)
 
-    if(ECHO_SUBMODULES)
-        # No-op, we're just doing submodule/variant discovery.
-        # Cannot run the add_library/target_include_directories rules (even though
-        # the build won't run) because IDF will attempt verify the files exist.
-    elseif(NOT EXISTS ${MICROPY_LIB_BERKELEY_DIR}/README)
+    if(NOT UPDATE_SUBMODULES AND NOT EXISTS ${MICROPY_LIB_BERKELEY_DIR}/README)
         # Regular build, submodule not initialised -- fail with a clear error.
         message(FATAL_ERROR " MICROPY_PY_BTREE is enabled but the berkeley-db submodule is not initialised.\n Run 'make BOARD=${MICROPY_BOARD} submodules'")
-    else()
-        # Regular build, we have the submodule.
-        add_library(micropy_extmod_btree OBJECT
-            ${MICROPY_LIB_BERKELEY_DIR}/btree/bt_close.c
-            ${MICROPY_LIB_BERKELEY_DIR}/btree/bt_conv.c
-            ${MICROPY_LIB_BERKELEY_DIR}/btree/bt_debug.c
-            ${MICROPY_LIB_BERKELEY_DIR}/btree/bt_delete.c
-            ${MICROPY_LIB_BERKELEY_DIR}/btree/bt_get.c
-            ${MICROPY_LIB_BERKELEY_DIR}/btree/bt_open.c
-            ${MICROPY_LIB_BERKELEY_DIR}/btree/bt_overflow.c
-            ${MICROPY_LIB_BERKELEY_DIR}/btree/bt_page.c
-            ${MICROPY_LIB_BERKELEY_DIR}/btree/bt_put.c
-            ${MICROPY_LIB_BERKELEY_DIR}/btree/bt_search.c
-            ${MICROPY_LIB_BERKELEY_DIR}/btree/bt_seq.c
-            ${MICROPY_LIB_BERKELEY_DIR}/btree/bt_split.c
-            ${MICROPY_LIB_BERKELEY_DIR}/btree/bt_utils.c
-            ${MICROPY_LIB_BERKELEY_DIR}/mpool/mpool.c
-        )
-
-        target_include_directories(micropy_extmod_btree PRIVATE
-            ${MICROPY_LIB_BERKELEY_DIR}/include
-        )
-
-        if(NOT BERKELEY_DB_CONFIG_FILE)
-            set(BERKELEY_DB_CONFIG_FILE "${MICROPY_DIR}/extmod/berkeley-db/berkeley_db_config_port.h")
-        endif()
-
-        target_compile_definitions(micropy_extmod_btree PRIVATE
-            BERKELEY_DB_CONFIG_FILE="${BERKELEY_DB_CONFIG_FILE}"
-        )
-
-        # The include directories and compile definitions below are needed to build
-        # modbtree.c and should be added to the main MicroPython target.
-
-        list(APPEND MICROPY_INC_CORE
-            "${MICROPY_LIB_BERKELEY_DIR}/include"
-        )
-
-        list(APPEND MICROPY_DEF_CORE
-            MICROPY_PY_BTREE=1
-            BERKELEY_DB_CONFIG_FILE="${BERKELEY_DB_CONFIG_FILE}"
-        )
-
-        list(APPEND MICROPY_SOURCE_EXTMOD
-            ${MICROPY_EXTMOD_DIR}/modbtree.c
-        )
     endif()
+
+    add_library(micropy_extmod_btree OBJECT
+        ${MICROPY_LIB_BERKELEY_DIR}/btree/bt_close.c
+        ${MICROPY_LIB_BERKELEY_DIR}/btree/bt_conv.c
+        ${MICROPY_LIB_BERKELEY_DIR}/btree/bt_debug.c
+        ${MICROPY_LIB_BERKELEY_DIR}/btree/bt_delete.c
+        ${MICROPY_LIB_BERKELEY_DIR}/btree/bt_get.c
+        ${MICROPY_LIB_BERKELEY_DIR}/btree/bt_open.c
+        ${MICROPY_LIB_BERKELEY_DIR}/btree/bt_overflow.c
+        ${MICROPY_LIB_BERKELEY_DIR}/btree/bt_page.c
+        ${MICROPY_LIB_BERKELEY_DIR}/btree/bt_put.c
+        ${MICROPY_LIB_BERKELEY_DIR}/btree/bt_search.c
+        ${MICROPY_LIB_BERKELEY_DIR}/btree/bt_seq.c
+        ${MICROPY_LIB_BERKELEY_DIR}/btree/bt_split.c
+        ${MICROPY_LIB_BERKELEY_DIR}/btree/bt_utils.c
+        ${MICROPY_LIB_BERKELEY_DIR}/mpool/mpool.c
+    )
+
+    target_include_directories(micropy_extmod_btree PRIVATE
+        ${MICROPY_LIB_BERKELEY_DIR}/include
+    )
+
+    if(NOT BERKELEY_DB_CONFIG_FILE)
+        set(BERKELEY_DB_CONFIG_FILE "${MICROPY_DIR}/extmod/berkeley-db/berkeley_db_config_port.h")
+    endif()
+
+    target_compile_definitions(micropy_extmod_btree PRIVATE
+        BERKELEY_DB_CONFIG_FILE="${BERKELEY_DB_CONFIG_FILE}"
+    )
+
+    # We need to suppress certain warnings to get berkeley-db to compile cleanly.
+    # Should be kept in sync with extmod.mk.
+    target_compile_options(micropy_extmod_btree PRIVATE
+        -Wno-old-style-definition -Wno-sign-compare -Wno-unused-parameter -Wno-deprecated-non-prototype -Wno-unknown-warning-option
+    )
+
+    # The include directories and compile definitions below are needed to build
+    # modbtree.c and should be added to the main MicroPython target.
+
+    list(APPEND MICROPY_INC_CORE
+        "${MICROPY_LIB_BERKELEY_DIR}/include"
+    )
+
+    list(APPEND MICROPY_DEF_CORE
+        MICROPY_PY_BTREE=1
+        BERKELEY_DB_CONFIG_FILE="${BERKELEY_DB_CONFIG_FILE}"
+    )
+
+    list(APPEND MICROPY_SOURCE_EXTMOD
+        ${MICROPY_EXTMOD_DIR}/modbtree.c
+    )
 endif()
 
 # Library for mbedtls
@@ -217,6 +224,7 @@ if(MICROPY_SSL_MBEDTLS)
         ${MICROPY_LIB_MBEDTLS_DIR}/library/pkcs12.c
         ${MICROPY_LIB_MBEDTLS_DIR}/library/pkcs5.c
         ${MICROPY_LIB_MBEDTLS_DIR}/library/pkparse.c
+        ${MICROPY_LIB_MBEDTLS_DIR}/library/pk_ecc.c
         ${MICROPY_LIB_MBEDTLS_DIR}/library/pk_wrap.c
         ${MICROPY_LIB_MBEDTLS_DIR}/library/pkwrite.c
         ${MICROPY_LIB_MBEDTLS_DIR}/library/platform.c
@@ -346,5 +354,5 @@ if(MICROPY_PY_LWIP)
         ${MICROPY_LIB_LWIP_DIR}/include
     )
 
-    string(CONCAT GIT_SUBMODULES "${GIT_SUBMODULES} " lib/lwip)
+    list(APPEND GIT_SUBMODULES lib/lwip)
 endif()

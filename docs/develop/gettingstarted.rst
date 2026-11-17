@@ -106,7 +106,7 @@ See the `ARM GCC
 toolchain <https://developer.arm.com/downloads/-/arm-gnu-toolchain-downloads>`_
 for the latest details.
 
-Python is also required. Python 2 is supported for now, but we recommend using Python 3.
+Python 3 is also required.
 Check that you have Python available on your system:
 
 .. code-block:: bash
@@ -234,6 +234,22 @@ You can also specify which board to use:
 See `ports/stm32/boards <https://github.com/micropython/micropython/tree/master/ports/stm32/boards>`_
 for the available boards. e.g. "PYBV11" or "NUCLEO_WB55".
 
+Compile-time format string checking
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+When gcc is used to build MicroPython, a plugin can be used for compile-time checking of ``mp_printf`` format strings.
+The plugin is enabled automatically when gcc with the appropriate header files are present.
+The plugin can be disabled by setting ``MICROPY_USE_COMPILER_PLUGIN=none`` in a makefile, in the environment, or on the make commandline.
+The plugin can be explicltly enabled (builds will fail if the plugin can't be built and used) with ``MICROPY_USE_COMPILER_PLUGIN=gcc``.
+
+The plugin doesn't work:
+ * With non-gcc compilers (including clang, which is sometimes installed on Macs with the name "gcc")
+ * With MicroPython builds that use cmake rather than traditional make, such as esp32 & rp2
+ * If the necessary files for plugin development are not installed.
+   In Debian trixie, for instance, the files to build plugins for ``gcc`` are in ``gcc-14-plugin-dev``,
+   and the files to build plugins for ``riscv64-unknown-elf-gcc`` are in ``gcc-14-plugin-dev-riscv64-linux-gnu``.
+   In msys, the package ``mingw-w64-x86_64-gcc-plugin`` enables the plugin for 64-bit builds.
+
 Building the documentation
 --------------------------
 
@@ -278,9 +294,85 @@ To run a selection of tests on a board/device connected over USB use:
 .. code-block:: bash
 
    $ cd tests
-   $ ./run-tests.py --target minimal --device /dev/ttyACM0
+   $ ./run-tests.py -t /dev/ttyACM0
 
 See also :ref:`writingtests`.
+
+Additional make targets for developers
+--------------------------------------
+
+In all ``make``-based ports, there is a target to print the size of a specific object file.
+When a change is confined to a single file, this is useful when testing variations to find smaller alternatives.
+
+For instance, to print the size of ``objstr.o`` in the ``py/`` directory when making a unix standard build:
+
+.. code-block:: bash
+
+   $ make build-standard/py/objstr.sz
+
+Similarly, there is a target to save the preprocessed version of a file:
+
+.. code-block:: bash
+
+   $ make build-standard/py/objstr.pp
+
+In ``ports/unix`` there are additional targets related to running tests:
+
+.. code-block:: bash
+
+   $ make test//int       # Run all tests matching the pattern "int"
+   $ make test/ports/unix # Run all tests in ports/unix
+   $ make test-failures   # Re-run only the failed tests
+   $ make print-failures  # print the differences for failed tests
+   $ make clean-failures  # delete the .exp and .out files from failed tests
+
+Using ci.sh locally
+-------------------
+
+MicroPython uses GitHub Actions for continuous integration.
+To reduce dependence on any specific CI system, the actual build steps for Unix-based builds are in the file ``tools/ci.sh``.
+This can also be used as a script on developer desktops, with caveats:
+
+* For most steps, An Ubuntu/Debian system similar to the one used during CI is assumed.
+* Some specific steps assume specific Ubuntu versions.
+* The setup steps may invoke the system package manager to install packages,
+  download and install software from the internet, etc.
+
+To get a usage message including the list of commands, run:
+
+.. code-block:: bash
+
+   $ tools/ci.sh --help
+
+As an example, you can build and test the unix minimal port with:
+
+.. code-block:: bash
+
+   $ tools/ci.sh unix_minimal_build unix_minimal_run_tests
+
+If you use the bash shell, you can add a ``ci`` command with tab completion:
+
+.. code-block:: bash
+
+   $ eval $(tools/ci.sh --bash-completion)
+
+For the zsh shell, replace ``--bash-completion`` with ``--zsh-completion``.
+For the fish shell, replace ``--bash-completion`` with ``--fish-completion``.
+
+Then, typing:
+
+.. code-block:: bash
+
+   $ ci unix_cov<tab>
+
+This will complete the ci step name to ``unix_coverage_``.
+Pressing tab a second time will show the list of matching steps:
+
+.. code-block:: bash
+
+   $ ci unix_coverage_<tab>
+   unix_coverage_32bit_build
+   unix_coverage_32bit_run_native_mpy_tests…
 
 Folder structure
 ----------------

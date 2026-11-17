@@ -1,0 +1,15 @@
+# Device tree binding vendor prefix registry. Keep this list in
+# alphabetical order.
+#
+# This isn't an exhaustive list, but you should add new prefixes to it
+# before using them to avoid name-space collisions.
+#
+# The contents of this file are parsed during documentation generation.
+# Anything that starts with a '#' is treated as a comment and ignored.
+# Non-empty lines should be in this format:
+#
+# <vendor-prefix><TAB><Full name of vendor>
+
+# zephyr-keep-sorted-start
+micropython	MicroPython Project
+# zephyr-keep-sorted-stop

@@ -1,10 +1,10 @@
 # Check that micropython.RingIO works correctly.
 
-import micropython
-
 try:
+    import micropython
+
     micropython.RingIO
-except AttributeError:
+except (ImportError, AttributeError):
     print("SKIP")
     raise SystemExit
 
@@ -45,4 +45,22 @@ try:
     # Size must be int.
     micropython.RingIO(None)
 except TypeError as ex:
+    print(type(ex))
+
+try:
+    # Buffer may not be empty
+    micropython.RingIO(bytearray(0))
+except ValueError as ex:
+    print(type(ex))
+
+try:
+    # Buffer may not be too small
+    micropython.RingIO(bytearray(1))
+except ValueError as ex:
+    print(type(ex))
+
+try:
+    # Size may not be too small
+    micropython.RingIO(0)
+except ValueError as ex:
     print(type(ex))

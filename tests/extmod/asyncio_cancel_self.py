@@ -1,4 +1,5 @@
 # Test a task cancelling itself (currently unsupported)
+# requires: async
 
 try:
     import asyncio
@@ -25,4 +26,4 @@ async def main():
 try:
     asyncio.run(main())
 except RuntimeError as er:
-    print(er)
+    print(str(er) or "can't cancel self")

@@ -122,6 +122,9 @@ class Stm32Pin(boardgen.Pin):
                 if af_ext:
                     af_pin = "EXT" + af_pin
 
+                # Special case: FDCAN peripheral is named CAN in MicroPython, same as bxCAN
+                af_fn = af_fn.replace("FDCAN", "CAN")
+
                 af_supported = af_fn in SUPPORTED_AF and af_pin in SUPPORTED_AF[af_fn]
 
                 self._afs.append(PinAf(af_idx, af_fn, af_unit, af_pin, af_supported, af_name))
@@ -212,7 +215,7 @@ class Stm32Pin(boardgen.Pin):
     def validate_cpu_pin_name(cpu_pin_name):
         boardgen.Pin.validate_cpu_pin_name(cpu_pin_name)
 
-        if not re.match("P[A-K][0-9]+(_C)?$", cpu_pin_name):
+        if not re.match("P[A-Q][0-9]+(_C)?$", cpu_pin_name):
             raise boardgen.PinGeneratorError("Invalid cpu pin name '{}'".format(cpu_pin_name))
 
 

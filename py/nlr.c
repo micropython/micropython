@@ -81,7 +81,7 @@ void nlr_call_jump_callbacks(nlr_buf_t *nlr) {
 }
 
 #if MICROPY_ENABLE_VM_ABORT
-NORETURN void nlr_jump_abort(void) {
+MP_NORETURN void nlr_jump_abort(void) {
     MP_STATE_THREAD(nlr_top) = MP_STATE_VM(nlr_abort);
     nlr_jump(NULL);
 }

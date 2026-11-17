@@ -3,7 +3,28 @@
 General information about the ESP8266 port
 ==========================================
 
-ESP8266 is a popular WiFi-enabled System-on-Chip (SoC) by Espressif Systems.
+ESP8266 is a WiFi-enabled System-on-Chip (SoC) released by Espressif Systems
+in 2014.
+
+.. _esp8266-not-actively-maintained:
+
+Not Actively Maintained
+-----------------------
+
+The ESP8266 port is a :doc:`Tier 3 MicroPython port </develop/support_tiers>`.
+This tier is **not actively maintained**. The particular version of the vendor
+SDK this port uses, as well as the TLS library it uses, have not been supported
+since before 2020.
+
+.. warning::
+
+   Among other issues this means MicroPython on ESP8266 has **known security
+   vulnerabilities** in the Wi-Fi and TLS libraries that can be exploited by
+   attackers.
+
+The :doc:`ESP32 port </esp32/general>` is a Tier 1 MicroPython port, and we
+strongly recommend choosing an Espressif ESP32 family SoC instead of ESP8266 if
+possible.
 
 Multitude of boards
 -------------------
@@ -74,40 +95,7 @@ as possible after use.
 Boot process
 ------------
 
-On boot, MicroPython EPS8266 port executes ``_boot.py`` script from internal
-frozen modules. It mounts filesystem in FlashROM, or if it's not available,
-performs first-time setup of the module and creates the filesystem. This
-part of the boot process is considered fixed, and not available for customization
-for end users (even if you build from source, please refrain from changes to
-it; customization of early boot process is available only to advanced users
-and developers, who can diagnose themselves any issues arising from
-modifying the standard process).
-
-Once the filesystem is mounted, ``boot.py`` is executed from it. The standard
-version of this file is created during first-time module set up and has
-commands to start a WebREPL daemon (disabled by default, configurable
-with ``webrepl_setup`` module), etc. This
-file is customizable by end users (for example, you may want to set some
-parameters or add other services which should be run on
-a module start-up). But keep in mind that incorrect modifications to boot.py
-may still lead to boot loops or lock ups, requiring to reflash a module
-from scratch. (In particular, it's recommended that you use either
-``webrepl_setup`` module or manual editing to configure WebREPL, but not
-both).
-
-As a final step of boot procedure, ``main.py`` is executed from filesystem,
-if exists. This file is a hook to start up a user application each time
-on boot (instead of going to REPL). For small test applications, you may
-name them directly as ``main.py``, and upload to module, but instead it's
-recommended to keep your application(s) in separate files, and have just
-the following in ``main.py``::
-
-    import my_app
-    my_app.main()
-
-This will allow to keep the structure of your application clear, as well as
-allow to install multiple applications on a board, and switch among them.
-
+See :doc:`/reference/reset_boot`.
 
 Known Issues
 ------------

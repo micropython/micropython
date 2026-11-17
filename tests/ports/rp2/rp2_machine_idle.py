@@ -1,4 +1,3 @@
-import sys
 import machine
 import time
 
@@ -17,11 +16,6 @@ import time
 #
 # Verification uses the average idle time, as individual iterations will always
 # have outliers due to interrupts, scheduler, etc.
-
-# RP2350 currently fails this test because machine.idle() resumes immediately.
-if "RP2350" in sys.implementation._machine:
-    print("SKIP")
-    raise SystemExit
 
 ITERATIONS = 500
 total = 0

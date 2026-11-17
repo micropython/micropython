@@ -1,3 +1,5 @@
+# requires: async float
+
 try:
     import asyncio
 except ImportError:

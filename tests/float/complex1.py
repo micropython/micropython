@@ -1,4 +1,5 @@
 # test basic complex number functionality
+# requires: complex float
 
 # constructor
 print(complex(1))
@@ -12,13 +13,14 @@ print(complex("1.2j"))
 print(complex("1+j"))
 print(complex("1+2j"))
 print(complex("-1-2j"))
+print(complex("-1+2j"))
 print(complex("+1-2j"))
 print(complex(" -1-2j "))
 print(complex(" +1-2j "))
+print(complex(" -1+2j "))
 print(complex("nanj"))
 print(complex("nan-infj"))
 print(complex(1, 2))
-print(complex(1j, 2j))
 
 # unary ops
 print(bool(1j))

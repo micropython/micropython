@@ -8,7 +8,7 @@
         "EVK-NINA-B1_.jpg"
     ],
     "mcu": "nrf52",
-    "product": "evk_nina_b1",
+    "product": "EVK-NINA-B1",
     "thumbnail": "",
     "url": "https://www.u-blox.com/en/product/evk-nina-b1",
     "vendor": "u-blox"

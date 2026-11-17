@@ -3,11 +3,8 @@
 # Note for maintainers: Where possible, functionality should be put into
 # esp32_common.cmake not this file. This is because this CMakeLists.txt file
 # needs to be duplicated for out-of-tree builds, and can easily get out of date.
-cmake_minimum_required(VERSION 3.12)
 
-# Retrieve IDF version
-include($ENV{IDF_PATH}/tools/cmake/version.cmake)
-set(IDF_VERSION "${IDF_VERSION_MAJOR}.${IDF_VERSION_MINOR}.${IDF_VERSION_PATCH}")
+cmake_minimum_required(VERSION 3.16)
 
 # Set the board if it's not already set.
 if(NOT MICROPY_BOARD)
@@ -34,12 +31,6 @@ set(SDKCONFIG ${CMAKE_BINARY_DIR}/sdkconfig)
 
 # Save the manifest file set from the cmake command line.
 set(MICROPY_USER_FROZEN_MANIFEST ${MICROPY_FROZEN_MANIFEST})
-
-# Specific options for IDF v5.2 and later
-set(SDKCONFIG_IDF_VERSION_SPECIFIC "")
-if (IDF_VERSION VERSION_GREATER_EQUAL "5.2.0")
-    set(SDKCONFIG_IDF_VERSION_SPECIFIC boards/sdkconfig.idf52)
-endif()
 
 # Include board config; this is expected to set (among other options):
 # - SDKCONFIG_DEFAULTS
@@ -71,8 +62,22 @@ set(SDKCONFIG_DEFAULTS ${CMAKE_BINARY_DIR}/sdkconfig.combined)
 # Include main IDF cmake file.
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
 
-# Set the location of the main component for the project (one per target).
-list(APPEND EXTRA_COMPONENT_DIRS main_${IDF_TARGET})
+# Generate individual dependencies.lock files based on chip target
+set(LOCKFILE_PATH lockfiles/dependencies.lock.${IDF_TARGET})
+idf_build_set_property(DEPENDENCIES_LOCK ${LOCKFILE_PATH})
 
 # Define the project.
 project(micropython)
+
+# Check for lockfile changes and either warn or error depending on build type
+message("Checking lockfile contents...")
+execute_process(COMMAND git diff --exit-code ${LOCKFILE_PATH} WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
+    RESULT_VARIABLE RES)
+if (RES)
+    # Maintainer builds (CI or autobuild runs) should fail if this has happened
+    if($ENV{MICROPY_MAINTAINER_BUILD})
+        message(FATAL_ERROR "Failing build as lockfile is dirty (see above). Check that ESP-IDF versions match.")
+    else()
+        message(WARNING "Component lockfile contents have changed (see above). This may be due to building with a different ESP-IDF version. Please mention this output if reporting an issue with MicroPython.")
+    endif()
+endif()

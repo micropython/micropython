@@ -32,6 +32,7 @@
 #include "py/runtime.h"
 #include "py/mphal.h"
 #include "shared/netutils/netutils.h"
+#include "eth.h"
 #include "systick.h"
 #include "pendsv.h"
 #include "extmod/modnetwork.h"
@@ -46,6 +47,10 @@
 #if MICROPY_PY_NETWORK_CYW43
 #include "extmod/network_cyw43.h"
 #include "lib/cyw43-driver/src/cyw43.h"
+#endif
+
+#if MICROPY_PY_NETWORK_HALOW_MORSE_MICRO
+#include "mm_halow.h"
 #endif
 
 // Poll lwIP every 128ms
@@ -70,6 +75,10 @@ static void pyb_lwip_poll(void) {
     wiznet5k_poll();
     #endif
 
+    #if defined(MICROPY_HW_ETH_MDC)
+    eth_phy_link_status_poll();
+    #endif
+
     // Run the lwIP internal updates
     sys_check_timeouts();
 
@@ -92,6 +101,20 @@ void mod_network_lwip_poll_wrapper(uint32_t ticks_ms) {
         }
     }
     #endif
+
+    #if MICROPY_PY_NETWORK_HALOW_MORSE_MICRO
+    if (mm_halow_poll) {
+        pendsv_schedule_dispatch(PENDSV_DISPATCH_HALOW, mm_halow_poll);
+    }
+    #endif
 }
+
+#if MICROPY_PY_NETWORK_HALOW_MORSE_MICRO
+void mm_halow_schedule_poll(void) {
+    if (mm_halow_poll) {
+        pendsv_schedule_dispatch(PENDSV_DISPATCH_HALOW, mm_halow_poll);
+    }
+}
+#endif
 
 #endif // MICROPY_PY_LWIP

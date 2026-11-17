@@ -21,10 +21,14 @@
 // Use the minimum headroom in the chunk allocator for parse nodes.
 #define MICROPY_ALLOC_PARSE_CHUNK_INIT    (16)
 
+// Disable all optional sys module features.
+#define MICROPY_PY_SYS_MODULES            (0)
+#define MICROPY_PY_SYS_EXIT               (0)
+#define MICROPY_PY_SYS_PATH               (0)
+#define MICROPY_PY_SYS_ARGV               (0)
+
 // type definitions for the specific machine
 
-typedef intptr_t mp_int_t; // must be pointer size
-typedef uintptr_t mp_uint_t; // must be pointer size
 typedef long mp_off_t;
 
 // We need to provide a declaration/definition of alloca()

@@ -26,6 +26,22 @@ Documentation is available at http://docs.micropython.org/en/latest/esp8266/quic
 The default build requires a 2MiB flash chip, but see below for support for
 1MiB and 512kiB options.
 
+Not Actively Maintained
+-----------------------
+
+The ESP8266 port is a [Tier 3 MicroPython
+port](https://docs.micropython.org/en/latest/develop/support_tiers.html). This
+tier is **not actively maintained**. The particular version of the vendor
+SDK this port uses, as well as the TLS library it uses, have not been supported
+since before 2020.
+
+Among other issues this means MicroPython on ESP8266 has **known security
+vulnerabilities** in the Wi-Fi and TLS libraries that can be exploited by
+attackers.
+
+The ESP32 port is a Tier 1 MicroPython port, and we strongly recommend choosing
+an Espressif ESP32 family SoC instead of ESP8266 whenever possible.
+
 Build instructions
 ------------------
 
@@ -240,8 +256,7 @@ While the port is in beta, it's known to be generally stable. If you
 experience strange bootloops, crashes, lockups, here's a list to check against:
 
 - You didn't erase flash before programming MicroPython firmware.
-- Firmware can be occasionally flashed incorrectly. Just retry. Recent
-  esptool.py versions have --verify option.
+- Firmware can be occasionally flashed incorrectly. Just retry.
 - Power supply you use doesn't provide enough power for ESP8266 or isn't
   stable enough.
 - A module/flash may be defective (not unheard of for cheap modules).

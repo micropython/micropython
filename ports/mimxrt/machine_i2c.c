@@ -33,9 +33,7 @@
 
 #include "fsl_iomuxc.h"
 #include "fsl_lpi2c.h"
-
-#define DEFAULT_I2C_FREQ        (400000)
-#define DEFAULT_I2C_DRIVE       (6)
+#include "machine_i2c.h"
 
 typedef struct _machine_i2c_obj_t {
     mp_obj_base_t base;
@@ -55,11 +53,10 @@ typedef struct _iomux_table_t {
     uint32_t configRegister;
 } iomux_table_t;
 
-static const uint8_t i2c_index_table[] = MICROPY_HW_I2C_INDEX;
-static LPI2C_Type *i2c_base_ptr_table[] = LPI2C_BASE_PTRS;
+const uint8_t i2c_index_table[] = MICROPY_HW_I2C_INDEX;
+LPI2C_Type *i2c_base_ptr_table[] = LPI2C_BASE_PTRS;
+const uint8_t micropy_hw_i2c_num = MICROPY_HW_I2C_NUM;
 static const iomux_table_t iomux_table[] = { IOMUX_TABLE_I2C };
-
-#define MICROPY_HW_I2C_NUM     ARRAY_SIZE(i2c_index_table)
 
 #define SCL (iomux_table[index])
 #define SDA (iomux_table[index + 1])
@@ -82,16 +79,18 @@ bool lpi2c_set_iomux(int8_t hw_i2c, uint8_t drive) {
 
 static void machine_i2c_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_printf(print, "I2C(%u, freq=%u)",
-        self->i2c_id, self->master_config->baudRate_Hz);
+    mp_printf(print, "I2C(%u, freq=%u, timeout=%u)",
+        self->i2c_id, self->master_config->baudRate_Hz,
+        self->master_config->pinLowTimeout_ns / 1000);
 }
 
 mp_obj_t machine_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
-    enum { ARG_id, ARG_freq, ARG_drive};
+    enum { ARG_id, ARG_freq, ARG_drive, ARG_timeout};
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_id, MP_ARG_REQUIRED | MP_ARG_OBJ },
+        { MP_QSTR_id, MP_ARG_INT, {.u_int = DEFAULT_I2C_ID} },
         { MP_QSTR_freq, MP_ARG_INT, {.u_int = DEFAULT_I2C_FREQ} },
         { MP_QSTR_drive, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = DEFAULT_I2C_DRIVE} },
+        { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = DEFAULT_I2C_TIMEOUT} },
     };
 
     // Parse args.
@@ -99,7 +98,7 @@ mp_obj_t machine_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     // Get I2C bus.
-    int i2c_id = mp_obj_get_int(args[ARG_id].u_obj);
+    int i2c_id = args[ARG_id].u_int;
     if (i2c_id < 0 || i2c_id >= MICROPY_HW_I2C_NUM || i2c_index_table[i2c_id] == 0) {
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("I2C(%d) doesn't exist"), i2c_id);
     }
@@ -121,6 +120,9 @@ mp_obj_t machine_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
     LPI2C_MasterGetDefaultConfig(self->master_config);
     // Initialise the I2C peripheral.
     self->master_config->baudRate_Hz = args[ARG_freq].u_int;
+    if (args[ARG_timeout].u_int >= 0) {
+        self->master_config->pinLowTimeout_ns = args[ARG_timeout].u_int * 1000; // to be set as ns
+    }
     LPI2C_MasterInit(self->i2c_inst, self->master_config, BOARD_BOOTCLOCKRUN_LPI2C_CLK_ROOT);
 
     return MP_OBJ_FROM_PTR(self);
@@ -168,7 +170,7 @@ static int machine_i2c_transfer_single(mp_obj_base_t *self_in, uint16_t addr, si
     }
     //  Wait for the transfer to complete
     while (self->transfer_busy) {
-        MICROPY_EVENT_POLL_HOOK
+        mp_event_wait_ms(1);
     }
 
     // Transfer will not send a stop in case of errors like NAK. So it's done here.

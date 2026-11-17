@@ -43,7 +43,7 @@
 #include "modesp32.h"
 #include "genhdr/pins.h"
 
-#if CONFIG_IDF_TARGET_ESP32C3 || CONFIG_IDF_TARGET_ESP32C6
+#if SOC_USB_SERIAL_JTAG_SUPPORTED
 #include "soc/usb_serial_jtag_reg.h"
 #endif
 
@@ -129,7 +129,35 @@ gpio_num_t machine_pin_get_id(mp_obj_t pin_in) {
 
 static void machine_pin_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_pin_obj_t *self = self_in;
-    mp_printf(print, "Pin(%u)", PIN_OBJ_PTR_INDEX(self));
+    gpio_num_t gpio_num = PIN_OBJ_PTR_INDEX(self);
+
+    mp_printf(print, "Pin(%u", gpio_num);
+    #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 5, 0)
+    gpio_io_config_t gpio_io_config;
+    gpio_get_io_config(gpio_num, &gpio_io_config);
+    qstr mode;
+    if (gpio_io_config.oe) {
+        mode = MP_QSTR_OUT;
+    } else if (gpio_io_config.od) {
+        mode = MP_QSTR_OPEN_DRAIN;
+    } else { // if (gpio_io_config.ie)
+        mode = MP_QSTR_IN;
+    }
+    mp_printf(print, ", mode=%q.%q", MP_QSTR_Pin, mode);
+    qstr pull = MP_QSTRnull;
+    if (gpio_io_config.pu) {
+        pull = MP_QSTR_PULL_UP;
+    } else if (gpio_io_config.pd) {
+        pull = MP_QSTR_PULL_DOWN;
+    }
+    if (pull != MP_QSTRnull) {
+        mp_printf(print, ", pull=%q.%q", MP_QSTR_Pin, pull);
+    }
+    if (gpio_io_config.drv != GPIO_DRIVE_CAP_2) {
+        mp_printf(print, ", drive=Pin.DRIVE_%u", gpio_io_config.drv);
+    }
+    #endif
+    mp_printf(print, ")");
 }
 
 // pin.init(mode=None, pull=-1, *, value, drive, hold)
@@ -152,19 +180,29 @@ static mp_obj_t machine_pin_obj_init_helper(const machine_pin_obj_t *self, size_
     // reset the pin to digital if this is a mode-setting init (grab it back from ADC)
     if (args[ARG_mode].u_obj != mp_const_none) {
         if (rtc_gpio_is_valid_gpio(index)) {
-            #if !(CONFIG_IDF_TARGET_ESP32C3 || CONFIG_IDF_TARGET_ESP32C6)
+            #if !(CONFIG_IDF_TARGET_ESP32C2 || CONFIG_IDF_TARGET_ESP32C3 || CONFIG_IDF_TARGET_ESP32C5 || CONFIG_IDF_TARGET_ESP32C6 || CONFIG_IDF_TARGET_ESP32H2)
             rtc_gpio_deinit(index);
             #endif
         }
     }
 
-    #if CONFIG_IDF_TARGET_ESP32C3 && MICROPY_HW_ESP_USB_SERIAL_JTAG
+    #if CONFIG_IDF_TARGET_ESP32C3 && !MICROPY_HW_ESP_USB_SERIAL_JTAG
     if (index == 18 || index == 19) {
         CLEAR_PERI_REG_MASK(USB_SERIAL_JTAG_CONF0_REG, USB_SERIAL_JTAG_USB_PAD_ENABLE);
     }
     #endif
-    #if CONFIG_IDF_TARGET_ESP32C6 && CONFIG_ESP_CONSOLE_USB_SERIAL_JTAG_ENABLED
+    #if CONFIG_IDF_TARGET_ESP32C5 && !MICROPY_HW_ESP_USB_SERIAL_JTAG
+    if (index == 13 || index == 14) {
+        CLEAR_PERI_REG_MASK(USB_SERIAL_JTAG_CONF0_REG, USB_SERIAL_JTAG_USB_PAD_ENABLE);
+    }
+    #endif
+    #if CONFIG_IDF_TARGET_ESP32C6 && !MICROPY_HW_ESP_USB_SERIAL_JTAG
     if (index == 12 || index == 13) {
+        CLEAR_PERI_REG_MASK(USB_SERIAL_JTAG_CONF0_REG, USB_SERIAL_JTAG_USB_PAD_ENABLE);
+    }
+    #endif
+    #if CONFIG_IDF_TARGET_ESP32H2 && !MICROPY_HW_ESP_USB_SERIAL_JTAG
+    if (index == 26 || index == 27) {
         CLEAR_PERI_REG_MASK(USB_SERIAL_JTAG_CONF0_REG, USB_SERIAL_JTAG_USB_PAD_ENABLE);
     }
     #endif
@@ -287,6 +325,15 @@ static mp_obj_t machine_pin_on(mp_obj_t self_in) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(machine_pin_on_obj, machine_pin_on);
 
+// pin.toggle()
+static mp_obj_t machine_pin_toggle(mp_obj_t self_in) {
+    machine_pin_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    gpio_num_t index = PIN_OBJ_PTR_INDEX(self);
+    gpio_set_level(index, 1 - mp_hal_pin_read_output(index));
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_1(machine_pin_toggle_obj, machine_pin_toggle);
+
 // pin.irq(handler=None, trigger=IRQ_FALLING|IRQ_RISING)
 static mp_obj_t machine_pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_handler, ARG_trigger, ARG_wake };
@@ -316,14 +363,17 @@ static mp_obj_t machine_pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_
                 mp_raise_ValueError(MP_ERROR_TEXT("bad wake value"));
             }
 
+            #if SOC_TOUCH_SENSOR_SUPPORTED
             if (machine_rtc_config.wake_on_touch) { // not compatible
                 mp_raise_ValueError(MP_ERROR_TEXT("no resources"));
             }
+            #endif
 
             if (!RTC_IS_VALID_EXT_PIN(index)) {
                 mp_raise_ValueError(MP_ERROR_TEXT("invalid pin for wake"));
             }
 
+            #if SOC_PM_SUPPORT_EXT0_WAKEUP
             if (machine_rtc_config.ext0_pin == -1) {
                 machine_rtc_config.ext0_pin = index;
             } else if (machine_rtc_config.ext0_pin != index) {
@@ -332,10 +382,13 @@ static mp_obj_t machine_pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_
 
             machine_rtc_config.ext0_level = trigger == GPIO_INTR_LOW_LEVEL ? 0 : 1;
             machine_rtc_config.ext0_wake_types = wake;
+            #endif
         } else {
+            #if SOC_PM_SUPPORT_EXT0_WAKEUP
             if (machine_rtc_config.ext0_pin == index) {
                 machine_rtc_config.ext0_pin = -1;
             }
+            #endif
 
             if (handler == mp_const_none) {
                 handler = MP_OBJ_NULL;
@@ -366,6 +419,7 @@ static const mp_rom_map_elem_t machine_pin_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_value), MP_ROM_PTR(&machine_pin_value_obj) },
     { MP_ROM_QSTR(MP_QSTR_off), MP_ROM_PTR(&machine_pin_off_obj) },
     { MP_ROM_QSTR(MP_QSTR_on), MP_ROM_PTR(&machine_pin_on_obj) },
+    { MP_ROM_QSTR(MP_QSTR_toggle), MP_ROM_PTR(&machine_pin_toggle_obj) },
     { MP_ROM_QSTR(MP_QSTR_irq), MP_ROM_PTR(&machine_pin_irq_obj) },
 
     // class attributes

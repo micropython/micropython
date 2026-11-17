@@ -1,3 +1,6 @@
 # cmake file for Raspberry Pi Pico
 set(PICO_BOARD "pico")
 set(PICO_PLATFORM "rp2040")
+if(NOT DEFINED MICROPY_HW_FLASH_STORAGE_BYTES)
+    set(MICROPY_HW_FLASH_STORAGE_BYTES 1441792)  # 1408 * 1024
+endif()

@@ -75,18 +75,12 @@ static mp_obj_t hashlib_sha256_update(mp_obj_t self_in, mp_obj_t arg);
 
 #if MICROPY_SSL_MBEDTLS
 
-#if MBEDTLS_VERSION_NUMBER < 0x02070000 || MBEDTLS_VERSION_NUMBER >= 0x03000000
-#define mbedtls_sha256_starts_ret mbedtls_sha256_starts
-#define mbedtls_sha256_update_ret mbedtls_sha256_update
-#define mbedtls_sha256_finish_ret mbedtls_sha256_finish
-#endif
-
 static mp_obj_t hashlib_sha256_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 0, 1, false);
     mp_obj_hash_t *o = mp_obj_malloc_var(mp_obj_hash_t, state, char, sizeof(mbedtls_sha256_context), type);
     o->final = false;
     mbedtls_sha256_init((mbedtls_sha256_context *)&o->state);
-    mbedtls_sha256_starts_ret((mbedtls_sha256_context *)&o->state, 0);
+    mbedtls_sha256_starts((mbedtls_sha256_context *)&o->state, 0);
     if (n_args == 1) {
         hashlib_sha256_update(MP_OBJ_FROM_PTR(o), args[0]);
     }
@@ -98,7 +92,7 @@ static mp_obj_t hashlib_sha256_update(mp_obj_t self_in, mp_obj_t arg) {
     hashlib_ensure_not_final(self);
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(arg, &bufinfo, MP_BUFFER_READ);
-    mbedtls_sha256_update_ret((mbedtls_sha256_context *)&self->state, bufinfo.buf, bufinfo.len);
+    mbedtls_sha256_update((mbedtls_sha256_context *)&self->state, bufinfo.buf, bufinfo.len);
     return mp_const_none;
 }
 
@@ -108,7 +102,7 @@ static mp_obj_t hashlib_sha256_digest(mp_obj_t self_in) {
     self->final = true;
     vstr_t vstr;
     vstr_init_len(&vstr, 32);
-    mbedtls_sha256_finish_ret((mbedtls_sha256_context *)&self->state, (unsigned char *)vstr.buf);
+    mbedtls_sha256_finish((mbedtls_sha256_context *)&self->state, (unsigned char *)vstr.buf);
     return mp_obj_new_bytes_from_vstr(&vstr);
 }
 
@@ -203,18 +197,12 @@ static mp_obj_t hashlib_sha1_digest(mp_obj_t self_in) {
 
 #if MICROPY_SSL_MBEDTLS
 
-#if MBEDTLS_VERSION_NUMBER < 0x02070000 || MBEDTLS_VERSION_NUMBER >= 0x03000000
-#define mbedtls_sha1_starts_ret mbedtls_sha1_starts
-#define mbedtls_sha1_update_ret mbedtls_sha1_update
-#define mbedtls_sha1_finish_ret mbedtls_sha1_finish
-#endif
-
 static mp_obj_t hashlib_sha1_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 0, 1, false);
     mp_obj_hash_t *o = mp_obj_malloc_var(mp_obj_hash_t, state, char, sizeof(mbedtls_sha1_context), type);
     o->final = false;
     mbedtls_sha1_init((mbedtls_sha1_context *)o->state);
-    mbedtls_sha1_starts_ret((mbedtls_sha1_context *)o->state);
+    mbedtls_sha1_starts((mbedtls_sha1_context *)o->state);
     if (n_args == 1) {
         hashlib_sha1_update(MP_OBJ_FROM_PTR(o), args[0]);
     }
@@ -226,7 +214,7 @@ static mp_obj_t hashlib_sha1_update(mp_obj_t self_in, mp_obj_t arg) {
     hashlib_ensure_not_final(self);
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(arg, &bufinfo, MP_BUFFER_READ);
-    mbedtls_sha1_update_ret((mbedtls_sha1_context *)self->state, bufinfo.buf, bufinfo.len);
+    mbedtls_sha1_update((mbedtls_sha1_context *)self->state, bufinfo.buf, bufinfo.len);
     return mp_const_none;
 }
 
@@ -236,7 +224,7 @@ static mp_obj_t hashlib_sha1_digest(mp_obj_t self_in) {
     self->final = true;
     vstr_t vstr;
     vstr_init_len(&vstr, 20);
-    mbedtls_sha1_finish_ret((mbedtls_sha1_context *)self->state, (byte *)vstr.buf);
+    mbedtls_sha1_finish((mbedtls_sha1_context *)self->state, (byte *)vstr.buf);
     mbedtls_sha1_free((mbedtls_sha1_context *)self->state);
     return mp_obj_new_bytes_from_vstr(&vstr);
 }
@@ -297,18 +285,12 @@ static mp_obj_t hashlib_md5_digest(mp_obj_t self_in) {
 
 #if MICROPY_SSL_MBEDTLS
 
-#if MBEDTLS_VERSION_NUMBER < 0x02070000 || MBEDTLS_VERSION_NUMBER >= 0x03000000
-#define mbedtls_md5_starts_ret mbedtls_md5_starts
-#define mbedtls_md5_update_ret mbedtls_md5_update
-#define mbedtls_md5_finish_ret mbedtls_md5_finish
-#endif
-
 static mp_obj_t hashlib_md5_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 0, 1, false);
     mp_obj_hash_t *o = mp_obj_malloc_var(mp_obj_hash_t, state, char, sizeof(mbedtls_md5_context), type);
     o->final = false;
     mbedtls_md5_init((mbedtls_md5_context *)o->state);
-    mbedtls_md5_starts_ret((mbedtls_md5_context *)o->state);
+    mbedtls_md5_starts((mbedtls_md5_context *)o->state);
     if (n_args == 1) {
         hashlib_md5_update(MP_OBJ_FROM_PTR(o), args[0]);
     }
@@ -320,7 +302,7 @@ static mp_obj_t hashlib_md5_update(mp_obj_t self_in, mp_obj_t arg) {
     hashlib_ensure_not_final(self);
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(arg, &bufinfo, MP_BUFFER_READ);
-    mbedtls_md5_update_ret((mbedtls_md5_context *)self->state, bufinfo.buf, bufinfo.len);
+    mbedtls_md5_update((mbedtls_md5_context *)self->state, bufinfo.buf, bufinfo.len);
     return mp_const_none;
 }
 
@@ -330,7 +312,7 @@ static mp_obj_t hashlib_md5_digest(mp_obj_t self_in) {
     self->final = true;
     vstr_t vstr;
     vstr_init_len(&vstr, 16);
-    mbedtls_md5_finish_ret((mbedtls_md5_context *)self->state, (byte *)vstr.buf);
+    mbedtls_md5_finish((mbedtls_md5_context *)self->state, (byte *)vstr.buf);
     mbedtls_md5_free((mbedtls_md5_context *)self->state);
     return mp_obj_new_bytes_from_vstr(&vstr);
 }

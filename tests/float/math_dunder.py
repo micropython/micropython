@@ -1,4 +1,5 @@
 # test that math functions support user classes with __float__
+# requires: float
 
 try:
     import math

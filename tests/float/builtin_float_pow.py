@@ -1,4 +1,5 @@
 # test builtin pow function with float args
+# requires: float
 
 print(pow(0.0, 0.0))
 print(pow(0, 1.0))

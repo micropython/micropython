@@ -1,14 +1,15 @@
-import io
 try:
+    import io
+
     io.IOBase
-except AttributeError:
-    print('SKIP')
+except (AttributeError, ImportError):
+    print("SKIP")
     raise SystemExit
 
 
 class MyIO(io.IOBase):
     def write(self, buf):
-        # CPython and uPy pass in different types for buf (str vs bytearray)
+        # CPython and MicroPython pass in different types for buf (str vs bytearray)
         print('write', len(buf))
         return len(buf)
 

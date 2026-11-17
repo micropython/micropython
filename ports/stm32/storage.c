@@ -32,6 +32,7 @@
 #include "led.h"
 #include "storage.h"
 #include "irq.h"
+#include "xspi.h"
 
 #if MICROPY_HW_ENABLE_STORAGE
 
@@ -44,13 +45,17 @@
 
 static bool storage_is_initialised = false;
 
+#if !defined(STM32N6)
 static void storage_systick_callback(uint32_t ticks_ms);
+#endif
 
 void storage_init(void) {
     if (!storage_is_initialised) {
         storage_is_initialised = true;
 
+        #if !defined(STM32N6)
         systick_enable_dispatch(SYSTICK_DISPATCH_STORAGE, storage_systick_callback);
+        #endif
 
         MICROPY_HW_BDEV_IOCTL(BDEV_IOCTL_INIT, 0);
 
@@ -58,10 +63,12 @@ void storage_init(void) {
         MICROPY_HW_BDEV2_IOCTL(BDEV_IOCTL_INIT, 0);
         #endif
 
+        #if !defined(STM32N6)
         // Enable the flash IRQ, which is used to also call our storage IRQ handler
         // It must go at the same priority as USB (see comment in irq.h).
         NVIC_SetPriority(FLASH_IRQn, IRQ_PRI_FLASH);
         HAL_NVIC_EnableIRQ(FLASH_IRQn);
+        #endif
     }
 }
 
@@ -77,6 +84,7 @@ uint32_t storage_get_block_count(void) {
     #endif
 }
 
+#if !defined(STM32N6)
 static void storage_systick_callback(uint32_t ticks_ms) {
     if (STORAGE_IDLE_TICK(ticks_ms)) {
         // Trigger a FLASH IRQ to execute at a lower priority
@@ -96,6 +104,7 @@ void FLASH_IRQHandler(void) {
     #endif
     IRQ_EXIT(FLASH_IRQn);
 }
+#endif
 
 void storage_flush(void) {
     MICROPY_HW_BDEV_IOCTL(BDEV_IOCTL_SYNC, 0);
@@ -162,6 +171,12 @@ bool storage_read_block(uint8_t *dest, uint32_t block) {
 
         return true;
 
+    } else if (block < FLASH_PART1_START_BLOCK) {
+        // Blocks between MBR and first partition: return zeros
+        // (This handles blocks 1 to FLASH_PART1_START_BLOCK-1)
+        memset(dest, 0, FLASH_BLOCK_SIZE);
+        return true;
+
     #if defined(MICROPY_HW_BDEV_READBLOCK)
     } else if (FLASH_PART1_START_BLOCK <= block && block < FLASH_PART1_START_BLOCK + MICROPY_HW_BDEV_IOCTL(BDEV_IOCTL_NUM_BLOCKS, 0)) {
         return MICROPY_HW_BDEV_READBLOCK(dest, block - FLASH_PART1_START_BLOCK);
@@ -174,6 +189,10 @@ bool storage_read_block(uint8_t *dest, uint32_t block) {
 bool storage_write_block(const uint8_t *src, uint32_t block) {
     if (block == 0) {
         // can't write MBR, but pretend we did
+        return true;
+    } else if (block < FLASH_PART1_START_BLOCK) {
+        // Blocks between MBR and first partition: ignore writes
+        // (This handles blocks 1 to FLASH_PART1_START_BLOCK-1)
         return true;
     #if defined(MICROPY_HW_BDEV_WRITEBLOCK)
     } else if (FLASH_PART1_START_BLOCK <= block && block < FLASH_PART1_START_BLOCK + MICROPY_HW_BDEV_IOCTL(BDEV_IOCTL_NUM_BLOCKS, 0)) {
@@ -235,11 +254,11 @@ int storage_write_blocks(const uint8_t *src, uint32_t block_num, uint32_t num_bl
 // Board defined an external SPI flash for use with extended block protocol
 #define MICROPY_HW_BDEV_BLOCKSIZE_EXT (MP_SPIFLASH_ERASE_BLOCK_SIZE)
 #define MICROPY_HW_BDEV_READBLOCKS_EXT(dest, bl, off, len) \
-    (spi_bdev_readblocks_raw(MICROPY_HW_BDEV_SPIFLASH_EXTENDED, (dest), (bl), (off), (len)))
+    (spi_bdev_readblocks_raw(MICROPY_HW_BDEV_SPIFLASH_EXTENDED, (dest), MICROPY_HW_BDEV_SPIFLASH_OFFSET_BYTES / MP_SPIFLASH_ERASE_BLOCK_SIZE + (bl), (off), (len)))
 #define MICROPY_HW_BDEV_WRITEBLOCKS_EXT(src, bl, off, len) \
-    (spi_bdev_writeblocks_raw(MICROPY_HW_BDEV_SPIFLASH_EXTENDED, (src), (bl), (off), (len)))
+    (spi_bdev_writeblocks_raw(MICROPY_HW_BDEV_SPIFLASH_EXTENDED, (src), MICROPY_HW_BDEV_SPIFLASH_OFFSET_BYTES / MP_SPIFLASH_ERASE_BLOCK_SIZE + (bl), (off), (len)))
 #define MICROPY_HW_BDEV_ERASEBLOCKS_EXT(bl, len) \
-    (spi_bdev_eraseblocks_raw(MICROPY_HW_BDEV_SPIFLASH_EXTENDED, (bl), (len)))
+    (spi_bdev_eraseblocks_raw(MICROPY_HW_BDEV_SPIFLASH_EXTENDED, MICROPY_HW_BDEV_SPIFLASH_OFFSET_BYTES / MP_SPIFLASH_ERASE_BLOCK_SIZE + (bl), (len)))
 
 #elif (MICROPY_VFS_LFS1 || MICROPY_VFS_LFS2) && MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE
 // Board uses littlefs and internal flash, so enable extended block protocol on internal flash
@@ -273,6 +292,29 @@ const pyb_flash_obj_t pyb_flash_obj = {
     0, // actual size handled in ioctl, MP_BLOCKDEV_IOCTL_BLOCK_COUNT case
 };
 
+mp_obj_t pyb_flash_new_obj(mp_int_t start, mp_int_t len) {
+    uint32_t bl_len = (storage_get_block_count() - FLASH_PART1_START_BLOCK) * FLASH_BLOCK_SIZE;
+
+    if (start == -1) {
+        start = 0;
+    } else if (!(0 <= start && start < bl_len && start % MICROPY_HW_BDEV_BLOCKSIZE_EXT == 0)) {
+        return mp_const_none;
+    }
+
+    if (len == -1) {
+        len = bl_len - start;
+    } else if (!(0 < len && start + len <= bl_len && len % MICROPY_HW_BDEV_BLOCKSIZE_EXT == 0)) {
+        return mp_const_none;
+    }
+
+    pyb_flash_obj_t *self = mp_obj_malloc(pyb_flash_obj_t, &pyb_flash_type);
+    self->use_native_block_size = false;
+    self->start = start;
+    self->len = len;
+
+    return MP_OBJ_FROM_PTR(self);
+}
+
 static void pyb_flash_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     pyb_flash_obj_t *self = MP_OBJ_TO_PTR(self_in);
     if (self == &pyb_flash_obj) {
@@ -296,30 +338,15 @@ static mp_obj_t pyb_flash_make_new(const mp_obj_type_t *type, size_t n_args, siz
         // Default singleton object that accesses entire flash, including virtual partition table
         return MP_OBJ_FROM_PTR(&pyb_flash_obj);
     }
-
-    pyb_flash_obj_t *self = mp_obj_malloc(pyb_flash_obj_t, &pyb_flash_type);
-    self->use_native_block_size = false;
-
-    uint32_t bl_len = (storage_get_block_count() - FLASH_PART1_START_BLOCK) * FLASH_BLOCK_SIZE;
-
     mp_int_t start = args[ARG_start].u_int;
-    if (start == -1) {
-        start = 0;
-    } else if (!(0 <= start && start < bl_len && start % MICROPY_HW_BDEV_BLOCKSIZE_EXT == 0)) {
-        mp_raise_ValueError(NULL);
-    }
-
     mp_int_t len = args[ARG_len].u_int;
-    if (len == -1) {
-        len = bl_len - start;
-    } else if (!(0 < len && start + len <= bl_len && len % MICROPY_HW_BDEV_BLOCKSIZE_EXT == 0)) {
+
+    mp_obj_t self = pyb_flash_new_obj(start, len);
+    if (self == mp_const_none) {
+        // Invalid start or end arg
         mp_raise_ValueError(NULL);
     }
-
-    self->start = start;
-    self->len = len;
-
-    return MP_OBJ_FROM_PTR(self);
+    return self;
 }
 
 static mp_obj_t pyb_flash_readblocks(size_t n_args, const mp_obj_t *args) {
@@ -327,7 +354,7 @@ static mp_obj_t pyb_flash_readblocks(size_t n_args, const mp_obj_t *args) {
     uint32_t block_num = mp_obj_get_int(args[1]);
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[2], &bufinfo, MP_BUFFER_WRITE);
-    mp_uint_t ret = -MP_EIO;
+    mp_int_t ret = -MP_EIO;
     if (n_args == 3) {
         // Cast self->start to signed in case it's pyb_flash_obj with negative start
         block_num += FLASH_PART1_START_BLOCK + (int32_t)self->start / FLASH_BLOCK_SIZE;
@@ -354,7 +381,7 @@ static mp_obj_t pyb_flash_writeblocks(size_t n_args, const mp_obj_t *args) {
     uint32_t block_num = mp_obj_get_int(args[1]);
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[2], &bufinfo, MP_BUFFER_READ);
-    mp_uint_t ret = -MP_EIO;
+    mp_int_t ret = -MP_EIO;
     if (n_args == 3) {
         // Cast self->start to signed in case it's pyb_flash_obj with negative start
         block_num += FLASH_PART1_START_BLOCK + (int32_t)self->start / FLASH_BLOCK_SIZE;

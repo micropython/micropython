@@ -1,4 +1,5 @@
 # test struct and endian specific things
+# requires: host-endianness slice
 
 try:
     import struct

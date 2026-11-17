@@ -1,6 +1,6 @@
 listdir("/"): ['subdir']
 listdir("."): ['subdir']
-getcwd() in {"", "/"}: True
+getcwd() in ("", "/"): True
 chdir("subdir"): None
 getcwd(): /subdir
 mkdir("two"): None

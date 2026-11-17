@@ -37,6 +37,7 @@
 #include "shared/tinyusb/mp_usbd_cdc.h"
 #include "tusb.h"
 #include "uart.h"
+#include "rng.h"
 
 #if MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE
 void flash_cache_commit(void);
@@ -61,7 +62,7 @@ const byte mp_hal_status_to_errno_table[4] = {
     [HAL_TIMEOUT] = MP_ETIMEDOUT,
 };
 
-NORETURN void mp_hal_raise(HAL_StatusTypeDef status) {
+MP_NORETURN void mp_hal_raise(HAL_StatusTypeDef status) {
     mp_raise_OSError(mp_hal_status_to_errno_table[status]);
 }
 
@@ -104,7 +105,7 @@ int mp_hal_stdin_rx_chr(void) {
             return dupterm_c;
         }
         #endif
-        MICROPY_EVENT_POLL_HOOK
+        mp_event_wait_indefinite();
     }
 }
 
@@ -164,14 +165,13 @@ MP_WEAK void mp_hal_get_mac(int idx, uint8_t buf[6]) {
     mp_hal_generate_laa_mac(idx, buf);
 }
 
-void mp_hal_get_mac_ascii(int idx, size_t chr_off, size_t chr_len, char *dest) {
-    static const char hexchr[16] = "0123456789ABCDEF";
-    uint8_t mac[6];
-    mp_hal_get_mac(idx, mac);
-    for (; chr_len; ++chr_off, --chr_len) {
-        *dest++ = hexchr[mac[chr_off >> 1] >> (4 * (1 - (chr_off & 1))) & 0xf];
+#if MICROPY_HW_ENABLE_RNG
+void mp_hal_get_random(size_t n, uint8_t *buf) {
+    for (int i = 0; i < n; i++) {
+        buf[i] = rng_read();
     }
 }
+#endif
 
 #if MICROPY_HW_ENABLE_USBDEV
 void usbfs_interrupt_handler(void) {

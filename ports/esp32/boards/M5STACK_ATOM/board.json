@@ -2,6 +2,9 @@
     "deploy": [
         "../deploy.md"
     ],
+    "deploy_options": {
+        "flash_offset": "0x1000"
+    },
     "docs": "",
     "features": [
         "External Flash",
@@ -15,8 +18,8 @@
         "m5stack_atom.jpg"
     ],
     "mcu": "esp32",
-    "product": "M5 Stack Atom",
+    "product": "Atom",
     "thumbnail": "",
-    "url": "https://m5stack.com/",
-    "vendor": "M5 Stack"
+    "url": "https://shop.m5stack.com/products/atom-matrix-esp32-development-kit",
+    "vendor": "M5Stack"
 }

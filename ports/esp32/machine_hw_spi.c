@@ -38,10 +38,10 @@
 #include "soc/spi_pins.h"
 
 // SPI mappings by device, naming used by IDF old/new
-// upython   | ESP32     | ESP32S2   | ESP32S3 | ESP32C3 | ESP32C6
-// ----------+-----------+-----------+---------+---------+---------
-// SPI(id=1) | HSPI/SPI2 | FSPI/SPI2 | SPI2    | SPI2    | SPI2
-// SPI(id=2) | VSPI/SPI3 | HSPI/SPI3 | SPI3    | err     | err
+// MicroPython | ESP32     | ESP32S2   | ESP32S3 | ESP32C3 | ESP32C6 | ESP32H2
+// ------------+-----------+-----------+---------+---------+---------+---------
+// SPI(id=1)   | HSPI/SPI2 | FSPI/SPI2 | SPI2    | SPI2    | SPI2    | SPI2
+// SPI(id=2)   | VSPI/SPI3 | HSPI/SPI3 | SPI3    | err     | err     | err
 
 // Number of available hardware SPI peripherals.
 #if SOC_SPI_PERIPH_NUM > 2
@@ -73,6 +73,10 @@
 #define MICROPY_HW_SPI2_SCK (36)
 #define MICROPY_HW_SPI2_MOSI (35)
 #define MICROPY_HW_SPI2_MISO (37)
+#elif CONFIG_IDF_TARGET_ESP32P4
+#define MICROPY_HW_SPI2_SCK (43)
+#define MICROPY_HW_SPI2_MOSI (44)
+#define MICROPY_HW_SPI2_MISO (39)
 #endif
 #endif
 
@@ -432,7 +436,9 @@ static void machine_hw_spi_init(mp_obj_base_t *self_in, size_t n_args, const mp_
 }
 
 mp_obj_t machine_hw_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+    #if MICROPY_PY_MACHINE_SOFTSPI
     MP_MACHINE_SPI_CHECK_FOR_LEGACY_SOFTSPI_CONSTRUCTION(n_args, n_kw, all_args);
+    #endif
 
     mp_arg_val_t args[MP_ARRAY_SIZE(spi_allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(spi_allowed_args), spi_allowed_args, args);

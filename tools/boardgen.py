@@ -108,6 +108,10 @@ class Pin:
             )
         )
 
+    # Iterate over board pin names in consistent sorted order.
+    def board_pin_names(self):
+        return sorted(self._board_pin_names, key=lambda x: x[0])
+
     # Override this to handle an af specified in af.csv.
     def add_af(self, af_idx, af_name, af):
         raise NotImplementedError
@@ -172,6 +176,8 @@ class PinGenerator:
         self._pins = []
         self._pin_type = pin_type
         self._enable_af = enable_af
+        self._pin_cpu_num_entries = 0
+        self._pin_board_num_entries = 0
 
     # Allows a port to define a known cpu pin (without relying on it being in the
     # csv file).
@@ -293,10 +299,13 @@ class PinGenerator:
             file=out_source,
         )
         for pin in self.available_pins():
-            for board_pin_name, board_hidden in pin._board_pin_names:
+            for board_pin_name, board_hidden in pin.board_pin_names():
                 if board_hidden:
                     # Don't include hidden pins in Pins.board.
                     continue
+
+                # Keep track of the total number of Pin.board entries.
+                self._pin_board_num_entries += 1
 
                 # We don't use the enable macro for board pins, because they
                 # shouldn't be referenced in pins.csv unless they're
@@ -322,6 +331,9 @@ class PinGenerator:
             file=out_source,
         )
         for pin in self.available_pins(exclude_hidden=True):
+            # Keep track of the total number of Pin.cpu entries.
+            self._pin_cpu_num_entries += 1
+
             m = pin.enable_macro()
             if m:
                 print("    #if {}".format(m), file=out_source)
@@ -351,6 +363,20 @@ class PinGenerator:
 
     # Print the pin_CPUNAME and pin_BOARDNAME macros.
     def print_defines(self, out_header, cpu=True, board=True):
+        # Provide #defines for the number of cpu and board pins.
+        print(
+            "#define MICROPY_PY_MACHINE_PIN_CPU_NUM_ENTRIES ({})".format(
+                self._pin_cpu_num_entries
+            ),
+            file=out_header,
+        )
+        print(
+            "#define MICROPY_PY_MACHINE_PIN_BOARD_NUM_ENTRIES ({})".format(
+                self._pin_board_num_entries
+            ),
+            file=out_header,
+        )
+
         # Provide #defines for each cpu pin.
         for pin in self.available_pins():
             print(file=out_header)
@@ -367,7 +393,7 @@ class PinGenerator:
 
             # #define pin_BOARDNAME (pin_CPUNAME)
             if board:
-                for board_pin_name, _board_hidden in pin._board_pin_names:
+                for board_pin_name, _board_hidden in pin.board_pin_names():
                     # Note: Hidden board pins are still available to C via the macro.
                     # Note: The RHS isn't wrapped in (), which is necessary to make the
                     # STATIC_AF_ macro work on STM32.
@@ -449,6 +475,10 @@ class PinGenerator:
     def generate_extra_files(self):
         pass
 
+    def print_pin_source(self, out_source):
+        for pin in self.available_pins():
+            pin.print_source(out_source)
+
     def main(self):
         parser = argparse.ArgumentParser(description="Generate board specific pin file")
         parser.add_argument("--board-csv")
@@ -469,8 +499,7 @@ class PinGenerator:
                 self.load_inputs(out_source)
 
                 # Allow a port to print arbitrary per-pin content.
-                for pin in self.available_pins():
-                    pin.print_source(out_source)
+                self.print_pin_source(out_source)
 
                 # Print the tables and dictionaries.
                 self.print_source(out_source)

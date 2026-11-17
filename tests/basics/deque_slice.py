@@ -1,3 +1,5 @@
+# requires: slice
+
 try:
     from collections import deque
 except ImportError:

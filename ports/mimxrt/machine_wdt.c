@@ -38,8 +38,9 @@ typedef struct _machine_wdt_obj_t {
 
 static const machine_wdt_obj_t machine_wdt = {{&machine_wdt_type}};
 
-static machine_wdt_obj_t *mp_machine_wdt_make_new_instance(mp_int_t id, mp_int_t timeout_ms) {
+static machine_wdt_obj_t *mp_machine_wdt_make_new_instance(mp_obj_t id_obj, mp_int_t timeout_ms) {
     // Verify the WDT id.
+    mp_int_t id = mp_obj_get_int(id_obj);
     if (id != 0) {
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("WDT(%d) doesn't exist"), id);
     }

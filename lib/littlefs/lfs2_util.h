@@ -8,6 +8,9 @@
 #ifndef LFS2_UTIL_H
 #define LFS2_UTIL_H
 
+#define LFS2_STRINGIZE(x) LFS2_STRINGIZE2(x)
+#define LFS2_STRINGIZE2(x) #x
+
 // Users can override lfs2_util.h with their own configuration by defining
 // LFS2_CONFIG as a header file to include (-DLFS2_CONFIG=lfs2_config.h).
 //
@@ -15,10 +18,25 @@
 // provided by the config file. To start, I would suggest copying lfs2_util.h
 // and modifying as needed.
 #ifdef LFS2_CONFIG
-#define LFS2_STRINGIZE(x) LFS2_STRINGIZE2(x)
-#define LFS2_STRINGIZE2(x) #x
 #include LFS2_STRINGIZE(LFS2_CONFIG)
 #else
+
+// Alternatively, users can provide a header file which defines
+// macros and other things consumed by littlefs.
+//
+// For example, provide my_defines.h, which contains
+// something like:
+//
+// #include <stddef.h>
+// extern void *my_malloc(size_t sz);
+// #define LFS2_MALLOC(sz) my_malloc(sz)
+//
+// And build littlefs with the header by defining LFS2_DEFINES.
+// (-DLFS2_DEFINES=my_defines.h)
+
+#ifdef LFS2_DEFINES
+#include LFS2_STRINGIZE(LFS2_DEFINES)
+#endif
 
 // System includes
 #include <stdint.h>
@@ -177,10 +195,10 @@ static inline uint32_t lfs2_fromle32(uint32_t a) {
     (defined(__BYTE_ORDER__) && defined(__ORDER_BIG_ENDIAN__) && __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__))
     return __builtin_bswap32(a);
 #else
-    return (((uint8_t*)&a)[0] <<  0) |
-           (((uint8_t*)&a)[1] <<  8) |
-           (((uint8_t*)&a)[2] << 16) |
-           (((uint8_t*)&a)[3] << 24);
+    return ((uint32_t)((uint8_t*)&a)[0] <<  0) |
+           ((uint32_t)((uint8_t*)&a)[1] <<  8) |
+           ((uint32_t)((uint8_t*)&a)[2] << 16) |
+           ((uint32_t)((uint8_t*)&a)[3] << 24);
 #endif
 }
 
@@ -200,10 +218,10 @@ static inline uint32_t lfs2_frombe32(uint32_t a) {
     (defined(__BYTE_ORDER__) && defined(__ORDER_BIG_ENDIAN__) && __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__)
     return a;
 #else
-    return (((uint8_t*)&a)[0] << 24) |
-           (((uint8_t*)&a)[1] << 16) |
-           (((uint8_t*)&a)[2] <<  8) |
-           (((uint8_t*)&a)[3] <<  0);
+    return ((uint32_t)((uint8_t*)&a)[0] << 24) |
+           ((uint32_t)((uint8_t*)&a)[1] << 16) |
+           ((uint32_t)((uint8_t*)&a)[2] <<  8) |
+           ((uint32_t)((uint8_t*)&a)[3] <<  0);
 #endif
 }
 
@@ -212,12 +230,22 @@ static inline uint32_t lfs2_tobe32(uint32_t a) {
 }
 
 // Calculate CRC-32 with polynomial = 0x04c11db7
+#ifdef LFS2_CRC
+static inline uint32_t lfs2_crc(uint32_t crc, const void *buffer, size_t size) {
+    return LFS2_CRC(crc, buffer, size);
+}
+#else
 uint32_t lfs2_crc(uint32_t crc, const void *buffer, size_t size);
+#endif
 
 // Allocate memory, only used if buffers are not provided to littlefs
-// Note, memory must be 64-bit aligned
+//
+// littlefs current has no alignment requirements, as it only allocates
+// byte-level buffers.
 static inline void *lfs2_malloc(size_t size) {
-#ifndef LFS2_NO_MALLOC
+#if defined(LFS2_MALLOC)
+    return LFS2_MALLOC(size);
+#elif !defined(LFS2_NO_MALLOC)
     return malloc(size);
 #else
     (void)size;
@@ -227,7 +255,9 @@ static inline void *lfs2_malloc(size_t size) {
 
 // Deallocate memory, only used if buffers are not provided to littlefs
 static inline void lfs2_free(void *p) {
-#ifndef LFS2_NO_MALLOC
+#if defined(LFS2_FREE)
+    LFS2_FREE(p);
+#elif !defined(LFS2_NO_MALLOC)
     free(p);
 #else
     (void)p;

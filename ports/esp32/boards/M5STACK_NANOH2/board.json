@@ -1,0 +1,23 @@
+{
+    "deploy": [
+        "../deploy_nativeusb.md"
+    ],
+    "deploy_options": {
+        "flash_offset": "0"
+    },
+    "docs": "",
+    "features": [
+        "BLE",
+        "RGB LED",
+        "USB",
+        "USB-C",
+        "JST-PH"
+    ],
+    "images": [
+        "m5stack_nanoh2.jpg"
+    ],
+    "mcu": "esp32h2",
+    "product": "NanoH2",
+    "url": "https://shop.m5stack.com/products/m5stack-nanoh2-dev-kit-esp32-h2",
+    "vendor": "M5Stack"
+}

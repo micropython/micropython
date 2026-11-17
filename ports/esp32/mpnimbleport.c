@@ -58,7 +58,7 @@ void mp_bluetooth_nimble_port_start(void) {
     nimble_port_freertos_init(ble_host_task);
 }
 
-void mp_bluetooth_nimble_port_shutdown(void) {
+int mp_bluetooth_nimble_port_shutdown(void) {
     DEBUG_printf("mp_bluetooth_nimble_port_shutdown\n");
 
     #if MICROPY_PY_BLUETOOTH_USE_SYNC_EVENTS_WITH_INTERLOCK
@@ -79,6 +79,8 @@ void mp_bluetooth_nimble_port_shutdown(void) {
 
     // Mark stack as shutdown.
     mp_bluetooth_nimble_ble_state = MP_BLUETOOTH_NIMBLE_BLE_STATE_OFF;
+
+    return 0;
 }
 
 #endif

@@ -2,6 +2,8 @@
 #
 # This is a simple, convenience wrapper around idf.py (which uses cmake).
 
+include ../../py/verbose.mk
+
 # Select the board to build for:
 ifdef BOARD_DIR
 # Custom board path - remove trailing slash and get the final component of
@@ -50,7 +52,7 @@ endif
 IDFPY_FLAGS += -D MICROPY_BOARD=$(BOARD) -D MICROPY_BOARD_DIR="$(abspath $(BOARD_DIR))" $(CMAKE_ARGS)
 
 ifdef FROZEN_MANIFEST
-       IDFPY_FLAGS += -D MICROPY_FROZEN_MANIFEST=$(FROZEN_MANIFEST)
+       IDFPY_FLAGS += -D MICROPY_FROZEN_MANIFEST="$(FROZEN_MANIFEST)"
 endif
 
 ifdef BOARD_VARIANT
@@ -61,15 +63,40 @@ ifdef MICROPY_PREVIEW_VERSION_2
 	IDFPY_FLAGS += -D MICROPY_PREVIEW_VERSION_2=1
 endif
 
+ifeq ($(BUILD_VERBOSE),1)
+	IDFPY_FLAGS += --verbose
+endif
+
 HELP_BUILD_ERROR ?= "See \033[1;31mhttps://github.com/micropython/micropython/wiki/Build-Troubleshooting\033[0m"
 
+# Both EIM (Espressif Installation Manager) and the ESP-IDF `export` scripts for
+# all supported SDK versions set `$IDF_PATH` to point at the SDK root.  Right
+# now the `idf.py` script is located under `$IDF_PATH/tools`, so we look there
+# first, but we also do some sanity checks to have more accurate error messages
+# if something doesn't look right before starting the build.
+
+ifndef IDF_PATH
+$(error IDF_PATH environment variable not set - is your SDK set up correctly?)
+endif
+
+# If IDF_PATH points to a directory, look for idf.py there.
+ifeq ($(wildcard "$(IDF_PATH)/tools"),)
+IDF_PY := $(shell command -v "$(IDF_PATH)/tools/idf.py" 2> /dev/null)
+endif
+
+ifndef IDF_PY
+$(error IDF_PATH points to an invalid path or idf.py was not found at the expected location)
+endif
+
+$(info Using idf.py script at $(IDF_PY))
+
 define RUN_IDF_PY
-	idf.py $(IDFPY_FLAGS) -B $(BUILD) $(1)
+	$(Q)$(IDF_PY) $(IDFPY_FLAGS) -B $(BUILD) $(1)
 endef
 
 all:
-	idf.py $(IDFPY_FLAGS) -B $(BUILD) build || (echo -e $(HELP_BUILD_ERROR); false)
-	@$(PYTHON) makeimg.py \
+	$(Q)$(IDF_PY) $(IDFPY_FLAGS) -B $(BUILD) build || (echo -e $(HELP_BUILD_ERROR); false)
+	$(Q)$(PYTHON) makeimg.py \
 		$(BUILD)/sdkconfig \
 		$(BUILD)/bootloader/bootloader.bin \
 		$(BUILD)/partition_table/partition-table.bin \
@@ -92,20 +119,21 @@ monitor:
 	$(call RUN_IDF_PY,$(DEVICE) monitor)
 
 size:
-	$(call RUN_IDF_PY,size)
+	$(call RUN_IDF_PY,size $(SIZE_FLAGS))
 
 size-components:
-	$(call RUN_IDF_PY,size-components)
+	$(call RUN_IDF_PY,size-components $(SIZE_FLAGS))
 
 size-files:
 	$(call RUN_IDF_PY,size-files)
 
-# Running the build with ECHO_SUBMODULES set will trigger py/mkrules.cmake to
-# print out the value of the GIT_SUBMODULES variable, prefixed with
-# "GIT_SUBMODULES", and then abort. This extracts out that line from the idf.py
-# output and passes the list of submodules to py/mkrules.mk which does the
-# `git submodule init` on each.
+qemu:
+	$(call RUN_IDF_PY,qemu monitor)
+
+# Run idf.py with the UPDATE_SUBMODULES flag to update
+# necessary submodules for this board.
+#
+# This is done in a dedicated build directory as some CMake cache values are not
+# set correctly if not all submodules are loaded yet.
 submodules:
-	@GIT_SUBMODULES=$$(idf.py $(IDFPY_FLAGS) -B $(BUILD)/submodules -D ECHO_SUBMODULES=1 build 2>&1 | \
-	                  grep '^GIT_SUBMODULES=' | cut -d= -f2); \
-	$(MAKE) -f ../../py/mkrules.mk GIT_SUBMODULES="$${GIT_SUBMODULES}" submodules
+	$(Q)$(IDF_PY) $(IDFPY_FLAGS) -B $(BUILD)/submodules -D UPDATE_SUBMODULES=1 reconfigure

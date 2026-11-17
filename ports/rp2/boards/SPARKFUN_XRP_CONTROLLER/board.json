@@ -1,0 +1,28 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "BLE",
+        "Dual-core",
+        "External Flash",
+        "External RAM",
+        "IMU",
+        "JST-SH",
+        "RGB LED",
+        "USB-C",
+        "WiFi"
+    ],
+    "images": [
+        "26619-XRP-Controller-Board-Feature.jpg"
+    ],
+    "mcu": "rp2350",
+    "product": "XRP Controller",
+    "thumbnail": "",
+    "url": "https://www.sparkfun.com/sparkfun-experiential-robotics-platform-xrp-controller.html",
+    "variants": {
+        "RISCV": "RISC-V CPU mode"
+    },
+    "vendor": "SparkFun"
+}

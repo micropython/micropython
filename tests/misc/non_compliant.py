@@ -1,4 +1,5 @@
 # tests for things that are not implemented, or have non-compliant behaviour
+# requires: slice
 
 try:
     import array
@@ -39,7 +40,7 @@ try:
 except NotImplementedError:
     print("NotImplementedError")
 
-# uPy raises TypeError, should be ValueError
+# MicroPython raises TypeError, should be ValueError
 try:
     "%c" % b"\x01\x02"
 except (TypeError, ValueError):
@@ -60,12 +61,6 @@ except NotImplementedError:
 # str.rsplit(None, n) not implemented
 try:
     "a a a".rsplit(None, 1)
-except NotImplementedError:
-    print("NotImplementedError")
-
-# str.endswith(s, start) not implemented
-try:
-    "abc".endswith("c", 1)
 except NotImplementedError:
     print("NotImplementedError")
 
@@ -105,10 +100,10 @@ try:
 except NotImplementedError:
     print("NotImplementedError")
 
-# struct pack with too many args, not checked by uPy
+# struct pack with too many args, not checked by MicroPython
 print(struct.pack("bb", 1, 2, 3))
 
-# struct pack with too few args, not checked by uPy
+# struct pack with too few args, not checked by MicroPython
 print(struct.pack("bb", 1))
 
 # array slice assignment with unsupported RHS

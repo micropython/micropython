@@ -1,0 +1,21 @@
+--- instance0 ---
+received 5 messages
+0x500
+0x501
+0x502
+0x503
+0x504
+done
+--- instance1 ---
+0 cancel result True
+0 send result True
+1 cancel result True
+1 send result True
+2 cancel result True
+2 send result True
+3 cancel result True
+3 send result True
+4 cancel result True
+4 send result True
+total cancels 5
+total sent OK

@@ -1,6 +1,12 @@
 # Check that yield-from can work without heap allocation
 
-import micropython
+try:
+    import micropython
+
+    micropython.heap_lock
+except (ImportError, AttributeError):
+    print("SKIP")
+    raise SystemExit
 
 
 # Yielding from a function generator

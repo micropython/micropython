@@ -1,4 +1,5 @@
 # Test builtin execfile function using VFS.
+# requires: slice
 
 try:
     import io, os, vfs
@@ -16,7 +17,9 @@ class File(io.IOBase):
         self.off = 0
 
     def ioctl(self, request, arg):
-        return 0
+        if request == 4:  # MP_STREAM_CLOSE
+            return 0
+        return -1
 
     def readinto(self, buf):
         buf[:] = memoryview(self.data)[self.off : self.off + len(buf)]
@@ -72,4 +75,25 @@ except TypeError:
     print("TypeError")
 
 # Unmount the VFS object.
+vfs.umount(fs)
+
+
+class EvilFilesystem:
+    def mount(self, readonly, mkfs):
+        print("mount", readonly, mkfs)
+
+    def umount(self):
+        print("umount")
+
+    def open(self, file, mode):
+        return None
+
+
+fs = EvilFilesystem()
+vfs.mount(fs, "/test_mnt")
+try:
+    execfile("/test_mnt/test.py")
+    print("ExecFile succeeded")
+except OSError:
+    print("OSError")
 vfs.umount(fs)

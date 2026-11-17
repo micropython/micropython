@@ -111,12 +111,12 @@ void mp_hal_stdio_mode_raw(void) {
     termios.c_lflag = 0;
     termios.c_cc[VMIN] = 1;
     termios.c_cc[VTIME] = 0;
-    tcsetattr(0, TCSAFLUSH, &termios);
+    tcsetattr(0, TCSANOW, &termios);
 }
 
 void mp_hal_stdio_mode_orig(void) {
     // restore terminal settings
-    tcsetattr(0, TCSAFLUSH, &orig_termios);
+    tcsetattr(0, TCSANOW, &orig_termios);
 }
 
 #endif
@@ -242,14 +242,18 @@ uint64_t mp_hal_time_ns(void) {
 
 #ifndef mp_hal_delay_ms
 void mp_hal_delay_ms(mp_uint_t ms) {
-    mp_uint_t start = mp_hal_ticks_ms();
-    while (mp_hal_ticks_ms() - start < ms) {
-        mp_event_wait_ms(1);
+    if (ms) {
+        mp_uint_t start = mp_hal_ticks_ms();
+        while (mp_hal_ticks_ms() - start < ms) {
+            mp_event_wait_ms(1);
+        }
+    } else {
+        mp_handle_pending(true);
     }
 }
 #endif
 
-void mp_hal_get_random(size_t n, void *buf) {
+void mp_hal_get_random(size_t n, uint8_t *buf) {
     #ifdef _HAVE_GETRANDOM
     RAISE_ERRNO(getrandom(buf, n, 0), errno);
     #else

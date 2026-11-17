@@ -1,5 +1,5 @@
 MicroPython \.\+ version
-Use \.\+
+Type "help()" for more information.
 >>> # word movement
 >>> # backward-word, start in word
 >>> \.\+
@@ -19,7 +19,7 @@ Use \.\+
 >>> # forward-word on eol. if cursor is moved, this will result in a SyntaxError
 >>> \.\+
 6
->>> 
+>>> \$
 >>> # kill word
 >>> # backward-kill-word, start in word
 >>> \.\+
@@ -33,7 +33,7 @@ Use \.\+
 >>> # forward-kill-word, don't start in word
 >>> \.\+
 3
->>> 
+>>> \$
 >>> # extra move/kill shortcuts
 >>> # ctrl-left
 >>> \.\+
@@ -44,4 +44,4 @@ Use \.\+
 >>> # ctrl-w
 >>> \.\+
 1
->>> 
+>>> \$

@@ -4,7 +4,6 @@ the CPU frequency to a given value.  The algorithm here appears as C code
 for the machine.freq() function.
 """
 
-from __future__ import print_function
 import re
 
 
@@ -105,7 +104,7 @@ def compute_pll2(hse, sys, relax_pll48):
         # VCO_OUT must be between 192MHz and 432MHz
         if sys * P not in mcu.range_vco_out:
             continue
-        NbyM = float(sys * P) / hse  # float for Python 2
+        NbyM = sys * P / hse
         # scan M
         M_min = mcu.range_n[0] // int(round(NbyM))  # starting value
         while mcu.range_vco_in[-1] * M_min < hse:
@@ -121,7 +120,7 @@ def compute_pll2(hse, sys, relax_pll48):
             # N is restricted
             if N not in mcu.range_n:
                 continue
-            Q = float(sys * P) / 48  # float for Python 2
+            Q = sys * P / 48
             # Q must be an integer in a set range
             if close_int(Q) and round(Q) in mcu.range_q:
                 # found valid values
@@ -142,7 +141,6 @@ def compute_pll2(hse, sys, relax_pll48):
 
 
 def compute_derived(hse, pll):
-    hse = float(hse)  # float for Python 2
     M, N, P, Q = pll
     vco_in = hse / M
     vco_out = hse * N / M
@@ -228,26 +226,24 @@ def print_table(hse, valid_plls):
     print("found %u valid configurations" % len(valid_plls))
 
 
-def search_header_for_hsx_values(filename, vals):
-    regex_inc = re.compile(r'#include "(boards/[A-Za-z0-9_./]+)"')
-    regex_def = re.compile(r"#define +(HSE_VALUE|HSI_VALUE) +\((\(uint32_t\))?([0-9]+)\)")
+def search_header_for_hsx_values(filename):
+    hse = hsi = None
+    regex_def = re.compile(
+        r"static.* +(micropy_hw_hs[ei]_value) = +([0-9 +-/\*()]+);",
+    )
     with open(filename) as f:
         for line in f:
             line = line.strip()
-            m = regex_inc.match(line)
-            if m:
-                # Search included file
-                search_header_for_hsx_values(m.group(1), vals)
-                continue
             m = regex_def.match(line)
             if m:
                 # Found HSE_VALUE or HSI_VALUE
-                val = int(m.group(3)) // 1000000
-                if m.group(1) == "HSE_VALUE":
-                    vals[0] = val
+                found = m.group(2)
+                val = eval(found) // 1000000
+                if m.group(1) == "micropy_hw_hse_value":
+                    hse = val
                 else:
-                    vals[1] = val
-    return vals
+                    hsi = val
+    return hse, hsi
 
 
 def main():
@@ -280,9 +276,9 @@ def main():
 
     if argv[0].startswith("file:"):
         # extract HSE_VALUE, and optionally HSI_VALUE, from header file
-        hse, hsi = search_header_for_hsx_values(argv[0][5:], [None, None])
+        hse, hsi = search_header_for_hsx_values(argv[0][5:])
         if hse is None:
-            raise ValueError("%s does not contain a definition of HSE_VALUE" % argv[0])
+            raise ValueError("%s does not contain a definition of micropy_hw_hse_value" % argv[0])
     else:
         # HSE given directly as an integer
         hse = int(argv[0])
@@ -295,7 +291,7 @@ def main():
             break
 
     # Relax constraint on PLLQ being 48MHz on MCUs which have separate PLLs for 48MHz
-    relax_pll48 = mcu_series.startswith(("stm32f413", "stm32f7", "stm32h5", "stm32h7"))
+    relax_pll48 = mcu_series.startswith(("stm32f413", "stm32f7", "stm32h5", "stm32h7", "stm32n6"))
 
     hse_valid_plls = compute_pll_table(hse, relax_pll48)
     if hsi is not None:

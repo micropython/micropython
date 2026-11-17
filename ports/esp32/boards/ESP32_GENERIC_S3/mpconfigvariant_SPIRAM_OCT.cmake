@@ -1,5 +1,4 @@
-set(SDKCONFIG_DEFAULTS
-    ${SDKCONFIG_DEFAULTS}
+list(APPEND SDKCONFIG_DEFAULTS
     boards/sdkconfig.240mhz
     boards/sdkconfig.spiram_oct
 )

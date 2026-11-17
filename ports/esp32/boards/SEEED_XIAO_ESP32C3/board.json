@@ -1,0 +1,23 @@
+{
+    "deploy": [
+        "../deploy_nativeusb.md"
+    ],
+    "deploy_options": {
+        "flash_offset": "0"
+    },
+    "docs": "",
+    "features": [
+        "BLE",
+        "WiFi",
+        "USB",
+        "USB-C",
+        "Battery Charging"
+    ],
+    "images": [
+        "seeed_xiao_esp32c3.jpg"
+    ],
+    "mcu": "esp32c3",
+    "product": "XIAO ESP32C3",
+    "url": "https://www.seeedstudio.com/Seeed-XIAO-ESP32C3-p-5431.html",
+    "vendor": "Seeed Studio"
+}

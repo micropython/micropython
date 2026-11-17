@@ -1,4 +1,5 @@
 # Test asyncio.wait_for
+# requires: async float
 
 try:
     import asyncio

@@ -6,7 +6,7 @@ import os
 """
 Execute it like this:
 
-python3 run-tests.py --target wipy --device 192.168.1.1 ../cc3200/tools/smoke.py
+python3 run-tests.py -t 192.168.1.1 ../cc3200/tools/smoke.py
 """
 
 pin_map = [23, 24, 11, 12, 13, 14, 15, 16, 17, 22, 28, 10, 9, 8, 7, 6, 30, 31, 3, 0, 4, 5]

@@ -1,12 +1,10 @@
-try:
-    import random
-except ImportError:
-    print("SKIP")
-    raise SystemExit
+# requires: float
 
 try:
-    random.randint
-except AttributeError:
+    import random
+
+    random.random
+except (ImportError, AttributeError):
     print("SKIP")
     raise SystemExit
 

@@ -1,6 +1,6 @@
 {
     "deploy": [
-        "../deploy_mimxrt.md"
+        "../deploy_mimxrt_nouf2.md"
     ],
     "docs": "",
     "features": [

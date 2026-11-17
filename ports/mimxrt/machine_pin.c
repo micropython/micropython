@@ -93,7 +93,7 @@ int GPIO_get_instance(GPIO_Type *gpio) {
     return 0;
 }
 
-void call_handler(GPIO_Type *gpio, int gpio_nr, int pin) {
+__attribute__((section(".ram_functions"))) void call_handler(GPIO_Type *gpio, int gpio_nr, int pin) {
     uint32_t mask = 1 << pin;
     uint32_t isr = gpio->ISR & gpio->IMR;
     for (int i = 0; i < 16; i++, pin++, mask <<= 1) {
@@ -122,43 +122,43 @@ void call_handler(GPIO_Type *gpio, int gpio_nr, int pin) {
 
 // 10 GPIO IRQ handlers, each covering 16 bits.
 
-void GPIO1_Combined_0_15_IRQHandler(void) {
+__attribute__((section(".ram_functions"))) void GPIO1_Combined_0_15_IRQHandler(void) {
     call_handler(gpiobases[1], 1, 0);
 }
 
-void GPIO1_Combined_16_31_IRQHandler(void) {
+__attribute__((section(".ram_functions"))) void GPIO1_Combined_16_31_IRQHandler(void) {
     call_handler(gpiobases[1], 1, 16);
 }
 
-void GPIO2_Combined_0_15_IRQHandler(void) {
+__attribute__((section(".ram_functions"))) void GPIO2_Combined_0_15_IRQHandler(void) {
     call_handler(gpiobases[2], 2, 0);
 }
 
-void GPIO2_Combined_16_31_IRQHandler(void) {
+__attribute__((section(".ram_functions"))) void GPIO2_Combined_16_31_IRQHandler(void) {
     call_handler(gpiobases[2], 2, 16);
 }
 
-void GPIO3_Combined_0_15_IRQHandler(void) {
+__attribute__((section(".ram_functions"))) void GPIO3_Combined_0_15_IRQHandler(void) {
     call_handler(gpiobases[3], 3, 0);
 }
 
-void GPIO3_Combined_16_31_IRQHandler(void) {
+__attribute__((section(".ram_functions"))) void GPIO3_Combined_16_31_IRQHandler(void) {
     call_handler(gpiobases[3], 3, 16);
 }
 
-void GPIO4_Combined_0_15_IRQHandler(void) {
+__attribute__((section(".ram_functions"))) void GPIO4_Combined_0_15_IRQHandler(void) {
     call_handler(gpiobases[4], 4, 0);
 }
 
-void GPIO4_Combined_16_31_IRQHandler(void) {
+__attribute__((section(".ram_functions"))) void GPIO4_Combined_16_31_IRQHandler(void) {
     call_handler(gpiobases[4], 4, 16);
 }
 
-void GPIO5_Combined_0_15_IRQHandler(void) {
+__attribute__((section(".ram_functions"))) void GPIO5_Combined_0_15_IRQHandler(void) {
     call_handler(gpiobases[5], 5, 0);
 }
 
-void GPIO5_Combined_16_31_IRQHandler(void) {
+__attribute__((section(".ram_functions"))) void GPIO5_Combined_16_31_IRQHandler(void) {
     call_handler(gpiobases[5], 5, 16);
 }
 
@@ -249,7 +249,8 @@ void machine_pin_config(const machine_pin_obj_t *self, uint8_t mode,
         GPIO_PortEnableInterrupts(self->gpio, 1U << self->pin);
         GPIO_PortClearInterruptFlags(self->gpio, ~0);
 
-        NVIC_SetPriority(irq_num, IRQ_PRI_EXTINT);
+        assert(irq_num >= 0); // possible values include NotAvail_IRQn=-128, but in practice that never occurs
+        NVIC_SetPriority(IRQn_NONNEG(irq_num), IRQ_PRI_EXTINT);
         EnableIRQ(irq_num);
     }
 }
@@ -329,7 +330,7 @@ static mp_obj_t machine_pin_obj_init_helper(const machine_pin_obj_t *self, size_
 static void machine_pin_obj_print(const mp_print_t *print, mp_obj_t o, mp_print_kind_t kind) {
     (void)kind;
     const machine_pin_obj_t *self = MP_OBJ_TO_PTR(o);
-    mp_printf(print, "Pin(%s)", qstr_str(self->name));
+    mp_printf(print, "Pin(%q)", (qstr)self->name);
 }
 
 // pin(id, mode, pull, ...)
@@ -383,6 +384,68 @@ static mp_obj_t machine_pin_init(size_t n_args, const mp_obj_t *args, mp_map_t *
     return machine_pin_obj_init_helper(args[0], n_args - 1, args + 1, kw_args);
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(machine_pin_init_obj, 1, machine_pin_init);
+
+// Mask/unmask an already-registered pin interrupt, for interrupt coalescing.
+void mp_hal_pin_interrupt_enable(mp_hal_pin_obj_t pin, bool enable) {
+    machine_pin_obj_t *self = (machine_pin_obj_t *)pin;
+    if (enable) {
+        GPIO_PortClearInterruptFlags(self->gpio, 1U << self->pin);
+        GPIO_PortEnableInterrupts(self->gpio, 1U << self->pin);
+    } else {
+        GPIO_PortDisableInterrupts(self->gpio, 1U << self->pin);
+    }
+}
+
+// Register a pin interrupt from C, for drivers that cannot go through
+// machine.Pin.irq().  Unlike the Python method the trigger is a raw
+// MP_HAL_PIN_TRIGGER_* value, not an index into IRQ_mapping.
+void mp_hal_pin_interrupt(mp_hal_pin_obj_t pin, mp_obj_t handler, mp_uint_t trigger, bool hard) {
+    machine_pin_obj_t *self = (machine_pin_obj_t *)pin;
+    uint32_t gpio_nr = GPIO_get_instance(self->gpio);
+    uint32_t index = GET_PIN_IRQ_INDEX(gpio_nr, self->pin);
+    if (index >= ARRAY_SIZE(MP_STATE_PORT(machine_pin_irq_objects))) {
+        return;
+    }
+
+    uint32_t irq_num = self->pin < 16 ? GPIO_combined_low_irqs[gpio_nr] : GPIO_combined_high_irqs[gpio_nr];
+    assert(irq_num >= 0); // possible values include NotAvail_IRQn=-128, but in practice that never occurs
+
+    if (handler == mp_const_none || trigger == MP_HAL_PIN_TRIGGER_NONE) {
+        GPIO_PortDisableInterrupts(self->gpio, 1U << self->pin);
+        GPIO_PortClearInterruptFlags(self->gpio, 1U << self->pin);
+        MP_STATE_PORT(machine_pin_irq_objects[index]) = NULL;
+        return;
+    }
+
+    if (trigger != MP_HAL_PIN_TRIGGER_FALL && trigger != MP_HAL_PIN_TRIGGER_RISE
+        && trigger != MP_HAL_PIN_TRIGGER_RISE_FALL) {
+        return;
+    }
+
+    machine_pin_irq_obj_t *irq = MP_STATE_PORT(machine_pin_irq_objects[index]);
+    if (irq == NULL) {
+        // Allocates: register from thread context at init, not from an ISR.
+        irq = m_new_obj(machine_pin_irq_obj_t);
+        irq->base.base.type = &mp_irq_type;
+        irq->base.methods = (mp_irq_methods_t *)&machine_pin_irq_methods;
+        irq->base.parent = MP_OBJ_FROM_PTR(self);
+        MP_STATE_PORT(machine_pin_irq_objects[index]) = irq;
+    }
+
+    DisableIRQ(irq_num);
+    GPIO_PortDisableInterrupts(self->gpio, 1U << self->pin);
+    irq->base.handler = handler;
+    irq->base.ishard = hard;
+    irq->flags = 0;
+    irq->trigger = trigger;
+    GPIO_PinSetInterruptConfig(self->gpio, self->pin, irq->trigger);
+    GPIO_PortEnableInterrupts(self->gpio, 1U << self->pin);
+    GPIO_PortClearInterruptFlags(self->gpio, 1U << self->pin);
+    // Bottom of the pile, as eth.c does for the Ethernet IRQs: this only ever
+    // schedules work, and must not cut in front of USB or DMA.
+    NVIC_SetPriority(IRQn_NONNEG(irq_num), IRQ_PRI_PENDSV);
+    EnableIRQ(irq_num);
+}
 
 // pin.irq(handler=None, trigger=IRQ_FALLING|IRQ_RISING, hard=False)
 static mp_obj_t machine_pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {

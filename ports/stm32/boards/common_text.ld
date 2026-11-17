@@ -12,3 +12,11 @@
     . = ALIGN(4);
     _etext = .;        /* define a global symbol at end of code */
 } >FLASH_COMMON
+
+/* Secure Gateway stubs */
+.gnu.sgstubs :
+{
+    . = ALIGN(4);
+    *(.gnu.sgstubs*)
+    . = ALIGN(4);
+} >FLASH_COMMON

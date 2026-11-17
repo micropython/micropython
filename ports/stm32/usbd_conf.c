@@ -32,11 +32,20 @@
 #include "usbd_core.h"
 #include "py/obj.h"
 #include "py/mphal.h"
+#if !BUILDING_MBOOT
+#include "shared/tinyusb/mp_usbd.h"
+#endif
 #include "irq.h"
 #include "usb.h"
 
-#if MICROPY_HW_USB_FS || MICROPY_HW_USB_HS
+#if MICROPY_HW_STM_USB_STACK || MICROPY_HW_TINYUSB_STACK
 
+#if BUILDING_MBOOT
+// TinyUSB not used in mboot
+#undef MICROPY_HW_TINYUSB_STACK
+#endif
+
+// These handles are also used in Interrupt / Wakeup handlers.
 #if MICROPY_HW_USB_FS
 PCD_HandleTypeDef pcd_fs_handle;
 #endif
@@ -51,18 +60,38 @@ PCD_HandleTypeDef pcd_hs_handle;
 #define USB_OTG_FS USB
 #endif
 
-/*******************************************************************************
-                       PCD BSP Routines
-*******************************************************************************/
+#if defined(STM32N6)
+#define USB_OTG_HS USB1_OTG_HS
+#define OTG_HS_IRQn USB1_OTG_HS_IRQn
+#endif
 
-/**
-  * @brief  Initializes the PCD MSP.
-  * @param  hpcd: PCD handle
-  * @retval None
-  */
-void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd) {
-    #if MICROPY_HW_USB_FS
-    if (hpcd->Instance == USB_OTG_FS) {
+// Configure VBUS sensing for TinyUSB on STM32F4/F7. The DWC2 PHY init only
+// sets the PWRDWN bit but doesn't configure VBUS sensing in the GCCFG register.
+#if MICROPY_HW_TINYUSB_STACK && (defined(STM32F4) || defined(STM32F7))
+static inline void mp_usbd_configure_vbus_sensing(USB_OTG_GlobalTypeDef *USBx) {
+    #if defined(USB_OTG_GCCFG_VBDEN)
+    // Newer STM32F4/F7 with VBDEN register bit.
+    #if defined(MICROPY_HW_USB_VBUS_DETECT_PIN)
+    USBx->GCCFG |= USB_OTG_GCCFG_VBDEN;
+    #else
+    USBx->GCCFG &= ~USB_OTG_GCCFG_VBDEN;
+    #endif
+    #else
+    // Older STM32F4 with separate VBUSASEN/VBUSBSEN/NOVBUSSENS register bits.
+    #if defined(MICROPY_HW_USB_VBUS_DETECT_PIN)
+    USBx->GCCFG &= ~USB_OTG_GCCFG_NOVBUSSENS;
+    USBx->GCCFG |= USB_OTG_GCCFG_VBUSBSEN;
+    #else
+    USBx->GCCFG |= USB_OTG_GCCFG_NOVBUSSENS;
+    USBx->GCCFG &= ~(USB_OTG_GCCFG_VBUSBSEN | USB_OTG_GCCFG_VBUSASEN);
+    #endif
+    #endif
+}
+#endif
+
+#if MICROPY_HW_USB_FS
+static void mp_usbd_ll_init_fs(void) {
+    {
         // Configure USB GPIO's.
 
         #if defined(STM32G0) || defined(STM32G4)
@@ -95,7 +124,7 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd) {
         const uint32_t otg_alt = GPIO_AF0_USB;
         #elif defined(STM32L432xx) || defined(STM32L452xx)
         const uint32_t otg_alt = GPIO_AF10_USB_FS;
-        #elif defined(STM32H5) || defined(STM32WB)
+        #elif defined(STM32H5) || defined(STM32U5) || defined(STM32WB)
         const uint32_t otg_alt = GPIO_AF10_USB;
         #else
         const uint32_t otg_alt = GPIO_AF10_OTG_FS;
@@ -134,9 +163,9 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd) {
         #endif
 
         // Enable VDDUSB
-        #if defined(STM32H5)
+        #if defined(STM32H5) || defined(STM32WB)
         HAL_PWREx_EnableVddUSB();
-        #elif defined(STM32L4)
+        #elif defined(STM32L4) || defined(STM32U5)
         if (__HAL_RCC_PWR_IS_CLK_DISABLED()) {
             __HAL_RCC_PWR_CLK_ENABLE();
             HAL_PWREx_EnableVddUSB();
@@ -167,17 +196,21 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd) {
         HAL_NVIC_EnableIRQ(OTG_FS_IRQn);
         #endif
 
-        return;
+        #if MICROPY_HW_TINYUSB_STACK && (defined(STM32F4) || defined(STM32F7))
+        mp_usbd_configure_vbus_sensing(USB_OTG_FS);
+        #endif
     }
-    #endif
+}
+#endif // MICROPY_HW_USB_FS
 
-    #if MICROPY_HW_USB_HS
-    if (hpcd->Instance == USB_OTG_HS) {
+#if MICROPY_HW_USB_HS
+static void mp_usbd_ll_init_hs(void) {
+    {
         #if MICROPY_HW_USB_HS_IN_FS
 
         // Configure USB GPIO's.
 
-        #if defined(STM32H723xx)
+        #if defined(STM32H723xx) || (STM32H7A3xx) || defined(STM32H7A3xxQ) || defined(STM32U5)
 
         // These MCUs don't have an alternate function for USB but rather require
         // the pins to be disconnected from all peripherals, ie put in analog mode.
@@ -191,11 +224,42 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd) {
         mp_hal_pin_config(pin_A12, MP_HAL_PIN_MODE_ANALOG, MP_HAL_PIN_PULL_NONE, 0);
         mp_hal_pin_config_speed(pin_A12, GPIO_SPEED_FREQ_VERY_HIGH);
 
+        #if defined(STM32U5)
+        HAL_SYSCFG_SetOTGPHYReferenceClockSelection(SYSCFG_OTG_HS_PHY_CLK_SELECT_1);
+
+        // Peripheral clock enable
+        __HAL_RCC_USB_OTG_HS_CLK_ENABLE();
+        __HAL_RCC_USBPHYC_CLK_ENABLE();
+
+        // Enable VDDUSB
+        if (__HAL_RCC_PWR_IS_CLK_DISABLED()) {
+            __HAL_RCC_PWR_CLK_ENABLE();
+            HAL_PWREx_EnableVddUSB();
+
+            // configure VOSR register of USB
+            HAL_PWREx_EnableUSBHSTranceiverSupply();
+            __HAL_RCC_PWR_CLK_DISABLE();
+        } else {
+            HAL_PWREx_EnableVddUSB();
+
+            // configure VOSR register of USB
+            HAL_PWREx_EnableUSBHSTranceiverSupply();
+        }
+
+        // Configuring the SYSCFG registers OTG_HS PHY
+        // OTG_HS PHY enable
+        HAL_SYSCFG_EnableOTGPHY(SYSCFG_OTG_HS_PHY_ENABLE);
+        #endif
+
+        #elif defined(STM32N6)
+
+        // These MCUs have dedicated USB pins.
+
         #else
 
         // Other MCUs have an alternate function for GPIO's to be in USB mode.
 
-        #if defined(STM32H7A3xx) || defined(STM32H7A3xxQ) || defined(STM32H7B3xx) || defined(STM32H7B3xxQ)
+        #if defined(STM32H7B3xx) || defined(STM32H7B3xxQ)
         const uint32_t otg_alt = GPIO_AF10_OTG1_FS;
         #elif defined(STM32H7)
         const uint32_t otg_alt = GPIO_AF12_OTG2_FS;
@@ -220,8 +284,25 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd) {
         mp_hal_pin_config(MICROPY_HW_USB_OTG_ID_PIN, MP_HAL_PIN_MODE_ALT_OPEN_DRAIN, MP_HAL_PIN_PULL_UP, otg_alt);
         #endif
 
+        #if defined(STM32N6)
+
+        __HAL_RCC_USB1_OTG_HS_FORCE_RESET();
+        __HAL_RCC_USB1_OTG_HS_PHY_FORCE_RESET();
+        __HAL_RCC_USB1_OTG_HS_PHY_RELEASE_RESET();
+        __HAL_RCC_USB1_OTG_HS_RELEASE_RESET();
+
+        LL_AHB5_GRP1_EnableClock(LL_AHB5_GRP1_PERIPH_OTG1);
+        LL_AHB5_GRP1_EnableClock(LL_AHB5_GRP1_PERIPH_OTGPHY1);
+
+        // Select 24MHz clock.
+        MODIFY_REG(USB1_HS_PHYC->USBPHYC_CR, USB_USBPHYC_CR_FSEL, 2 << USB_USBPHYC_CR_FSEL_Pos);
+
+        #else
+
         // Enable calling WFI and correct function of the embedded USB_FS_IN_HS phy
+        #if !defined(STM32U5)
         __HAL_RCC_USB_OTG_HS_ULPI_CLK_SLEEP_DISABLE();
+        #endif
         __HAL_RCC_USB_OTG_HS_CLK_SLEEP_ENABLE();
 
         // Enable USB HS Clocks
@@ -234,6 +315,12 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd) {
         #endif
 
         __HAL_RCC_USB_OTG_HS_CLK_ENABLE();
+
+        #endif
+
+        #if MICROPY_HW_TINYUSB_STACK && (defined(STM32F4) || defined(STM32F7))
+        mp_usbd_configure_vbus_sensing(USB_OTG_HS);
+        #endif
 
         #else // !MICROPY_HW_USB_HS_IN_FS
 
@@ -259,7 +346,40 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd) {
         NVIC_SetPriority(OTG_HS_IRQn, IRQ_PRI_OTG_HS);
         HAL_NVIC_EnableIRQ(OTG_HS_IRQn);
     }
-    #endif // MICROPY_HW_USB_HS
+}
+#endif // MICROPY_HW_USB_HS
+
+#if MICROPY_HW_TINYUSB_STACK
+
+void mp_usbd_ll_init(void) {
+    // Only initialize the USB hardware once.
+    if (tusb_inited()) {
+        return;
+    }
+
+    #if MICROPY_HW_USB_FS
+    mp_usbd_ll_init_fs();
+    #endif
+
+    #if MICROPY_HW_USB_HS
+    mp_usbd_ll_init_hs();
+    #endif
+}
+
+#elif MICROPY_HW_STM_USB_STACK
+
+void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd) {
+    #if MICROPY_HW_USB_FS
+    if (hpcd->Instance == USB_OTG_FS) {
+        mp_usbd_ll_init_fs();
+    }
+    #endif
+
+    #if MICROPY_HW_USB_HS
+    if (hpcd->Instance == USB_OTG_HS) {
+        mp_usbd_ll_init_hs();
+    }
+    #endif
 }
 
 /**
@@ -283,7 +403,12 @@ void HAL_PCD_MspDeInit(PCD_HandleTypeDef *hpcd) {
     #if MICROPY_HW_USB_HS
     if (hpcd->Instance == USB_OTG_HS) {
         /* Disable USB FS Clocks */
+        #if defined(STM32N6)
+        LL_AHB5_GRP1_DisableClock(LL_AHB5_GRP1_PERIPH_OTG1);
+        LL_AHB5_GRP1_DisableClock(LL_AHB5_GRP1_PERIPH_OTGPHY1);
+        #else
         __USB_OTG_HS_CLK_DISABLE();
+        #endif
     }
     #endif
 
@@ -517,7 +642,7 @@ USBD_StatusTypeDef USBD_LL_Init(USBD_HandleTypeDef *pdev, int high_speed, const 
 
         #if MICROPY_HW_USB_HS_IN_FS
 
-        #if defined(STM32F723xx) || defined(STM32F733xx)
+        #if defined(STM32F723xx) || defined(STM32F733xx) || defined(STM32N6) || defined(STM32U5)
         pcd_hs_handle.Init.phy_itface = USB_OTG_HS_EMBEDDED_PHY;
         #else
         pcd_hs_handle.Init.phy_itface = PCD_PHY_EMBEDDED;
@@ -735,6 +860,8 @@ void HAL_PCDEx_SetConnectionState(PCD_HandleTypeDef *hpcd, uint8_t state) {
     }
 }
 #endif
+
+#endif // MICROPY_HW_STM_USB_STACK
 
 #endif // MICROPY_HW_USB_FS || MICROPY_HW_USB_HS
 

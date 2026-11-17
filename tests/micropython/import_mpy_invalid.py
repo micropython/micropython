@@ -1,4 +1,5 @@
 # test importing of invalid .mpy files
+# requires: slice
 
 try:
     import sys, io, vfs
@@ -22,7 +23,9 @@ class UserFile(io.IOBase):
         return n
 
     def ioctl(self, req, arg):
-        return 0
+        if req == 4:  # MP_STREAM_CLOSE
+            return 0
+        return -1
 
 
 class UserFS:
@@ -61,7 +64,7 @@ for i in range(len(user_files)):
     try:
         __import__(mod)
     except ValueError as er:
-        print(mod, "ValueError", er)
+        print(mod, "ValueError", str(er) or "incompatible .mpy file")
 
 # unmount and undo path addition
 vfs.umount("/userfs")

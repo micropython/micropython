@@ -1,3 +1,5 @@
+# requires: slice
+
 print("123"[0:1])
 
 print("123"[0:2])

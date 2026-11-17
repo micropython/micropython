@@ -20,6 +20,8 @@ If that isn't working you can perform a hard reset (turn-it-off-and-on-again)
 by pressing the RESET button. This will end your session, disconnecting
 whatever program (PuTTY, screen, etc) that you used to connect to the board.
 
+For more details, see :doc:`/reference/reset_boot`.
+
 boot mode
 ---------
 
@@ -29,7 +31,9 @@ There are 3 boot modes:
   * safe boot mode
   * factory filesystem boot mode
 
-boot.py and main.py are executed on "normal boot mode".
+boot.py and main.py are executed on "normal boot mode". See :ref:`boot_sequence`.
+
+The other modes can be used to recover from :ref:`soft_bricking`:
 
 boot.py and main.py are *NOT* executed on "safe boot mode".
 
@@ -46,16 +50,4 @@ on the board:
 
 You have created the main.py which executes LED1 blinking in the previous part.
 If you change the boot mode to safe boot mode, the MicroPython starts without
-the execution of main.py. Then you can remove the main.py by following
-command or change the boot mode to factory file system boot mode.::
-
-    import os
-    os.remove('main.py')
-
-or change the boot mode to factory file system boot mode.
-
-You can confirm that the initialized file system that there are only boot.py and main.py files.::
-
-    import os
-    os.listdir()
-
+the execution of main.py.

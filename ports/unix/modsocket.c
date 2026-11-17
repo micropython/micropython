@@ -140,9 +140,12 @@ static mp_uint_t socket_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_t arg, i
             // The rationale MicroPython follows is that close() just releases
             // file descriptor. If you're interested to catch I/O errors before
             // closing fd, fsync() it.
-            MP_THREAD_GIL_EXIT();
-            close(self->fd);
-            MP_THREAD_GIL_ENTER();
+            if (self->fd >= 0) {
+                MP_THREAD_GIL_EXIT();
+                close(self->fd);
+                MP_THREAD_GIL_ENTER();
+            }
+            self->fd = -1;
             return 0;
 
         case MP_STREAM_GET_FILENO:
@@ -207,7 +210,7 @@ static mp_obj_t socket_connect(mp_obj_t self_in, mp_obj_t addr_in) {
             int err = errno;
             if (self->blocking) {
                 if (err == EINTR) {
-                    mp_handle_pending(true);
+                    mp_handle_pending(MP_HANDLE_PENDING_CALLBACKS_AND_EXCEPTIONS);
                     continue;
                 }
                 // EINPROGRESS on a blocking socket means the operation timed out
@@ -280,11 +283,11 @@ static MP_DEFINE_CONST_FUN_OBJ_1(socket_accept_obj, socket_accept);
 // these would be thrown as exceptions.
 static mp_obj_t socket_recv(size_t n_args, const mp_obj_t *args) {
     mp_obj_socket_t *self = MP_OBJ_TO_PTR(args[0]);
-    int sz = MP_OBJ_SMALL_INT_VALUE(args[1]);
+    int sz = mp_obj_get_int(args[1]);
     int flags = 0;
 
     if (n_args > 2) {
-        flags = MP_OBJ_SMALL_INT_VALUE(args[2]);
+        flags = mp_obj_get_int(args[2]);
     }
 
     byte *buf = m_new(byte, sz);
@@ -298,11 +301,11 @@ static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(socket_recv_obj, 2, 3, socket_recv);
 
 static mp_obj_t socket_recvfrom(size_t n_args, const mp_obj_t *args) {
     mp_obj_socket_t *self = MP_OBJ_TO_PTR(args[0]);
-    int sz = MP_OBJ_SMALL_INT_VALUE(args[1]);
+    int sz = mp_obj_get_int(args[1]);
     int flags = 0;
 
     if (n_args > 2) {
-        flags = MP_OBJ_SMALL_INT_VALUE(args[2]);
+        flags = mp_obj_get_int(args[2]);
     }
 
     struct sockaddr_storage addr;
@@ -330,8 +333,14 @@ static mp_obj_t socket_send(size_t n_args, const mp_obj_t *args) {
     mp_obj_socket_t *self = MP_OBJ_TO_PTR(args[0]);
     int flags = 0;
 
+    bool is_sendall = false;
+    if (n_args < 2) {
+        is_sendall = true;
+        n_args += 2;
+    }
+
     if (n_args > 2) {
-        flags = MP_OBJ_SMALL_INT_VALUE(args[2]);
+        flags = mp_obj_get_int(args[2]);
     }
 
     mp_buffer_info_t bufinfo;
@@ -339,9 +348,18 @@ static mp_obj_t socket_send(size_t n_args, const mp_obj_t *args) {
     ssize_t out_sz;
     MP_HAL_RETRY_SYSCALL(out_sz, send(self->fd, bufinfo.buf, bufinfo.len, flags),
         mp_raise_OSError(err));
+    if (is_sendall && ((size_t)out_sz != bufinfo.len)) {
+        mp_raise_OSError(MP_EINTR);
+    }
     return MP_OBJ_NEW_SMALL_INT(out_sz);
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(socket_send_obj, 2, 3, socket_send);
+
+static mp_obj_t socket_sendall(size_t n_args, const mp_obj_t *args) {
+    socket_send(n_args - 2, args);
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(socket_sendall_obj, 2, 3, socket_sendall);
 
 static mp_obj_t socket_sendto(size_t n_args, const mp_obj_t *args) {
     mp_obj_socket_t *self = MP_OBJ_TO_PTR(args[0]);
@@ -349,7 +367,7 @@ static mp_obj_t socket_sendto(size_t n_args, const mp_obj_t *args) {
 
     mp_obj_t dst_addr = args[2];
     if (n_args > 3) {
-        flags = MP_OBJ_SMALL_INT_VALUE(args[2]);
+        flags = mp_obj_get_int(args[2]);
         dst_addr = args[3];
     }
 
@@ -366,7 +384,7 @@ static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(socket_sendto_obj, 3, 4, socket_sendt
 static mp_obj_t socket_setsockopt(size_t n_args, const mp_obj_t *args) {
     (void)n_args; // always 4
     mp_obj_socket_t *self = MP_OBJ_TO_PTR(args[0]);
-    int level = MP_OBJ_SMALL_INT_VALUE(args[1]);
+    int level = mp_obj_get_int(args[1]);
     int option = mp_obj_get_int(args[2]);
 
     const void *optval;
@@ -478,14 +496,11 @@ static mp_obj_t socket_make_new(const mp_obj_type_t *type_in, size_t n_args, siz
     int proto = 0;
 
     if (n_args > 0) {
-        assert(mp_obj_is_small_int(args[0]));
-        family = MP_OBJ_SMALL_INT_VALUE(args[0]);
+        family = mp_obj_get_int(args[0]);
         if (n_args > 1) {
-            assert(mp_obj_is_small_int(args[1]));
-            type = MP_OBJ_SMALL_INT_VALUE(args[1]);
+            type = mp_obj_get_int(args[1]);
             if (n_args > 2) {
-                assert(mp_obj_is_small_int(args[2]));
-                proto = MP_OBJ_SMALL_INT_VALUE(args[2]);
+                proto = mp_obj_get_int(args[2]);
             }
         }
     }
@@ -511,6 +526,7 @@ static const mp_rom_map_elem_t socket_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_recv), MP_ROM_PTR(&socket_recv_obj) },
     { MP_ROM_QSTR(MP_QSTR_recvfrom), MP_ROM_PTR(&socket_recvfrom_obj) },
     { MP_ROM_QSTR(MP_QSTR_send), MP_ROM_PTR(&socket_send_obj) },
+    { MP_ROM_QSTR(MP_QSTR_sendall), MP_ROM_PTR(&socket_sendall_obj) },
     { MP_ROM_QSTR(MP_QSTR_sendto), MP_ROM_PTR(&socket_sendto_obj) },
     { MP_ROM_QSTR(MP_QSTR_setsockopt), MP_ROM_PTR(&socket_setsockopt_obj) },
     { MP_ROM_QSTR(MP_QSTR_setblocking), MP_ROM_PTR(&socket_setblocking_obj) },
@@ -582,7 +598,7 @@ static mp_obj_t mod_socket_getaddrinfo(size_t n_args, const mp_obj_t *args) {
     // getaddrinfo accepts port in string notation, so however
     // it may seem stupid, we need to convert int to str
     if (mp_obj_is_small_int(args[1])) {
-        unsigned port = (unsigned short)MP_OBJ_SMALL_INT_VALUE(args[1]);
+        unsigned port = (unsigned short)mp_obj_get_int(args[1]);
         snprintf(buf, sizeof(buf), "%u", port);
         serv = buf;
         hints.ai_flags = AI_NUMERICSERV;
@@ -605,13 +621,13 @@ static mp_obj_t mod_socket_getaddrinfo(size_t n_args, const mp_obj_t *args) {
     }
 
     if (n_args > 2) {
-        hints.ai_family = MP_OBJ_SMALL_INT_VALUE(args[2]);
+        hints.ai_family = mp_obj_get_int(args[2]);
         if (n_args > 3) {
-            hints.ai_socktype = MP_OBJ_SMALL_INT_VALUE(args[3]);
+            hints.ai_socktype = mp_obj_get_int(args[3]);
             if (n_args > 4) {
-                hints.ai_protocol = MP_OBJ_SMALL_INT_VALUE(args[4]);
+                hints.ai_protocol = mp_obj_get_int(args[4]);
                 if (n_args > 5) {
-                    hints.ai_flags = MP_OBJ_SMALL_INT_VALUE(args[5]);
+                    hints.ai_flags = mp_obj_get_int(args[5]);
                 }
             }
         }
@@ -701,6 +717,7 @@ static const mp_rom_map_elem_t mp_module_socket_globals_table[] = {
 
     C(MSG_DONTROUTE),
     C(MSG_DONTWAIT),
+    C(MSG_PEEK),
 
     C(SOL_SOCKET),
     C(SO_BROADCAST),
@@ -708,6 +725,9 @@ static const mp_rom_map_elem_t mp_module_socket_globals_table[] = {
     C(SO_KEEPALIVE),
     C(SO_LINGER),
     C(SO_REUSEADDR),
+
+    C(IP_ADD_MEMBERSHIP),
+    C(IP_DROP_MEMBERSHIP),
 #undef C
 };
 

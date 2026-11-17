@@ -42,11 +42,20 @@
 #endif
 
 void __real_esp_panic_handler(void *);
-void esp_panic_handler_reconfigure_wdts(uint32_t timeout_ms);
 void panic_print_str(const char *str);
 
+#if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(5, 4, 2)
+void esp_panic_handler_reconfigure_wdts(uint32_t timeout_ms);
+#else
+void esp_panic_handler_feed_wdts(void);
+#endif
+
 void MICROPY_WRAP_PANICHANDLER_FUN(__wrap_esp_panic_handler)(void *info) {
+    #if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(5, 4, 2)
     esp_panic_handler_reconfigure_wdts(1000);
+    #else
+    esp_panic_handler_feed_wdts();
+    #endif
 
     const static char *msg = MICROPY_WRAP_PANICHANDLER_STR(
         "\r\n"

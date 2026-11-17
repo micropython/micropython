@@ -1,8 +1,5 @@
 # Enable/disable modules and 3rd-party libs to be included in interpreter
 
-# Build 32-bit binaries on a 64-bit host
-MICROPY_FORCE_32BIT = 0
-
 # This variable can take the following values:
 #  0 - no readline, just simple stdin input
 #  1 - use MicroPython version of readline
@@ -13,6 +10,7 @@ MICROPY_PY_BTREE = 1
 
 # _thread module using pthreads
 MICROPY_PY_THREAD = 1
+MICROPY_PY_THREAD_GIL = 0
 
 # Subset of CPython termios module
 MICROPY_PY_TERMIOS = 1

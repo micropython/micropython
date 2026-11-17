@@ -50,18 +50,19 @@ static mp_obj_t zip_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_
 static mp_obj_t zip_iternext(mp_obj_t self_in) {
     mp_check_self(mp_obj_is_type(self_in, &mp_type_zip));
     mp_obj_zip_t *self = MP_OBJ_TO_PTR(self_in);
-    if (self->n_iters == 0) {
-        return MP_OBJ_STOP_ITERATION;
-    }
-    mp_obj_tuple_t *tuple = MP_OBJ_TO_PTR(mp_obj_new_tuple(self->n_iters, NULL));
-
+    mp_obj_tuple_t *tuple = NULL;
     for (size_t i = 0; i < self->n_iters; i++) {
         mp_obj_t next = mp_iternext(self->iters[i]);
         if (next == MP_OBJ_STOP_ITERATION) {
-            mp_obj_tuple_del(MP_OBJ_FROM_PTR(tuple));
             return MP_OBJ_STOP_ITERATION;
         }
+        if (tuple == NULL) {
+            tuple = MP_OBJ_TO_PTR(mp_obj_new_tuple(self->n_iters, NULL));
+        }
         tuple->items[i] = next;
+    }
+    if (tuple == NULL) {
+        return MP_OBJ_STOP_ITERATION;
     }
     return MP_OBJ_FROM_PTR(tuple);
 }

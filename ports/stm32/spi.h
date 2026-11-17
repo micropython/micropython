@@ -67,6 +67,7 @@ extern const mp_obj_type_t pyb_spi_type;
 void spi_init0(void);
 int spi_init(const spi_t *spi, bool enable_nss_pin);
 void spi_deinit(const spi_t *spi_obj);
+void spi_deinit_all(void);
 int spi_find_index(mp_obj_t id);
 void spi_set_params(const spi_t *spi_obj, uint32_t prescale, int32_t baudrate,
     int32_t polarity, int32_t phase, int32_t bits, int32_t firstbit);

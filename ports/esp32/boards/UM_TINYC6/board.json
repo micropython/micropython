@@ -1,7 +1,11 @@
 {
     "deploy": [
-        "deploy_tinyc6.md"
+        "deploy_flashmode.md",
+        "../deploy_nativeusb.md"
     ],
+    "deploy_options": {
+        "flash_offset": "0"
+    },
     "docs": "",
     "features": [
         "Battery Charging",

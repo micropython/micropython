@@ -1,4 +1,5 @@
 # Test asyncio TCP server and client with TLS, using readline() to read data.
+# requires: async
 
 try:
     import os
@@ -8,18 +9,15 @@ except ImportError:
     print("SKIP")
     raise SystemExit
 
+if not hasattr(ssl, "CERT_REQUIRED"):
+    print("SKIP")
+    raise SystemExit
+
 PORT = 8000
 
 # These are test certificates. See tests/README.md for details.
 cert = cafile = "ec_cert.der"
 key = "ec_key.der"
-
-try:
-    os.stat(cafile)
-    os.stat(key)
-except OSError:
-    print("SKIP")
-    raise SystemExit
 
 
 async def handle_connection(reader, writer):

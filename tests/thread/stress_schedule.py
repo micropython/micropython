@@ -33,7 +33,7 @@ def thread():
             micropython.schedule(task, None)
         except RuntimeError:
             # Queue full, back off.
-            time.sleep_ms(10)
+            time.sleep_ms(1)
 
 
 for i in range(8):
@@ -46,7 +46,7 @@ for i in range(8):
 # Wait up to 10 seconds for 10000 tasks to be scheduled.
 t = time.ticks_ms()
 while n < _NUM_TASKS and time.ticks_diff(time.ticks_ms(), t) < _TIMEOUT_MS:
-    pass
+    time.sleep(0)
 
 # Stop all threads.
 thread_run = False

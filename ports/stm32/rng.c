@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013-2018 Damien P. George
+ * Copyright (c) 2013-2026 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,14 +25,15 @@
  */
 
 #include "py/mphal.h"
-#include "rtc.h"
+#include "py/runtime.h"
 #include "rng.h"
 
 #if MICROPY_HW_ENABLE_RNG
 
 #define RNG_TIMEOUT_MS (10)
+#define RNG_RETRY_MAX_COUNT (10)
 
-uint32_t rng_get(void) {
+uint32_t mp_hal_get_hw_random_u32(void) {
     // Enable the RNG peripheral if it's not already enabled
     if (!(RNG->CR & RNG_CR_RNGEN)) {
         #if defined(STM32H7)
@@ -46,9 +47,22 @@ uint32_t rng_get(void) {
 
     // Wait for a new random number to be ready, takes on the order of 10us
     uint32_t start = HAL_GetTick();
+    #if defined(RNG_CR_CONDRST)
+    uint8_t retry_count = 0;
+    #endif
     while (!(RNG->SR & RNG_SR_DRDY)) {
         if (HAL_GetTick() - start >= RNG_TIMEOUT_MS) {
-            return 0;
+            #if defined(RNG_CR_CONDRST)
+            if (retry_count <= RNG_RETRY_MAX_COUNT) {
+                // Reset and retry waiting RNG_SR_DRDY.
+                RNG->CR |= RNG_CR_CONDRST;
+                RNG->CR = (RNG->CR & ~RNG_CR_CONDRST);
+                start = HAL_GetTick();
+                retry_count++;
+                continue;
+            }
+            #endif
+            mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("RNG failed"));
         }
     }
 
@@ -58,44 +72,8 @@ uint32_t rng_get(void) {
 
 // Return a 30-bit hardware generated random number.
 static mp_obj_t pyb_rng_get(void) {
-    return mp_obj_new_int(rng_get() >> 2);
+    return mp_obj_new_int(mp_hal_get_hw_random_u32() >> 2);
 }
 MP_DEFINE_CONST_FUN_OBJ_0(pyb_rng_get_obj, pyb_rng_get);
-
-#else // MICROPY_HW_ENABLE_RNG
-
-// For MCUs that don't have an RNG we still need to provide a rng_get() function,
-// eg for lwIP and random.seed().  A pseudo-RNG is not really ideal but we go with
-// it for now, seeding with numbers which will be somewhat different each time.  We
-// don't want to use random's pRNG because then the user won't see a reproducible
-// random stream.
-
-// Yasmarang random number generator by Ilya Levin
-// http://www.literatecode.com/yasmarang
-static uint32_t pyb_rng_yasmarang(void) {
-    static bool seeded = false;
-    static uint32_t pad = 0, n = 0, d = 0;
-    static uint8_t dat = 0;
-
-    if (!seeded) {
-        seeded = true;
-        rtc_init_finalise();
-        pad = *(uint32_t *)MP_HAL_UNIQUE_ID_ADDRESS ^ SysTick->VAL;
-        n = RTC->TR;
-        d = RTC->SSR;
-    }
-
-    pad += dat + d * n;
-    pad = (pad << 3) + (pad >> 29);
-    n = pad | 2;
-    d ^= (pad << 31) + (pad >> 1);
-    dat ^= (char)pad ^ (d >> 8) ^ 1;
-
-    return pad ^ (d << 5) ^ (pad >> 18) ^ (dat << 1);
-}
-
-uint32_t rng_get(void) {
-    return pyb_rng_yasmarang();
-}
 
 #endif // MICROPY_HW_ENABLE_RNG

@@ -31,6 +31,18 @@
 #include "py/mphal.h"
 #include "drivers/memory/spiflash.h"
 
+#if defined(CHECK_DEVID)
+#error "CHECK_DEVID no longer supported, use MICROPY_HW_SPIFLASH_DETECT_DEVICE instead"
+#endif
+
+// The default number of dummy bytes for quad-read is 2.  This can be changed by enabling
+// MICROPY_HW_SPIFLASH_CHIP_PARAMS and configuring the value in mp_spiflash_chip_params_t.
+#if MICROPY_HW_SPIFLASH_CHIP_PARAMS
+#define MICROPY_HW_SPIFLASH_QREAD_NUM_DUMMY(spiflash) (spiflash->chip_params->qread_num_dummy)
+#else
+#define MICROPY_HW_SPIFLASH_QREAD_NUM_DUMMY(spiflash) (2)
+#endif
+
 #define QSPI_QE_MASK (0x02)
 #define USE_WR_DELAY (1)
 
@@ -44,6 +56,8 @@
 #define CMD_RD_DEVID    (0x9f)
 #define CMD_CHIP_ERASE  (0xc7)
 #define CMD_C4READ      (0xeb)
+#define CMD_RSTEN       (0x66)
+#define CMD_RESET       (0x99)
 
 // 32 bit addressing commands
 #define CMD_WRITE_32    (0x12)
@@ -59,14 +73,22 @@
 static void mp_spiflash_acquire_bus(mp_spiflash_t *self) {
     const mp_spiflash_config_t *c = self->config;
     if (c->bus_kind == MP_SPIFLASH_BUS_QSPI) {
-        c->bus.u_qspi.proto->ioctl(c->bus.u_qspi.data, MP_QSPI_IOCTL_BUS_ACQUIRE);
+        c->bus.u_qspi.proto->ioctl(c->bus.u_qspi.data, MP_QSPI_IOCTL_BUS_ACQUIRE, 0);
     }
 }
 
 static void mp_spiflash_release_bus(mp_spiflash_t *self) {
     const mp_spiflash_config_t *c = self->config;
     if (c->bus_kind == MP_SPIFLASH_BUS_QSPI) {
-        c->bus.u_qspi.proto->ioctl(c->bus.u_qspi.data, MP_QSPI_IOCTL_BUS_RELEASE);
+        c->bus.u_qspi.proto->ioctl(c->bus.u_qspi.data, MP_QSPI_IOCTL_BUS_RELEASE, 0);
+    }
+}
+
+static void mp_spiflash_notify_modified(mp_spiflash_t *self, uint32_t addr, uint32_t len) {
+    const mp_spiflash_config_t *c = self->config;
+    if (c->bus_kind == MP_SPIFLASH_BUS_QSPI) {
+        uintptr_t arg[2] = { addr, len };
+        c->bus.u_qspi.proto->ioctl(c->bus.u_qspi.data, MP_QSPI_IOCTL_MEMORY_MODIFIED, (uintptr_t)&arg[0]);
     }
 }
 
@@ -101,7 +123,8 @@ static int mp_spiflash_transfer_cmd_addr_data(mp_spiflash_t *self, uint8_t cmd, 
         mp_hal_pin_write(c->bus.u_spi.cs, 1);
     } else {
         if (dest != NULL) {
-            ret = c->bus.u_qspi.proto->read_cmd_qaddr_qdata(c->bus.u_qspi.data, cmd, addr, len, dest);
+            uint8_t num_dummy = MICROPY_HW_SPIFLASH_QREAD_NUM_DUMMY(self);
+            ret = c->bus.u_qspi.proto->read_cmd_qaddr_qdata(c->bus.u_qspi.data, cmd, addr, num_dummy, len, dest);
         } else {
             ret = c->bus.u_qspi.proto->write_cmd_addr_data(c->bus.u_qspi.data, cmd, addr, len, src);
         }
@@ -114,7 +137,7 @@ static int mp_spiflash_read_cmd(mp_spiflash_t *self, uint8_t cmd, size_t len, ui
     if (c->bus_kind == MP_SPIFLASH_BUS_SPI) {
         mp_hal_pin_write(c->bus.u_spi.cs, 0);
         c->bus.u_spi.proto->transfer(c->bus.u_spi.data, 1, &cmd, NULL);
-        c->bus.u_spi.proto->transfer(c->bus.u_spi.data, len, (void*)dest, (void*)dest);
+        c->bus.u_spi.proto->transfer(c->bus.u_spi.data, len, (void *)dest, (void *)dest);
         mp_hal_pin_write(c->bus.u_spi.cs, 1);
         return 0;
     } else {
@@ -172,7 +195,12 @@ void mp_spiflash_init(mp_spiflash_t *self) {
         mp_hal_pin_output(self->config->bus.u_spi.cs);
         self->config->bus.u_spi.proto->ioctl(self->config->bus.u_spi.data, MP_SPI_IOCTL_INIT);
     } else {
-        self->config->bus.u_qspi.proto->ioctl(self->config->bus.u_qspi.data, MP_QSPI_IOCTL_INIT);
+        uint8_t num_dummy = MICROPY_HW_SPIFLASH_QREAD_NUM_DUMMY(self);
+        int ret = self->config->bus.u_qspi.proto->ioctl(self->config->bus.u_qspi.data, MP_QSPI_IOCTL_INIT, num_dummy);
+        if (ret == -MP_EALREADY) {
+            // MP_EALREADY indicates that the SPI flash is already set up and should not have any further initialisation done.
+            return;
+        }
     }
 
     mp_spiflash_acquire_bus(self);
@@ -180,11 +208,21 @@ void mp_spiflash_init(mp_spiflash_t *self) {
     // Ensure SPI flash is out of sleep mode
     mp_spiflash_deepsleep_internal(self, 0);
 
-    #if defined(CHECK_DEVID)
-    // Validate device id
+    // Software reset.
+    #if MICROPY_HW_SPIFLASH_SOFT_RESET
+    mp_spiflash_write_cmd(self, CMD_RSTEN);
+    mp_spiflash_write_cmd(self, CMD_RESET);
+    mp_spiflash_wait_wip0(self);
+    mp_hal_delay_ms(1);
+    #endif
+
+    #if MICROPY_HW_SPIFLASH_DETECT_DEVICE
+    // Attempt to detect SPI flash based on its JEDEC id.
     uint32_t devid;
     int ret = mp_spiflash_read_cmd(self, CMD_RD_DEVID, 3, &devid);
-    if (ret != 0 || devid != CHECK_DEVID) {
+    ret = mp_spiflash_detect(self, ret, devid);
+    if (ret != 0) {
+        // Could not read device id.
         mp_spiflash_release_bus(self);
         return;
     }
@@ -275,6 +313,7 @@ static int mp_spiflash_write_page(mp_spiflash_t *self, uint32_t addr, size_t len
 int mp_spiflash_erase_block(mp_spiflash_t *self, uint32_t addr) {
     mp_spiflash_acquire_bus(self);
     int ret = mp_spiflash_erase_block_internal(self, addr);
+    mp_spiflash_notify_modified(self, addr, SECTOR_SIZE);
     mp_spiflash_release_bus(self);
     return ret;
 }
@@ -283,6 +322,10 @@ int mp_spiflash_read(mp_spiflash_t *self, uint32_t addr, size_t len, uint8_t *de
     if (len == 0) {
         return 0;
     }
+    const mp_spiflash_config_t *c = self->config;
+    if (c->bus_kind == MP_SPIFLASH_BUS_QSPI && c->bus.u_qspi.proto->direct_read != NULL) {
+        return c->bus.u_qspi.proto->direct_read(c->bus.u_qspi.data, addr, len, dest);
+    }
     mp_spiflash_acquire_bus(self);
     int ret = mp_spiflash_read_data(self, addr, len, dest);
     mp_spiflash_release_bus(self);
@@ -290,6 +333,8 @@ int mp_spiflash_read(mp_spiflash_t *self, uint32_t addr, size_t len, uint8_t *de
 }
 
 int mp_spiflash_write(mp_spiflash_t *self, uint32_t addr, size_t len, const uint8_t *src) {
+    uint32_t orig_addr = addr;
+    uint32_t orig_len = len;
     mp_spiflash_acquire_bus(self);
     int ret = 0;
     uint32_t offset = addr & (PAGE_SIZE - 1);
@@ -307,6 +352,7 @@ int mp_spiflash_write(mp_spiflash_t *self, uint32_t addr, size_t len, const uint
         src += rest;
         offset = 0;
     }
+    mp_spiflash_notify_modified(self, orig_addr, orig_len);
     mp_spiflash_release_bus(self);
     return ret;
 }
@@ -320,7 +366,6 @@ int mp_spiflash_cached_read(mp_spiflash_t *self, uint32_t addr, size_t len, uint
     if (len == 0) {
         return 0;
     }
-    mp_spiflash_acquire_bus(self);
     mp_spiflash_cache_t *cache = self->config->cache;
     if (cache->user == self && cache->block != 0xffffffff) {
         uint32_t bis = addr / SECTOR_SIZE;
@@ -331,9 +376,8 @@ int mp_spiflash_cached_read(mp_spiflash_t *self, uint32_t addr, size_t len, uint
             if (bis < cache->block) {
                 // Read direct from flash for first part
                 rest = cache->block * SECTOR_SIZE - addr;
-                int ret = mp_spiflash_read_data(self, addr, rest, dest);
+                int ret = mp_spiflash_read(self, addr, rest, dest);
                 if (ret != 0) {
-                    mp_spiflash_release_bus(self);
                     return ret;
                 }
                 len -= rest;
@@ -348,7 +392,6 @@ int mp_spiflash_cached_read(mp_spiflash_t *self, uint32_t addr, size_t len, uint
             memcpy(dest, &cache->buf[offset], rest);
             len -= rest;
             if (len == 0) {
-                mp_spiflash_release_bus(self);
                 return 0;
             }
             dest += rest;
@@ -356,12 +399,12 @@ int mp_spiflash_cached_read(mp_spiflash_t *self, uint32_t addr, size_t len, uint
         }
     }
     // Read rest direct from flash
-    int ret = mp_spiflash_read_data(self, addr, len, dest);
-    mp_spiflash_release_bus(self);
-    return ret;
+    return mp_spiflash_read(self, addr, len, dest);
 }
 
 static int mp_spiflash_cache_flush_internal(mp_spiflash_t *self) {
+    int ret = 0;
+
     #if USE_WR_DELAY
     if (!(self->flags & 1)) {
         return 0;
@@ -372,21 +415,18 @@ static int mp_spiflash_cache_flush_internal(mp_spiflash_t *self) {
     mp_spiflash_cache_t *cache = self->config->cache;
 
     // Erase sector
-    int ret = mp_spiflash_erase_block_internal(self, cache->block * SECTOR_SIZE);
-    if (ret != 0) {
-        return ret;
-    }
+    ret = mp_spiflash_erase_block_internal(self, cache->block * SECTOR_SIZE);
 
     // Write
-    for (int i = 0; i < 16; i += 1) {
+    for (int i = 0; ret == 0 && i < 16; i += 1) {
         uint32_t addr = cache->block * SECTOR_SIZE + i * PAGE_SIZE;
-        int ret = mp_spiflash_write_page(self, addr, PAGE_SIZE, cache->buf + i * PAGE_SIZE);
-        if (ret != 0) {
-            return ret;
-        }
+        ret = mp_spiflash_write_page(self, addr, PAGE_SIZE, cache->buf + i * PAGE_SIZE);
     }
+
+    mp_spiflash_notify_modified(self, cache->block * SECTOR_SIZE, SECTOR_SIZE);
     #endif
-    return 0;
+
+    return ret;
 }
 
 int mp_spiflash_cache_flush(mp_spiflash_t *self) {
@@ -443,17 +483,17 @@ static int mp_spiflash_cached_write_part(mp_spiflash_t *self, uint32_t addr, siz
     // And mark dirty
     self->flags |= 1;
 
+    return 0; // success
+
     #else
 
+    int ret = 0;
     uint32_t dirty = 0;
     for (size_t i = 0; i < len; ++i) {
         if (cache->buf[offset + i] != src[i]) {
             if (cache->buf[offset + i] != 0xff) {
                 // Erase sector
-                int ret = mp_spiflash_erase_block_internal(self, addr);
-                if (ret != 0) {
-                    return ret;
-                }
+                ret = mp_spiflash_erase_block_internal(self, addr);
                 dirty = 0xffff;
                 break;
             } else {
@@ -467,18 +507,16 @@ static int mp_spiflash_cached_write_part(mp_spiflash_t *self, uint32_t addr, siz
     memcpy(cache->buf + offset, src, len);
 
     // Write sector in pages of 256 bytes
-    for (size_t i = 0; i < 16; ++i) {
+    for (size_t i = 0; ret == 0 && i < 16; ++i) {
         if (dirty & (1 << i)) {
-            int ret = mp_spiflash_write_page(self, addr + i * PAGE_SIZE, PAGE_SIZE, cache->buf + i * PAGE_SIZE);
-            if (ret != 0) {
-                return ret;
-            }
+            ret = mp_spiflash_write_page(self, addr + i * PAGE_SIZE, PAGE_SIZE, cache->buf + i * PAGE_SIZE);
         }
     }
 
-    #endif
+    mp_spiflash_notify_modified(self, addr, SECTOR_SIZE);
+    return ret;
 
-    return 0; // success
+    #endif
 }
 
 int mp_spiflash_cached_write(mp_spiflash_t *self, uint32_t addr, size_t len, const uint8_t *src) {

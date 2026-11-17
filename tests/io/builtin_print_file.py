@@ -13,5 +13,5 @@ print("test", file=sys.stdout)
 
 try:
     print(file=1)
-except (AttributeError, OSError):  # CPython and uPy differ in error message
+except (AttributeError, OSError):  # CPython and MicroPython differ in error message
     print("Error")

@@ -50,7 +50,7 @@ static mp_uint_t mp_reader_mem_readbyte(void *data) {
 
 static void mp_reader_mem_close(void *data) {
     mp_reader_mem_t *reader = (mp_reader_mem_t *)data;
-    if (reader->free_len > 0) {
+    if (reader->free_len > 0 && reader->free_len != MP_READER_IS_ROM) {
         m_del(char, (char *)reader->beg, reader->free_len);
     }
     m_del_obj(mp_reader_mem_t, reader);
@@ -65,6 +65,19 @@ void mp_reader_new_mem(mp_reader_t *reader, const byte *buf, size_t len, size_t 
     reader->data = rm;
     reader->readbyte = mp_reader_mem_readbyte;
     reader->close = mp_reader_mem_close;
+}
+
+const uint8_t *mp_reader_try_read_rom(mp_reader_t *reader, size_t len) {
+    if (reader->readbyte != mp_reader_mem_readbyte) {
+        return NULL;
+    }
+    mp_reader_mem_t *m = reader->data;
+    if (m->free_len != MP_READER_IS_ROM) {
+        return NULL;
+    }
+    const uint8_t *data = m->cur;
+    m->cur += len;
+    return data;
 }
 
 #if MICROPY_READER_POSIX

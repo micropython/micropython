@@ -1,4 +1,5 @@
 # test errors operating on bignum
+# requires: int-big
 
 i = 1 << 65
 

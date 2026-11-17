@@ -5,7 +5,12 @@ class PPP -- create network connections over serial PPP
 =======================================================
 
 This class allows you to create a network connection over a serial port using
-the PPP protocol.  It is only available on selected ports and boards.
+the PPP protocol.
+
+.. note:: Currently only the esp32 port has PPP support enabled in the default
+          firmware build. PPP support can be enabled in custom builds of the
+          stm32 and rp2 ports by enabling networking support and setting
+          ``MICROPY_PY_NETWORK_PPP_LWIP`` to 1.
 
 Example usage::
 
@@ -70,8 +75,11 @@ Methods
 
 .. method:: PPP.config(config_parameters)
 
-   Sets or gets parameters of the PPP interface. There are currently no parameter that
-   can be set or retrieved.
+   Sets or gets parameters of the PPP interface. The only parameter that can be
+   retrieved and set is the underlying stream, using::
+
+      stream = PPP.config("stream")
+      PPP.config(stream=stream)
 
 .. method:: PPP.ipconfig('param')
             PPP.ipconfig(param=value, ...)
@@ -82,11 +90,14 @@ Methods
 
    See `AbstractNIC.ifconfig`.
 
-.. method:: PPP.poll()
+.. method:: PPP.poll([irq_arg])
 
    Poll the underlying stream for data, and pass it up the PPP stack.
    This is called automatically if the stream is a UART with a RXIDLE interrupt,
    so it's not usually necessary to call it manually.
+
+   The optional *irq_arg* argument is ignored, this argument exists only so this
+   function is compatible with the :func:`machine.UART.irq` *handler* argument.
 
 Constants
 ---------

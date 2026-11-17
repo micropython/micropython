@@ -18,8 +18,6 @@ jobs:
   embedding:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
     - name: Build
-      run: make -C examples/embedding -f micropython_embed.mk && make -C examples/embedding
-    - name: Run
-      run: ./examples/embedding/embed | grep "hello world"
+      run: tools/ci.sh embedding_build

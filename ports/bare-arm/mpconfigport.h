@@ -37,10 +37,11 @@
 // Python internal features
 #define MICROPY_ERROR_REPORTING                 (MICROPY_ERROR_REPORTING_NONE)
 
+// Fine control over Python builtins, classes, modules, etc.
+#define MICROPY_PY_SYS                          (0)
+
 // Type definitions for the specific machine
 
-typedef int32_t mp_int_t; // must be pointer size
-typedef uint32_t mp_uint_t; // must be pointer size
 typedef long mp_off_t;
 
 // Need to provide a declaration/definition of alloca()

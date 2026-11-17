@@ -37,11 +37,23 @@ extern pyexec_mode_kind_t pyexec_mode_kind;
 
 #define PYEXEC_FORCED_EXIT (0x100)
 
+#if MICROPY_PYEXEC_ENABLE_EXIT_CODE_HANDLING
+#define PYEXEC_NORMAL_EXIT (0)
+#define PYEXEC_UNHANDLED_EXCEPTION (1)
+#define PYEXEC_KEYBOARD_INTERRUPT (128 + 2) // same as SIG INT exit code
+#define PYEXEC_ABORT (128 + 9)              // same as SIG KILL exit code
+#else
+#define PYEXEC_NORMAL_EXIT (1)
+#define PYEXEC_UNHANDLED_EXCEPTION (0)
+#define PYEXEC_ABORT PYEXEC_FORCED_EXIT
+#endif
+
 int pyexec_raw_repl(void);
 int pyexec_friendly_repl(void);
 int pyexec_file(const char *filename);
 int pyexec_file_if_exists(const char *filename);
 int pyexec_frozen_module(const char *name, bool allow_keyboard_interrupt);
+int pyexec_vstr(vstr_t *str, bool allow_keyboard_interrupt);
 void pyexec_event_repl_init(void);
 int pyexec_event_repl_process_char(int c);
 extern uint8_t pyexec_repl_active;

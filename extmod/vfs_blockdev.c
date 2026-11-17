@@ -49,7 +49,11 @@ void mp_vfs_blockdev_init(mp_vfs_blockdev_t *self, mp_obj_t bdev) {
 // Helper function to minimise code size of read/write functions
 // note the n_args argument is moved to the end for further code size reduction (args keep same position in caller and callee).
 static int mp_vfs_blockdev_call_rw(mp_obj_t *args, size_t block_num, size_t block_off, size_t len, void *buf, size_t n_args) {
+    #if MICROPY_PY_BUILTINS_MEMORYVIEW
+    mp_obj_array_t ar = {{&mp_type_memoryview}, 'B' | MP_OBJ_ARRAY_TYPECODE_FLAG_RW, 0, len, buf};
+    #else
     mp_obj_array_t ar = {{&mp_type_bytearray}, BYTEARRAY_TYPECODE, 0, len, buf};
+    #endif
     args[2] = MP_OBJ_NEW_SMALL_INT(block_num);
     args[3] = MP_OBJ_FROM_PTR(&ar);
     args[4] = MP_OBJ_NEW_SMALL_INT(block_off); // ignored for n_args == 2
@@ -62,18 +66,20 @@ static int mp_vfs_blockdev_call_rw(mp_obj_t *args, size_t block_num, size_t bloc
         // and negative integer on errors. Check for positive integer
         // results as some callers (i.e. littlefs) will produce corrupt
         // results from these.
-        int i = MP_OBJ_SMALL_INT_VALUE(ret);
+        int i = mp_obj_get_int(ret);
         return i > 0 ? (-MP_EINVAL) : i;
     }
 }
 
 int mp_vfs_blockdev_read(mp_vfs_blockdev_t *self, size_t block_num, size_t num_blocks, uint8_t *buf) {
+    #if MICROPY_VFS_BLOCKDEV_NATIVE
     if (self->flags & MP_BLOCKDEV_FLAG_NATIVE) {
-        mp_uint_t (*f)(uint8_t *, uint32_t, uint32_t) = (void *)(uintptr_t)self->readblocks[2];
+        mp_vfs_blockdev_native_readblocks f = (void *)(uintptr_t)self->readblocks[2];
         return f(buf, block_num, num_blocks);
-    } else {
-        return mp_vfs_blockdev_call_rw(self->readblocks, block_num, 0, num_blocks * self->block_size, buf, 2);
     }
+    #endif
+
+    return mp_vfs_blockdev_call_rw(self->readblocks, block_num, 0, num_blocks * self->block_size, buf, 2);
 }
 
 int mp_vfs_blockdev_read_ext(mp_vfs_blockdev_t *self, size_t block_num, size_t block_off, size_t len, uint8_t *buf) {
@@ -86,12 +92,14 @@ int mp_vfs_blockdev_write(mp_vfs_blockdev_t *self, size_t block_num, size_t num_
         return -MP_EROFS;
     }
 
+    #if MICROPY_VFS_BLOCKDEV_NATIVE
     if (self->flags & MP_BLOCKDEV_FLAG_NATIVE) {
-        mp_uint_t (*f)(const uint8_t *, uint32_t, uint32_t) = (void *)(uintptr_t)self->writeblocks[2];
+        mp_vfs_blockdev_native_writeblocks f = (void *)(uintptr_t)self->writeblocks[2];
         return f(buf, block_num, num_blocks);
-    } else {
-        return mp_vfs_blockdev_call_rw(self->writeblocks, block_num, 0, num_blocks * self->block_size, (void *)buf, 2);
     }
+    #endif
+
+    return mp_vfs_blockdev_call_rw(self->writeblocks, block_num, 0, num_blocks * self->block_size, (void *)buf, 2);
 }
 
 int mp_vfs_blockdev_write_ext(mp_vfs_blockdev_t *self, size_t block_num, size_t block_off, size_t len, const uint8_t *buf) {
