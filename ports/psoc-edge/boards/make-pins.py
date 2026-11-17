@@ -295,6 +295,19 @@ class PSE84PinGenerator(boardgen.PinGenerator):
         )
 
         print(file=out_header)
+        print(
+            "// MAX_ID is the highest available SCB unit ID, or -1 if none are available.",
+            file=out_header,
+        )
+        for fn, units in (
+            ("I2C", self._unhidden_i2c),
+            ("SPI", self._unhidden_spi),
+            ("UART", self._unhidden_uart),
+        ):
+            max_id = max((int(unit) for unit in units), default=-1)
+            print(f"#define MICROPY_PY_MACHINE_{fn}_MAX_ID ({max_id})", file=out_header)
+
+        print(file=out_header)
         print("// The MICROPY_PY_FOR_ALL_SCB(DO) macro will", file=out_header)
         print("// apply the DO macro to all user available SCB units.", file=out_header)
         print("// The DO macro takes the SCB unit as argument: DO(unit).", file=out_header)
