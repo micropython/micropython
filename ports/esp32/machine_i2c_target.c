@@ -48,7 +48,10 @@ typedef struct _machine_i2c_target_obj_t {
     intr_handle_t stop_intr_handle;
 } machine_i2c_target_obj_t;
 
-static machine_i2c_target_obj_t machine_i2c_target_obj[I2C_NUM_MAX];
+// Only the HP I2C peripherals support target (slave) mode.  On SoCs with an LP
+// I2C peripheral (eg ESP32-C5/C6) the LP port is numbered after the HP ports,
+// so I2C_NUM_MAX cannot be used here.
+static machine_i2c_target_obj_t machine_i2c_target_obj[SOC_HP_I2C_NUM];
 
 /******************************************************************************/
 // ESP-IDF hardware bindings
@@ -137,7 +140,7 @@ static void i2c_target_init(machine_i2c_target_obj_t *self, machine_i2c_target_d
     self->config.flags.allow_pd = 0;
     self->config.flags.enable_internal_pullup = 1;
 
-    ESP_ERROR_CHECK(i2c_new_slave_device(&self->config, &self->handle));
+    check_esp_err(i2c_new_slave_device(&self->config, &self->handle));
 
     // Workaround for an ESP32-S3/C3 slave hardware bug.  The v2 slave driver
     // never enables automatic TX start, so the slave may emit its own address
@@ -152,14 +155,14 @@ static void i2c_target_init(machine_i2c_target_obj_t *self, machine_i2c_target_d
         .on_receive = i2c_slave_receive_cb,
         .on_request = i2c_slave_request_cb,
     };
-    ESP_ERROR_CHECK(i2c_slave_register_event_callbacks(self->handle, &cbs, self));
+    check_esp_err(i2c_slave_register_event_callbacks(self->handle, &cbs, self));
 
     // The IDF slave driver takes no action when a read transaction completes,
     // so the controller may leave stale bytes in the TX FIFO.  Register an
     // additional shared ISR on the same interrupt to reset the TX FIFO at the
     // end of a read.  Shared ISRs are inserted at the head of the dispatch
     // list, so this one runs before the IDF ISR clears the interrupt status.
-    ESP_ERROR_CHECK(esp_intr_alloc_intrstatus(
+    check_esp_err(esp_intr_alloc_intrstatus(
         i2c_periph_signal[self->config.i2c_port].irq,
         I2C_INTR_ALLOC_FLAG,
         (uint32_t)i2c_ll_get_interrupt_status_reg(self->handle->base->hal.dev),
