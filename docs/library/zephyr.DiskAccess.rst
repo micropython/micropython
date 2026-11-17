@@ -4,7 +4,7 @@
 class DiskAccess -- access to disk storage
 ==========================================
 
-Uses `Zephyr Disk Access API <https://docs.zephyrproject.org/latest/reference/storage/disk/access.html>`_.
+Uses `Zephyr Disk Access API <https://docs.zephyrproject.org/latest/services/storage/disk/access.html>`_.
 
 This class allows access to storage devices on the board, such as support for SD card controllers and
 interfacing with SD cards via SPI. Disk devices are automatically detected and initialized on boot using
