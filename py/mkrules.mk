@@ -87,13 +87,17 @@ QSTR_GEN_CXXFLAGS += $(QSTR_GEN_FLAGS)
 
 vpath %.S . $(TOP) $(USER_C_MODULES) $(USERMOD_DIR_PARENTS)
 $(BUILD)/%.o: %.S
-	$(ECHO) "CC $<"
-	$(Q)$(CC) $(CFLAGS) -c -o $@ $<
+	$(call compile_c)
 
 vpath %.s . $(TOP) $(USER_C_MODULES) $(USERMOD_DIR_PARENTS)
 $(BUILD)/%.o: %.s
 	$(ECHO) "AS $<"
-	$(Q)$(AS) $(AFLAGS) -o $@ $<
+	$(Q)$(AS) $(AFLAGS) -MD $(@:.o=.d) -o $@ $<
+	@# The following fixes the dependency file, see compile_c.
+	@$(CP) $(@:.o=.d) $(@:.o=.P); \
+	  $(SED) -e 's/#.*//' -e 's/^.*:  *//' -e 's/ *\\$$//' \
+	      -e '/^$$/ d' -e 's/$$/ :/' < $(@:.o=.d) >> $(@:.o=.P); \
+	  $(RM) -f $(@:.o=.d)
 
 define compile_c
 $(ECHO) "CC $<"
