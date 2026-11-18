@@ -854,6 +854,8 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
             return
 
         # Run the test on the MicroPython target.
+        if sys.stdout.isatty():
+            print(f"....  {test_file}", end="\r")
         try:
             output_mupy = run_micropython(pyb, args, test)
         except (OSError, KeyboardInterrupt):
