@@ -76,8 +76,6 @@ Celsius::
 Networking
 ----------
 
-.. _esp32_network_wlan:
-
 WLAN
 ^^^^
 
