@@ -780,6 +780,13 @@ typedef uint64_t mp_uint_t;
 #define MICROPY_GC_SPLIT_HEAP_AUTO (0)
 #endif
 
+// Whether C and Python code can choose which heap areas an allocation goes in
+// (see gc_area_select() in py/gc.h and gc.area() in the gc module).
+// Requires MICROPY_GC_SPLIT_HEAP.
+#ifndef MICROPY_GC_AREA_SELECT
+#define MICROPY_GC_AREA_SELECT (MICROPY_GC_SPLIT_HEAP && MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
+#endif
+
 // Hook to run code during time consuming garbage collector operations
 // *i* is the loop index variable (e.g. can be used to run every x loops)
 #ifndef MICROPY_GC_HOOK_LOOP
@@ -2395,6 +2402,12 @@ typedef time_t mp_timestamp_t;
 #endif
 #ifndef MP_PLAT_FREE_HEAP
 #define MP_PLAT_FREE_HEAP(ptr) free(ptr)
+#endif
+
+// The GC_AREA_ATTR_xxx attributes of a heap area at ptr allocated by
+// MP_PLAT_ALLOC_HEAP, for MICROPY_GC_SPLIT_HEAP_AUTO.
+#ifndef MP_PLAT_ALLOC_HEAP_ATTRS
+#define MP_PLAT_ALLOC_HEAP_ATTRS(ptr, size) (0)
 #endif
 #endif
 

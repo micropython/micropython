@@ -34,6 +34,7 @@
 #include "py/gc.h"
 #include "py/mpthread.h"
 #include "gccollect.h"
+#include "esp_memory_utils.h"
 
 #if CONFIG_IDF_TARGET_ARCH_XTENSA
 
@@ -83,6 +84,24 @@ void gc_collect(void) {
 // free block in the ESP-IDF system heap.
 size_t gc_get_max_new_split(void) {
     return heap_caps_get_largest_free_block(MALLOC_CAP_DEFAULT);
+}
+
+#endif
+
+#if MICROPY_GC_AREA_SELECT
+
+// The GC_AREA_ATTR_xxx attributes of a heap area allocated from the ESP-IDF heap.
+// Only internal RAM is marked DMA-capable: depending on the chip, DMA can't
+// access PSRAM at all, or only with alignment and cache constraints.
+unsigned int esp32_gc_area_attrs(void *ptr, size_t size) {
+    unsigned int attrs = 0;
+    if (esp_ptr_external_ram(ptr)) {
+        attrs |= GC_AREA_ATTR_EXTERNAL;
+    }
+    if (esp_ptr_dma_capable(ptr) && esp_ptr_dma_capable((uint8_t *)ptr + size - 1)) {
+        attrs |= GC_AREA_ATTR_DMA;
+    }
+    return attrs;
 }
 
 #endif

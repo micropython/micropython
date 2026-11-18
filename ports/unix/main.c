@@ -72,6 +72,11 @@ long heap_size = 1024 * 1024 * (sizeof(mp_uint_t) / 4);
 #define MICROPY_GC_SPLIT_HEAP_N_HEAPS (1)
 #endif
 
+// GC_AREA_ATTR_xxx attributes of split heap area i.
+#ifndef MICROPY_GC_SPLIT_HEAP_ATTRS
+#define MICROPY_GC_SPLIT_HEAP_ATTRS(i) (0)
+#endif
+
 #if !MICROPY_PY_SYS_PATH
 #error "The unix port requires MICROPY_PY_SYS_PATH=1"
 #endif
@@ -481,8 +486,9 @@ MP_NOINLINE int main_(int argc, char **argv) {
         heaps[i] = malloc(multi_heap_size);
         if (i == 0) {
             gc_init(heaps[i], heaps[i] + multi_heap_size);
+            gc_area_set_attrs(0, MICROPY_GC_SPLIT_HEAP_ATTRS(0));
         } else {
-            gc_add(heaps[i], heaps[i] + multi_heap_size);
+            gc_add_ex(heaps[i], heaps[i] + multi_heap_size, MICROPY_GC_SPLIT_HEAP_ATTRS(i));
         }
     }
     #endif

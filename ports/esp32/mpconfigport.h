@@ -88,6 +88,8 @@
 
 #define MICROPY_GC_SPLIT_HEAP               (1)
 #define MICROPY_GC_SPLIT_HEAP_AUTO          (1)
+#define MP_PLAT_ALLOC_HEAP_ATTRS(ptr, size) esp32_gc_area_attrs(ptr, size)
+unsigned int esp32_gc_area_attrs(void *ptr, size_t size);
 
 // extended modules
 #ifndef MICROPY_PY_ESPNOW

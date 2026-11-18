@@ -140,6 +140,7 @@ soft_reset:
     // initialise the stack pointer for the main thread
     mp_cstack_init_with_top((void *)sp, MICROPY_TASK_STACK_SIZE);
     gc_init(mp_task_heap, mp_task_heap + MICROPY_GC_INITIAL_HEAP_SIZE);
+    gc_area_set_attrs(0, MP_PLAT_ALLOC_HEAP_ATTRS(mp_task_heap, MICROPY_GC_INITIAL_HEAP_SIZE));
     mp_init();
     mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_lib));
     readline_init0();
