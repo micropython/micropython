@@ -32,6 +32,7 @@
 #include "py/mpconfig.h"
 #include "py/misc.h"
 #include "py/runtime.h"
+#include "py/objstr.h"
 
 #if MICROPY_DEBUG_VERBOSE // print debugging info
 #define DEBUG_PRINT (1)
@@ -147,6 +148,24 @@ static void mp_map_rehash(mp_map_t *map) {
     m_del(mp_map_elem_t, old_table, old_alloc);
 }
 
+#if MICROPY_OPT_MAP_MIX_HASH
+// Mix the hash of a str or bytes key before it is taken modulo the size of the
+// table.  These hashes are only 16 bits wide (MICROPY_QSTR_BYTES_IN_HASH), and
+// strs that differ only in their last characters (such as "item1", "item2")
+// have hashes that are close together.  Taken modulo the table as they are,
+// they fill runs of adjacent slots that linear probing must then walk, so a map
+// of many such keys takes quadratic time to build.  Multiplying by a large odd
+// constant spreads them over the table.  Other hashes, such as those of small
+// ints, are left as they are: consecutive ints already fill consecutive slots
+// without colliding.
+static inline MP_ALWAYSINLINE mp_uint_t mp_map_mix_str_hash(mp_obj_t index, mp_uint_t hash) {
+    if (mp_obj_is_str_or_bytes(index)) {
+        hash = (uint32_t)hash * 0x9e3779b1u;
+    }
+    return hash;
+}
+#endif
+
 // MP_MAP_LOOKUP behaviour:
 //  - returns NULL if not found, else the slot it was found in with key,value non-null
 // MP_MAP_LOOKUP_ADD_IF_NOT_FOUND behaviour:
@@ -248,6 +267,9 @@ mp_map_elem_t *MICROPY_WRAP_MP_MAP_LOOKUP(mp_map_lookup)(mp_map_t * map, mp_obj_
     } else {
         hash = MP_OBJ_SMALL_INT_VALUE(mp_unary_op(MP_UNARY_OP_HASH, index));
     }
+    #if MICROPY_OPT_MAP_MIX_HASH
+    hash = mp_map_mix_str_hash(index, hash);
+    #endif
 
     size_t pos = hash % map->alloc;
     size_t start_pos = pos;
@@ -358,6 +380,9 @@ mp_obj_t mp_set_lookup(mp_set_t *set, mp_obj_t index, mp_map_lookup_kind_t looku
         }
     }
     mp_uint_t hash = MP_OBJ_SMALL_INT_VALUE(mp_unary_op(MP_UNARY_OP_HASH, index));
+    #if MICROPY_OPT_MAP_MIX_HASH
+    hash = mp_map_mix_str_hash(index, hash);
+    #endif
     size_t pos = hash % set->alloc;
     size_t start_pos = pos;
     mp_obj_t *avail_slot = NULL;
