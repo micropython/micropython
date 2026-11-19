@@ -733,6 +733,12 @@ static mp_uint_t wiznet5k_socket_recv(mod_network_socket_obj_t *socket, byte *bu
         mp_int_t ret = wizchip_recv(socket->fileno, buf, len);
         MP_THREAD_GIL_ENTER();
 
+        if (ret == SOCKERR_SOCKSTATUS) {
+            // The peer has closed the connection and there is no data left.
+            // The library has closed the chip's socket already; report end of
+            // stream, and keep the socket number until close() is called.
+            return 0;
+        }
         if (ret != SOCK_BUSY) {
             // TODO convert Wiz errno's to POSIX ones
             if (ret < 0) {
@@ -824,6 +830,9 @@ static int wiznet5k_socket_ioctl(mod_network_socket_obj_t *socket, mp_uint_t req
             if (socket->type != Sn_MR_TCP || sr == SOCK_ESTABLISHED || sr == SOCK_CLOSE_WAIT) {
                 ret |= MP_STREAM_POLL_WR;
             }
+        }
+        if (socket->type == Sn_MR_TCP && socket->domain != 0 && getSn_SR(socket->fileno) == SOCK_CLOSED) {
+            ret |= MP_STREAM_POLL_HUP;
         }
         return ret;
     } else {
