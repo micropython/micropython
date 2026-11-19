@@ -74,6 +74,9 @@
 #include "lib/wiznet5k/Internet/DNS/dns.h"
 #include "lib/wiznet5k/Internet/DHCP/dhcp.h"
 
+// Keep-alive interval for SO_KEEPALIVE, in the chip's units of 5 s.
+#define WIZNET5K_KEEPALIVE_INTERVAL (2)
+
 #endif
 
 // Include last.  With WIZCHIP_PREFIXED_EXPORTS set, this header renames every
@@ -806,8 +809,27 @@ static mp_uint_t wiznet5k_socket_recvfrom(mod_network_socket_obj_t *socket, byte
 }
 
 static int wiznet5k_socket_setsockopt(mod_network_socket_obj_t *socket, mp_uint_t level, mp_uint_t opt, const void *optval, mp_uint_t optlen, int *_errno) {
-    // TODO
-    *_errno = MP_EINVAL;
+    if (level == MOD_NETWORK_SOL_SOCKET) {
+        switch (opt) {
+            case MOD_NETWORK_SO_REUSEADDR:
+            case MOD_NETWORK_SO_BROADCAST:
+                // The chip has no TIME_WAIT state and always allows UDP
+                // broadcast, so there is nothing to set.
+                return 0;
+            #ifdef setSn_KPALVTR
+            case MOD_NETWORK_SO_KEEPALIVE:
+                if (optlen != sizeof(mp_int_t)) {
+                    *_errno = MP_EINVAL;
+                    return -1;
+                }
+                // Sn_KPALVTR is the keep-alive interval in units of 5 s, and
+                // 0 turns keep-alive off.
+                setSn_KPALVTR((uint8_t)socket->fileno, *(const mp_int_t *)optval ? WIZNET5K_KEEPALIVE_INTERVAL : 0);
+                return 0;
+            #endif
+        }
+    }
+    *_errno = MP_EOPNOTSUPP;
     return -1;
 }
 
