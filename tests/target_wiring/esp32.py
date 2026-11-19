@@ -51,3 +51,4 @@ encoder_loopback_in_pins = (pin_1b, pin_2b)
 i2c_loopback_controller_kwargs = {"scl": pin_1a, "sda": pin_2a}
 i2c_loopback_target_args = (0,)
 i2c_loopback_target_kwargs = {"scl": pin_1b, "sda": pin_2b}
+rmt_loopback_kwargs = {"send": pin_1a, "recv": pin_1b}
