@@ -44,6 +44,10 @@ uart_loopback_kwargs = {"tx": pin_1a, "rx": pin_1b}
 
 pwm_loopback_pins = [(pin_1a, pin_1b)]
 
+counter_loopback_id = 0
+counter_loopback_out_pin = pin_1a
+counter_loopback_in_pin = pin_1b
+
 encoder_loopback_id = 0
 encoder_loopback_out_pins = (pin_1a, pin_2a)
 encoder_loopback_in_pins = (pin_1b, pin_2b)

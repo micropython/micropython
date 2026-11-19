@@ -20,6 +20,10 @@ pwm_loopback_pins = [
     ("D11", "D12"),  # QTMR and MOSI/MISO of SPI 0
 ]
 
+counter_loopback_id = 0
+counter_loopback_out_pin = "D2"
+counter_loopback_in_pin = "D3"
+
 encoder_loopback_id = 0
 encoder_loopback_out_pins = ("D0", "D2")
 encoder_loopback_in_pins = ("D1", "D3")

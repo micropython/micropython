@@ -2,6 +2,8 @@
 #
 # IMPORTANT: This test requires hardware connections: the out_pin and in_pin
 # must be wired together.
+#
+# requires: target-wiring
 
 try:
     from machine import Counter
@@ -11,24 +13,12 @@ except ImportError:
 
 import sys
 from machine import Pin
-
-if "esp32" in sys.platform:
-    id = 0
-    out_pin = 4
-    in_pin = 5
-elif sys.platform == "mimxrt":
-    if "Teensy" in sys.implementation._machine:
-        id = 0
-        out_pin = "D2"
-        in_pin = "D3"
-else:
-    print("Please add support for this test on this platform.")
-    raise SystemExit
+from target_wiring import counter_loopback_id, counter_loopback_out_pin, counter_loopback_in_pin
 
 import unittest
 
-out_pin = Pin(out_pin, mode=Pin.OUT)
-in_pin = Pin(in_pin, mode=Pin.IN)
+out_pin = Pin(counter_loopback_out_pin, mode=Pin.OUT)
+in_pin = Pin(counter_loopback_in_pin, mode=Pin.IN)
 
 
 def toggle(times):
@@ -52,7 +42,7 @@ class TestConnections(unittest.TestCase):
 class TestCounter(unittest.TestCase):
     def setUp(self):
         out_pin(0)
-        self.counter = Counter(id, in_pin)
+        self.counter = Counter(counter_loopback_id, in_pin)
 
     def tearDown(self):
         self.counter.deinit()
