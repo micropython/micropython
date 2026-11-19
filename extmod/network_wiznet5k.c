@@ -33,6 +33,7 @@
 #include "py/stream.h"
 #include "py/mperrno.h"
 #include "py/mphal.h"
+#include "shared/runtime/softtimer.h"
 
 #if MICROPY_PY_NETWORK_WIZNET5K
 
@@ -474,10 +475,16 @@ static void wiznet5k_init(void) {
     wiznet5k_obj.active = true;
 }
 
+static soft_timer_entry_t wiznet5k_dns_timer;
+
+// Runs at PendSV level while DNS_run() waits for an answer.
+static void wiznet5k_dns_tick(soft_timer_entry_t *self) {
+    DNS_time_handler();
+}
+
 static int wiznet5k_gethostbyname(mp_obj_t nic, const char *name, mp_uint_t len, uint8_t *out_ip) {
-    // With no address of our own the query cannot be answered, and DNS_run()
-    // only gives up on a one-second tick that nothing drives, so it would
-    // never return.  Fail the lookup rather than hang in the library.
+    // With no address of our own the query cannot be answered, so fail it
+    // straight away rather than wait for DNS_run() to time out.
     wiz_NetInfo netinfo;
     ctlnetwork(CN_GET_NETINFO, &netinfo);
     if ((netinfo.ip[0] | netinfo.ip[1] | netinfo.ip[2] | netinfo.ip[3]) == 0) {
@@ -490,7 +497,12 @@ static int wiznet5k_gethostbyname(mp_obj_t nic, const char *name, mp_uint_t len,
     if (wiznet5k_obj.netinfo.dns[0]) {
         memcpy(dns_ip, wiznet5k_obj.netinfo.dns, MOD_NETWORK_IPADDR_BUF_SIZE);
     }
+    // DNS_run() gives up on a query only when its one-second tick says so, and
+    // it spins without returning until then, so drive the tick from a timer.
+    soft_timer_static_init(&wiznet5k_dns_timer, SOFT_TIMER_MODE_PERIODIC, 1000, wiznet5k_dns_tick);
+    soft_timer_insert(&wiznet5k_dns_timer, 1000);
     mp_int_t ret = DNS_run(dns_ip, (uint8_t *)name, out_ip);
+    soft_timer_remove(&wiznet5k_dns_timer);
     m_del(uint8_t, buf, MAX_DNS_BUF_SIZE);
     if (ret == 1) {
         // success
