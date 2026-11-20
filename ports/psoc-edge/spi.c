@@ -72,7 +72,7 @@ void spi_hw_irq(spi_obj_t *self) {
     Cy_SCB_SPI_Interrupt(self->scb_obj->scb, &self->ctx);
 }
 
-static cy_en_scb_spi_status_t spi_hw_init(spi_obj_t *self, cy_en_scb_spi_mode_t mode) {
+static cy_en_scb_spi_status_t spi_hw_init(spi_obj_t *self) {
     cy_en_scb_spi_sclk_mode_t sclk_mode;
     if (self->polarity == 0 && self->phase == 0) {
         sclk_mode = CY_SCB_SPI_CPHA0_CPOL0;
@@ -84,20 +84,19 @@ static cy_en_scb_spi_status_t spi_hw_init(spi_obj_t *self, cy_en_scb_spi_mode_t 
         sclk_mode = CY_SCB_SPI_CPHA1_CPOL1;
     }
 
-    bool is_controller = (mode == CY_SCB_SPI_MASTER);
     cy_stc_scb_spi_config_t cfg = {
-        .spiMode = mode,
+        .spiMode = CY_SCB_SPI_MASTER,
         .subMode = CY_SCB_SPI_MOTOROLA,
         .sclkMode = sclk_mode,
         .parity = CY_SCB_SPI_PARITY_NONE,
         .dropOnParityError = false,
-        .oversample = is_controller ? SPI_CONTROLLER_OVERSAMPLE : 0U,
+        .oversample = SPI_CONTROLLER_OVERSAMPLE,
         .rxDataWidth = self->bits,
         .txDataWidth = self->bits,
         .enableMsbFirst = (self->firstbit == MICROPY_PY_MACHINE_SPI_MSB),
         .enableInputFilter = false,
         .enableFreeRunSclk = false,
-        .enableMisoLateSample = is_controller,
+        .enableMisoLateSample = true,
         .enableTransferSeparation = false,
         .ssPolarity =
             ((CY_SCB_SPI_ACTIVE_LOW << CY_SCB_SPI_SLAVE_SELECT0) |
@@ -144,7 +143,7 @@ void spi_hw_controller_init(spi_obj_t *self, uint32_t baudrate) {
         mp_raise_ValueError(MP_ERROR_TEXT("SPI clock dividers exhausted"));
     }
 
-    cy_en_scb_spi_status_t result = spi_hw_init(self, CY_SCB_SPI_MASTER);
+    cy_en_scb_spi_status_t result = spi_hw_init(self);
     if (result != CY_SCB_SPI_SUCCESS) {
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("SPI init failed: 0x%lx"), (uint32_t)result);
     }
