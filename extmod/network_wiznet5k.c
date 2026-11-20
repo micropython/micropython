@@ -1215,6 +1215,12 @@ static mp_obj_t wiznet5k_ifconfig(size_t n_args, const mp_obj_t *args) {
         netutils_parse_ipv4_addr(items[3], netinfo.dns, NETUTILS_BIG);
 
         ctlnetwork(CN_SET_NETINFO, &netinfo);
+        // Keep the driver's copy in step too: DNS lookups use its server, and
+        // active(True) puts it back after resetting the chip.
+        memcpy(self->netinfo.ip, netinfo.ip, sizeof(netinfo.ip));
+        memcpy(self->netinfo.sn, netinfo.sn, sizeof(netinfo.sn));
+        memcpy(self->netinfo.gw, netinfo.gw, sizeof(netinfo.gw));
+        memcpy(self->netinfo.dns, netinfo.dns, sizeof(netinfo.dns));
         return mp_const_none;
     }
 }
