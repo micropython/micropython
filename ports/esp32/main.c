@@ -39,6 +39,7 @@
 #include "esp_task.h"
 #include "esp_event.h"
 #include "esp_flash.h"
+#include "spi_flash_chip_driver.h"
 #include "esp_log.h"
 #include "esp_memory_utils.h"
 #include "esp_psram.h"
@@ -257,6 +258,17 @@ void boardctrl_startup(void) {
     // Query the physical size of the SPI flash and store it in the size
     // variable of the global, default SPI flash handle.
     esp_flash_get_physical_size(NULL, &esp_flash_default_chip->size);
+
+    // The IDF does not support access beyond 16MiB if the flash chip driver
+    // lacks SPI_FLASH_CHIP_CAP_32MB_SUPPORT (esp_flash_init_main() warns about
+    // it).  Use at most 16MiB of such a chip: data written above 16MiB can end
+    // up in the lower 16MiB, eg in the bootloader or the application.
+    const spi_flash_chip_t *chip_drv = esp_flash_default_chip->chip_drv;
+    if (esp_flash_default_chip->size > 16 * 1024 * 1024
+        && chip_drv->get_chip_caps != NULL
+        && !(chip_drv->get_chip_caps(esp_flash_default_chip) & SPI_FLASH_CHIP_CAP_32MB_SUPPORT)) {
+        esp_flash_default_chip->size = 16 * 1024 * 1024;
+    }
 
     // If there is no filesystem partition (no "vfs" or "ffat"), add a "vfs" partition
     // that extends from the end of the application partition up to the end of flash.
