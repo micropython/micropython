@@ -39,7 +39,7 @@ Methods
     hardware variants it is suggested to keep the system clock frequency above
     80MHz if you use the WLAN interface.
 
-.. method:: WLAN.connect(ssid=None, key=None, *, bssid=None)
+.. method:: WLAN.connect(ssid=None, key=None, *, bssid=None, param=value, ...)
 
     Connect to the specified wireless network, using the specified key.
     If *bssid* is given then the connection will be restricted to the
@@ -256,6 +256,184 @@ station capture.
    Frames are dropped when the buffer is full and new frames arrive faster than
    they can be read. Increase ``buffer_size`` in ``csi_enable()`` to reduce
    drops.
+
+.. _esp32_wpa_enterprise_mode:
+
+WPA Enterprise Mode (ESP32 only)
+--------------------------------
+
+The ESP32 port can be built with support for WPA2 and WPA3 Enterprise modes.
+These are **not activated by default** - check the build instructions in
+``ports/esp32/README.md``.
+
+WPA Enterprise modes are enabled by passing additional parameters to the
+:func:`WLAN.connect` function. Example::
+
+    import network
+
+    wlan = network.WLAN(network.WLAN.IF_STA)
+    wlan.active(True)
+    wlan.connect("SSID", eap_method=wlan.EAP_PWD, min_sec=wlan.SEC_WPA3_ENT,
+                 username=username, password=password)
+
+EAP Method Parameter
+~~~~~~~~~~~~~~~~~~~~
+
+* eap_method -- EAP method to use (integer)
+
+  Connect to the specified wireless network, using WPA-Enterprise authentication
+  and the specified parameters. The EAP methods provided are:
+
+  .. data:: WLAN.EAP_NONE
+
+            Default, for WPA Personal compatibility.
+
+  .. data:: WLAN.EAP_PWD
+            WLAN.EAP_PEAP
+            WLAN.EAP_TTLS
+            WLAN.EAP_TLS
+
+Common parameters
+~~~~~~~~~~~~~~~~~
+
+Needed for all EAP methods:
+
+* ssid -- WiFi access point name, (string, e.g. "eduroam")
+* min_sec -- minimum security (integer, e.g. ``network.WLAN.SEC_WPA2_ENT``,
+  ``network.WLAN.SEC_WPA3_ENT``) (implies ``pmf_req``)
+* pmf_req -- explicitly request Protected Management Frames (i.e., WPA3)
+  (boolean, default False)
+
+Please note that ESP-IDF 5.5 interprets WPA2/3 transition mode a bit differently
+than `WPA3 Specification 3.5 <https://www.wi-fi.org/file/wpa3-specification>`_.
+On ESP32, ``SEC_WPA2`` is effectively WPA2/3 transition mode (i.e. if AP and STA
+both advertise WPA3, then WPA3 is chosen), whereas ``SEC_WPA2_WPA3`` is
+treated as WPA3 only == ``SEC_WPA3``. This implementation thus maps
+``SEC_WPA2_WPA3`` to ``SEC_WPA2``. So if you want WPA3 only, use ``SEC_WPA3``,
+otherwise use ``SEC_WPA2`` or ``SEC_WPA2_WPA3`` which both give you transition
+mode. On ESP32, you cannot select WPA2 only.
+
+Please note that this release does not implement WPA3 Enterprise 192-bit mode
+for reasons described in `eduroam and Wi-Fi CERTIFIED WPA3 Security <https://eduroam.org/eduroam-and-wpa3/>`_.
+
+EAP-PWD parameters
+~~~~~~~~~~~~~~~~~~
+
+Needed when ``eap_method=WLAN.EAP_PWD``:
+
+* username -- your network username (string)
+* password -- your network password (string)
+
+EAP-PEAP parameters
+~~~~~~~~~~~~~~~~~~~
+
+Needed when ``eap_method=WLAN.EAP_PEAP``:
+
+* username -- your network username (string)
+* password -- your network password (string)
+* identity -- anonymous identity (string)
+* ca_cert -- the CA certificate (filename, string)
+
+EAP-TTLS parameters
+~~~~~~~~~~~~~~~~~~~
+
+Needed when ``eap_method=WLAN.EAP_TTLS``:
+
+* username -- your network username (string)
+* password -- your network password (string)
+* identity -- anonymous identity (string)
+* ca_cert -- the CA certificate (filename, string)
+* ttls_phase2_method -- TTLS Phase 2 method (integer)
+
+  EAP-TTLS supports the following TTLS Phase 2 methods:
+
+  .. data:: WLAN.EAP_TTLS_PHASE2_EAP
+      WLAN.EAP_TTLS_PHASE2_MSCHAPV2
+      WLAN.EAP_TTLS_PHASE2_MSCHAP
+      WLAN.EAP_TTLS_PHASE2_PAP
+      WLAN.EAP_TTLS_PHASE2_CHAP
+
+  Please note that MSCHAPv2 and CHAP have known security issues and should
+  be avoided. Please also note that some eduroam networks appear to default
+  to MSCHAPv2 in all cases, of all methods.
+
+EAP-TLS parameters
+~~~~~~~~~~~~~~~~~~
+
+.. warning::
+
+   EAP-TLS support is untested in MicroPython and considered experimental. An
+   additional build flag must be set to enable EAP-TLS support
+   (``MICROPY_PY_NETWORK_WPA_ENTERPRISE_EAP_TLS_EXPERIMENTAL``).
+
+Needed when ``eap_method=WLAN.EAP_TLS``:
+
+* client_cert -- client certificate filename (string)
+* private_key -- private key filename (string)
+* private_key_password -- private key password (string, optional)
+* disable_time_check -- suppress the validity check for the local client
+  certificate when using EAP-TLS (boolean, default False). This option is
+  included for the sake of completeness only. In practice, you want to
+  renew client certificates before expiry.
+* ca_cert -- the CA certificate (filename, string, optional)
+
+EAP Recommendations
+~~~~~~~~~~~~~~~~~~~
+
+Certificate files need to be uploaded to the VFS / FAT partition first, e.g.::
+
+    mpremote cp <file> :
+
+In particular in eduroam networks, EAP-PWD should be used whenever possible.
+It connects swiftly, uses the least resources, and it does not require
+uploading a CA certificate. In many if not all eduroam networks, this is
+the official way of connecting Android smartphones.
+
+When using one of the other EAP methods which involve uploading a CA
+certificate to your device (i.e. PEAP, TTLS or TLS), chances are that your
+system time is not correct after the very first boot after flashing the
+device, and then the ESP-IDF is likely to complain about a failed
+authentication. The reason is commonly a failing time validity check of
+said CA certificate because the system time is outside of the validity
+period of the certificate. In a serious project and in production, best
+practice is to use a battery buffered (I2C) RTC together with
+``ntptime.settime()``.
+
+If an external RTC is not feasible, you can after manually setting the time
+on first boot and connecting to the Wifi AP retrieve the current time
+using NTP, set the internal RTC, and then save the NTP time to NVS or a file,
+e.g. once per day or so. When rebooting, use the last saved time to set the
+internal RTC, connect, and continue as before. If it's only a short reboot
+and not years later, this sort of makes the current time reboot safe (not
+exactly, but good enough).
+
+As a last resort, you may decide to deactivate CONFIG_MBEDTLS_HAVE_TIME_DATE
+in ``sdkconfig``. This disables all TLS certificate time checks, so make sure
+you understand the implications.
+
+5 GHz WiFi band_mode (ESP32 only)
+---------------------------------
+
+The WPA Enterprise feature for ESP32 also supports explicitly setting the
+5 GHz WiFi ``band_mode``. To use this feature, see
+:ref:`esp32_wpa_enterprise_mode`.
+
+Additional parameters:
+
+    * band_mode -- set WiFi band mode (integer, one of
+      ``network.WLAN.MODE_2G_ONLY``, ``network.WLAN.MODE_5G_ONLY``,
+      ``network.WLAN.MODE_AUTO`` (default))
+
+Example::
+
+    import network
+
+    wlan = network.WLAN(network.WLAN.IF_STA)
+    wlan.active(True)
+    wlan.config(...)
+    wlan.connect("SSID", "dummy password", eap_method=wlan.EAP_PWD,
+                 min_sec=wlan.SEC_WPA3_ENT, username=username, password=password,
+                 band_mode=wlan.MODE_5G_ONLY)
 
 Constants
 ---------
