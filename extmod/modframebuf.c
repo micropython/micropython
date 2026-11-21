@@ -68,13 +68,13 @@ typedef struct _mp_framebuf_p_t {
 // Functions for MHLSB and MHMSB
 
 static void mono_horiz_setpixel(const mp_obj_framebuf_t *fb, unsigned int x, unsigned int y, uint32_t col) {
-    size_t index = (x + y * fb->stride) >> 3;
+    size_t index = ((size_t)y * fb->stride + x) >> 3;
     unsigned int offset = fb->format == FRAMEBUF_MHMSB ? x & 0x07 : 7 - (x & 0x07);
     ((uint8_t *)fb->buf)[index] = (((uint8_t *)fb->buf)[index] & ~(0x01 << offset)) | ((col != 0) << offset);
 }
 
 static uint32_t mono_horiz_getpixel(const mp_obj_framebuf_t *fb, unsigned int x, unsigned int y) {
-    size_t index = (x + y * fb->stride) >> 3;
+    size_t index = ((size_t)y * fb->stride + x) >> 3;
     unsigned int offset = fb->format == FRAMEBUF_MHMSB ? x & 0x07 : 7 - (x & 0x07);
     return (((uint8_t *)fb->buf)[index] >> (offset)) & 0x01;
 }
@@ -120,15 +120,15 @@ static void mvlsb_fill_rect(const mp_obj_framebuf_t *fb, unsigned int x, unsigne
 // Functions for RGB565 format
 
 static void rgb565_setpixel(const mp_obj_framebuf_t *fb, unsigned int x, unsigned int y, uint32_t col) {
-    ((uint16_t *)fb->buf)[x + y * fb->stride] = col;
+    ((uint16_t *)fb->buf)[(size_t)y * fb->stride + x] = col;
 }
 
 static uint32_t rgb565_getpixel(const mp_obj_framebuf_t *fb, unsigned int x, unsigned int y) {
-    return ((uint16_t *)fb->buf)[x + y * fb->stride];
+    return ((uint16_t *)fb->buf)[(size_t)y * fb->stride + x];
 }
 
 static void rgb565_fill_rect(const mp_obj_framebuf_t *fb, unsigned int x, unsigned int y, unsigned int w, unsigned int h, uint32_t col) {
-    uint16_t *b = &((uint16_t *)fb->buf)[x + y * fb->stride];
+    uint16_t *b = &((uint16_t *)fb->buf)[(size_t)y * fb->stride + x];
     while (h--) {
         for (unsigned int ww = w; ww; --ww) {
             *b++ = col;
@@ -140,7 +140,7 @@ static void rgb565_fill_rect(const mp_obj_framebuf_t *fb, unsigned int x, unsign
 // Functions for GS2_HMSB format
 
 static void gs2_hmsb_setpixel(const mp_obj_framebuf_t *fb, unsigned int x, unsigned int y, uint32_t col) {
-    uint8_t *pixel = &((uint8_t *)fb->buf)[(x + y * fb->stride) >> 2];
+    uint8_t *pixel = &((uint8_t *)fb->buf)[((size_t)y * fb->stride + x) >> 2];
     uint8_t shift = (x & 0x3) << 1;
     uint8_t mask = 0x3 << shift;
     uint8_t color = (col & 0x3) << shift;
@@ -148,7 +148,7 @@ static void gs2_hmsb_setpixel(const mp_obj_framebuf_t *fb, unsigned int x, unsig
 }
 
 static uint32_t gs2_hmsb_getpixel(const mp_obj_framebuf_t *fb, unsigned int x, unsigned int y) {
-    uint8_t pixel = ((uint8_t *)fb->buf)[(x + y * fb->stride) >> 2];
+    uint8_t pixel = ((uint8_t *)fb->buf)[((size_t)y * fb->stride + x) >> 2];
     uint8_t shift = (x & 0x3) << 1;
     return (pixel >> shift) & 0x3;
 }
@@ -164,7 +164,7 @@ static void gs2_hmsb_fill_rect(const mp_obj_framebuf_t *fb, unsigned int x, unsi
 // Functions for GS4_HMSB format
 
 static void gs4_hmsb_setpixel(const mp_obj_framebuf_t *fb, unsigned int x, unsigned int y, uint32_t col) {
-    uint8_t *pixel = &((uint8_t *)fb->buf)[(x + y * fb->stride) >> 1];
+    uint8_t *pixel = &((uint8_t *)fb->buf)[((size_t)y * fb->stride + x) >> 1];
 
     if (x % 2) {
         *pixel = ((uint8_t)col & 0x0f) | (*pixel & 0xf0);
@@ -175,15 +175,15 @@ static void gs4_hmsb_setpixel(const mp_obj_framebuf_t *fb, unsigned int x, unsig
 
 static uint32_t gs4_hmsb_getpixel(const mp_obj_framebuf_t *fb, unsigned int x, unsigned int y) {
     if (x % 2) {
-        return ((uint8_t *)fb->buf)[(x + y * fb->stride) >> 1] & 0x0f;
+        return ((uint8_t *)fb->buf)[((size_t)y * fb->stride + x) >> 1] & 0x0f;
     }
 
-    return ((uint8_t *)fb->buf)[(x + y * fb->stride) >> 1] >> 4;
+    return ((uint8_t *)fb->buf)[((size_t)y * fb->stride + x) >> 1] >> 4;
 }
 
 static void gs4_hmsb_fill_rect(const mp_obj_framebuf_t *fb, unsigned int x, unsigned int y, unsigned int w, unsigned int h, uint32_t col) {
     col &= 0x0f;
-    uint8_t *pixel_pair = &((uint8_t *)fb->buf)[(x + y * fb->stride) >> 1];
+    uint8_t *pixel_pair = &((uint8_t *)fb->buf)[((size_t)y * fb->stride + x) >> 1];
     uint8_t col_shifted_left = col << 4;
     uint8_t col_pixel_pair = col_shifted_left | col;
     unsigned int pixel_count_till_next_line = (fb->stride - w) >> 1;
@@ -215,16 +215,16 @@ static void gs4_hmsb_fill_rect(const mp_obj_framebuf_t *fb, unsigned int x, unsi
 // Functions for GS8 format
 
 static void gs8_setpixel(const mp_obj_framebuf_t *fb, unsigned int x, unsigned int y, uint32_t col) {
-    uint8_t *pixel = &((uint8_t *)fb->buf)[(x + y * fb->stride)];
+    uint8_t *pixel = &((uint8_t *)fb->buf)[(size_t)y * fb->stride + x];
     *pixel = col & 0xff;
 }
 
 static uint32_t gs8_getpixel(const mp_obj_framebuf_t *fb, unsigned int x, unsigned int y) {
-    return ((uint8_t *)fb->buf)[(x + y * fb->stride)];
+    return ((uint8_t *)fb->buf)[(size_t)y * fb->stride + x];
 }
 
 static void gs8_fill_rect(const mp_obj_framebuf_t *fb, unsigned int x, unsigned int y, unsigned int w, unsigned int h, uint32_t col) {
-    uint8_t *pixel = &((uint8_t *)fb->buf)[(x + y * fb->stride)];
+    uint8_t *pixel = &((uint8_t *)fb->buf)[(size_t)y * fb->stride + x];
     while (h--) {
         memset(pixel, col, w);
         pixel += fb->stride;
