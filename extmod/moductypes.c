@@ -222,6 +222,8 @@ static mp_uint_t uctypes_struct_size(mp_obj_t desc_in, int layout_type, mp_uint_
 
     mp_obj_dict_t *d = MP_OBJ_TO_PTR(desc_in);
     mp_uint_t total_size = 0;
+    // Alignment of this struct comes from its own fields, not from the enclosing struct
+    mp_uint_t struct_align = 0;
 
     for (mp_uint_t i = 0; i < d->map.alloc; i++) {
         if (mp_map_slot_is_filled(&d->map, i)) {
@@ -234,8 +236,8 @@ static mp_uint_t uctypes_struct_size(mp_obj_t desc_in, int layout_type, mp_uint_
                     offset &= (1 << OFFSET_BITS) - 1;
                 }
                 mp_uint_t s = uctypes_struct_scalar_size(val_type);
-                if (s > *max_field_size) {
-                    *max_field_size = s;
+                if (s > struct_align) {
+                    struct_align = s;
                 }
                 if (offset + s > total_size) {
                     total_size = offset + s;
@@ -247,7 +249,7 @@ static mp_uint_t uctypes_struct_size(mp_obj_t desc_in, int layout_type, mp_uint_
                 mp_obj_tuple_t *t = MP_OBJ_TO_PTR(v);
                 mp_int_t offset = MP_OBJ_SMALL_INT_VALUE(t->items[0]);
                 offset &= VALUE_MASK(AGG_TYPE_BITS);
-                mp_uint_t s = uctypes_struct_agg_size(t, layout_type, max_field_size);
+                mp_uint_t s = uctypes_struct_agg_size(t, layout_type, &struct_align);
                 if (offset + s > total_size) {
                     total_size = offset + s;
                 }
@@ -257,7 +259,10 @@ static mp_uint_t uctypes_struct_size(mp_obj_t desc_in, int layout_type, mp_uint_
 
     // Round size up to alignment of biggest field
     if (layout_type == LAYOUT_NATIVE) {
-        total_size = (total_size + *max_field_size - 1) & ~(*max_field_size - 1);
+        total_size = (total_size + struct_align - 1) & ~(struct_align - 1);
+    }
+    if (struct_align > *max_field_size) {
+        *max_field_size = struct_align;
     }
     return total_size;
 }
