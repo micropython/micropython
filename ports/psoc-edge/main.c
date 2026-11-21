@@ -61,6 +61,7 @@ extern uint8_t __HeapBase, __HeapLimit;
 extern void machine_rtc_init_all(void);
 extern void machine_pin_irq_deinit_all(void);
 extern void machine_uart_deinit_all(void);
+extern void machine_spi_deinit_all(void);
 extern void mp_hal_ticks_init(void);
 
 boot_mode_t check_boot_mode(void) {
@@ -165,6 +166,7 @@ soft_reset:
 
     machine_pin_irq_deinit_all();
     machine_uart_deinit_all();
+    machine_spi_deinit_all();
 
     #if MICROPY_ENABLE_GC
     gc_sweep_all();
