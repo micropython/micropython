@@ -38,6 +38,27 @@ enum {
     MACHINE_PIN_MODE_ANALOG = 4
 };
 
+enum {
+    MACHINE_PIN_DRIVE_0 = GPIO_DRIVE_STRENGTH_2MA,
+    MACHINE_PIN_DRIVE_1 = GPIO_DRIVE_STRENGTH_4MA,
+    MACHINE_PIN_DRIVE_2 = GPIO_DRIVE_STRENGTH_8MA,
+    MACHINE_PIN_DRIVE_3 = GPIO_DRIVE_STRENGTH_12MA,
+    MACHINE_PIN_DRIVE_FAST = 4
+};
+#define MACHINE_PIN_DRIVE_DEFAULT GPIO_DRIVE_STRENGTH_4MA
+#define MACHINE_PIN_DRIVE_MAX MACHINE_PIN_DRIVE_3
+#define MACHINE_PIN_DRIVE_MASK 3
+// assert that the bit mask is correct
+// (meaning the Pico SDK has not changed the drive strength values)
+#define static_assert_mask(x, mask) static_assert(x == (x & mask))
+static_assert_mask(MACHINE_PIN_DRIVE_0, MACHINE_PIN_DRIVE_MASK);
+static_assert_mask(MACHINE_PIN_DRIVE_1, MACHINE_PIN_DRIVE_MASK);
+static_assert_mask(MACHINE_PIN_DRIVE_2, MACHINE_PIN_DRIVE_MASK);
+static_assert_mask(MACHINE_PIN_DRIVE_3, MACHINE_PIN_DRIVE_MASK);
+#undef static_assert_mask
+// assert that MACHINE_PIN_DRIVE_FAST is independent of drive strength
+static_assert(0 == (MACHINE_PIN_DRIVE_FAST & MACHINE_PIN_DRIVE_MASK));
+
 typedef struct _machine_pin_af_obj_t {
     mp_obj_base_t base;
     qstr_short_t name;
