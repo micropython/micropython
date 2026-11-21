@@ -302,6 +302,7 @@ int ospi_flash_init(void) {
     mp_hal_delay_us(1000);
 
     // Configure the OSPI peripheral.
+    OSPI_INSTANCE instance = pin->peripheral_number == 0 ? OSPI_INSTANCE_0 : OSPI_INSTANCE_1;
     if (pin->peripheral_number == 0) {
         self->cfg.regs = (ssi_regs_t *)OSPI0_BASE;
         self->cfg.aes_regs = (aes_regs_t *)AES0_BASE;
@@ -316,7 +317,7 @@ int ospi_flash_init(void) {
     self->cfg.ddr_en = 0;
     self->cfg.wait_cycles = 0; // used only for ospi_xip_exit
     self->cfg.ospi_clock = 100000;  // use 100KHz for detection.
-    ospi_init(&self->cfg);
+    ospi_init(&self->cfg, instance);
 
     // Read the device ID.
     uint32_t jedec_id = ospi_flash_read_id_spi(self);
@@ -337,7 +338,7 @@ int ospi_flash_init(void) {
 
     // Switch to the higher frequency.
     self->cfg.ospi_clock = set->freq_hz;
-    ospi_init(&self->cfg);
+    ospi_init(&self->cfg, instance);
 
     // Switch to octal mode if needed.
     if (set->flash_init != NULL) {

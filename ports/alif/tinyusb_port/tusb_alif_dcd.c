@@ -13,20 +13,18 @@
 
 #if CFG_TUD_ENABLED
 
-#if defined(CORE_M55_HE)
-#include "M55_HE.h"
-#elif defined(CORE_M55_HP)
-#include "M55_HP.h"
-#else
-#error "Unsupported core!"
-#endif
+#include "alif.h"
 
 #include "device/dcd.h"
 
 #include "alif_dcd_reg.h"
 
-#include "clk.h"
-#include "power.h"
+#include "sys_ctrl_usb.h"
+#include "sys_utils.h"
+
+#define CGU_CLK_ENA_CLK20M          (1U << 22)
+#define VBAT_PWR_CTRL_UPHY_PWR_MASK (1U << 16)
+#define VBAT_PWR_CTRL_UPHY_ISO      (1U << 17)
 
 // #define TUSB_ALIF_DEBUG
 // #define TUSB_ALIF_DEBUG_DEPTH (2048)
@@ -78,15 +76,15 @@ void dcd_uninit(void);
 bool dcd_init(uint8_t rhport, const tusb_rhport_init_t* rh_init)
 {
     // enable 20mhz clock
-    enable_cgu_clk20m();
+    CGU->CLK_ENA |= CGU_CLK_ENA_CLK20M;
     // enable usb peripheral clock
     enable_usb_periph_clk();
     // power up usb phy
-    enable_usb_phy_power();
+    VBAT->PWR_CTRL &= ~VBAT_PWR_CTRL_UPHY_PWR_MASK;
     // disable usb phy isolation
-    disable_usb_phy_isolation();
+    VBAT->PWR_CTRL &= ~VBAT_PWR_CTRL_UPHY_ISO;
     // clear usb phy power-on-reset signal
-    CLKCTL_PER_MST->USB_CTRL2 &= ~(1 << 8);
+    usb_phy_por_clear();
 
     // force stop/disconnect
     udev->dctl_b.run_stop = 0;
@@ -465,9 +463,9 @@ void dcd_edpt_clear_stall(uint8_t rhport, uint8_t ep_addr)
 
 void dcd_uninit(void)
 {
-    CLKCTL_PER_MST->USB_CTRL2 |= 1 << 8; // set usb phy power-on-reset signal
-    enable_usb_phy_isolation(); // enable usb phy isolation
-    disable_usb_phy_power(); // power down usb phy
+    usb_phy_por_set(); // set usb phy power-on-reset signal
+    VBAT->PWR_CTRL |= VBAT_PWR_CTRL_UPHY_ISO; // enable usb phy isolation
+    VBAT->PWR_CTRL |= VBAT_PWR_CTRL_UPHY_PWR_MASK; // power down usb phy
     disable_usb_periph_clk(); // disable usb peripheral clock
     dcd_int_disable(TUD_OPT_RHPORT);
     NVIC_ClearPendingIRQ(USB_IRQ_IRQn);
