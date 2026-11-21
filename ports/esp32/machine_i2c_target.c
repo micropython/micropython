@@ -30,7 +30,13 @@
 #include "machine_i2c.h"
 #include "driver/i2c_slave.h"
 #include "esp_intr_alloc.h"
+#include "esp_idf_version.h"
+// i2c_periph_signal moved from soc/ to hal/ (esp_hal_i2c component) in IDF v6.
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(6, 0, 0)
+#include "hal/i2c_periph.h"
+#else
 #include "soc/i2c_periph.h"
+#endif
 
 // These headers are needed to call i2c_ll_txfifo_rst().
 #include "hal/i2c_ll.h"
