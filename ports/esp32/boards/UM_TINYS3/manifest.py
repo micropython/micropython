@@ -1,2 +1,2 @@
 include("$(PORT_DIR)/boards/manifest.py")
-freeze("modules")
+freeze("$(BOARD_DIR)/modules", "tinys3.py")

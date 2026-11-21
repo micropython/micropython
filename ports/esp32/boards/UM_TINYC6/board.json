@@ -22,5 +22,9 @@
     "mcu": "esp32c6",
     "product": "TinyC6",
     "url": "https://tinyc6.io",
+    "variants": {
+        "TINYC6": "TinyC6",
+        "TINYC6D": "TinyC6[D]"
+    },
     "vendor": "Unexpected Maker"
 }
