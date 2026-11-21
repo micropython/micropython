@@ -122,6 +122,7 @@ Set the MICROPY_MPYCROSS environment variable to use a specific version of ``mpy
 * ``--print-failures`` - Show diff of failed tests and exit
 * ``--clean-failures`` - Delete .exp and .out files from prior failed tests
 * ``--run-failures`` - Re-run only previously failed tests
+* ``--endorse`` - Update .exp files from .out files
 
 **Examples:**
 
@@ -133,8 +134,8 @@ Set the MICROPY_MPYCROSS environment variable to use a specific version of ``mpy
    # Run tests excluding async functionality
    $ ./run-tests.py -e async
 
-   # Run tests matching *_pep_*
-   $ ./run-tests.py -i *_pep_*
+   # Run tests with name containing 'tuple' (regular expression match)
+   $ ./run-tests.py -i tuple
 
    # Run specific test files in parallel
    $ ./run-tests.py -j 4 basics/list*.py
@@ -146,3 +147,6 @@ Set the MICROPY_MPYCROSS environment variable to use a specific version of ``mpy
 
    # Re-run only failed tests from previous run
    $ ./run-tests.py --run-failures
+
+   # Update a .exp file from a .out file
+   $ ./run-tests.py --endorse results/basics_parser.py.out
