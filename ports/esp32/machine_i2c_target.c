@@ -48,7 +48,14 @@ typedef struct _machine_i2c_target_obj_t {
     intr_handle_t stop_intr_handle;
 } machine_i2c_target_obj_t;
 
-static machine_i2c_target_obj_t machine_i2c_target_obj[I2C_NUM_MAX];
+// Only the HP I2C peripherals support target (slave) mode.  On SoCs with an LP
+// I2C peripheral (eg ESP32-C5/C6) the LP port is numbered after the HP ports,
+// so I2C_NUM_MAX cannot be used here.
+static machine_i2c_target_obj_t machine_i2c_target_obj[SOC_HP_I2C_NUM];
+
+// Depth of the IDF send/receive buffers when no backing memory is given.  The
+// IDF cannot create zero-sized buffers, so use the size of the hardware FIFO.
+#define I2C_TARGET_NO_MEM_BUF_DEPTH (SOC_I2C_FIFO_LEN)
 
 /******************************************************************************/
 // ESP-IDF hardware bindings
@@ -81,9 +88,11 @@ static bool i2c_slave_request_cb(i2c_slave_dev_handle_t i2c_slave, const i2c_sla
 
     // Perform an entire read transaction, including start, read and stop events.
     // We don't know how much data the controller will read, so write the entire
-    // memory buffer to the TX FIFO.
+    // memory buffer to the TX FIFO.  Without a memory buffer, issue a single read
+    // request so the user's IRQ handler can provide data (or a zero is sent).
     machine_i2c_target_data_addr_match(data, true);
-    for (uint32_t i = 0; i < data->mem_len; ++i) {
+    uint32_t num_requests = data->mem_buf == NULL ? 1 : data->mem_len;
+    for (uint32_t i = 0; i < num_requests; ++i) {
         machine_i2c_target_data_read_request(self, data);
     }
     machine_i2c_target_data_restart_or_stop(data);
@@ -122,8 +131,9 @@ static void i2c_target_init(machine_i2c_target_obj_t *self, machine_i2c_target_d
 
     self->config.clk_source = I2C_CLK_SRC_DEFAULT;
     self->config.slave_addr = addr;
-    self->config.send_buf_depth = data->mem_len;
-    self->config.receive_buf_depth = data->mem_len;
+    uint32_t buf_depth = data->mem_len == 0 ? I2C_TARGET_NO_MEM_BUF_DEPTH : data->mem_len;
+    self->config.send_buf_depth = buf_depth;
+    self->config.receive_buf_depth = buf_depth;
     if (addrsize == 7) {
         self->config.addr_bit_len = I2C_ADDR_BIT_LEN_7;
     } else {
@@ -137,7 +147,7 @@ static void i2c_target_init(machine_i2c_target_obj_t *self, machine_i2c_target_d
     self->config.flags.allow_pd = 0;
     self->config.flags.enable_internal_pullup = 1;
 
-    ESP_ERROR_CHECK(i2c_new_slave_device(&self->config, &self->handle));
+    check_esp_err(i2c_new_slave_device(&self->config, &self->handle));
 
     // Workaround for an ESP32-S3/C3 slave hardware bug.  The v2 slave driver
     // never enables automatic TX start, so the slave may emit its own address
@@ -152,14 +162,14 @@ static void i2c_target_init(machine_i2c_target_obj_t *self, machine_i2c_target_d
         .on_receive = i2c_slave_receive_cb,
         .on_request = i2c_slave_request_cb,
     };
-    ESP_ERROR_CHECK(i2c_slave_register_event_callbacks(self->handle, &cbs, self));
+    check_esp_err(i2c_slave_register_event_callbacks(self->handle, &cbs, self));
 
     // The IDF slave driver takes no action when a read transaction completes,
     // so the controller may leave stale bytes in the TX FIFO.  Register an
     // additional shared ISR on the same interrupt to reset the TX FIFO at the
     // end of a read.  Shared ISRs are inserted at the head of the dispatch
     // list, so this one runs before the IDF ISR clears the interrupt status.
-    ESP_ERROR_CHECK(esp_intr_alloc_intrstatus(
+    check_esp_err(esp_intr_alloc_intrstatus(
         i2c_periph_signal[self->config.i2c_port].irq,
         I2C_INTR_ALLOC_FLAG,
         (uint32_t)i2c_ll_get_interrupt_status_reg(self->handle->base->hal.dev),
