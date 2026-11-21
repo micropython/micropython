@@ -161,6 +161,7 @@
 #define MP_BLUETOOTH_IRQ_GET_SECRET                     (29)
 #define MP_BLUETOOTH_IRQ_SET_SECRET                     (30)
 #define MP_BLUETOOTH_IRQ_PASSKEY_ACTION                 (31)
+#define MP_BLUETOOTH_IRQ_IDENTITY_RESOLVED              (32)
 
 #define MP_BLUETOOTH_ADDRESS_MODE_PUBLIC (0)
 #define MP_BLUETOOTH_ADDRESS_MODE_RANDOM (1)
@@ -419,6 +420,9 @@ void mp_bluetooth_gap_on_connected_disconnected(uint8_t event, uint16_t conn_han
 void mp_bluetooth_gap_on_connection_update(uint16_t conn_handle, uint16_t conn_interval, uint16_t conn_latency, uint16_t supervision_timeout, uint16_t status);
 
 #if MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING
+// Call this when the identity address of the peer has been resolved (e.g. during pairing).
+void mp_bluetooth_gap_on_identity_resolved(uint16_t conn_handle, uint8_t addr_type, const uint8_t *addr);
+
 // Call this when any connection encryption has been changed (e.g. during pairing).
 void mp_bluetooth_gatts_on_encryption_update(uint16_t conn_handle, bool encrypted, bool authenticated, bool bonded, uint8_t key_size);
 
