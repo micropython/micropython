@@ -1,13 +1,13 @@
 # MicroPython Test Suite
 
 This directory contains tests for most parts of MicroPython.  To run it you will need
-CPython 3.8.2 or newer, which is used to validate MicroPython's behaviour.
+CPython 3.11.2 or newer, which is used to validate MicroPython's behaviour.
 
 The tests are organized into several categories:
 - Unit and regression tests: tests for MicroPython's core functionality, including the
   compiler, runtime, and built-in modules
-- perf_bench: performance benchmarks
-- internal_bench: internal performance benchmarks
+- perf\_bench: performance benchmarks
+- internal\_bench: internal performance benchmarks
 - Serial reliability and performance test
 - Test key/certificates
 - CPython vs MicroPython Differences
