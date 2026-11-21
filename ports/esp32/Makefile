@@ -41,7 +41,7 @@ DEVICE += $(PORT_ARG) $(BAUD_ARG)
 
 PYTHON ?= python3
 
-.PHONY: all clean deploy erase submodules FORCE
+.PHONY: all clean deploy erase sbom submodules FORCE
 
 CMAKE_ARGS =
 
@@ -108,6 +108,9 @@ $(BUILD)/bootloader/bootloader.bin $(BUILD)/partition_table/partition-table.bin 
 
 clean:
 	$(call RUN_IDF_PY,fullclean)
+
+sbom: all
+	$(Q)cmake --build $(BUILD) --target sbom
 
 deploy:
 	$(call RUN_IDF_PY,$(DEVICE) flash)

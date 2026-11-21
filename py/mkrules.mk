@@ -88,13 +88,17 @@ QSTR_GEN_CXXFLAGS += $(QSTR_GEN_FLAGS)
 
 vpath %.S . $(TOP) $(USER_C_MODULES) $(USERMOD_DIR_PARENTS)
 $(BUILD)/%.o: %.S
-	$(ECHO) "CC $<"
-	$(Q)$(CC) $(CFLAGS) -c -o $@ $<
+	$(call compile_c)
 
 vpath %.s . $(TOP) $(USER_C_MODULES) $(USERMOD_DIR_PARENTS)
 $(BUILD)/%.o: %.s
 	$(ECHO) "AS $<"
-	$(Q)$(AS) $(AFLAGS) -o $@ $<
+	$(Q)$(AS) $(AFLAGS) -MD $(@:.o=.d) -o $@ $<
+	@# The following fixes the dependency file, see compile_c.
+	@$(CP) $(@:.o=.d) $(@:.o=.P); \
+	  $(SED) -e 's/#.*//' -e 's/^.*:  *//' -e 's/ *\\$$//' \
+	      -e '/^$$/ d' -e 's/$$/ :/' < $(@:.o=.d) >> $(@:.o=.P); \
+	  $(RM) -f $(@:.o=.d)
 
 define compile_c
 $(ECHO) "CC $<"
@@ -274,6 +278,22 @@ clean-prog:
 
 .PHONY: clean-prog
 endif
+
+# "make sbom" writes SPDX and CycloneDX SBOMs for the linked image (tools/sbom.py).
+# Ports with other image names or several images per build dir set SBOM_IMAGE and SBOM_DIR.
+SBOM_IMAGE ?= $(BUILD)/$(if $(PROG),$(PROG),firmware.elf)
+SBOM_DIR ?= $(BUILD)
+SBOM_TOOL ?= uv run --script $(TOP)/tools/sbom.py
+
+# User C module objects are built as $(BUILD)/<module dir name>/<file>.o
+sbom: $(SBOM_IMAGE)
+	$(ECHO) "SBOM $(SBOM_DIR)/sbom.*.json"
+	$(Q)$(SBOM_TOOL) $(or $(firstword $(wildcard $(SBOM_IMAGE).map $(patsubst %.elf,%.map,$(filter %.elf,$(SBOM_IMAGE))))),$(error no linker map for $(SBOM_IMAGE))) \
+		--spdx $(SBOM_DIR)/sbom.spdx.json --cyclonedx $(SBOM_DIR)/sbom.cdx.json \
+		$(addprefix --src-root ,$(USERMOD_DIR_PARENTS) $(USERMOD_DIRS)) $(SBOM_FLAGS) \
+		$(if $(FROZEN_MANIFEST),--frozen $(FROZEN_MANIFEST) $(MANIFEST_VARIABLES))
+
+.PHONY: sbom
 
 # If available, do blobless partial clones of submodules to save time and space.
 # A blobless partial clone lazily fetches data as needed, but has all the metadata available (tags, etc.).

@@ -28,62 +28,65 @@ to all files in this repository.
 Individual files may include additional copyright holders.
 
 The various ports of MicroPython may include third-party software that is
-licensed under different terms. These licenses are summarised in the tree
+licensed under different terms. These licenses are summarised in the table
 below, please refer to these files and directories for further license and
-copyright information. Note that (L)GPL-licensed code listed below is only
-used during the build process and is not part of the compiled source code.
+copyright information.
 
-/ (MIT)
-    /drivers
-        /cc3100 (BSD-3-clause)
-    /lib
-        /CMSIS_5 (Apache-2.0)
-        /CMSIS_6 (Apache-2.0)
-        /asf4 (Apache-2.0)
-        /axtls (BSD-3-clause)
-            /config
-                /scripts
-                    /config (GPL-2.0-or-later)
-                /Rules.mak (GPL-2.0)
-        /berkeley-db-1xx (BSD-4-clause)
-        /btstack (See btstack/LICENSE)
-        /crypto-algorithms (NONE)
-        /libhydrogen (ISC)
-        /libmetal (BSD-3-clause)
-        /littlefs (BSD-3-clause)
-        /lwip (BSD-3-clause)
-        /mynewt-nimble (Apache-2.0)
-        /nrfx (BSD-3-clause)
-        /nxp_driver (BSD-3-Clause)
-        /oofatfs (BSD-1-clause)
-        /open-amp (BSD-3-clause)
-        /pico-sdk (BSD-3-clause)
-        /re15 (BSD-3-clause)
-        /stm32lib (BSD-3-clause)
-        /tinyusb (MIT)
-        /uzlib (Zlib)
-        /wiznet5k (MIT)
-    /logo (uses OFL-1.1)
-    /ports
-        /cc3200
-            /hal (BSD-3-clause)
-            /simplelink (BSD-3-clause)
-            /FreeRTOS (GPL-2.0 with FreeRTOS exception)
-        /esp32
-            /ppp_set_auth.* (Apache-2.0)
-        /rp2
-            /mutex_extra.c (BSD-3-clause)
-            /clocks_extra.c (BSD-3-clause)
-        /stm32
-            /usbd*.c (MCD-ST Liberty SW License Agreement V2)
-            /stm32_it.* (MIT + BSD-3-clause)
-            /system_stm32*.c (MIT + BSD-3-clause)
-            /boards
-                /startup_stm32*.s (BSD-3-clause)
-                /*/stm32*.h (BSD-3-clause)
-            /usbdev (MCD-ST Liberty SW License Agreement V2)
-            /usbhost (MCD-ST Liberty SW License Agreement V2)
-        /zephyr
-            /src (Apache-2.0)
-    /tools
-        /dfu.py (LGPL-3.0-only)
+Keys are files, directories or globs, values are SPDX license expressions.
+
+[licenses]
+"." = "MIT"
+"drivers/cc3100" = "BSD-3-Clause"
+"extmod/moddeflate.c" = "MIT AND Zlib"
+"extmod/modhashlib.c" = "MIT AND LicenseRef-PublicDomain-BConte"
+"extmod/modre.c" = "MIT AND BSD-3-Clause"
+"lib/CMSIS_5" = "Apache-2.0"
+"lib/CMSIS_6" = "Apache-2.0"
+"lib/arduino-lib" = "MPL-2.0"
+"lib/asf4" = "Apache-2.0"
+"lib/axtls" = "BSD-3-Clause"
+"lib/axtls/config/scripts/config" = "GPL-2.0-or-later"
+"lib/axtls/config/Rules.mak" = "GPL-2.0-only"
+"lib/berkeley-db-1.xx" = "BSD-4-Clause"
+"lib/crypto-algorithms" = "LicenseRef-PublicDomain-BConte"
+"lib/libffi" = "MIT"
+"lib/libhydrogen" = "ISC"
+"lib/libm" = "MIT AND SunPro"
+"lib/libm_dbl" = "MIT AND SunPro"
+"lib/lwip" = "BSD-3-Clause"
+"lib/mbedtls" = "Apache-2.0 OR GPL-2.0-or-later"
+"lib/micropython-lib" = "MIT"
+"lib/micropython-lib/python-stdlib/colorsys" = "Python-2.0"
+"lib/micropython-lib/python-stdlib/textwrap" = "Python-2.0"
+"lib/micropython-lib/unix-ffi/email.*" = "Python-2.0"
+"lib/mm-halow-driver" = "MIT"
+"lib/mynewt-nimble" = "Apache-2.0"
+"lib/nrfx" = "BSD-3-Clause"
+"lib/nxp_driver" = "BSD-3-Clause"
+"lib/oofatfs" = "BSD-1-Clause"
+"lib/pico-sdk" = "BSD-3-Clause"
+"lib/pico-sdk/src/rp2_common/pico_printf" = "MIT"
+"lib/protobuf-c" = "BSD-2-Clause"
+"lib/re1.5" = "BSD-3-Clause"
+"lib/stm32lib" = "BSD-3-Clause"
+"lib/tinyusb" = "MIT"
+"lib/uzlib" = "Zlib"
+"lib/wiznet5k" = "MIT"
+"logo" = "OFL-1.1-RFN"
+"ports/cc3200/hal" = "BSD-3-Clause"
+"ports/cc3200/hal/cc3200_hal.*" = "MIT"
+"ports/cc3200/simplelink" = "BSD-3-Clause"
+"ports/cc3200/fatfs/src/drivers/sd_diskio.c" = "BSD-3-Clause"
+"ports/cc3200/FreeRTOS" = "GPL-2.0-only WITH freertos-exception-2.0"
+"ports/stm32/mboot/main.c" = "MIT AND LicenseRef-PublicDomain-BConte"
+"ports/stm32/usbd_cdc_interface.c" = "LicenseRef-ST-Liberty-V2"
+"ports/stm32/usbd_conf.c" = "LicenseRef-ST-Liberty-V2"
+"ports/stm32/usbd_desc.c" = "LicenseRef-ST-Liberty-V2"
+"ports/stm32/ulpi.c" = "BSD-3-Clause"
+"ports/stm32/stm32_it.*" = "MIT AND BSD-3-Clause"
+"ports/stm32/system_stm32*.c" = "MIT AND BSD-3-Clause"
+"ports/stm32/boards/*/stm32*.h" = "BSD-3-Clause"
+"ports/stm32/usbdev" = "LicenseRef-ST-Liberty-V2"
+"ports/stm32/usbhost" = "LicenseRef-ST-Liberty-V2"
+"ports/zephyr/src/zephyr_getchar.*" = "Apache-2.0"
+"tools/dfu.py" = "LGPL-3.0-only"

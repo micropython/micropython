@@ -190,6 +190,8 @@ WIPY_IP ?= '192.168.1.1'
 WIPY_USER ?= 'micro'
 WIPY_PWD ?= 'python'
 
+SBOM_IMAGE = $(BUILD)/application.axf
+
 all: $(BUILD)/firmware.zip
 
 .PHONY: deploy-ota

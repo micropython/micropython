@@ -1,0 +1,26 @@
+name: SBOM tool tests
+
+on:
+  push:
+  pull_request:
+    paths:
+      - '.github/workflows/*.yml'
+      - 'tools/sbom.py'
+      - 'tools/ci.sh'
+      - 'tests/tools/test_sbom.py'
+      - 'LICENSE'
+      - 'LICENSES/**'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v7
+    - name: Install packages
+      run: tools/ci.sh sbom_setup
+    - name: Run tests
+      run: tools/ci.sh sbom_test

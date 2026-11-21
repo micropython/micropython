@@ -1,0 +1,1 @@
+MCD-ST Liberty SW License Agreement V2 (STMicroelectronics): use only with STMicroelectronics microcontrollers, no distribution for commercial purposes. Full text: http://www.st.com/software_license_agreement_liberty_v2 and the header of each file in ports/stm32/usbdev and usbhost.

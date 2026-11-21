@@ -76,6 +76,9 @@ all:
 	$(Q)[ -e $(BUILD)/Makefile ] || cmake -S . -B $(BUILD) -DPICO_BUILD_DOCS=0 ${CMAKE_ARGS}
 	$(Q)$(MAKE) $(MAKE_ARGS) -C $(BUILD) || (echo -e $(HELP_BUILD_ERROR); false)
 
+sbom: all
+	$(Q)$(MAKE) $(MAKE_ARGS) -C $(BUILD) sbom
+
 clean:
 	$(RM) -rf $(BUILD)
 

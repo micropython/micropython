@@ -127,4 +127,23 @@ update-system-package:
 		--cfg-part $(ALIF_TOOLKIT_CFG_PART) \
 		--port $(PORT)
 
+# make sbom needs MCU_CORE=M55_HP or MCU_CORE=M55_HE.
+SBOM_IMAGE = $(BUILD)/$(MCU_CORE)/firmware.elf
+SBOM_DIR = $(BUILD)/$(MCU_CORE)
+ifeq ($(MCU_CORE),M55_DUAL)
+ifneq ($(filter sbom,$(MAKECMDGOALS)),)
+$(error make sbom needs MCU_CORE=M55_HP or MCU_CORE=M55_HE, run it once per core)
+endif
+endif
+$(SBOM_IMAGE): $(BUILD)/$(MCU_CORE)/firmware.bin
+ifneq ($(filter sbom,$(MAKECMDGOALS)),)
+ifeq ($(MICROPY_PY_NETWORK_HALOW_MORSE_MICRO),1)
+# The HaLow firmware blobs are objcopy'd from .mbin files, so the map doesn't name their source.
+include $(TOP)/lib/mm-halow-driver/mm_halow.mk
+sbom_blob = $(if $(1),--blob $(patsubst $(BUILD)/%,$(BUILD)/$(MCU_CORE)/%,$(1))=$(2))
+SBOM_FLAGS += $(call sbom_blob,$(MM_HALOW_FW_OBJ),$(MM_HALOW_FW_MBIN))
+SBOM_FLAGS += $(call sbom_blob,$(MM_HALOW_BCF_OBJ),$(MM_HALOW_BCF_MBIN))
+endif
+endif
+
 include $(TOP)/py/mkrules.mk

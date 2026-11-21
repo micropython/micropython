@@ -25,3 +25,4 @@ MicroPython to a new platform and implementing a core MicroPython library.
    extendingmicropython.rst
    porting.rst
    support_tiers.rst
+   sbom.rst
