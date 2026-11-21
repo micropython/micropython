@@ -215,6 +215,7 @@ typedef struct _vfs_posix_ilistdir_it_t {
     mp_fun_1_t finaliser;
     bool is_str;
     DIR *dir;
+    vstr_t path;
 } vfs_posix_ilistdir_it_t;
 
 static mp_obj_t vfs_posix_ilistdir_it_iternext(mp_obj_t self_in) {
@@ -241,8 +242,8 @@ static mp_obj_t vfs_posix_ilistdir_it_iternext(mp_obj_t self_in) {
             continue;
         }
 
-        // make 3-tuple with info about this entry
-        mp_obj_tuple_t *t = MP_OBJ_TO_PTR(mp_obj_new_tuple(3, NULL));
+        // make 4-tuple with info about this entry
+        mp_obj_tuple_t *t = MP_OBJ_TO_PTR(mp_obj_new_tuple(4, NULL));
 
         if (self->is_str) {
             t->items[0] = mp_obj_new_str_from_cstr(fn);
@@ -273,6 +274,20 @@ static mp_obj_t vfs_posix_ilistdir_it_iternext(mp_obj_t self_in) {
         t->items[2] = MP_OBJ_NEW_SMALL_INT(0);
         #endif
 
+        // Materialise the full path while the GIL is held; vstr may allocate.
+        size_t base_len = self->path.len;
+        vstr_add_str(&self->path, fn);
+        const char *full_path = vstr_null_terminated_str(&self->path);
+        struct stat st;
+        mp_int_t size = 0;
+        MP_THREAD_GIL_EXIT();
+        if (stat(full_path, &st) == 0) {
+            size = st.st_size;
+        }
+        MP_THREAD_GIL_ENTER();
+        self->path.len = base_len;
+        t->items[3] = mp_obj_new_int_from_uint(size);
+
         return MP_OBJ_FROM_PTR(t);
     }
 }
@@ -284,6 +299,7 @@ static mp_obj_t vfs_posix_ilistdir_it_del(mp_obj_t self_in) {
         closedir(self->dir);
         MP_THREAD_GIL_ENTER();
     }
+    vstr_clear(&self->path);
     return mp_const_none;
 }
 
@@ -293,9 +309,15 @@ static mp_obj_t vfs_posix_ilistdir(mp_obj_t self_in, mp_obj_t path_in) {
     iter->iternext = vfs_posix_ilistdir_it_iternext;
     iter->finaliser = vfs_posix_ilistdir_it_del;
     iter->is_str = mp_obj_get_type(path_in) == &mp_type_str;
+    iter->dir = NULL;
+    vstr_init(&iter->path, 0);
     const char *path = vfs_posix_get_path_str(self, path_in);
     if (path[0] == '\0') {
         path = ".";
+    }
+    vstr_add_str(&iter->path, path);
+    if (iter->path.buf[iter->path.len - 1] != '/') {
+        vstr_add_char(&iter->path, '/');
     }
     MP_THREAD_GIL_EXIT();
     iter->dir = opendir(path);
