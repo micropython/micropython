@@ -4,6 +4,12 @@ except ImportError:
     print("SKIP")
     raise SystemExit
 
+try:
+    extra_coverage
+    is_coverage = True
+except NameError:
+    is_coverage = False
+
 
 def my_print(o):
     if isinstance(o, dict):
@@ -32,6 +38,12 @@ my_print(json.loads('"abc\\ndef"'))
 my_print(json.loads('"abc\\rdef"'))
 my_print(json.loads('"abc\\tdef"'))
 my_print(json.loads('"abc\\uabcd"'))
+
+if is_coverage:  # Has ordered json loads enabled
+    o = json.loads('{"b":null, "c":false, "e":true}')
+    print(list(o.items()) == list(sorted(o.items())))
+else:
+    print(True)
 
 # whitespace handling
 my_print(json.loads('{\n\t"a":[]\r\n, "b":[1], "c":{"3":4}     \n\r\t\r\r\r\n}'))
