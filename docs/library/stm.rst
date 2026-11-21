@@ -138,3 +138,99 @@ the integrated "SUBGHZ" radio modem peripheral.
    radio peripheral. Before sending a new command to the radio over SPI then
    this function should be polled until it returns ``False``, to confirm the
    busy signal is de-asserted.
+
+The LTDC display controller
+---------------------------
+
+On boards with a parallel RGB display, the ``LTDC`` class drives it from a frame
+buffer in memory.  The board sets the panel's size, timing and pins.
+
+.. class:: LTDC(*, format=LTDC.RGB565)
+
+   Turn on the display, which shows black until the first call to ``show()``.
+   There is only one display, so this always returns the same object, and
+   calling it again re-initialises the display.
+
+   *format* is the pixel format of the buffers passed to ``show()``, one of the
+   :ref:`formats <stm_ltdc_formats>` listed below.
+
+.. method:: LTDC.show(buf, *, wait=True)
+
+   Display the contents of *buf*, which must hold at least ``width * height``
+   pixels in the configured format.  The LTDC keeps reading *buf* directly,
+   without copying it, and driving the display continuously until another
+   buffer is shown.  *buf* can be modified after calling ``show()``, but some
+   changes may stay in the CPU cache and appear late or not at all; calling
+   ``show()`` again flushes the cache.
+
+   To update the display without showing partly drawn changes, use two buffers
+   (double buffering): draw into the one that isn't shown, then show it.  The
+   display switches to *buf* at the start of the next frame, so a frame is
+   never drawn partly from the old buffer and partly from the new one.
+
+   With *wait* set to ``True``, ``show()`` waits for the switch, after which
+   the previous buffer is no longer in use and can be drawn into.  With *wait*
+   set to ``False``, ``show()`` returns straight away, but the switch still
+   happens at the start of the next frame.  Until then the display continues to
+   read the previous buffer, so drawing into it may show partly drawn changes.
+   If ``show()`` is called again before the switch, it waits for the switch
+   first.
+
+   ``show()`` keeps a reference to each buffer the display may still be reading,
+   so it isn't freed by the garbage collector even if the program no longer
+   refers to it.  With *wait* set to ``True``, the previous buffer is released
+   when ``show()`` returns.  With *wait* set to ``False``, the previous buffer
+   is released at the next call to ``show()``, because only then is the switch
+   known to be done.
+
+   If *buf* is ``None``, the display shows black, as it does before the first
+   call to ``show()``, without needing a buffer.  The switch to black happens at
+   the start of the next frame, and the previous buffer is released in the same
+   way as above: when ``show()`` returns with *wait* set to ``True``, or at the
+   next call to ``show()`` with *wait* set to ``False``.  After that, ``show()``
+   holds no references to any buffer.
+
+   Raises ``ValueError`` if *buf* is too small, and ``OSError`` if the display
+   has been turned off by ``deinit()`` or the hardware fails to respond.
+
+.. method:: LTDC.deinit()
+
+   Turn off the display, and release the references that ``show()`` keeps to
+   the buffers it was given, so they can be freed by the garbage collector if
+   the program no longer refers to them.  This also happens on a soft reset.
+   After ``deinit()``, ``show()`` raises ``OSError`` until the display is turned
+   on again with ``LTDC()``.
+
+.. attribute:: LTDC.width
+               LTDC.height
+
+   The size of the display in pixels.
+
+.. _stm_ltdc_formats:
+
+.. data:: LTDC.RGB565
+          LTDC.RGB888
+          LTDC.ARGB8888
+          LTDC.GS8
+
+   Pixel formats.  Each pixel is stored in the buffer as:
+
+   - ``RGB565``: 2 bytes, a little-endian 16-bit value with red in the top 5
+     bits, green in the middle 6 and blue in the bottom 5.  This matches
+     ``framebuf.RGB565``.
+   - ``RGB888``: 3 bytes, in the order blue, green, red.
+   - ``ARGB8888``: 4 bytes, in the order blue, green, red, alpha.  The alpha
+     byte is ignored.
+   - ``GS8``: 1 byte, a grey level from 0 (black) to 255 (white).  This matches
+     ``framebuf.GS8``.
+
+For example::
+
+    import stm, framebuf
+
+    lcd = stm.LTDC()
+    buf = bytearray(lcd.width * lcd.height * 2)
+    fb = framebuf.FrameBuffer(buf, lcd.width, lcd.height, framebuf.RGB565)
+    fb.fill(0)
+    fb.text("Hello!", 10, 10, 0xffff)
+    lcd.show(buf)
