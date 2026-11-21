@@ -337,8 +337,7 @@ static mp_obj_t re_sub_helper(size_t n_args, const mp_obj_t *args) {
         memset((char *)match->caps, 0, caps_num * sizeof(char *));
         int res = re1_5_recursiveloopprog(&self->re, &subj, match->caps, caps_num, false);
 
-        // If we didn't have a match, or had an empty match, it's time to stop
-        if (!res || match->caps[0] == match->caps[1]) {
+        if (!res) {
             break;
         }
 
@@ -396,6 +395,23 @@ static mp_obj_t re_sub_helper(size_t n_args, const mp_obj_t *args) {
 
         // Move start pointer to end of last match
         subj.begin = match->caps[1];
+
+        // After an empty match, copy the next character and search after it
+        if (match->caps[0] == match->caps[1]) {
+            if (subj.begin == subj.end) {
+                break;
+            }
+            const char *next = subj.begin + 1;
+            #if MICROPY_PY_BUILTINS_STR_UNICODE
+            if (mp_obj_is_str(where)) {
+                while (next < subj.end && UTF8_IS_CONT(*next)) {
+                    ++next;
+                }
+            }
+            #endif
+            vstr_add_strn(&vstr_return, subj.begin, next - subj.begin);
+            subj.begin = next;
+        }
 
         // Stop substitutions if count was given and gets to 0
         if (count > 0 && --count == 0) {
