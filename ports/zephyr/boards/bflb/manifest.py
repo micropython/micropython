@@ -1,6 +1,7 @@
+freeze("$(PORT_DIR)/modules")
 include("$(MPY_DIR)/extmod/asyncio")
 
-freeze("$(PORT_DIR)/modules")
+require("bundle-networking")
 
 require("upysh")
 require("aioble")
