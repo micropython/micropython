@@ -15,7 +15,7 @@
 			prog-size=<256>;
 			cache-size=<1024>;
 			lookahead-size=<32>;
-			block-cycles=<4>;
+			block-cycles=<256>;
 		};
 	};
 
