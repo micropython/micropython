@@ -83,6 +83,7 @@ SRC_QSTR += $(SRC_EXTMOD_C)
 
 CFLAGS += $(CFLAGS_EXTMOD) $(CFLAGS_THIRDPARTY)
 LDFLAGS += $(LDFLAGS_EXTMOD) $(LDFLAGS_THIRDPARTY)
+LIBS += $(LIBS_THIRDPARTY)
 
 ################################################################################
 # libm/libm_dbl math library
@@ -245,93 +246,59 @@ SRC_THIRDPARTY_C += $(addprefix $(AXTLS_DIR)/,\
 	crypto/sha1.c \
 	)
 else ifeq ($(MICROPY_SSL_MBEDTLS),1)
-MBEDTLS_DIR = lib/mbedtls
-MBEDTLS_CONFIG_FILE ?= \"mbedtls/mbedtls_config_port.h\"
+MBEDTLS_DIR = $(TOP)/lib/mbedtls
+MBEDTLS_CONFIG_FILE ?= mbedtls/mbedtls_config_port.h
+CRYPTO_CONFIG_FILE ?= mbedtls/crypto_config_port.h
 GIT_SUBMODULES += $(MBEDTLS_DIR)
-CFLAGS_EXTMOD += -DMBEDTLS_CONFIG_FILE=$(MBEDTLS_CONFIG_FILE)
-CFLAGS_EXTMOD += -DMICROPY_SSL_MBEDTLS=1 -I$(TOP)/$(MBEDTLS_DIR)/include
+
+CFLAGS_EXTMOD += -DMICROPY_SSL_MBEDTLS=1
 ifeq ($(MICROPY_PY_SSL_ECDSA_SIGN_ALT),1)
 CFLAGS_EXTMOD += -DMICROPY_PY_SSL_ECDSA_SIGN_ALT=1
 LDFLAGS_EXTMOD += -Wl,--wrap=mbedtls_ecdsa_write_signature
 endif
+# Wrap mbedtls_strerror() with minimal strings version
 SRC_THIRDPARTY_C += lib/mbedtls_errors/mp_mbedtls_errors.c
-SRC_THIRDPARTY_C += $(addprefix $(MBEDTLS_DIR)/library/,\
-	aes.c \
-	aesni.c \
-	asn1parse.c \
-	asn1write.c \
-	base64.c \
-	bignum_core.c \
-	bignum_mod.c \
-	bignum_mod_raw.c \
-	bignum.c \
-	camellia.c \
-	ccm.c \
-	chacha20.c \
-	chachapoly.c \
-	cipher.c \
-	cipher_wrap.c \
-	nist_kw.c \
-	aria.c \
-	cmac.c \
-	constant_time.c \
-	mps_reader.c \
-	mps_trace.c \
-	ctr_drbg.c \
-	debug.c \
-	des.c \
-	dhm.c \
-	ecdh.c \
-	ecdsa.c \
-	ecjpake.c \
-	ecp.c \
-	ecp_curves.c \
-	entropy.c \
-	entropy_poll.c \
-	gcm.c \
-	hmac_drbg.c \
-	md5.c \
-	md.c \
-	oid.c \
-	padlock.c \
-	pem.c \
-	pk.c \
-	pkcs12.c \
-	pkcs5.c \
-	pkparse.c \
-	pk_ecc.c \
-	pk_wrap.c \
-	pkwrite.c \
-	platform.c \
-	platform_util.c \
-	poly1305.c \
-	ripemd160.c \
-	rsa.c \
-	rsa_alt_helpers.c \
-	sha1.c \
-	sha256.c \
-	sha512.c \
-	ssl_cache.c \
-	ssl_ciphersuites.c \
-	ssl_client.c \
-	ssl_cookie.c \
-	ssl_debug_helpers_generated.c \
-	ssl_msg.c \
-	ssl_ticket.c \
-	ssl_tls.c \
-	ssl_tls12_client.c \
-	ssl_tls12_server.c \
-	timing.c \
-	x509.c \
-	x509_create.c \
-	x509_crl.c \
-	x509_crt.c \
-	x509_csr.c \
-	x509write_crt.c \
-	x509write_csr.c \
-	)
-endif
-endif
+LDFLAGS_EXTMOD += -Wl,--wrap=mbedtls_strerror
+
+MBEDTLS_BUILD_DIR ?= $(BUILD)/lib_mbedtls
+
+CFLAGS_MBEDTLS_CONFIG =	-DMBEDTLS_CONFIG_FILE=\"$(abspath $(MBEDTLS_CONFIG_FILE))\" \
+						-DTF_PSA_CRYPTO_CONFIG_FILE=\"$(abspath $(CRYPTO_CONFIG_FILE))\"
+
+LIBS_MBEDTLS = $(addprefix $(MBEDTLS_BUILD_DIR)/library/,libmbedtls.a libmbedx509.a libtfpsacrypto.a)
+
+CMAKE ?= cmake
+
+# MbedTLS v4 requires running their CMake process, so we recursively
+# run CMake inside our build process to produce the MbedTLS static libraries
+
+$(MBEDTLS_BUILD_DIR):
+	mkdir -p $(MBEDTLS_BUILD_DIR)
+    # Setting CFLAGS environment variable for mbedTLS CMake run is a monstrosity:
+    # 1. Need to filter out CFLAGS_THIRDPARTY as these are flags for building MicroPython with mbedTLS, not
+    #    for building mbedTLS
+    # 2. Need to pass all other CFLAGS (as ports define random config-related macros here).
+    # 3. Need to rewrite all -I includes to be absolute paths, as CMake will run the compiler in the
+    #    build directory not in the port directory.
+    #CFLAGS="$(addprefix -I,$(abspath $(patsubst -I%,%,$(INC)))) $(CFLAGS_PORT) -Wno-unused-parameter"
+	CFLAGS="$(patsubst -I.%,-I$(abspath .)/.%,$(subst $(CFLAGS_THIRDPARTY),,$(CFLAGS))) -Wno-unused-parameter" \
+        CC="$(CC)" \
+		$(CMAKE) -B $(MBEDTLS_BUILD_DIR) -G "Unix Makefiles" \
+		-DENABLE_TESTING=Off -DENABLE_PROGRAMS=Off -DCMAKE_C_COMPILER_WORKS=1 \
+        -Wno-author \
+        $(subst \",,$(CFLAGS_MBEDTLS_CONFIG)) \
+		$(MBEDTLS_DIR)
+
+$(LIBS_MBEDTLS): $(MBEDTLS_BUILD_DIR)
+	cmake --build $(MBEDTLS_BUILD_DIR) -- VERBOSE=$(V)
+
+# Compile & Link options used by MicroPython when building against mbedTLS
+CFLAGS_THIRDPARTY += $(addprefix "-I$(MBEDTLS_DIR)/", include tf-psa-crypto/include tf-psa-crypto/drivers/builtin/include/)
+CFLAGS_THIRDPARTY += $(CFLAGS_MBEDTLS_CONFIG)
+LIBS_THIRDPARTY += $(LIBS_MBEDTLS)
+
+endif  # MICROPY_SSL_MBEDTLS
+endif  # MICROPY_PY_SSL
 
 ################################################################################
 # lwip
