@@ -126,11 +126,27 @@ static mp_uint_t vfs_posix_file_read(mp_obj_t o_in, void *buf, mp_uint_t size, i
     return (mp_uint_t)r;
 }
 
+// Forward declarations needed for dupterm stdio redirect check below.
+extern mp_obj_vfs_posix_file_t mp_sys_stdout_obj;
+extern mp_obj_vfs_posix_file_t mp_sys_stderr_obj;
+#if MICROPY_PY_SYS_STDIO_BUFFER
+extern mp_obj_vfs_posix_file_t mp_sys_stdout_buffer_obj;
+extern mp_obj_vfs_posix_file_t mp_sys_stderr_buffer_obj;
+#endif
+
 static mp_uint_t vfs_posix_file_write(mp_obj_t o_in, const void *buf, mp_uint_t size, int *errcode) {
     mp_obj_vfs_posix_file_t *o = MP_OBJ_TO_PTR(o_in);
     check_fd_is_open(o);
     #if MICROPY_PY_OS_DUPTERM
-    if (o->fd <= STDERR_FILENO) {
+    // Redirect writes on the sys.stdout/stderr objects through dupterm so that
+    // user-registered dupterm streams also receive the output.  Use object
+    // identity rather than fd number to avoid false matches when a stdio fd
+    // has been closed (e.g. by GC finaliser) and the fd number reused.
+    if (o == &mp_sys_stdout_obj || o == &mp_sys_stderr_obj
+        #if MICROPY_PY_SYS_STDIO_BUFFER
+        || o == &mp_sys_stdout_buffer_obj || o == &mp_sys_stderr_buffer_obj
+        #endif
+        ) {
         mp_hal_stdout_tx_strn(buf, size);
         return size;
     }
