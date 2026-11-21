@@ -25,6 +25,7 @@
  */
 
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <errno.h>
 
@@ -39,6 +40,11 @@
 #include <signal.h>
 #include <sched.h>
 #include <semaphore.h>
+
+#if MICROPY_PY_THREAD_LOCK_TIMEOUT
+#include <math.h>
+#include <sys/time.h>
+#endif
 
 #include "shared/runtime/gchelper.h"
 
@@ -85,7 +91,7 @@ static sem_t thread_signal_done;
 #endif
 
 void mp_thread_unix_begin_atomic_section(void) {
-    mp_thread_recursive_mutex_lock(&thread_mutex, true);
+    mp_thread_recursive_mutex_lock(&thread_mutex, MP_THREAD_MUTEX_TIMEOUT_FOREVER);
 }
 
 void mp_thread_unix_end_atomic_section(void) {
@@ -328,21 +334,45 @@ void mp_thread_mutex_init(mp_thread_mutex_t *mutex) {
     pthread_mutex_init(mutex, NULL);
 }
 
-int mp_thread_mutex_lock(mp_thread_mutex_t *mutex, int wait) {
+int mp_thread_mutex_lock(mp_thread_mutex_t *mutex, int64_t timeout_us) {
     int ret;
-    if (wait) {
-        ret = pthread_mutex_lock(mutex);
-        if (ret == 0) {
-            return 1;
-        }
-    } else {
+
+    if (timeout_us == 0) {
         ret = pthread_mutex_trylock(mutex);
         if (ret == 0) {
             return 1;
         } else if (ret == EBUSY) {
             return 0;
         }
+    #if MICROPY_PY_THREAD_LOCK_TIMEOUT
+    } else if (timeout_us < 0) {
+    #else
+    } else {
+    #endif
+        ret = pthread_mutex_lock(mutex);
+        if (ret == 0) {
+            return 1;
+        }
     }
+    #if MICROPY_PY_THREAD_LOCK_TIMEOUT
+    else { /* if (timeout_us > 0) */
+        struct timeval _timeval;
+        struct timezone _timezone;
+        gettimeofday(&_timeval, &_timezone);
+        uint32_t _timeout_sec = timeout_us / 1000000;
+        uint32_t _timeout_nano = 1000 * (timeout_us % 1000000 + _timeval.tv_usec);
+        struct timespec _timespec = {
+            .tv_sec = _timeout_sec + _timeval.tv_sec + (_timeout_nano / 1000000000),
+            .tv_nsec = _timeout_nano % 1000000000
+        };
+        ret = pthread_mutex_timedlock(mutex, &_timespec);
+        if (ret == 0) {
+            return 1;
+        } else if (ret == ETIMEDOUT) {
+            return 0;
+        }
+    }
+    #endif
     return -ret;
 }
 
@@ -361,8 +391,8 @@ void mp_thread_recursive_mutex_init(mp_thread_recursive_mutex_t *mutex) {
     pthread_mutexattr_destroy(&attr);
 }
 
-int mp_thread_recursive_mutex_lock(mp_thread_recursive_mutex_t *mutex, int wait) {
-    return mp_thread_mutex_lock(mutex, wait);
+int mp_thread_recursive_mutex_lock(mp_thread_recursive_mutex_t *mutex, int64_t timeout) {
+    return mp_thread_mutex_lock(mutex, timeout);
 }
 
 void mp_thread_recursive_mutex_unlock(mp_thread_recursive_mutex_t *mutex) {
