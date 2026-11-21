@@ -25,6 +25,9 @@
 #define MICROPY_HW_CLK_PLLP2                    (1)
 #define MICROPY_HW_CLK_PLLFRAC                  (0)
 
+// Pin that selects the VDDCORE SMPS's overdrive voltage, needed for 800MHz.
+#define MICROPY_HW_VDDCORE_OVERDRIVE_PIN        (pin_B12)
+
 // The LSE is a 32kHz crystal.
 #define MICROPY_HW_RTC_USE_LSE                  (1)
 #define MICROPY_HW_RTC_USE_US                   (1)
