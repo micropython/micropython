@@ -33,6 +33,7 @@
 #include "py/stream.h"
 #include "py/mperrno.h"
 #include "py/mphal.h"
+#include "shared/runtime/softtimer.h"
 
 #if MICROPY_PY_NETWORK_WIZNET5K
 
@@ -73,6 +74,9 @@
 
 #include "lib/wiznet5k/Internet/DNS/dns.h"
 #include "lib/wiznet5k/Internet/DHCP/dhcp.h"
+
+// Keep-alive interval for SO_KEEPALIVE, in the chip's units of 5 s.
+#define WIZNET5K_KEEPALIVE_INTERVAL (2)
 
 #endif
 
@@ -471,10 +475,16 @@ static void wiznet5k_init(void) {
     wiznet5k_obj.active = true;
 }
 
+static soft_timer_entry_t wiznet5k_dns_timer;
+
+// Runs at PendSV level while DNS_run() waits for an answer.
+static void wiznet5k_dns_tick(soft_timer_entry_t *self) {
+    DNS_time_handler();
+}
+
 static int wiznet5k_gethostbyname(mp_obj_t nic, const char *name, mp_uint_t len, uint8_t *out_ip) {
-    // With no address of our own the query cannot be answered, and DNS_run()
-    // only gives up on a one-second tick that nothing drives, so it would
-    // never return.  Fail the lookup rather than hang in the library.
+    // With no address of our own the query cannot be answered, so fail it
+    // straight away rather than wait for DNS_run() to time out.
     wiz_NetInfo netinfo;
     ctlnetwork(CN_GET_NETINFO, &netinfo);
     if ((netinfo.ip[0] | netinfo.ip[1] | netinfo.ip[2] | netinfo.ip[3]) == 0) {
@@ -487,7 +497,12 @@ static int wiznet5k_gethostbyname(mp_obj_t nic, const char *name, mp_uint_t len,
     if (wiznet5k_obj.netinfo.dns[0]) {
         memcpy(dns_ip, wiznet5k_obj.netinfo.dns, MOD_NETWORK_IPADDR_BUF_SIZE);
     }
+    // DNS_run() gives up on a query only when its one-second tick says so, and
+    // it spins without returning until then, so drive the tick from a timer.
+    soft_timer_static_init(&wiznet5k_dns_timer, SOFT_TIMER_MODE_PERIODIC, 1000, wiznet5k_dns_tick);
+    soft_timer_insert(&wiznet5k_dns_timer, 1000);
     mp_int_t ret = DNS_run(dns_ip, (uint8_t *)name, out_ip);
+    soft_timer_remove(&wiznet5k_dns_timer);
     m_del(uint8_t, buf, MAX_DNS_BUF_SIZE);
     if (ret == 1) {
         // success
@@ -550,6 +565,22 @@ static void wiznet5k_socket_close(mod_network_socket_obj_t *socket) {
     }
 }
 
+// Called between attempts while a socket operation waits on the chip.  Returns
+// false once the socket's timeout has run out, with *_errno set to EAGAIN for a
+// non-blocking socket and ETIMEDOUT otherwise.
+static bool wiznet5k_socket_wait(mod_network_socket_obj_t *socket, mp_uint_t start, int *_errno) {
+    if (socket->timeout == 0) {
+        *_errno = MP_EAGAIN;
+        return false;
+    }
+    if (socket->timeout > 0 && mp_hal_ticks_ms() - start >= (mp_uint_t)socket->timeout) {
+        *_errno = MP_ETIMEDOUT;
+        return false;
+    }
+    mp_event_handle_nowait();
+    return true;
+}
+
 static int wiznet5k_socket_bind(mod_network_socket_obj_t *socket, byte *ip, mp_uint_t port, int *_errno) {
     // open the socket in server mode (if port != 0)
     mp_int_t ret = wizchip_socket(socket->fileno, socket->type, port, 0);
@@ -584,6 +615,7 @@ static int wiznet5k_socket_listen(mod_network_socket_obj_t *socket, mp_int_t bac
 }
 
 static int wiznet5k_socket_accept(mod_network_socket_obj_t *socket, mod_network_socket_obj_t *socket2, byte *ip, mp_uint_t *port, int *_errno) {
+    mp_uint_t start = mp_hal_ticks_ms();
     for (;;) {
         int sr = getSn_SR((uint8_t)socket->fileno);
         if (sr == SOCK_ESTABLISHED) {
@@ -618,7 +650,9 @@ static int wiznet5k_socket_accept(mod_network_socket_obj_t *socket, mod_network_
             *_errno = MP_ENOTCONN; // ??
             return -1;
         }
-        mp_hal_delay_ms(1);
+        if (!wiznet5k_socket_wait(socket, start, _errno)) {
+            return -1;
+        }
     }
 }
 
@@ -637,6 +671,7 @@ static int wiznet5k_socket_connect(mod_network_socket_obj_t *socket, byte *ip, m
         // The CONNECT command has been issued and the socket is non-blocking,
         // so wait for it here the way the library does when it blocks.
         uint8_t sn = (uint8_t)socket->fileno;
+        mp_uint_t start = mp_hal_ticks_ms();
         for (;;) {
             // Read the status once per pass, so the two tests below cannot see
             // the socket in two different states, and drop the GIL around the
@@ -661,7 +696,16 @@ static int wiznet5k_socket_connect(mod_network_socket_obj_t *socket, byte *ip, m
                 ret = SOCKERR_SOCKCLOSED;
                 break;
             }
-            mp_event_handle_nowait();
+            if (!wiznet5k_socket_wait(socket, start, _errno)) {
+                if (*_errno == MP_EAGAIN) {
+                    // Non-blocking: the connection carries on in the chip, and
+                    // poll() reports the socket writable once it is up.
+                    *_errno = MP_EINPROGRESS;
+                } else {
+                    wiznet5k_socket_close(socket);
+                }
+                return -1;
+            }
         }
     }
 
@@ -676,6 +720,7 @@ static int wiznet5k_socket_connect(mod_network_socket_obj_t *socket, byte *ip, m
 }
 
 static mp_uint_t wiznet5k_socket_send(mod_network_socket_obj_t *socket, const byte *buf, mp_uint_t len, int *_errno) {
+    mp_uint_t start = mp_hal_ticks_ms();
     for (;;) {
         MP_THREAD_GIL_EXIT();
         mp_int_t ret = wizchip_send(socket->fileno, (byte *)buf, len);
@@ -690,16 +735,25 @@ static mp_uint_t wiznet5k_socket_send(mod_network_socket_obj_t *socket, const by
             }
             return ret;
         }
-        mp_event_handle_nowait();
+        if (!wiznet5k_socket_wait(socket, start, _errno)) {
+            return MP_STREAM_ERROR;
+        }
     }
 }
 
 static mp_uint_t wiznet5k_socket_recv(mod_network_socket_obj_t *socket, byte *buf, mp_uint_t len, int *_errno) {
+    mp_uint_t start = mp_hal_ticks_ms();
     for (;;) {
         MP_THREAD_GIL_EXIT();
         mp_int_t ret = wizchip_recv(socket->fileno, buf, len);
         MP_THREAD_GIL_ENTER();
 
+        if (ret == SOCKERR_SOCKSTATUS) {
+            // The peer has closed the connection and there is no data left.
+            // The library has closed the chip's socket already; report end of
+            // stream, and keep the socket number until close() is called.
+            return 0;
+        }
         if (ret != SOCK_BUSY) {
             // TODO convert Wiz errno's to POSIX ones
             if (ret < 0) {
@@ -709,7 +763,9 @@ static mp_uint_t wiznet5k_socket_recv(mod_network_socket_obj_t *socket, byte *bu
             }
             return ret;
         }
-        mp_event_handle_nowait();
+        if (!wiznet5k_socket_wait(socket, start, _errno)) {
+            return MP_STREAM_ERROR;
+        }
     }
 }
 
@@ -721,6 +777,7 @@ static mp_uint_t wiznet5k_socket_sendto(mod_network_socket_obj_t *socket, const 
         }
     }
 
+    mp_uint_t start = mp_hal_ticks_ms();
     for (;;) {
         MP_THREAD_GIL_EXIT();
         mp_int_t ret = wizchip_sendto(socket->fileno, (byte *)buf, len, ip, port);
@@ -734,12 +791,15 @@ static mp_uint_t wiznet5k_socket_sendto(mod_network_socket_obj_t *socket, const 
             }
             return ret;
         }
-        mp_event_handle_nowait();
+        if (!wiznet5k_socket_wait(socket, start, _errno)) {
+            return MP_STREAM_ERROR;
+        }
     }
 }
 
 static mp_uint_t wiznet5k_socket_recvfrom(mod_network_socket_obj_t *socket, byte *buf, mp_uint_t len, byte *ip, mp_uint_t *port, int *_errno) {
     uint16_t port2;
+    mp_uint_t start = mp_hal_ticks_ms();
     for (;;) {
         MP_THREAD_GIL_EXIT();
         mp_int_t ret = wizchip_recvfrom(socket->fileno, buf, len, ip, &port2);
@@ -754,28 +814,41 @@ static mp_uint_t wiznet5k_socket_recvfrom(mod_network_socket_obj_t *socket, byte
             }
             return ret;
         }
-        mp_event_handle_nowait();
+        if (!wiznet5k_socket_wait(socket, start, _errno)) {
+            return MP_STREAM_ERROR;
+        }
     }
 }
 
 static int wiznet5k_socket_setsockopt(mod_network_socket_obj_t *socket, mp_uint_t level, mp_uint_t opt, const void *optval, mp_uint_t optlen, int *_errno) {
-    // TODO
-    *_errno = MP_EINVAL;
+    if (level == MOD_NETWORK_SOL_SOCKET) {
+        switch (opt) {
+            case MOD_NETWORK_SO_REUSEADDR:
+            case MOD_NETWORK_SO_BROADCAST:
+                // The chip has no TIME_WAIT state and always allows UDP
+                // broadcast, so there is nothing to set.
+                return 0;
+            #ifdef setSn_KPALVTR
+            case MOD_NETWORK_SO_KEEPALIVE:
+                if (optlen != sizeof(mp_int_t)) {
+                    *_errno = MP_EINVAL;
+                    return -1;
+                }
+                // Sn_KPALVTR is the keep-alive interval in units of 5 s, and
+                // 0 turns keep-alive off.
+                setSn_KPALVTR((uint8_t)socket->fileno, *(const mp_int_t *)optval ? WIZNET5K_KEEPALIVE_INTERVAL : 0);
+                return 0;
+            #endif
+        }
+    }
+    *_errno = MP_EOPNOTSUPP;
     return -1;
 }
 
 static int wiznet5k_socket_settimeout(mod_network_socket_obj_t *socket, mp_uint_t timeout_ms, int *_errno) {
-    // TODO
-    *_errno = MP_EINVAL;
-    return -1;
-
-    /*
-    if (timeout_ms == 0) {
-        // set non-blocking mode
-        uint8_t arg = SOCK_IO_NONBLOCK;
-        ctlsocket(socket->fileno, CS_SET_IOMODE, &arg);
-    }
-    */
+    // The wait loops above check this; -1 blocks, 0 is non-blocking.
+    socket->timeout = timeout_ms;
+    return 0;
 }
 
 static int wiznet5k_socket_ioctl(mod_network_socket_obj_t *socket, mp_uint_t request, mp_uint_t arg, int *_errno) {
@@ -785,7 +858,15 @@ static int wiznet5k_socket_ioctl(mod_network_socket_obj_t *socket, mp_uint_t req
             ret |= MP_STREAM_POLL_RD;
         }
         if (arg & MP_STREAM_POLL_WR && getSn_TX_FSR(socket->fileno) != 0) {
-            ret |= MP_STREAM_POLL_WR;
+            // A TCP socket is only writable once it is connected, so that a
+            // non-blocking connect() can be waited on.
+            uint8_t sr = getSn_SR(socket->fileno);
+            if (socket->type != Sn_MR_TCP || sr == SOCK_ESTABLISHED || sr == SOCK_CLOSE_WAIT) {
+                ret |= MP_STREAM_POLL_WR;
+            }
+        }
+        if (socket->type == Sn_MR_TCP && socket->domain != 0 && getSn_SR(socket->fileno) == SOCK_CLOSED) {
+            ret |= MP_STREAM_POLL_HUP;
         }
         return ret;
     } else {
@@ -1134,6 +1215,12 @@ static mp_obj_t wiznet5k_ifconfig(size_t n_args, const mp_obj_t *args) {
         netutils_parse_ipv4_addr(items[3], netinfo.dns, NETUTILS_BIG);
 
         ctlnetwork(CN_SET_NETINFO, &netinfo);
+        // Keep the driver's copy in step too: DNS lookups use its server, and
+        // active(True) puts it back after resetting the chip.
+        memcpy(self->netinfo.ip, netinfo.ip, sizeof(netinfo.ip));
+        memcpy(self->netinfo.sn, netinfo.sn, sizeof(netinfo.sn));
+        memcpy(self->netinfo.gw, netinfo.gw, sizeof(netinfo.gw));
+        memcpy(self->netinfo.dns, netinfo.dns, sizeof(netinfo.dns));
         return mp_const_none;
     }
 }
