@@ -14,11 +14,7 @@ except OverflowError:
     print("SKIP")
     raise SystemExit
 
-try:
-    import unittest
-except MemoryError:
-    print("SKIP-TOO-LARGE")  # some small boards can't fit unittest in RAM
-    raise SystemExit
+import unittest
 
 # MicroPython V2.0 will enforce bounds on bytearray setters, V1.x truncates
 is_v2 = hasattr(sys.implementation, "_v2")

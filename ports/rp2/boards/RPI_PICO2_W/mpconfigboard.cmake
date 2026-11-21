@@ -5,6 +5,8 @@ set(PICO_BOARD "pico2_w")
 # To change the gpio count for QFN-80
 # set(PICO_NUM_GPIOS 48)
 
+set(PICO_HARD_FLOAT_ABI ON)
+
 set(MICROPY_PY_LWIP ON)
 set(MICROPY_PY_NETWORK_CYW43 ON)
 

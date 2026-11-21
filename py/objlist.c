@@ -229,8 +229,10 @@ mp_obj_t mp_obj_list_append(mp_obj_t self_in, mp_obj_t arg) {
     mp_check_self(mp_obj_is_type(self_in, &mp_type_list));
     mp_obj_list_t *self = MP_OBJ_TO_PTR(self_in);
     if (self->len >= self->alloc) {
-        self->items = m_renew(mp_obj_t, self->items, self->alloc, self->alloc * 2);
-        self->alloc *= 2;
+        // Progression: 4 8 12 20 32 48 72 108 164 248 372 ...
+        size_t new_alloc = (self->alloc + self->alloc / 2 + 3) & ~3;
+        self->items = m_renew(mp_obj_t, self->items, self->alloc, new_alloc);
+        self->alloc = new_alloc;
         mp_seq_clear(self->items, self->len + 1, self->alloc, sizeof(*self->items));
     }
     self->items[self->len++] = arg;
