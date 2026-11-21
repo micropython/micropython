@@ -1,0 +1,25 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "deploy_options": {
+        "flash_offset": "0x2000"
+    },
+    "docs": "https://docs.waveshare.com/ESP32-P4-WIFI6-Touch-LCD-4.3",
+    "features": [
+        "BLE",
+        "WiFi",
+        "External Flash",
+        "External RAM",
+        "SDCard"
+    ],
+    "images": [],
+    "mcu": "esp32p4",
+    "product": "ESP32-P4-WIFI6-Touch-LCD-4.3",
+    "thumbnail": "",
+    "url": "https://www.waveshare.com/esp32-p4-wifi6-touch-lcd-4.3.htm",
+    "variants": {
+        "REV3": "ESP32-P4 Rev3.x silicon (250 MHz PSRAM); default firmware is for Rev1.x"
+    },
+    "vendor": "Waveshare"
+}
