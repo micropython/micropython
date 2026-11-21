@@ -1,0 +1,24 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "Battery Charging",
+        "Display",
+        "Dual-core",
+        "External Flash",
+        "USB-C"
+    ],
+    "images": [
+        "rp2350-lcd-1.28.jpg"
+    ],
+    "mcu": "rp2350",
+    "product": "RP2350-LCD-1.28",
+    "thumbnail": "",
+    "url": "https://www.waveshare.com/rp2350-lcd-1.28.htm",
+    "variants": {
+        "RISCV": "RISC-V CPU mode"
+    },
+    "vendor": "Waveshare"
+}
