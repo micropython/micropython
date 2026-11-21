@@ -180,7 +180,7 @@ static mp_obj_t machine_pin_obj_init_helper(const machine_pin_obj_t *self, size_
     // reset the pin to digital if this is a mode-setting init (grab it back from ADC)
     if (args[ARG_mode].u_obj != mp_const_none) {
         if (rtc_gpio_is_valid_gpio(index)) {
-            #if !(CONFIG_IDF_TARGET_ESP32C2 || CONFIG_IDF_TARGET_ESP32C3 || CONFIG_IDF_TARGET_ESP32C5 || CONFIG_IDF_TARGET_ESP32C6 || CONFIG_IDF_TARGET_ESP32H2)
+            #if !(CONFIG_IDF_TARGET_ESP32C2 || CONFIG_IDF_TARGET_ESP32C3 || CONFIG_IDF_TARGET_ESP32C5 || CONFIG_IDF_TARGET_ESP32C6 || CONFIG_IDF_TARGET_ESP32C61 || CONFIG_IDF_TARGET_ESP32H2)
             rtc_gpio_deinit(index);
             #endif
         }
@@ -196,7 +196,7 @@ static mp_obj_t machine_pin_obj_init_helper(const machine_pin_obj_t *self, size_
         CLEAR_PERI_REG_MASK(USB_SERIAL_JTAG_CONF0_REG, USB_SERIAL_JTAG_USB_PAD_ENABLE);
     }
     #endif
-    #if CONFIG_IDF_TARGET_ESP32C6 && !MICROPY_HW_ESP_USB_SERIAL_JTAG
+    #if (CONFIG_IDF_TARGET_ESP32C6 || CONFIG_IDF_TARGET_ESP32C61) && !MICROPY_HW_ESP_USB_SERIAL_JTAG
     if (index == 12 || index == 13) {
         CLEAR_PERI_REG_MASK(USB_SERIAL_JTAG_CONF0_REG, USB_SERIAL_JTAG_USB_PAD_ENABLE);
     }
@@ -488,7 +488,11 @@ static mp_obj_t machine_pin_irq_call(mp_obj_t self_in, size_t n_args, size_t n_k
 static mp_obj_t machine_pin_irq_trigger(size_t n_args, const mp_obj_t *args) {
     machine_pin_irq_obj_t *self = args[0];
     gpio_num_t index = PIN_OBJ_PTR_INDEX(PIN_OBJ_PTR_FROM_IRQ_OBJ_PTR(self));
+    #if CONFIG_IDF_TARGET_ESP32C61
+    uint32_t orig_trig = GPIO.pinn[index].pinn_int_type;
+    #else
     uint32_t orig_trig = GPIO.pin[index].int_type;
+    #endif
     if (n_args == 2) {
         // set trigger
         gpio_set_intr_type(index, mp_obj_get_int(args[1]));
