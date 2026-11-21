@@ -484,6 +484,7 @@ if (MICROPY_PY_NETWORK_WIZNET5K)
         ${MICROPY_DIR}/lib/wiznet5k/Ethernet/W5200/w5200.c
         ${MICROPY_DIR}/lib/wiznet5k/Ethernet/W5300/w5300.c
         ${MICROPY_DIR}/lib/wiznet5k/Ethernet/W5500/w5500.c
+        ${MICROPY_DIR}/lib/wiznet5k/Ethernet/W6100/w6100.c
         ${MICROPY_DIR}/lib/wiznet5k/Ethernet/socket.c
         ${MICROPY_DIR}/lib/wiznet5k/Ethernet/wizchip_conf.c
         ${MICROPY_DIR}/lib/wiznet5k/Internet/DNS/dns.c
