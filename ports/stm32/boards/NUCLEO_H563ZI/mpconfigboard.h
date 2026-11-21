@@ -39,6 +39,14 @@
 // There is an external 32kHz oscillator
 #define MICROPY_HW_RTC_USE_LSE              (1)
 
+// CAN config - external CAN transceivers are required.
+#define MICROPY_HW_CAN1_NAME                "FDCAN1"
+#define MICROPY_HW_CAN1_TX                  (pin_D1)
+#define MICROPY_HW_CAN1_RX                  (pin_D0)
+#define MICROPY_HW_CAN2_NAME                "FDCAN2"
+#define MICROPY_HW_CAN2_TX                  (pin_B13)
+#define MICROPY_HW_CAN2_RX                  (pin_B12)
+
 // UART config
 #define MICROPY_HW_UART1_TX                 (pin_B6) // SB14: Arduino Connector CN10-Pin14 (D1)
 #define MICROPY_HW_UART1_RX                 (pin_B7) // SB63: Arduino Connector CN10-Pin16 (D0)
