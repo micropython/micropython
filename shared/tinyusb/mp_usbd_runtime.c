@@ -403,13 +403,13 @@ usbd_class_driver_t const *usbd_app_driver_get_cb(uint8_t *driver_count) {
 
 // To support soft reset clearing USB runtime state, we manage three TinyUSB states:
 //
-// - "Not initialised" - tusb_inited() returns false, no USB at all). Only way
+// - "Not initialised" - tud_inited() returns false, no USB at all). Only way
 //   back to this state is hard reset.
 //
-// - "Activated" - tusb_inited() returns true, USB device "connected" at device
+// - "Activated" - tud_inited() returns true, USB device "connected" at device
 //   end and available to host.
 //
-// - "Deactivated" - tusb_inited() returns true, but USB device "disconnected"
+// - "Deactivated" - tud_inited() returns true, but USB device "disconnected"
 //   at device end and host can't see it.
 
 
@@ -464,7 +464,7 @@ void mp_usbd_deinit(void) {
 // Thin wrapper around tud_disconnect() that tells TinyUSB all endpoints
 // have stalled, to prevent it getting confused if a transfer is in progress.
 static void mp_usbd_disconnect(mp_obj_usb_device_t *usbd) {
-    if (!tusb_inited()) {
+    if (!tud_inited()) {
         return; // TinyUSB hasn't initialised
     }
 

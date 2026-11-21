@@ -102,6 +102,7 @@ the following libraries.
    cryptolib.rst
    deflate.rst
    framebuf.rst
+   jpeg.rst
    machine.rst
    micropython.rst
    neopixel.rst

@@ -214,6 +214,9 @@ SHARED_SRC_C += $(addprefix shared/,\
 	tinyusb/mp_usbd_cdc.c \
 	tinyusb/mp_usbd_descriptor.c \
 	tinyusb/mp_usbd_runtime.c \
+	tinyusb/mp_usbh.c \
+	tinyusb/mp_usbh_dwc2.c \
+	tinyusb/mp_usbh_uvc.c \
 	)
 
 ifeq ($(MICROPY_FLOAT_IMPL),double)
@@ -253,6 +256,8 @@ SRC_C += \
 	mphalport.c \
 	msc_disk.c \
 	mpnetworkport.c \
+	mpusbhostport.c \
+	jpeg.c \
 	mpthreadport.c \
 	irq.c \
 	pendsv.c \

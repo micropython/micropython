@@ -68,6 +68,14 @@
 #define MICROPY_HW_USB_HS_IN_FS                 (1)
 #define MICROPY_HW_USB_MAIN_DEV                 (USB_PHY_HS_ID)
 
+// USB host on the USB-A port CN17 (USB2_OTG_HS), with PB9 enabling its VBUS switch.
+#define MICROPY_HW_USB_HOST                     (1)
+#define MICROPY_HW_USB_HOST_RHPORT              (1)
+#define MICROPY_HW_USB_HOST_VBUS_PIN            (pyb_pin_USB2_PWR_EN)
+
+// The jpeg module, using the hardware JPEG codec.
+#define MICROPY_PY_JPEG                         (1)
+
 /******************************************************************************/
 // Bootloader configuration
 

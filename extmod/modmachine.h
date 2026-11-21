@@ -252,6 +252,10 @@ extern const mp_obj_dict_t mp_machine_spi_locals_dict;
 extern const mp_obj_type_t machine_usb_device_type;
 #endif
 
+#if MICROPY_HW_USB_HOST
+extern const mp_obj_type_t machine_usb_host_type;
+#endif
+
 #if defined(MICROPY_MACHINE_MEM_GET_READ_ADDR)
 uintptr_t MICROPY_MACHINE_MEM_GET_READ_ADDR(mp_obj_t addr_o, uint align);
 #endif
