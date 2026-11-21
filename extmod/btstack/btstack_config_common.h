@@ -8,9 +8,34 @@
 // #define ENABLE_CLASSIC
 #define ENABLE_L2CAP_LE_CREDIT_BASED_FLOW_CONTROL_MODE
 #define ENABLE_PRINTF_HEXDUMP
-// #define ENABLE_LOG_INFO
-// #define ENABLE_LOG_DEBUG
+
+/* BTstack HCI Logging
+ * - see also "lib/btstack/src/hci_dump.h"
+ */
+#define ENABLE_LOG_INFO
+#define ENABLE_LOG_DEBUG
 #define ENABLE_LOG_ERROR
+// Dump internal BTstack events
+// #define ENABLE_LOG_BTSTACK_EVENTS
+
+
+// The GATT Client starts pairing on insufficient-security errors
+// and retries the request.
+#define ENABLE_GATT_CLIENT_PAIRING
+
+// Enable LE Secure connections
+//
+// If not defined the 'LE Secure connections' flag will not be set.
+// and instead it will be reset by
+// 'void sm_set_authentication_requirements(uint8_t auth_req)'.
+/*
+ * 261120
+ * sm_ec_generate_new_key() will stick in state "EC_KEY_GENERATION_ACTIVE"
+ */
+// #define ENABLE_LE_SECURE_CONNECTIONS
+
+// needed for ENABLE_LE_SECURE_CONNECTIONS
+// #define HAVE_MBEDTLS_ECC_P256
 
 // BTstack configuration. buffers, sizes, ...
 #define HCI_ACL_PAYLOAD_SIZE 1021

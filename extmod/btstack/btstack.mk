@@ -32,9 +32,11 @@ INC += -I$(BTSTACK_DIR)/3rd-party/bluedroid/encoder/include
 INC += -I$(BTSTACK_DIR)/3rd-party/md5
 INC += -I$(BTSTACK_DIR)/3rd-party/yxml
 
+# 261118 yasnim24: TODO	
 SRC_BTSTACK_C = \
 	$(addprefix lib/btstack/src/, $(SRC_FILES)) \
-	$(addprefix lib/btstack/src/ble/, $(filter-out %_tlv.c, $(SRC_BLE_FILES))) \
+	$(addprefix lib/btstack/src/ble/, $(SRC_BLE_FILES)) \
+	lib/btstack/platform/posix/le_device_db_fs.c \
 	lib/btstack/platform/embedded/hci_dump_embedded_stdout.c \
 
 ifeq ($(MICROPY_BLUETOOTH_BTSTACK_USB),1)

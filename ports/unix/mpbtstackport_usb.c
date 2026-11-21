@@ -54,9 +54,15 @@
 void mp_bluetooth_btstack_port_init_usb(void) {
 
     #if MICROPY_BLUETOOTH_BTSTACK_HCI_DUMP
+
     // log into file using HCI_DUMP_PACKETLOGGER format
     const char *pklg_path = "/tmp/hci_dump.pklg";
     hci_dump_posix_fs_open(pklg_path, HCI_DUMP_PACKETLOGGER);
+
+    //// log into file using HCI_DUMP_BTSNOOP format
+    // const char *pklg_path = "/tmp/hci_dump.btsnoop";
+    // hci_dump_posix_fs_open(pklg_path, HCI_DUMP_BTSNOOP);
+
     const hci_dump_t *hci_dump_impl = hci_dump_posix_fs_get_instance();
     hci_dump_init(hci_dump_impl);
     printf("Packet Log: %s\n", pklg_path);

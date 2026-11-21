@@ -28,6 +28,10 @@
 
 #include "py/mpconfig.h"
 
+// TODO: 261120
+#include "lib/mbedtls/library/common.h"
+#define MBEDTLS_MD_CAN_SHA256
+
 // If you want to debug MBEDTLS uncomment the following and
 // pass "3" to mbedtls_debug_set_threshold in socket_new.
 // #define MBEDTLS_DEBUG_C
