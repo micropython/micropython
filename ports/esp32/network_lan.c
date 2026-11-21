@@ -61,6 +61,53 @@ static bool mdns_initialised = false;
 #include "esp_eth_phy_lan867x.h"
 #endif
 
+// Default network.LAN() arguments, where -1 means no pin or the IDF default.
+// MICROPY_HW_ETH_PHY_ADDR and MICROPY_HW_ETH_PHY_TYPE have no fallback.
+#ifndef MICROPY_HW_ETH_MDC
+#define MICROPY_HW_ETH_MDC (-1)
+#endif
+#ifndef MICROPY_HW_ETH_MDIO
+#define MICROPY_HW_ETH_MDIO (-1)
+#endif
+#ifndef MICROPY_HW_ETH_RESET
+#define MICROPY_HW_ETH_RESET (-1)
+#endif
+#ifndef MICROPY_HW_ETH_POWER
+#define MICROPY_HW_ETH_POWER (-1)
+#endif
+#ifndef MICROPY_HW_ETH_REF_CLK_MODE
+#define MICROPY_HW_ETH_REF_CLK_MODE (-1)
+#endif
+#ifndef MICROPY_HW_ETH_REF_CLK
+#define MICROPY_HW_ETH_REF_CLK (-1)
+#endif
+#if CONFIG_IDF_TARGET_ESP32P4
+#ifndef MICROPY_HW_ETH_RMII_CRS_DV
+#define MICROPY_HW_ETH_RMII_CRS_DV (-1)
+#endif
+#ifndef MICROPY_HW_ETH_RMII_RXD0
+#define MICROPY_HW_ETH_RMII_RXD0 (-1)
+#endif
+#ifndef MICROPY_HW_ETH_RMII_RXD1
+#define MICROPY_HW_ETH_RMII_RXD1 (-1)
+#endif
+#ifndef MICROPY_HW_ETH_RMII_TX_EN
+#define MICROPY_HW_ETH_RMII_TX_EN (-1)
+#endif
+#ifndef MICROPY_HW_ETH_RMII_TXD0
+#define MICROPY_HW_ETH_RMII_TXD0 (-1)
+#endif
+#ifndef MICROPY_HW_ETH_RMII_TXD1
+#define MICROPY_HW_ETH_RMII_TXD1 (-1)
+#endif
+#ifndef MICROPY_HW_ETH_RMII_CLK_IN
+#define MICROPY_HW_ETH_RMII_CLK_IN (-1)
+#endif
+#ifndef MICROPY_HW_ETH_RMII_CLK_OUT
+#define MICROPY_HW_ETH_RMII_CLK_OUT (-1)
+#endif
+#endif
+
 typedef struct _lan_if_obj_t {
     base_if_obj_t base;
     bool initialized;
@@ -146,6 +193,12 @@ static void set_mac_address(lan_if_obj_t *self, uint8_t *mac, size_t len) {
     }
 }
 
+// Returns the GPIO number given by a pin argument of network.LAN(), or
+// default_pin if the argument is None (not given).
+static MP_NOINLINE int8_t get_pin_arg(mp_obj_t pin_in, int8_t default_pin) {
+    return pin_in == mp_const_none ? default_pin : machine_pin_get_id(pin_in);
+}
+
 static mp_obj_t get_lan(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     lan_if_obj_t *self = &lan_obj;
 
@@ -166,12 +219,20 @@ static mp_obj_t get_lan(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
         { MP_QSTR_mdio,         MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_reset,        MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_power,        MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        #ifdef MICROPY_HW_ETH_PHY_ADDR
+        { MP_QSTR_phy_addr,     MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = MICROPY_HW_ETH_PHY_ADDR} },
+        #else
         { MP_QSTR_phy_addr,     MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_INT },
+        #endif
+        #ifdef MICROPY_HW_ETH_PHY_TYPE
+        { MP_QSTR_phy_type,     MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = MICROPY_HW_ETH_PHY_TYPE} },
+        #else
         { MP_QSTR_phy_type,     MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_INT },
+        #endif
         { MP_QSTR_spi,          MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_cs,           MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_int,          MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
-        { MP_QSTR_ref_clk_mode, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
+        { MP_QSTR_ref_clk_mode, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = MICROPY_HW_ETH_REF_CLK_MODE} },
         { MP_QSTR_ref_clk,      MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
         #if CONFIG_IDF_TARGET_ESP32P4
         { MP_QSTR_crs_dv,       MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
@@ -194,23 +255,21 @@ static mp_obj_t get_lan(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
         }
     }
 
-    #define GET_PIN(XXX) args[XXX].u_obj == mp_const_none ? -1 : machine_pin_get_id(args[XXX].u_obj);
-
-    self->mdc_pin = GET_PIN(ARG_mdc);
-    self->mdio_pin = GET_PIN(ARG_mdio);
-    self->phy_reset_pin = GET_PIN(ARG_reset);
-    self->phy_power_pin = GET_PIN(ARG_power);
-    self->phy_cs_pin = GET_PIN(ARG_cs);
-    self->phy_int_pin = GET_PIN(ARG_int);
+    self->mdc_pin = get_pin_arg(args[ARG_mdc].u_obj, MICROPY_HW_ETH_MDC);
+    self->mdio_pin = get_pin_arg(args[ARG_mdio].u_obj, MICROPY_HW_ETH_MDIO);
+    self->phy_reset_pin = get_pin_arg(args[ARG_reset].u_obj, MICROPY_HW_ETH_RESET);
+    self->phy_power_pin = get_pin_arg(args[ARG_power].u_obj, MICROPY_HW_ETH_POWER);
+    self->phy_cs_pin = get_pin_arg(args[ARG_cs].u_obj, -1);
+    self->phy_int_pin = get_pin_arg(args[ARG_int].u_obj, -1);
     #if CONFIG_IDF_TARGET_ESP32P4
-    self->crs_dv_pin = GET_PIN(ARG_crs_dv);
-    self->rxd0_pin = GET_PIN(ARG_rxd0);
-    self->rxd1_pin = GET_PIN(ARG_rxd1);
-    self->tx_en_pin = GET_PIN(ARG_tx_en);
-    self->txd0_pin = GET_PIN(ARG_txd0);
-    self->txd1_pin = GET_PIN(ARG_txd1);
-    self->clk_in_pin = GET_PIN(ARG_clk_in);
-    self->clk_out_pin = GET_PIN(ARG_clk_out);
+    self->crs_dv_pin = get_pin_arg(args[ARG_crs_dv].u_obj, MICROPY_HW_ETH_RMII_CRS_DV);
+    self->rxd0_pin = get_pin_arg(args[ARG_rxd0].u_obj, MICROPY_HW_ETH_RMII_RXD0);
+    self->rxd1_pin = get_pin_arg(args[ARG_rxd1].u_obj, MICROPY_HW_ETH_RMII_RXD1);
+    self->tx_en_pin = get_pin_arg(args[ARG_tx_en].u_obj, MICROPY_HW_ETH_RMII_TX_EN);
+    self->txd0_pin = get_pin_arg(args[ARG_txd0].u_obj, MICROPY_HW_ETH_RMII_TXD0);
+    self->txd1_pin = get_pin_arg(args[ARG_txd1].u_obj, MICROPY_HW_ETH_RMII_TXD1);
+    self->clk_in_pin = get_pin_arg(args[ARG_clk_in].u_obj, MICROPY_HW_ETH_RMII_CLK_IN);
+    self->clk_out_pin = get_pin_arg(args[ARG_clk_out].u_obj, MICROPY_HW_ETH_RMII_CLK_OUT);
     #endif
 
     if (args[ARG_phy_addr].u_int < 0x00 || args[ARG_phy_addr].u_int > 0x1f) {
@@ -262,8 +321,9 @@ static mp_obj_t get_lan(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
         esp32_config.clock_config.rmii.clock_mode =
             args[ARG_ref_clk_mode].u_int == GPIO_MODE_INPUT ? EMAC_CLK_EXT_IN : EMAC_CLK_OUT;
     }
-    if (args[ARG_ref_clk].u_obj != mp_const_none) {
-        esp32_config.clock_config.rmii.clock_gpio = machine_pin_get_id(args[ARG_ref_clk].u_obj);
+    int8_t ref_clk_pin = get_pin_arg(args[ARG_ref_clk].u_obj, MICROPY_HW_ETH_REF_CLK);
+    if (ref_clk_pin != -1) {
+        esp32_config.clock_config.rmii.clock_gpio = ref_clk_pin;
     }
     #endif
 
