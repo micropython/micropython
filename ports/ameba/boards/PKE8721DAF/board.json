@@ -1,0 +1,20 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "BLE",
+        "External Flash",
+        "USB",
+        "WiFi"
+    ],
+    "images": [
+        "PKE8721DAF.jpg"
+    ],
+    "mcu": "rtl8721daf",
+    "product": "PKE8721DAF",
+    "thumbnail": "",
+    "url": "https://aiot.realmcu.com/",
+    "vendor": "Realsil"
+}

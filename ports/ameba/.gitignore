@@ -1,0 +1,8 @@
+# Build output (created by ameba.py / the Makefile).
+/build_*/
+
+# Per-board working copies synced from boards/<BOARD>/ by the Makefile's
+# _board_sync target on every build.  The authoritative source is
+# boards/<BOARD>/prj.conf and each board's mpconfigboard.cmake.
+/prj.conf
+/soc_info.json
