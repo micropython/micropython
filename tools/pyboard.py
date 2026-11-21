@@ -239,7 +239,8 @@ class ProcessPtyToTerminal:
             stderr=subprocess.STDOUT,
         )
         pty_line = self.subp.stdout.readline().decode("utf-8")
-        m = re.search(r"/dev/pts/[0-9]+", pty_line)
+        # Linux PTYs are /dev/pts/N, macOS PTYs are /dev/ttysN.
+        m = re.search(r"/dev/(?:pts/|ttys)[0-9]+", pty_line)
         if not m:
             print("Error: unable to find PTY device in startup line:", pty_line)
             self.close()
