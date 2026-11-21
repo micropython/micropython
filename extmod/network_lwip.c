@@ -39,6 +39,7 @@
 
 #include "lwip/netif.h"
 #include "lwip/timeouts.h"
+#include "lwip/autoip.h"
 #include "lwip/dns.h"
 #include "lwip/dhcp.h"
 #include "lwip/nd6.h"
@@ -191,6 +192,11 @@ mp_obj_t mod_network_nic_ipconfig(struct netif *netif, size_t n_args, const mp_o
             case MP_QSTR_has_dhcp4: {
                 return mp_obj_new_bool(dhcp_supplied_address(netif));
             }
+            #if LWIP_AUTOIP
+            case MP_QSTR_has_autoconf4: {
+                return mp_obj_new_bool(autoip_supplied_address(netif));
+            }
+            #endif
             #if LWIP_IPV6_DHCP6
             case MP_QSTR_dhcp6: {
                 struct dhcp6 *dhcp = netif_dhcp6_data(netif);
@@ -268,6 +274,11 @@ mp_obj_t mod_network_nic_ipconfig(struct netif *netif, size_t n_args, const mp_o
                                 dhcp_renew(netif);
                             } else {
                                 dhcp_release_and_stop(netif);
+                                #if LWIP_AUTOIP
+                                if (autoip_supplied_address(netif)) {
+                                    autoip_stop(netif);
+                                }
+                                #endif
                                 dhcp_start(netif);
                             }
                         } else {
@@ -275,6 +286,12 @@ mp_obj_t mod_network_nic_ipconfig(struct netif *netif, size_t n_args, const mp_o
                         }
                         break;
                     }
+                    #if LWIP_AUTOIP
+                    case MP_QSTR_autoconf4: {
+                        dhcp_release_and_stop(netif);
+                        autoip_start(netif);
+                    }
+                    #endif
                     #if LWIP_IPV6_DHCP6
                     case MP_QSTR_dhcp6: {
                         dhcp6_disable(netif);
