@@ -137,6 +137,24 @@ jobs:
       if: failure()
       run: tests/run-tests.py --print-failures
 
+  coverage_gc_bitmap:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v7
+    - uses: actions/setup-python@v7
+      # See corresponding comment in the coverage job.
+      with:
+        python-version: '3.11'
+    - name: Install packages
+      run: tools/ci.sh unix_coverage_setup
+    - name: Build
+      run: tools/ci.sh unix_coverage_gc_bitmap_build
+    - name: Run main test suite
+      run: tools/ci.sh unix_coverage_gc_bitmap_run_tests
+    - name: Print failures
+      if: failure()
+      run: tests/run-tests.py --print-failures
+
   coverage_32bit:
     runs-on: ubuntu-latest
     steps:

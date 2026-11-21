@@ -176,3 +176,93 @@ can have different properties:
 - *TAIL:* In the tail of a chain of blocks
 - *MARK :* Marked head block
 - *FTB(finaliser table byte):* If set, then the block has a finaliser
+
+Garbage collector implementations
+---------------------------------
+
+MicroPython has two implementations of the garbage collector, selected at
+compile time with ``MICROPY_GC_IMPL``. Both provide the same API (``py/gc.h``)
+and follow the same rules described in :ref:`python_memory_from_c`, so the
+choice doesn't affect any other C code, C modules or Python code:
+
+- the collector is conservative: every word of every root and of every
+  allocated block (except blocks allocated as containing no GC pointers) is
+  treated as a possible pointer;
+- only a pointer to the first block of an allocation keeps it alive;
+- objects never move, so their addresses can be given to hardware (e.g. DMA) or
+  C libraries, and can be read from interrupt handlers.
+
+``MICROPY_GC_IMPL_CLASSIC`` (``py/gc.c``, the default)
+    Keeps the 2-bit state of each block (free, head, tail or marked head) packed
+    four to a byte in the allocation table, and walks that table one block at a
+    time. It has the smallest code size, and is the best choice for small heaps
+    and boards with little flash.
+
+``MICROPY_GC_IMPL_BITMAP`` (``py/gc_bitmap.c``)
+    Stores the same 2-bit state, but as two bit tables ("planes") holding one
+    bit per block, with the two words for each word-sized group of blocks next
+    to each other in memory. That lets almost every operation handle 32 (or 64)
+    blocks at once using word operations such as count-trailing-zeros. The
+    tables use exactly the same amount of RAM as the classic GC's. It is
+    designed for large heaps, such as several megabytes of external RAM, where
+    the classic GC's block-at-a-time loops become slow. Compared to the classic
+    GC:
+
+    - Finding the length of an allocation, sweeping, and computing
+      ``gc.mem_free()`` take time proportional to the number of words in the
+      table rather than the number of blocks.
+    - Allocation searches for a free run of blocks a word at a time, however
+      fragmented the heap is, and remembers for each size class (1, 2, 4, ...
+      128 or more blocks) where the first free run of that size starts. Large
+      allocations in a big, fragmented heap no longer rescan the whole heap
+      each time. Allocations are still placed first-fit, at the lowest address
+      where they fit, exactly as with the classic GC.
+    - The mark phase borrows the largest free run of the heap as its mark
+      stack, and scans large objects (such as big lists and dicts) a chunk at a
+      time, so deep or wide object graphs don't overflow the small static mark
+      stack (``MICROPY_ALLOC_GC_STACK_SIZE``). With the classic GC, an
+      overflow forces a rescan of every marked object in the heap, which can
+      make a collection take 10 to 100 times longer.
+    - While marking, it prefetches the next object on the mark stack. When the
+      heap is in slow memory such as PSRAM, marking is limited by memory
+      latency, and this hides much of it.
+    - Allocations that contain no GC pointers (see
+      ``MICROPY_GC_ENABLE_CONTAINS_NO_GC_POINTERS``) are marked without being
+      pushed onto the mark stack or scanned.
+    - With a split heap, areas can be given attributes; see below.
+
+    The cost is about 1.8 kB more code on Thumb-2. A small amount of extra
+    static RAM is also used, mainly because its mark stack entries are
+    pointers rather than block numbers.
+
+To use the bitmap GC, a port or board sets::
+
+    #define MICROPY_GC_IMPL (MICROPY_GC_IMPL_BITMAP)
+
+Some ports place ``py/gc.o`` in fast RAM using their linker script. Such ports
+should also place ``py/gc_bitmap.o`` there when they use the bitmap GC.
+
+Heap areas and placement
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+With ``MICROPY_GC_SPLIT_HEAP`` enabled, a port can add extra memory areas to the
+heap with ``gc_add(start, end)``. A port can instead use
+``gc_add_ex(start, end, area_flags)`` to describe the memory, where
+``area_flags`` is a combination of:
+
+``GC_AREA_FLAG_EXTERNAL``
+    The area is slower or external memory, such as PSRAM or SDRAM.
+
+The bitmap GC uses these flags to decide where each allocation goes:
+
+- Allocations of at least ``MICROPY_GC_EXTERNAL_ALLOC_THRESHOLD`` bytes (1024
+  by default) that contain no GC pointers, such as the data of a large
+  ``bytearray``, ``bytes`` or ``array``, are placed in external areas first,
+  and only go in other areas when the external areas are full.
+- All other allocations, such as objects, lists and dicts, are placed in the
+  other areas first, and only go in external areas when those are full.
+
+This keeps the objects that the mark phase must scan, and that Python code
+accesses most often, in fast internal RAM. Large data buffers go to external
+RAM, where they don't fragment internal RAM. The classic GC ignores the area
+flags and fills the areas in the order they were added.
