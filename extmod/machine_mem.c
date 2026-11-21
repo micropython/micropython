@@ -26,6 +26,7 @@
 
 #include "py/runtime.h"
 #include "py/objarray.h"
+#include "py/smallint.h"
 #include "extmod/modmachine.h"
 
 #if MICROPY_PY_MACHINE_MEMX
@@ -43,7 +44,7 @@
 static uintptr_t machine_mem_get_addr(mp_obj_t addr_o, uint align) {
     uintptr_t addr = mp_obj_get_int_truncated(addr_o);
     if ((addr & (align - 1)) != 0) {
-        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("address %08x is not aligned to %d bytes"), addr, align);
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("address %08p is not aligned to %d bytes"), addr, align);
     }
     return addr;
 }
@@ -70,6 +71,16 @@ static mp_obj_t machine_mem_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t va
     } else if (value == MP_OBJ_SENTINEL) {
         // load
         uintptr_t addr = MICROPY_MACHINE_MEM_GET_READ_ADDR(index, self->elem_size);
+        #if MICROPY_PY_MACHINE_MEM64
+        if (self->elem_size == 8) {
+            uint64_t val64 = (*(volatile uint64_t *)addr);
+            if (val64 <= (uint64_t)MP_SMALL_INT_MAX) {
+                // Avoid allocating a big int for small values.
+                return MP_OBJ_NEW_SMALL_INT((mp_int_t)val64);
+            }
+            return mp_obj_new_int_from_ull(val64);
+        }
+        #endif
         uint32_t val;
         switch (self->elem_size) {
             case 1:
@@ -86,6 +97,14 @@ static mp_obj_t machine_mem_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t va
     } else {
         // store
         uintptr_t addr = MICROPY_MACHINE_MEM_GET_WRITE_ADDR(index, self->elem_size);
+        #if MICROPY_PY_MACHINE_MEM64
+        if (self->elem_size == 8) {
+            // Convert via a local so the store to memory is a single 64-bit access.
+            uint64_t val64 = (uint64_t)mp_obj_get_ll(value);
+            (*(volatile uint64_t *)addr) = val64;
+            return mp_const_none;
+        }
+        #endif
         uint32_t val = mp_obj_get_int_truncated(value);
         switch (self->elem_size) {
             case 1:
@@ -113,6 +132,9 @@ MP_DEFINE_CONST_OBJ_TYPE(
 const machine_mem_obj_t machine_mem8_obj = {{&machine_mem_type}, 1};
 const machine_mem_obj_t machine_mem16_obj = {{&machine_mem_type}, 2};
 const machine_mem_obj_t machine_mem32_obj = {{&machine_mem_type}, 4};
+#if MICROPY_PY_MACHINE_MEM64
+const machine_mem_obj_t machine_mem64_obj = {{&machine_mem_type}, 8};
+#endif
 
 #endif // MICROPY_PY_MACHINE_MEMX
 
