@@ -1,6 +1,8 @@
 /*
  * This file is part of the MicroPython project, http://micropython.org/
  *
+ * SPDX-License-Identifier: MIT
+ *
  * The MIT License (MIT)
  *
  * Copyright (c) 2013, 2014 Damien P. George

@@ -11,6 +11,7 @@
   *
   * <h2><center>&copy; COPYRIGHT 2014 STMicroelectronics</center></h2>
   *
+  * SPDX-License-Identifier: LicenseRef-MCD-ST-Liberty-V2
   * Licensed under MCD-ST Liberty SW License Agreement V2, (the "License");
   * You may not use this file except in compliance with the License.
   * You may obtain a copy of the License at:
