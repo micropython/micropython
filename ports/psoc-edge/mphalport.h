@@ -121,6 +121,8 @@ mp_hal_pin_af_obj_t mp_hal_pin_af_find(mp_hal_pin_obj_t pin, machine_pin_af_sign
 
 void mp_hal_periph_pins_af_resolve_fn_unit(const mp_hal_pin_af_config_t *periph_pins_config, uint8_t pin_num, machine_pin_af_fn_t fn, machine_pin_af_unit_t *fn_unit);
 void mp_hal_periph_pins_af_resolve_pin_af(mp_hal_pin_af_config_t *periph_pins_config, uint8_t pin_num, machine_pin_af_unit_t fn_unit);
+void mp_hal_periph_pins_get_from_kw(mp_map_t *kw_args, const qstr *pin_names, uint8_t num_pins, mp_obj_t *pins);
+machine_pin_af_unit_t mp_hal_periph_pins_af_resolve(mp_hal_pin_af_config_t *periph_pins_config, uint8_t num_pins, machine_pin_af_fn_t fn, machine_pin_af_unit_t fn_unit, const mp_obj_t *pins);
 machine_pin_af_periph_t mp_hal_periph_pins_af_init(const mp_hal_pin_af_config_t *periph_pins_config, uint8_t num_pins);
 
 #endif // MICROPY_INCLUDED_PSOC_EDGE_HALPORT_H

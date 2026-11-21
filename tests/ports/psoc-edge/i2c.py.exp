@@ -1,0 +1,38 @@
+--- instance0 ---
+target: IRQ: PASS
+target: PASS
+--- instance1 ---
+
+***** I2C Master Test *****
+
+Waiting for slave...
+Slave ready
+
+***** Test 1: I2C Scan *****
+
+Found devices: ['0x43']
+Status: PASS
+
+***** Test 2: Write *****
+
+Status: PASS
+
+***** Test 3: Read *****
+
+Received: b'\x01\x02\x03\xdd'
+Status: PASS
+
+***** Test 4: Timeout *****
+
+Created I2C with timeout=10000us (10ms)
+I/O error occurred (device not responding)
+Status: PASS
+
+***** Summary *****
+
+Scan:    PASS
+Write:   PASS
+Read:    PASS
+Timeout: PASS
+
+Overall: PASS
