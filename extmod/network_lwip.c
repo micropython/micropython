@@ -104,12 +104,20 @@ mp_obj_t mod_network_nic_ifconfig(struct netif *netif, size_t n_args, const mp_o
         // Set static IP addresses
         mp_obj_t *items;
         mp_obj_get_array_fixed_n(args[0], 4, &items);
-        netutils_parse_ipv4_addr(items[0], (uint8_t *)&netif->ip_addr, NETUTILS_BIG);
-        netutils_parse_ipv4_addr(items[1], (uint8_t *)&netif->netmask, NETUTILS_BIG);
-        netutils_parse_ipv4_addr(items[2], (uint8_t *)&netif->gw, NETUTILS_BIG);
-        ip_addr_t dns;
+        ip4_addr_t ip_addr;
+        ip4_addr_t netmask;
+        ip4_addr_t gw;
+        ip4_addr_t dns;
+        ip_addr_t dns_addr = { 0 };
+        netutils_parse_ipv4_addr(items[0], (uint8_t *)&ip_addr, NETUTILS_BIG);
+        netutils_parse_ipv4_addr(items[1], (uint8_t *)&netmask, NETUTILS_BIG);
+        netutils_parse_ipv4_addr(items[2], (uint8_t *)&gw, NETUTILS_BIG);
         netutils_parse_ipv4_addr(items[3], (uint8_t *)&dns, NETUTILS_BIG);
-        dns_setserver(0, &dns);
+        ip_addr_copy_from_ip4(netif->ip_addr, ip_addr);
+        ip_addr_copy_from_ip4(netif->netmask, netmask);
+        ip_addr_copy_from_ip4(netif->gw, gw);
+        ip_addr_copy_from_ip4(dns_addr, dns);
+        dns_setserver(0, &dns_addr);
         return mp_const_none;
     }
 }
