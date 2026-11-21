@@ -174,7 +174,7 @@ static void pyb_can_get_bit_timing(mp_uint_t baudrate, mp_uint_t sample_point,
         }
     }
 
-    mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("couldn't match baudrate %u and sample point %u"), baudrate, sample_point / 10);
+    mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("couldn't match baudrate " UINT_FMT " and sample point " UINT_FMT), baudrate, sample_point / 10);
 }
 
 // init(mode, prescaler=100, *, sjw=1, bs1=6, bs2=8)

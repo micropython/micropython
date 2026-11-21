@@ -375,7 +375,7 @@ mp_obj_t mp_unary_op(mp_unary_op_t op, mp_obj_t arg) {
         #else
         mp_raise_msg_varg(&mp_type_TypeError,
             MP_ERROR_TEXT("unsupported type for %q: '%s'"),
-            mp_unary_op_method_name[op], mp_obj_get_type_str(arg));
+            (qstr)mp_unary_op_method_name[op], mp_obj_get_type_str(arg));
         #endif
     }
 }
@@ -682,7 +682,7 @@ unsupported_op:
     #else
     mp_raise_msg_varg(&mp_type_TypeError,
         MP_ERROR_TEXT("unsupported types for %q: '%s', '%s'"),
-        mp_binary_op_method_name[op], mp_obj_get_type_str(lhs), mp_obj_get_type_str(rhs));
+        (qstr)mp_binary_op_method_name[op], mp_obj_get_type_str(lhs), mp_obj_get_type_str(rhs));
     #endif
 
 zero_division:
@@ -1089,7 +1089,7 @@ static mp_obj_t checked_fun_call(mp_obj_t self_in, size_t n_args, size_t n_kw, c
             mp_raise_TypeError(MP_ERROR_TEXT("argument has wrong type"));
             #else
             mp_raise_msg_varg(&mp_type_TypeError,
-                MP_ERROR_TEXT("argument should be a '%q' not a '%q'"), self->type->name, arg0_type->name);
+                MP_ERROR_TEXT("argument should be a '%q' not a '%q'"), (qstr)self->type->name, (qstr)arg0_type->name);
             #endif
         }
     }
@@ -1239,7 +1239,7 @@ void mp_load_method(mp_obj_t base, qstr attr, mp_obj_t *dest) {
         if (mp_obj_is_type(base, &mp_type_type)) {
             mp_raise_msg_varg(&mp_type_AttributeError,
                 MP_ERROR_TEXT("type object '%q' has no attribute '%q'"),
-                ((mp_obj_type_t *)MP_OBJ_TO_PTR(base))->name, attr);
+                (qstr)((mp_obj_type_t *)MP_OBJ_TO_PTR(base))->name, (qstr)attr);
         #if MICROPY_MODULE___ALL__ && MICROPY_ERROR_REPORTING >= MICROPY_ERROR_REPORTING_DETAILED
         } else if (mp_obj_is_type(base, &mp_type_module)) {
             // report errors in __all__ as done by CPython
@@ -1251,7 +1251,7 @@ void mp_load_method(mp_obj_t base, qstr attr, mp_obj_t *dest) {
             }
             mp_raise_msg_varg(&mp_type_AttributeError,
                 MP_ERROR_TEXT("module '%q' has no attribute '%q'"),
-                module_name, attr);
+                (qstr)module_name, (qstr)attr);
         #endif
         } else {
             mp_raise_msg_varg(&mp_type_AttributeError,

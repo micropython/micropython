@@ -97,7 +97,7 @@ static mp_obj_t psoc_edge_qspi_flash_make_new(const mp_obj_type_t *type, size_t 
             qspi_flash_init = true;
         } else {
             DEBUG_printf("psoc_edge_qspi_flash_make_new() failed with error code: 0x%08lx\n", result);
-            mp_raise_msg(&mp_type_Exception, MP_ERROR_TEXT("psoc_edge_qspi_flash_make_new() - QSPI flash init failed!\n"));
+            mp_raise_msg(&mp_type_Exception, MP_ERROR_TEXT("psoc_edge_qspi_flash_make_new() - QSPI flash init failed!"));
         }
     }
 

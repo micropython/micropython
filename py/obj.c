@@ -489,7 +489,7 @@ size_t mp_get_index(const mp_obj_type_t *type, size_t len, mp_obj_t index, bool 
         #else
         mp_raise_msg_varg(&mp_type_TypeError,
             MP_ERROR_TEXT("%q indices must be integers, not %s"),
-            type->name, mp_obj_get_type_str(index));
+            (qstr)type->name, mp_obj_get_type_str(index));
         #endif
     }
 
@@ -507,7 +507,7 @@ size_t mp_get_index(const mp_obj_type_t *type, size_t len, mp_obj_t index, bool 
             #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
             mp_raise_msg(&mp_type_IndexError, MP_ERROR_TEXT("index out of range"));
             #else
-            mp_raise_msg_varg(&mp_type_IndexError, MP_ERROR_TEXT("%q index out of range"), type->name);
+            mp_raise_msg_varg(&mp_type_IndexError, MP_ERROR_TEXT("%q index out of range"), (qstr)type->name);
             #endif
         }
     }

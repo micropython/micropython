@@ -372,7 +372,7 @@ static mp_obj_t pin_obj_init_helper(const machine_pin_obj_t *self, size_t n_args
         af = args[ARG_af].u_int;
     }
     if ((mode == GPIO_MODE_AF_PP || mode == GPIO_MODE_AF_OD) && !IS_GPIO_AF(af)) {
-        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("invalid pin af: %d"), af);
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("invalid pin af: " INT_FMT), af);
     }
     #endif
 

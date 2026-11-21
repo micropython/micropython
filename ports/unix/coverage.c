@@ -1041,6 +1041,16 @@ static mp_obj_t extra_coverage(void) {
             MICROPY_STACK_CHECK == 0 || old_stack_limit == new_stack_limit);
     }
 
+    nlr_buf_t nlr;
+    if (nlr_push(&nlr) == 0) {
+        mp_raise_msg_varg(&mp_type_ValueError,
+            MP_ERROR_TEXT("Escape characters in error strings: \\ \" " INT_FMT "\""),
+            (mp_int_t)42);
+        nlr_pop();
+    } else {
+        mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
+    }
+
     mp_printf(&mp_plat_print, "# end coverage.c\n");
 
     mp_obj_streamtest_t *s = mp_obj_malloc(mp_obj_streamtest_t, &mp_type_stest_fileio);
