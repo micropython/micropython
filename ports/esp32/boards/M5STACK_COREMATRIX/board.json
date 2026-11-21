@@ -1,0 +1,26 @@
+{
+    "deploy": [
+        "../deploy_nativeusb.md"
+    ],
+    "deploy_options": {
+        "flash_offset": "0"
+    },
+    "docs": "https://docs.m5stack.com/en/core/CoreMatrix",
+    "features": [
+        "Battery Charging",
+        "BLE",
+        "Display",
+        "External Flash",
+        "External RAM",
+        "IMU",
+        "microSD",
+        "USB",
+        "USB-C",
+        "WiFi"
+    ],
+    "images": [],
+    "mcu": "esp32c61",
+    "product": "CoreMatrix",
+    "url": "https://shop.m5stack.com/products/m5stack-core-matrix-dev-kit-esp32-c61",
+    "vendor": "M5Stack"
+}
