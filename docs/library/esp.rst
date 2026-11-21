@@ -89,6 +89,31 @@ Functions
     ``osdebug(0)`` enables all available OS debug log messages (in the
     default build configuration this is ``LOG_INFO``).
 
+    ``osdebug(esp.REPL)`` routes the OS debug log messages to the active REPL
+    stream(s) -- USB CDC, USB-JTAG-Serial, the UART REPL or a
+    ``dupterm``/WebREPL terminal -- instead of the default console. ``REPL`` is
+    a constant defined in the ``esp`` module. This is useful on boards where the
+    REPL is on native USB while the default console log output goes to a
+    separate UART. ``osdebug(esp.REPL, level)`` does the same and sets the log
+    level, for example::
+
+        import esp
+        esp.osdebug(esp.REPL, esp.LOG_INFO)
+
+    Calling ``osdebug()`` with any other value stops this redirection.
+    ``esp.REPL`` is available on boards with the REPL on native USB (USB CDC or
+    USB-JTAG-Serial); other builds can enable it with
+    ``MICROPY_PY_ESP_OSDEBUG_REPL``.
+
+    The messages are buffered and written out by the MicroPython task the next
+    time it runs scheduled callbacks, so they can appear with a short delay and
+    are held back while the interpreter is busy in a long-running native call.
+    The buffer holds 2 KiB of messages, or 8 KiB and 16 KiB in builds with
+    ``LOG_DEBUG`` and ``LOG_VERBOSE`` compiled in. If it fills up, messages are
+    dropped and a line reporting how many bytes were lost is printed instead.
+    To debug a hang of the interpreter itself, use the default console
+    (``osdebug(0)``).
+
     ``osdebug(0, level)`` sets the OS debug log message level to the
      specified value. The log levels are defined as constants:
 
@@ -107,7 +132,11 @@ Functions
 
     .. note:: Log output on ESP32 is automatically suspended in "Raw REPL" mode,
               to prevent communications issues. This means OS level logging is never
-              seen when using ``mpremote run`` and similar tools.
+              seen when using ``mpremote run`` and similar tools, unless the script
+              itself routes it to the REPL with ``osdebug(esp.REPL)``. In that
+              case the messages are written out only while a script runs, as
+              part of its output; messages logged between commands are held in
+              the buffer until the next script runs.
 
 .. function:: set_native_code_location(start, length)
 
