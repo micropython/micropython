@@ -33,7 +33,7 @@ This module allows compression and decompression of binary data with the
 Functions
 ---------
 
-.. function:: decompress(data, wbits=15, /)
+.. function:: decompress(data, wbits=15)
 
    Decompresses *data* into a bytes object.
 
@@ -53,7 +53,7 @@ Functions
    If the data to be decompressed requires a larger window size, it will
    fail during decompression.
 
-.. function:: compress(data, wbits=15, /)
+.. function:: compress(data, wbits=15)
 
    Compresses *data* into a bytes object.
 
