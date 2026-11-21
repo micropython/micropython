@@ -279,7 +279,7 @@ static mp_obj_t rp2_flash_writeblocks(size_t n_args, const mp_obj_t *args) {
         mp_uint_t atomic_state = begin_critical_flash_section();
         flash_range_erase(self->flash_base + offset, bufinfo.len);
         end_critical_flash_section(atomic_state);
-        mp_event_handle_nowait();
+        mp_handle_pending(MP_HANDLE_PENDING_CALLBACKS_ONLY);
         // TODO check return value
     } else {
         offset += mp_obj_get_int(args[3]);
@@ -298,7 +298,6 @@ static mp_obj_t rp2_flash_writeblocks(size_t n_args, const mp_obj_t *args) {
         mp_uint_t atomic_state = begin_critical_flash_section();
         flash_range_program(self->flash_base + offset, bufinfo.buf, bufinfo.len);
         end_critical_flash_section(atomic_state);
-        mp_event_handle_nowait();
     }
     #if MICROPY_HW_ENABLE_PSRAM
     else {
@@ -316,11 +315,12 @@ static mp_obj_t rp2_flash_writeblocks(size_t n_args, const mp_obj_t *args) {
                 break;
             }
             bytes_left -= COPY_BUFFER_SIZE_BYTES;
-            mp_event_handle_nowait();
+            mp_handle_pending(MP_HANDLE_PENDING_CALLBACKS_ONLY);
         }
     }
     #endif
 
+    mp_event_handle_nowait();
     // TODO check return value
     return mp_const_none;
 }

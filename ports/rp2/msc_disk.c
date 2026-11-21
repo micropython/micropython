@@ -94,6 +94,9 @@ int32_t tud_msc_read10_cb(uint8_t lun, uint32_t lba, uint32_t offset, void *buff
 // Process data in buffer to disk's storage and return number of written bytes
 int32_t tud_msc_write10_cb(uint8_t lun, uint32_t lba, uint32_t offset, uint8_t *buffer, uint32_t bufsize) {
     uint32_t count = bufsize / BLOCK_SIZE;
+    if (memcmp((void *)(FLASH_MMAP_ADDR + lba * BLOCK_SIZE), buffer, count * BLOCK_SIZE) == 0) {
+        return count * BLOCK_SIZE;
+    }
     uint32_t ints = save_and_disable_interrupts();
     flash_range_erase(FLASH_BASE_ADDR + lba * BLOCK_SIZE, count * BLOCK_SIZE);
     flash_range_program(FLASH_BASE_ADDR + lba * BLOCK_SIZE, buffer, count * BLOCK_SIZE);
