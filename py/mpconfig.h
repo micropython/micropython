@@ -708,6 +708,15 @@ typedef uint64_t mp_uint_t;
 #define MICROPY_OPT_MAP_LOOKUP_CACHE_SIZE (128)
 #endif
 
+// Whether list.sort() and sorted() take the median of the first, middle and
+// last elements as the pivot of each partition, rather than the last element.
+// With the last element alone, a list that is already sorted (or reverse
+// sorted) takes quadratic time to sort.  Costs about 250 bytes of code on
+// arm64.
+#ifndef MICROPY_OPT_LIST_SORT_MEDIAN_PIVOT
+#define MICROPY_OPT_LIST_SORT_MEDIAN_PIVOT (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
+#endif
+
 // Whether to use fast versions of bitwise operations (and, or, xor) when the
 // arguments are both positive.  Increases Thumb2 code size by about 250 bytes.
 #ifndef MICROPY_OPT_MPZ_BITWISE

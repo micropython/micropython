@@ -277,12 +277,32 @@ static mp_obj_t list_pop(size_t n_args, const mp_obj_t *args) {
     return ret;
 }
 
+static inline MP_ALWAYSINLINE mp_obj_t mp_quicksort_key(mp_obj_t key_fn, mp_obj_t x) {
+    return key_fn == MP_OBJ_NULL ? x : mp_call_function_1(key_fn, x);
+}
+
+// Whether key a sorts before key b.
+static inline MP_ALWAYSINLINE bool mp_quicksort_before(mp_obj_t a, mp_obj_t b, mp_obj_t binop_less_result) {
+    return mp_binary_op(MP_BINARY_OP_LESS, a, b) == binop_less_result;
+}
+
+#if MICROPY_OPT_LIST_SORT_MEDIAN_PIVOT
+static inline MP_ALWAYSINLINE void mp_quicksort_swap(mp_obj_t *a, mp_obj_t *b) {
+    mp_obj_t x = *a;
+    *a = *b;
+    *b = x;
+}
+#endif
+
 // "head" is actually the *exclusive lower bound* of the range to sort. That is,
 // the first element to be sorted is `head[1]`, not `head[0]`. Similarly `tail`
 // is an *inclusive upper bound* of the range to sort. That is, the final
 // element to sort is `tail[0]`, not `tail[-1]`.
 //
-// The pivot element is always chosen as `tail[0]`.
+// The pivot element is `tail[0]`.  With MICROPY_OPT_LIST_SORT_MEDIAN_PIVOT,
+// the median of the first, middle and last elements is first swapped into
+// `tail[0]`, so that a range that is already sorted (or reverse sorted) is
+// split near its middle rather than at one end.
 //
 // These unusual choices allows structuring the partitioning
 // process as a do/while loop, which generates smaller code than the equivalent
@@ -292,12 +312,38 @@ static void mp_quicksort(mp_obj_t *head, mp_obj_t *tail, mp_obj_t key_fn, mp_obj
     while (tail - head > 1) { // So long as at least 2 elements remain
         mp_obj_t *h = head;
         mp_obj_t *t = tail;
-        mp_obj_t v = key_fn == MP_OBJ_NULL ? tail[0] : mp_call_function_1(key_fn, tail[0]); // get pivot using key_fn
+        mp_obj_t v;
+        #if MICROPY_OPT_LIST_SORT_MEDIAN_PIVOT
+        if (tail - head > 2) {
+            // At least 3 elements: order the first, middle and last elements
+            // so that the median of the three ends up in tail[0].
+            mp_obj_t *first = head + 1;
+            mp_obj_t *mid = head + (tail - head + 1) / 2;
+            mp_obj_t k_first = mp_quicksort_key(key_fn, *first);
+            mp_obj_t k_mid = mp_quicksort_key(key_fn, *mid);
+            v = mp_quicksort_key(key_fn, *tail);
+            if (mp_quicksort_before(k_mid, k_first, binop_less_result)) {
+                mp_quicksort_swap(mid, first);
+                mp_quicksort_swap(&k_mid, &k_first);
+            }
+            if (mp_quicksort_before(v, k_first, binop_less_result)) {
+                mp_quicksort_swap(tail, first);
+                v = k_first;
+            }
+            if (mp_quicksort_before(k_mid, v, binop_less_result)) {
+                mp_quicksort_swap(mid, tail);
+                v = k_mid;
+            }
+        } else
+        #endif
+        {
+            v = mp_quicksort_key(key_fn, tail[0]);
+        }
         for (;;) {
             do {++h;
-            } while (h < t && mp_binary_op(MP_BINARY_OP_LESS, key_fn == MP_OBJ_NULL ? h[0] : mp_call_function_1(key_fn, h[0]), v) == binop_less_result);
+            } while (h < t && mp_quicksort_before(mp_quicksort_key(key_fn, h[0]), v, binop_less_result));
             do {--t;
-            } while (h < t && mp_binary_op(MP_BINARY_OP_LESS, v, key_fn == MP_OBJ_NULL ? t[0] : mp_call_function_1(key_fn, t[0])) == binop_less_result);
+            } while (h < t && mp_quicksort_before(v, mp_quicksort_key(key_fn, t[0]), binop_less_result));
             if (h >= t) {
                 break;
             }
