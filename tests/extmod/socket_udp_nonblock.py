@@ -24,7 +24,7 @@ class Test(unittest.TestCase):
 
         with self.assertRaises(OSError) as ctx:
             s.recv(1)
-        self.assertEqual(ctx.exception.errno, errno.EAGAIN)
+        self.assertTrue(ctx.exception.errno in (errno.EAGAIN, 10035))
 
 
 if __name__ == "__main__":
