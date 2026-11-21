@@ -107,7 +107,13 @@ static mp_obj_array_t *array_new(char typecode, size_t n) {
     o->typecode = typecode;
     o->free = 0;
     o->len = n;
-    o->items = m_new(byte, typecode_size * o->len);
+    #if MICROPY_PY_STRUCT_UNSAFE_TYPECODES
+    if (typecode == 'O' || typecode == 'P' || typecode == 'S') {
+        o->items = m_new(byte, typecode_size * o->len);
+        return o;
+    }
+    #endif
+    o->items = m_new_with_no_gc_pointers(byte, typecode_size * o->len);
     return o;
 }
 #endif
