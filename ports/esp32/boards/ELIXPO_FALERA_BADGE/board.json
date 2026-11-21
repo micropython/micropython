@@ -1,0 +1,28 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "deploy_options": {
+        "flash_offset": "0"
+    },
+    "docs": "",
+    "features": [
+        "BLE",
+        "Battery Charging",
+        "Display",
+        "Dual-core",
+        "External Flash",
+        "External RAM",
+        "IMU",
+        "USB-C",
+        "WiFi"
+    ],
+    "images": [
+        "elixpo_falera_badge.jpg"
+    ],
+    "mcu": "esp32s3",
+    "product": "Falera Badge",
+    "thumbnail": "",
+    "url": "https://falera.elixpo.com/badge/",
+    "vendor": "Elixpo"
+}
