@@ -708,6 +708,15 @@ typedef uint64_t mp_uint_t;
 #define MICROPY_OPT_MAP_LOOKUP_CACHE_SIZE (128)
 #endif
 
+// Whether to multiply the hash of a str or bytes key by a large odd constant
+// before taking it modulo the size of a map or set's table.  Without it, strs
+// that differ only in their last characters fill runs of adjacent slots that
+// linear probing must then walk, and building a map of many such keys takes
+// quadratic time.  Costs about 120 bytes of code on arm64.
+#ifndef MICROPY_OPT_MAP_MIX_HASH
+#define MICROPY_OPT_MAP_MIX_HASH (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
+#endif
+
 // Whether to use fast versions of bitwise operations (and, or, xor) when the
 // arguments are both positive.  Increases Thumb2 code size by about 250 bytes.
 #ifndef MICROPY_OPT_MPZ_BITWISE
