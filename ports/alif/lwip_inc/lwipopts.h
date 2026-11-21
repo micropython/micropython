@@ -13,7 +13,7 @@
 #define MEM_SIZE                        (64 * 1024)
 #define TCP_MSS                         (1460)
 #define TCP_OVERSIZE                    (TCP_MSS)
-#define TCP_WND                         (16 * TCP_MSS)
+#define TCP_WND                         (14 * TCP_MSS)
 #define TCP_SND_BUF                     (16 * TCP_MSS)
 #define TCP_SND_QUEUELEN                (2 * (TCP_SND_BUF / TCP_MSS))
 #define TCP_QUEUE_OOSEQ                 (1)
