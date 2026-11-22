@@ -1011,9 +1011,16 @@ static inline mp_obj_t mp_obj_new_bool(mp_int_t x) {
 mp_obj_t mp_obj_new_cell(mp_obj_t obj);
 mp_obj_t mp_obj_new_int(mp_int_t value);
 mp_obj_t mp_obj_new_int_from_uint(mp_uint_t value);
+#if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_NONE
+MP_NORETURN mp_obj_t mp_obj_bigint_not_supported();
+#define mp_obj_new_int_from_str_len(str, len, neg, base) (mp_obj_bigint_not_supported())
+#define mp_obj_new_int_from_ll(val) (mp_obj_bigint_not_supported())
+#define mp_obj_new_int_from_ull(val) (mp_obj_bigint_not_supported())
+#else
 mp_obj_t mp_obj_new_int_from_str_len(const char **str, size_t len, bool neg, unsigned int base);
 mp_obj_t mp_obj_new_int_from_ll(long long val); // this must return a multi-precision integer object (or raise an overflow exception)
 mp_obj_t mp_obj_new_int_from_ull(unsigned long long val); // this must return a multi-precision integer object (or raise an overflow exception)
+#endif
 mp_obj_t mp_obj_new_str(const char *data, size_t len); // will check utf-8 (raises UnicodeError)
 mp_obj_t mp_obj_new_str_from_cstr(const char *str); // // accepts null-terminated string, will check utf-8 (raises UnicodeError)
 mp_obj_t mp_obj_new_str_via_qstr(const char *data, size_t len); // input data must be valid utf-8
