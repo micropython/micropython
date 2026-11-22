@@ -2,6 +2,8 @@
 #
 # IMPORTANT: This test requires hardware connections.
 #
+# get working on ARDUINO_NANO_33_BLE_SENSE
+#
 # requires: target-wiring
 
 try:
