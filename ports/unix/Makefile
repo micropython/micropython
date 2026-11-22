@@ -73,6 +73,11 @@ endif # MICROPY_PY_BLUETOOTH
 
 # include py core make definitions
 include $(TOP)/py/py.mk
+
+# Override source file for LE Device DB implementation.
+# It will be used in 'extmod/btstack/btstack.mk' included by
+# 'extmod/extmod.mk'.
+SRC_BTSTACK_C_LE_DEVICE_DB ?= lib/btstack/platform/posix/le_device_db_fs.c
 include $(TOP)/extmod/extmod.mk
 
 GIT_SUBMODULES += lib/berkeley-db-1.xx
