@@ -2,6 +2,10 @@
 #
 # IMPORTANT: This test requires hardware connections.
 #
+# might need to separate out open-drain tests to a separate test?
+# test_open_drain_in fails on zephyr
+# get working on ARDUINO_NANO_33_BLE_SENSE
+#
 # requires: target-wiring
 
 try:
@@ -51,7 +55,7 @@ class TestBase:
             self.p0.value(1)
             self.assertEqual(self.p1.value(), 1)
 
-    @unittest.skipUnless(hasattr(Pin, "low"), "no low/high methods")
+    @unittest.skipIf(not hasattr(Pin, "low"), "no low/high methods")
     def test_low_high(self):
         self.p0.init(Pin.OUT)
         self.p1.init(Pin.IN)
@@ -82,6 +86,7 @@ class TestBase:
     def test_pull_up(self):
         self._test_pull(Pin.PULL_UP, 1)
 
+    @unittest.skipIf(not hasattr(Pin, "PULL_DOWN"), "no PULL_DOWN")
     def test_pull_down(self):
         self._test_pull(Pin.PULL_DOWN, 0)
 
