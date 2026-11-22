@@ -192,6 +192,11 @@ endif
 ifeq ($(MICROPY_PY_BLUETOOTH),1)
 ifeq ($(MICROPY_BLUETOOTH_BTSTACK),1)
 
+ifdef MICROPY_BLUETOOTH_BTSTACK_LE_DEVICE_DB_PATH
+# Will be used by 'lib/btstack/platform/posix/le_device_db_fs.c'
+CFLAGS += -DLE_DEVICE_DB_PATH=\"$(MICROPY_BLUETOOTH_BTSTACK_LE_DEVICE_DB_PATH)\"
+endif
+
 ifeq ($(MICROPY_BLUETOOTH_BTSTACK_USB),0)
 SRC_BTSTACK_C += lib/btstack/platform/embedded/btstack_run_loop_embedded.c
 endif
