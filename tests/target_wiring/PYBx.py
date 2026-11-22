@@ -4,6 +4,19 @@
 # - X1 to X2 (uart,pwm)
 # - X3 to X9 (i2c scl)
 # - X4 to X10 (i2c sda)
+# - X1 to X2
+# - X3 to X9
+# - X4 to X10
+#
+# May need to tweak pins to avoid CAN test failures (CAN is on X9/X10).
+
+# Test all connected pin pairs.
+pin_loopback_pins = [("X1", "X2"), ("X3", "X9"), ("X4", "X10")]
+
+# Test all connected pin pairs to test multiple different TIMs.
+pwm_loopback_pins = pin_loopback_pins
+
+adc_loopback_pins = pin_loopback_pins
 
 # UART("XA") is on X1/X2  (usually UART(4) on PA0/PA1).
 uart_loopback_args = ("XA",)
@@ -11,12 +24,15 @@ uart_loopback_kwargs = {}
 
 spi_standalone_args_list = [(1,), (2,)]
 
-# CAN args assume no connection for single device tests
+# CAN args assume no connection for single device tests.
 can_args = (1,)
 can_kwargs = {}
 
-pwm_loopback_pins = [("X1", "X2")]
+#pwm_loopback_pins = [("X1", "X2")]
 
 i2c_loopback_controller_kwargs = {"scl": "X3", "sda": "X4"}
 i2c_loopback_target_args = ("X",)
 i2c_loopback_target_kwargs = {}
+
+i2c_args_controller = {"scl": "X3", "sda": "X4"}
+i2c_args_target = ("X",)
