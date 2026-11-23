@@ -403,12 +403,14 @@ static mp_obj_t int_from_bytes(size_t n_args, const mp_obj_t *args) {
     mp_uint_t value = 0;
     size_t len = bufinfo.len;
     for (; len--; buf += delta) {
-        #if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_NONE
         if (value > (MP_SMALL_INT_MAX >> 8)) {
             // Result will overflow a small-int so construct a big-int
+            #if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_NONE
+            mp_obj_bigint_not_supported();
+            #else
             return mp_obj_int_from_bytes_impl(big_endian, bufinfo.len, bufinfo.buf);
+            #endif
         }
-        #endif
         value = (value << 8) | *buf;
     }
     return mp_obj_new_int_from_uint(value);
