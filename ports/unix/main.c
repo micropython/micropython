@@ -172,6 +172,13 @@ static int execute_from_lexer(int source_kind, const void *source, mp_parse_inpu
 #if MICROPY_USE_READLINE == 1
 #include "shared/readline/readline.h"
 #else
+#include "py/mphal.h"
+
+// For pyexec.c
+int readline(vstr_t *vstr, const char *p) {
+    return mp_hal_readline(vstr, p);
+}
+
 static char *strjoin(const char *s1, int sep_char, const char *s2) {
     int l1 = strlen(s1);
     int l2 = strlen(s2);
