@@ -161,9 +161,9 @@ void i2c_hw_controller_irq(i2c_obj_t *self) {
 }
 
 void i2c_hw_target_clock_init(i2c_obj_t *self) {
-    // Configure clock for I2C slave operation
-    // For 400 khz slave, clk_scb must be 7.82 – 15.38 MHz
-    // For 100 khz slave, clk_scb must be 1.55 – 12.8 MHz
+    // Configure clock for I2C target operation
+    // For 400 khz target, clk_scb must be 7.82 – 15.38 MHz
+    // For 100 khz target, clk_scb must be 1.55 – 12.8 MHz
     // clk_peri = 100 MHz, divider = 7, clk_scb = 100/8 = 12.5 MHz
     #define I2C_TARGET_SCB_CLK_FREQ_HZ (12500000UL)
 
