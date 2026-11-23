@@ -28,6 +28,10 @@ pin_2a, pin_2b = {
     "ESP32_GENERIC_C6": (6, 7),
     # ESP32-H2-DevKitM-1-N4S, https://docs.espressif.com/projects/esp-dev-kits/en/latest/esp32h2/_images/esp32-h2-devkitm-1-v1.2_pinlayout.png
     "ESP32_GENERIC_H2": (10, 11),
+    # ESP32-P4X-C5-Function-EV-Board, https://docs.espressif.com/projects/esp-dev-kits/en/latest/esp32p4/esp32-p4x-c5-function-ev-board/
+    # ESP32-P4-WIFI6-DB, https://docs.waveshare.com/ESP32-P4-WIFI6-DB
+    # Firebeetle 2 ESP32-P4, https://www.dfrobot.com/product-2915.html
+    "ESP32_GENERIC_P4": (20, 21),
     # ESP32-S2-DevKitC-1-N8R2, https://docs.espressif.com/projects/esp-dev-kits/en/latest/esp32s2/_images/esp32-s2-devkitc-1-v1-pinout.png
     "ESP32_GENERIC_S2": (10, 11),
     # ESP32-S3-DevKitC-1-N8R8, https://docs.espressif.com/projects/esp-dev-kits/en/latest/esp32s3/_images/ESP32-S3_DevKitC-1_pinlayout_v1.1.jpg
