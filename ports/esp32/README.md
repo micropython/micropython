@@ -5,8 +5,9 @@ This is a port of MicroPython to the Espressif ESP32 series of
 microcontrollers.  It uses the ESP-IDF framework and MicroPython runs as
 a task under FreeRTOS.
 
-Currently supports ESP32, ESP32-C2 (aka ESP8684), ESP32-C3, ESP32-C5, ESP32-C6, ESP32-H2,
-ESP32-P4, ESP32-S2 and ESP32-S3. ESP8266 is supported by a separate MicroPython port.
+Currently supports ESP32, ESP32-C2 (aka ESP8684), ESP32-C3, ESP32-C5, ESP32-C6,
+ESP32-C61, ESP32-H2, ESP32-P4, ESP32-S2 and ESP32-S3. ESP8266 is supported by a
+separate MicroPython port.
 
 Supported features include:
 - REPL (Python prompt) over UART0 and/or the integrated USB peripheral.
@@ -54,6 +55,7 @@ build environment and toolchains needed to build the firmware.
 The ESP-IDF changes quickly and MicroPython only supports certain versions. The
 current recommended version of ESP-IDF for MicroPython is v5.5.5. MicroPython
 also supports v5.3, v5.4, v5.4.1, v5.4.2, v5.5.1, v5.5.2 and v5.5.4.
+Use v5.5.5 when building for ESP32-C61.
 
 <!-- Important: If updating the above, please also update:
      * IDF_OLDEST_VER & IDF_NEWEST_VER in .github/workflows/port_esp32.yml
@@ -88,10 +90,10 @@ The steps to take are summarised below.
 To check out a copy of the IDF use git clone:
 
 ```bash
-$ git clone -b v5.5.1 --recursive https://github.com/espressif/esp-idf.git
+$ git clone -b v5.5.5 --recursive https://github.com/espressif/esp-idf.git
 ```
 
-You can replace `v5.5.1` with any other supported version.
+You can replace `v5.5.5` with another version supported by your target.
 (You don't need a full recursive clone; see the `ci_esp32_setup` function in
 `tools/ci.sh` in this repository for more detailed set-up commands.)
 
@@ -100,7 +102,7 @@ MicroPython and update the submodules using:
 
 ```bash
 $ cd esp-idf
-$ git checkout v5.5.1
+$ git checkout v5.5.5
 $ git submodule update --init --recursive
 ```
 
@@ -155,7 +157,7 @@ Please select all of the target platforms (ESP chips)
 ✔ esp32c3
 ✔ esp32c5
 ✔ esp32c6
-⬚ esp32c61
+✔ esp32c61
 ✔ esp32h2
 ✔ esp32p4
 ✔ esp32s2
