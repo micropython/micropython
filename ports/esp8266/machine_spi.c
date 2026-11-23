@@ -48,28 +48,67 @@ typedef struct _machine_spi_obj_t {
     uint8_t phase;
 } machine_spi_obj_t;
 
+// Write-only transfer using the 64-byte HSPI FIFO (W0..W15): one SPI
+// transaction per 64 bytes instead of one per byte. The next block is packed
+// in RAM while the previous one is still being shifted out.
+// machine_spi_init() sets SPI_BYTE_ORDER_HIGH_TO_LOW, so the most significant
+// byte of each 32-bit W register is sent first.
+static void hspi_write_fifo(const uint8_t *src, size_t len) {
+    uint32_t words[16];
+    size_t since_yield = 0;
+
+    while (spi_busy(HSPI)) {
+    }
+    CLEAR_PERI_REG_MASK(SPI_USER(HSPI), SPI_USR_MISO | SPI_USR_COMMAND |
+        SPI_USR_ADDR | SPI_USR_DUMMY);
+    SET_PERI_REG_MASK(SPI_USER(HSPI), SPI_USR_MOSI);
+
+    while (len) {
+        size_t n = len > 64 ? 64 : len;
+        size_t nw = (n + 3) / 4;
+        for (size_t w = 0; w < nw; ++w) {
+            const uint8_t *p = src + w * 4;
+            size_t left = n - w * 4;
+            uint32_t v = (uint32_t)p[0] << 24;
+            if (left > 1) {
+                v |= (uint32_t)p[1] << 16;
+            }
+            if (left > 2) {
+                v |= (uint32_t)p[2] << 8;
+            }
+            if (left > 3) {
+                v |= p[3];
+            }
+            words[w] = v;
+        }
+        while (spi_busy(HSPI)) {
+        }
+        WRITE_PERI_REG(SPI_USER1(HSPI),
+            ((n * 8 - 1) & SPI_USR_MOSI_BITLEN) << SPI_USR_MOSI_BITLEN_S);
+        for (size_t w = 0; w < nw; ++w) {
+            WRITE_PERI_REG(SPI_W0(HSPI) + w * 4, words[w]);
+        }
+        SET_PERI_REG_MASK(SPI_CMD(HSPI), SPI_USR);
+        src += n;
+        len -= n;
+        since_yield += n;
+        if (since_yield >= 1024) {
+            // let pending tasks (WiFi) run, as the original byte loop did
+            since_yield = 0;
+            ets_loop_iter();
+        }
+    }
+    // wait for SPI transaction to complete
+    while (spi_busy(HSPI)) {
+    }
+}
+
 static void machine_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8_t *src, uint8_t *dest) {
     (void)self_in;
 
     if (dest == NULL) {
         // fast case when we only need to write data
-        size_t chunk_size = 1024;
-        size_t count = len / chunk_size;
-        size_t i = 0;
-        for (size_t j = 0; j < count; ++j) {
-            for (size_t k = 0; k < chunk_size; ++k) {
-                spi_tx8fast(HSPI, src[i]);
-                ++i;
-            }
-            ets_loop_iter();
-        }
-        while (i < len) {
-            spi_tx8fast(HSPI, src[i]);
-            ++i;
-        }
-        // wait for SPI transaction to complete
-        while (spi_busy(HSPI)) {
-        }
+        hspi_write_fifo(src, len);
     } else {
         // we need to read and write data
 
