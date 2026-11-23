@@ -3,10 +3,10 @@ target: IRQ: PASS
 target: PASS
 --- instance1 ---
 
-***** I2C Master Test *****
+***** I2C Controller Test *****
 
-Waiting for slave...
-Slave ready
+Waiting for target...
+Target ready
 
 ***** Test 1: I2C Scan *****
 

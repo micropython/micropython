@@ -1,8 +1,8 @@
 # I2C multi-device test
-# Tests I2C master and slave communication between two boards
+# Tests I2C controller and target communication between two boards
 #
 # KIT_PSE84_AI board Hardware connections:
-#   Board 0 (Target)    Board 1 (Master)
+#   Board 0 (Target)    Board 1 (Controller)
 #   P17_0 (SCL)    <->  P17_0 (SCL)
 #   P17_1 (SDA)    <->  P17_1 (SDA)
 #   GND            <->  GND
@@ -15,14 +15,14 @@ import time
 
 
 def instance0():
-    # I2C Target (Slave)
+    # I2C Target
     from machine import I2CTarget
 
-    SLAVE_ADDR = 0x43
+    TARGET_ADDR = 0x43
 
     # Create target with memory buffer
     mem = bytearray([0xAA, 0xBB, 0xCC, 0xDD, 0x00, 0x00, 0x00, 0x00])
-    i2c_target = I2CTarget(addr=SLAVE_ADDR, mem=mem, scl="P17_0", sda="P17_1")
+    i2c_target = I2CTarget(addr=TARGET_ADDR, mem=mem, scl="P17_0", sda="P17_1")
 
     # Minimal IRQ verification without additional output.
     read_seen = [False]
@@ -37,10 +37,10 @@ def instance0():
 
     i2c_target.irq(irq_handler, hard=True)
 
-    # Signal to master that target is ready.
+    # Signal to controller that target is ready.
     multitest.next()
 
-    # Wait for master write transaction to update target memory.
+    # Wait for controller write transaction to update target memory.
     timeout = 10  # seconds
     start_time = time.time()
     while (mem[0] != 0x01 or mem[1] != 0x02 or mem[2] != 0x03) and (
@@ -57,30 +57,30 @@ def instance0():
 
 
 def instance1():
-    # I2C Master
+    # I2C Controller
     from machine import I2C
 
-    print("\n***** I2C Master Test *****\n")
+    print("\n***** I2C Controller Test *****\n")
 
-    # Wait for slave to be ready
-    print("Waiting for slave...")
+    # Wait for target to be ready
+    print("Waiting for target...")
     multitest.next()
-    print("Slave ready\n")
+    print("Target ready\n")
 
-    SLAVE_ADDR = 0x43
+    TARGET_ADDR = 0x43
 
     # Test 1: Scan
     print("***** Test 1: I2C Scan *****\n")
     i2c = I2C(scl="P17_0", sda="P17_1", freq=400000)
     devices = i2c.scan()
     print("Found devices:", [hex(d) for d in devices])
-    scan_pass = SLAVE_ADDR in devices
+    scan_pass = TARGET_ADDR in devices
     print("Status:", "PASS" if scan_pass else "FAIL")
 
     # Test 2: Write
     print("\n***** Test 2: Write *****\n")
     try:
-        i2c.writeto_mem(SLAVE_ADDR, 0, b"\x01\x02\x03")
+        i2c.writeto_mem(TARGET_ADDR, 0, b"\x01\x02\x03")
         write_pass = True
         print("Status: PASS")
     except Exception as e:
@@ -90,7 +90,7 @@ def instance1():
     # Test 3: Read
     print("\n***** Test 3: Read *****\n")
     try:
-        data = i2c.readfrom_mem(SLAVE_ADDR, 0, 4)
+        data = i2c.readfrom_mem(TARGET_ADDR, 0, 4)
         print("Received:", data)
         read_pass = len(data) == 4
         print("Status:", "PASS" if read_pass else "FAIL")
