@@ -233,7 +233,7 @@ Hardware I2C bus
 See :ref:`machine.I2C <machine.I2C>` and :ref:`machine.I2CTarget <machine.I2CTarget>` for the complete I2C API reference.
 
 Hardware I2C is available on the PSOC™ Edge E84 using the SCB (Serial Communication Block)
-peripheral. The port supports both controller (master) and target (slave) modes.
+peripheral. The port supports both controller and target modes.
 
 .. note::
     External pull-up resistors (typically 4.7kΩ) are required on both SCL and SDA lines.
@@ -241,10 +241,10 @@ peripheral. The port supports both controller (master) and target (slave) modes.
     share the same SCB peripheral and pins.
 
 
-Controller mode (Master)
-^^^^^^^^^^^^^^^^^^^^^^^^
+Controller mode
+^^^^^^^^^^^^^^^
 
-Use the ``I2C`` class for controller (master) operations::
+Use the ``I2C`` class for controller operations::
 
     from machine import I2C
 
@@ -255,10 +255,10 @@ Use the ``I2C`` class for controller (master) operations::
     The nominal Fast-mode (400 KHz) supports the range 244-400 KHz.
 
 
-Target mode (Slave)
-^^^^^^^^^^^^^^^^^^^
+Target mode
+^^^^^^^^^^^
 
-Use the ``I2CTarget`` class for target (slave) operations::
+Use the ``I2CTarget`` class for target operations::
 
     from machine import I2CTarget
 
