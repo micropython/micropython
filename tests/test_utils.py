@@ -402,7 +402,9 @@ def create_test_list(test_filenames: [str]) -> [Test]:
                     line = line[len(_REQUIREMENT_PREFIX) :]
                     requirements.extend(str(r, "utf-8") for r in line.split())
         for requirement in requirements:
-            if requirement in _VALID_REQUIREMENTS:
+            if requirement[0] == "!" and requirement[1:] in _VALID_REQUIREMENTS:
+                test.requires_feature.add(requirement)
+            elif requirement in _VALID_REQUIREMENTS:
                 test.requires_feature.add(requirement)
             elif requirement == "target-wiring":
                 test.requires_target_wiring = True

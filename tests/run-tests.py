@@ -836,7 +836,11 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
 
         skip_reasons = []
         for requirement in test.requires_feature:
-            if not target_capabilities.get(requirement, False):
+            if requirement[0] == "!":
+                ok = not target_capabilities.get(requirement[1:], False)
+            else:
+                ok = target_capabilities.get(requirement, False)
+            if not ok:
                 skip_reasons.append(requirement)
 
         if skip_it:
