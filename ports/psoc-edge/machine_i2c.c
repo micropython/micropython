@@ -213,14 +213,13 @@ static int machine_i2c_transfer(mp_obj_base_t *self_in, uint16_t addr, size_t le
     DEBUG_printf("I2C Transfer started, waiting for completion...\n");
 
     uint32_t start_time = mp_hal_ticks_us();
-    uint32_t timeout_end = start_time + self->timeout;  // Both in microseconds
 
     while (0UL != (CY_SCB_I2C_MASTER_BUSY & i2c_hw_controller_get_status(&self->i2c_obj))) {
         // Yield to allow other tasks/interrupts to run
         mp_event_handle_nowait();
 
         // Check for timeout using actual elapsed time
-        if (mp_hal_ticks_us() >= timeout_end) {
+        if (mp_hal_ticks_us() - start_time >= self->timeout) {
             DEBUG_printf("I2C Transfer timeout after %u us!\n", self->timeout);
             return -MP_ETIMEDOUT;
         }
