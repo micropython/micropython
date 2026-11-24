@@ -308,7 +308,7 @@ void pclk_div_repl_uart_init(void) {
     pclk->peri_inst = CLK_DEST_INST(PCLK_SCB2_CLOCK_SCB_EN);
     pclk->type = CY_SYSCLK_DIV_8_BIT;
     pclk->number = 0;
-    pclk->value = 72U; // From retarget-io: floor(10000000/(115200*12)) - 1 = 72
+    pclk->value = 72U; // From retarget-io: floor(100000000/(115200*12)) = 72
     pclk->value_frac = 0;
     pclk->owner_count = 1;
 
