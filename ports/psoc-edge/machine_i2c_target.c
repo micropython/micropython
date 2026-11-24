@@ -526,14 +526,6 @@ static void mp_machine_i2c_target_deinit(machine_i2c_target_obj_t *self) {
     DEBUG_printf("I2C Target deinitialized\n");
 }
 
-void machine_i2c_target_deinit_all(void) {
-    for (uint8_t i = 0; i < MICROPY_PY_MACHINE_I2C_NUM_ENTRIES; i++) {
-        if (MP_STATE_PORT(machine_i2c_target_obj[i]) != NULL) {
-            mp_machine_i2c_target_deinit(MP_STATE_PORT(machine_i2c_target_obj[i]));
-        }
-    }
-}
-
 static void mp_machine_i2c_target_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_i2c_target_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_printf(print, "I2CTarget(%u, addr=0x%02X, scl='%q', sda='%q')",

@@ -39,9 +39,6 @@ uint32_t machine_get_hw_reset_reason(void);
 void machine_pin_irq_deinit_all(void);
 void machine_uart_deinit_all(void);
 void machine_i2c_deinit_all(void);
-#if MICROPY_PY_MACHINE_I2C_TARGET
-void machine_i2c_target_deinit_all(void);
-#endif
 
 enum clock_freq_type {
     AUDIO_SYS_CLOCK_73_728_000_HZ = 73728000UL /* (Ideally 73.728 MHz) For sample rates: 8 KHz / 16 KHz / 48 KHz */,
