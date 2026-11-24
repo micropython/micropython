@@ -156,6 +156,11 @@ uint32_t i2c_hw_controller_get_status(i2c_obj_t *self) {
     return Cy_SCB_I2C_MasterGetStatus(self->scb_obj->scb, &self->ctx);
 }
 
+void i2c_hw_controller_reset(i2c_obj_t *self) {
+    Cy_SCB_I2C_Disable(self->scb_obj->scb, &self->ctx);
+    Cy_SCB_I2C_Enable(self->scb_obj->scb);
+}
+
 void i2c_hw_controller_irq(i2c_obj_t *self) {
     Cy_SCB_I2C_MasterInterrupt(self->scb_obj->scb, &self->ctx);
 }

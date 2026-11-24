@@ -221,6 +221,7 @@ static int machine_i2c_transfer(mp_obj_base_t *self_in, uint16_t addr, size_t le
         // Check for timeout using actual elapsed time
         if (mp_hal_ticks_us() - start_time >= self->timeout) {
             DEBUG_printf("I2C Transfer timeout after %u us!\n", self->timeout);
+            i2c_hw_controller_reset(&self->i2c_obj);
             return -MP_ETIMEDOUT;
         }
     }

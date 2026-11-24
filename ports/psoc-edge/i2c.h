@@ -50,6 +50,7 @@ void i2c_hw_controller_init(i2c_obj_t *self, uint32_t freq);
 cy_en_scb_i2c_status_t i2c_hw_controller_read(i2c_obj_t *self, cy_stc_scb_i2c_master_xfer_config_t *transfer);
 cy_en_scb_i2c_status_t i2c_hw_controller_write(i2c_obj_t *self, cy_stc_scb_i2c_master_xfer_config_t *transfer);
 uint32_t i2c_hw_controller_get_status(i2c_obj_t *self);
+void i2c_hw_controller_reset(i2c_obj_t *self);
 void i2c_hw_controller_irq(i2c_obj_t *self);
 
 void i2c_hw_target_init(i2c_obj_t *self, uint32_t addr);
