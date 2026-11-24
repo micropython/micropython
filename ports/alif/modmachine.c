@@ -209,6 +209,28 @@ MP_NORETURN static void mp_machine_deepsleep(size_t n_args, const mp_obj_t *args
     // Set the reset cause for when the device wakes up.
     *RESET_CAUSE_STATE_PTR = RESET_CAUSE_VALID | MACHINE_RESET_DEEPSLEEP;
 
+    // Disable all IRQs except those that can wake the device, so the sleep isn't aborted.
+    #define IRQ_KEEP_MASK(i, irq) ((i) == (irq) / 32 ? (1U << ((irq) % 32)) : 0)
+    for (size_t i = 0; i < MP_ARRAY_SIZE(NVIC->ICER); ++i) {
+        uint32_t keep = 0;
+        keep |= IRQ_KEEP_MASK(i, LPRTC_IRQ_IRQn);
+        keep |= IRQ_KEEP_MASK(i, LPGPIO_COMB_IRQ_IRQn);
+        keep |= IRQ_KEEP_MASK(i, LPTIMER0_IRQ_IRQn);
+        keep |= IRQ_KEEP_MASK(i, LPGPIO_IRQ0_IRQn);
+        keep |= IRQ_KEEP_MASK(i, LPGPIO_IRQ1_IRQn);
+        keep |= IRQ_KEEP_MASK(i, LPGPIO_IRQ2_IRQn);
+        keep |= IRQ_KEEP_MASK(i, LPGPIO_IRQ3_IRQn);
+        keep |= IRQ_KEEP_MASK(i, LPGPIO_IRQ4_IRQn);
+        keep |= IRQ_KEEP_MASK(i, LPGPIO_IRQ5_IRQn);
+        keep |= IRQ_KEEP_MASK(i, LPGPIO_IRQ6_IRQn);
+        keep |= IRQ_KEEP_MASK(i, LPGPIO_IRQ7_IRQn);
+        NVIC->ICER[i] = ~keep;
+    }
+
+    // Stop SysTick, and clear pending system exceptions.
+    SysTick->CTRL = 0;
+    SCB->ICSR = SCB_ICSR_PENDSVCLR_Msk | SCB_ICSR_PENDSTCLR_Msk;
+
     // If power is removed from the subsystem, the function does
     // not return, and the CPU will reboot when/if the subsystem
     // is next powered up.
