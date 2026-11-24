@@ -446,10 +446,11 @@ static mp_obj_t network_wlan_connect(size_t n_args, const mp_obj_t *pos_args, mp
     }
 
     #if MICROPY_PY_NETWORK_WPA_ENTERPRISE
+    int eap_method = args[ARG_eap_method].u_int;
     if (wifi_auth_is_enterprise(min_sec)) {
         // Build enterprise args and pass to static helper
         const wpa_enterprise_connect_args_t enterprise_args = {
-            .eap_method = args[ARG_eap_method].u_int,
+            .eap_method = eap_method,
             .username = args[ARG_username].u_obj,
             .password = args[ARG_password].u_obj,
             .identity = args[ARG_identity].u_obj,
@@ -463,6 +464,8 @@ static mp_obj_t network_wlan_connect(size_t n_args, const mp_obj_t *pos_args, mp
             #endif
         };
         connect_apply_wpa_enterprise_args(&enterprise_args);
+    } else if (n_args > 1 && eap_method != WIFI_AUTH_EAP_NONE) {
+        mp_raise_ValueError(MP_ERROR_TEXT("setting eap_method requires setting min_sec to an enterprise mode"));
     }
     #endif // MICROPY_PY_NETWORK_WPA_ENTERPRISE
 
