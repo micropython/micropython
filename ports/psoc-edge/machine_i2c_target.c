@@ -276,7 +276,7 @@ static inline machine_i2c_target_obj_t *machine_i2c_target_obj_alloc(void) {
     for (uint8_t i = 0; i < MICROPY_PY_MACHINE_I2C_NUM_ENTRIES; i++)
     {
         if (MP_STATE_PORT(machine_i2c_target_obj[i]) == NULL) {
-            MP_STATE_PORT(machine_i2c_target_obj[i]) = mp_obj_malloc(machine_i2c_target_obj_t, &machine_i2c_target_type);
+            MP_STATE_PORT(machine_i2c_target_obj[i]) = mp_obj_malloc_with_finaliser(machine_i2c_target_obj_t, &machine_i2c_target_type);
             i2c_target_buffer_init_empty(&MP_STATE_PORT(machine_i2c_target_obj[i])->rx);
             MP_STATE_PORT(machine_i2c_target_obj[i])->in_write_event = false;
             i2c_target_buffer_init_empty(&MP_STATE_PORT(machine_i2c_target_obj[i])->tx);
