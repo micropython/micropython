@@ -75,7 +75,8 @@ long heap_size = 1024 * 1024 * (sizeof(mp_uint_t) / 4);
 #if MICROPY_GC_SPLIT_HEAP_AUTO
 static char *first_heap;
 
-// The GC starts with one heap and adds the others itself, up to the same total size.
+// The GC frees a heap that is empty and adds one again when it needs it, up to the same
+// number of heaps as at the start.
 size_t gc_get_max_new_split(void) {
     // Only that heap grows. A test that installs its own heap would never free what was added.
     if ((char *)MP_STATE_MEM(area).gc_alloc_table_start != first_heap) {
@@ -495,13 +496,13 @@ MP_NOINLINE int main_(int argc, char **argv) {
     char *heaps[MICROPY_GC_SPLIT_HEAP_N_HEAPS];
     long multi_heap_size = heap_size / MICROPY_GC_SPLIT_HEAP_N_HEAPS;
     for (size_t i = 0; i < MICROPY_GC_SPLIT_HEAP_N_HEAPS; i++) {
-        heaps[i] = MICROPY_GC_SPLIT_HEAP_AUTO && i > 0 ? NULL : malloc(multi_heap_size);
+        heaps[i] = malloc(multi_heap_size);
         if (i == 0) {
             #if MICROPY_GC_SPLIT_HEAP_AUTO
             first_heap = heaps[i];
             #endif
             gc_init(heaps[i], heaps[i] + multi_heap_size);
-        } else if (heaps[i] != NULL) {
+        } else {
             gc_add(heaps[i], heaps[i] + multi_heap_size);
         }
     }
@@ -766,9 +767,14 @@ MP_NOINLINE int main_(int argc, char **argv) {
     #if !MICROPY_GC_SPLIT_HEAP
     free(heap);
     #else
+    #if MICROPY_GC_SPLIT_HEAP_AUTO
+    // The GC has freed the other heaps itself.
+    free(heaps[0]);
+    #else
     for (size_t i = 0; i < MICROPY_GC_SPLIT_HEAP_N_HEAPS; i++) {
         free(heaps[i]);
     }
+    #endif
     #endif
     #endif
 
