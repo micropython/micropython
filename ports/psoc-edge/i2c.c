@@ -92,7 +92,6 @@ static void i2c_hw_init(i2c_obj_t *self, cy_en_scb_i2c_mode_t mode, uint8_t targ
     cy_rslt_t result = Cy_SCB_I2C_Init(self->scb_obj->scb, &cfg, &self->ctx);
     i2c_assert_raise_val("I2C init failed: 0x%lx", result);
     sys_int_init(&(self->scb_obj->irq));
-    Cy_SCB_I2C_Enable(self->scb_obj->scb);
 }
 
 void i2c_hw_deinit(i2c_obj_t *self) {
@@ -106,7 +105,7 @@ void i2c_hw_deinit(i2c_obj_t *self) {
     }
 }
 
-static void i2c_hw_controller_clock_init(i2c_obj_t *self, uint32_t freq) {
+static uint32_t i2c_hw_controller_clock_init(i2c_obj_t *self, uint32_t freq) {
     /**
      * For desired data rate, clk_scb frequency must be in valid range (see TRM I2C Oversampling section)
      * For 100kHz: clk_scb range is 1.55 - 3.2 MHz (architecture reference manual 002-38331 Rev. *B P707 table 366)
@@ -131,6 +130,10 @@ static void i2c_hw_controller_clock_init(i2c_obj_t *self, uint32_t freq) {
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("failed to initialize clock divider for I2C(%u)"), self->scb_obj->id);
     }
 
+    return clk_scb_freq;
+}
+
+static void i2c_hw_controller_data_rate_init(i2c_obj_t *self, uint32_t freq, uint32_t clk_scb_freq) {
     uint32_t achieved_freq = Cy_SCB_I2C_SetDataRate(self->scb_obj->scb, freq, clk_scb_freq);
     if ((achieved_freq > freq) || (achieved_freq == 0U)) {
         mp_raise_msg_varg(&mp_type_ValueError,
@@ -140,8 +143,10 @@ static void i2c_hw_controller_clock_init(i2c_obj_t *self, uint32_t freq) {
 }
 
 void i2c_hw_controller_init(i2c_obj_t *self, uint32_t freq) {
-    i2c_hw_controller_clock_init(self, freq);
+    uint32_t clk_scb_freq = i2c_hw_controller_clock_init(self, freq);
     i2c_hw_init(self, CY_SCB_I2C_MASTER, 0);
+    i2c_hw_controller_data_rate_init(self, freq, clk_scb_freq);
+    Cy_SCB_I2C_Enable(self->scb_obj->scb);
 }
 
 cy_en_scb_i2c_status_t i2c_hw_controller_read(i2c_obj_t *self, cy_stc_scb_i2c_master_xfer_config_t *transfer) {
@@ -183,6 +188,7 @@ void i2c_hw_target_clock_init(i2c_obj_t *self) {
 void i2c_hw_target_init(i2c_obj_t *self, uint32_t addr) {
     i2c_hw_target_clock_init(self);
     i2c_hw_init(self, CY_SCB_I2C_SLAVE, addr);
+    Cy_SCB_I2C_Enable(self->scb_obj->scb);
 }
 
 void i2c_hw_target_config_read_buff(i2c_obj_t *self, uint8_t *buffer, uint32_t size) {
