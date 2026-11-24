@@ -44,10 +44,12 @@ Publishing to npm
 -----------------
 
 The `browser` variant is published to npm as
-`@micropython/micropython-webassembly-browser`. The package holds the
-minified `micropython.mjs` and two WebAssembly binaries: the variant as
-built, and a `-settrace` build with `sys.settrace` support for debuggers.
-Both builds share the same JavaScript, which the build checks.
+`@micropython/micropython-webassembly-browser`. The package holds two
+builds, each a minified `micropython.mjs` with its `micropython.wasm`
+beside it: the variant as built at the top level, and in `settrace/` a
+build with `sys.settrace` support for debuggers. The JavaScript that
+Emscripten generates is specific to its `.wasm`, so each build ships
+its own.
 
 The package version is always given on the make command line. To build
 a package and inspect it without publishing:

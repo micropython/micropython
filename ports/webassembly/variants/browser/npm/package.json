@@ -6,7 +6,8 @@
   "files": [
     "micropython.mjs",
     "micropython.wasm",
-    "micropython-settrace.wasm"
+    "settrace/micropython.mjs",
+    "settrace/micropython.wasm"
   ],
   "repository": {
     "type": "git",
