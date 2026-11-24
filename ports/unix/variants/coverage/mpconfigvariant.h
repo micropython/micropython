@@ -33,9 +33,11 @@
 // Enable extra Unix features.
 #include "../mpconfigvariant_common.h"
 
-// Enable testing of split heap.
+// Enable testing of split heap, with heaps added and freed by the GC.
 #define MICROPY_GC_SPLIT_HEAP          (1)
 #define MICROPY_GC_SPLIT_HEAP_N_HEAPS  (4)
+#define MICROPY_GC_SPLIT_HEAP_AUTO     (1)
+#include <stdlib.h> // for malloc, for MICROPY_GC_SPLIT_HEAP_AUTO
 
 // Enable additional features.
 #define MICROPY_DEBUG_PARSE_RULE_NAME  (1)
