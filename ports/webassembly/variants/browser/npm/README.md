@@ -6,6 +6,8 @@ includes JavaScript Promise Integration, so Python code can block on a
 JavaScript promise with `jsffi.run_sync()` while the browser's event
 loop keeps running.
 
-The package holds `micropython.mjs` and two WebAssembly binaries it can
-load: `micropython.wasm`, and `micropython-settrace.wasm`, which is the
-same build with `sys.settrace` support for debuggers.
+The package holds two builds, each a `micropython.mjs` with its
+`micropython.wasm` beside it: the standard build at the top level, and
+in `settrace/` the same build with `sys.settrace` support for
+debuggers. Import whichever `micropython.mjs` you want; each loads the
+`.wasm` next to it.
