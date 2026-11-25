@@ -198,6 +198,28 @@ static void coverage_sched_function(mp_sched_node_t *node) {
 }
 
 // function to run extra tests for things that can't be checked by scripts
+#if MICROPY_GC_SPLIT_HEAP_AUTO
+// The GC frees a heap that is empty and adds one again when it needs it, up to the number of
+// heaps that main() starts with. A test that installs its own heap turns this off: nothing
+// would free what the GC added to that heap.
+static bool gc_heap_can_grow = true;
+
+size_t gc_get_max_new_split(void) {
+    if (!gc_heap_can_grow) {
+        return 0;
+    }
+    size_t n_heaps = 0;
+    for (mp_state_mem_area_t *area = &MP_STATE_MEM(area); area != NULL; area = area->next) {
+        n_heaps++;
+    }
+    if (n_heaps >= MICROPY_GC_SPLIT_HEAP_N_HEAPS) {
+        return 0;
+    }
+    // As big as the first heap, which is never freed.
+    return MP_STATE_MEM(area).gc_pool_end - MP_STATE_MEM(area).gc_alloc_table_start;
+}
+#endif
+
 static mp_obj_t extra_coverage(void) {
     // mp_printf (used by ports that don't have a native printf)
     {
@@ -318,6 +340,9 @@ static mp_obj_t extra_coverage(void) {
         // check the GC is unlocked and save its state
         assert(MP_STATE_THREAD(gc_lock_depth) == 0);
         mp_state_mem_t mp_state_mem_orig = mp_state_ctx.mem;
+        #if MICROPY_GC_SPLIT_HEAP_AUTO
+        gc_heap_can_grow = false;
+        #endif
 
         // perform the test
         unsigned heap_size = 64 * MICROPY_BYTES_PER_GC_BLOCK;
@@ -344,6 +369,9 @@ static mp_obj_t extra_coverage(void) {
 
         // restore the GC state (the original heap)
         mp_state_ctx.mem = mp_state_mem_orig;
+        #if MICROPY_GC_SPLIT_HEAP_AUTO
+        gc_heap_can_grow = true;
+        #endif
     }
 
     // GC realloc test, to check that growing a block in place into the last block of the heap
@@ -354,6 +382,9 @@ static mp_obj_t extra_coverage(void) {
         // check the GC is unlocked and save its state
         assert(MP_STATE_THREAD(gc_lock_depth) == 0);
         mp_state_mem_t mp_state_mem_orig = mp_state_ctx.mem;
+        #if MICROPY_GC_SPLIT_HEAP_AUTO
+        gc_heap_can_grow = false;
+        #endif
 
         unsigned heap_size = 64 * MICROPY_BYTES_PER_GC_BLOCK;
         char *heap = calloc(heap_size, 1);
@@ -373,6 +404,9 @@ static mp_obj_t extra_coverage(void) {
 
         // restore the GC state (the original heap)
         mp_state_ctx.mem = mp_state_mem_orig;
+        #if MICROPY_GC_SPLIT_HEAP_AUTO
+        gc_heap_can_grow = true;
+        #endif
     }
 
     // tracked allocation

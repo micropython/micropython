@@ -72,24 +72,6 @@ long heap_size = 1024 * 1024 * (sizeof(mp_uint_t) / 4);
 #define MICROPY_GC_SPLIT_HEAP_N_HEAPS (1)
 #endif
 
-#if MICROPY_GC_SPLIT_HEAP_AUTO
-static char *first_heap;
-
-// The GC frees a heap that is empty and adds one again when it needs it, up to the same
-// number of heaps as at the start.
-size_t gc_get_max_new_split(void) {
-    // Only that heap grows. A test that installs its own heap would never free what was added.
-    if ((char *)MP_STATE_MEM(area).gc_alloc_table_start != first_heap) {
-        return 0;
-    }
-    size_t n_heaps = 0;
-    for (mp_state_mem_area_t *area = &MP_STATE_MEM(area); area != NULL; area = area->next) {
-        n_heaps++;
-    }
-    return n_heaps < MICROPY_GC_SPLIT_HEAP_N_HEAPS ? heap_size / MICROPY_GC_SPLIT_HEAP_N_HEAPS : 0;
-}
-#endif
-
 #if !MICROPY_PY_SYS_PATH
 #error "The unix port requires MICROPY_PY_SYS_PATH=1"
 #endif
@@ -498,9 +480,6 @@ MP_NOINLINE int main_(int argc, char **argv) {
     for (size_t i = 0; i < MICROPY_GC_SPLIT_HEAP_N_HEAPS; i++) {
         heaps[i] = malloc(multi_heap_size);
         if (i == 0) {
-            #if MICROPY_GC_SPLIT_HEAP_AUTO
-            first_heap = heaps[i];
-            #endif
             gc_init(heaps[i], heaps[i] + multi_heap_size);
         } else {
             gc_add(heaps[i], heaps[i] + multi_heap_size);
@@ -766,15 +745,13 @@ MP_NOINLINE int main_(int argc, char **argv) {
     // process, but doing so helps to find memory leaks.
     #if !MICROPY_GC_SPLIT_HEAP
     free(heap);
-    #else
-    #if MICROPY_GC_SPLIT_HEAP_AUTO
+    #elif MICROPY_GC_SPLIT_HEAP_AUTO
     // The GC has freed the other heaps itself.
     free(heaps[0]);
     #else
     for (size_t i = 0; i < MICROPY_GC_SPLIT_HEAP_N_HEAPS; i++) {
         free(heaps[i]);
     }
-    #endif
     #endif
     #endif
 
