@@ -150,29 +150,50 @@ __import__('__injected_test')
 
 
 class Test:
-    def __init__(self, filename):
-        # Make absolute filename, with canonical / for path separator.
-        self.filename_abs = os.path.abspath(filename).replace("\\", "/")
+    def __init__(self, filename: str) -> None:
+        self.filename_abs = os.path.realpath(filename)
+        self.filename_rel = ""
 
         # If filename is one of our own tests always make it relative to our
         # tests/ dir and otherwise use the absolute path, regardless of actual path
         # passed, such that display and result output is always the same.
         try:
-            test_file_relpath = os.path.relpath(filename, start=base_path())
+            test_file_relpath = os.path.relpath(self.filename_abs, start=base_path())
             if not test_file_relpath.startswith(".."):
-                filename = test_file_relpath
+                name = test_file_relpath
+                self.filename_rel = name.replace("\\", "/")
             else:
-                filename = self.filename_abs
+                name = self.filename_abs
         except ValueError:
             # Path on different drive on Windows.
-            filename = self.filename_abs
+            name = self.filename_abs
 
         # Use canonical / for path separator.
-        self.filename = filename.replace("\\", "/")
+        self.display_name = name.replace("\\", "/")
 
         # Initialise requirements for this test.
         self.requires_feature = set()
         self.requires_target_wiring = False
+
+    def path(self) -> str:
+        """Full path to the test file. Use for all file operations."""
+        return self.filename_abs
+
+    def canonical_path(self) -> str:
+        """Full path to the test file, with / separator. Use when running the test."""
+        return self.filename_abs.replace("\\", "/")
+
+    def test_file(self) -> str:
+        """Test file relative to tests/, with / separator. Empty if not one of our tests."""
+        return self.filename_rel
+
+    def name(self) -> str:
+        """The name to display for the test: relative to tests/ dir for our own tests, otherwise path()."""
+        return self.display_name
+
+    def result_file_name(self) -> str:
+        """The name with path components replaced with underscores, to use as filename for results."""
+        return self.display_name.replace("..", "_").replace("./", "").replace("/", "_")
 
 
 class PyboardNodeRunner:
@@ -393,7 +414,7 @@ def create_test_list(test_filenames: [str]) -> [Test]:
     for filename in test_filenames:
         test = Test(filename)
         requirements = []
-        with open(filename, "rb") as f:
+        with open(test.path(), "rb") as f:
             while True:
                 line = f.readline()
                 if not line.startswith(b"#"):
@@ -408,7 +429,7 @@ def create_test_list(test_filenames: [str]) -> [Test]:
                 test.requires_target_wiring = True
             else:
                 print()
-                print(f"{filename}: unknown test requirement: {requirement}")
+                print(f"{test.path()}: unknown test requirement: {requirement}")
                 sys.exit(2)
         tests.append(test)
     return tests

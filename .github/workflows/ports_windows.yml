@@ -71,22 +71,22 @@ jobs:
       id: test
       env:
         MICROPY_MICROPYTHON: ${{ steps.get_path.outputs.micropython }}
-      working-directory: tests
-      run: python run-tests.py
+      run: python tests/run-tests.py
     - name: Print failures
       if: failure() && steps.test.conclusion == 'failure'
-      working-directory: tests
-      run: python run-tests.py --print-failures
+      run: python tests/run-tests.py --print-failures
     - name: Run mpy tests
       id: test_mpy
       env:
         MICROPY_MICROPYTHON: ${{ steps.get_path.outputs.micropython }}
-      working-directory: tests
-      run: python run-tests.py --via-mpy -d basics float micropython
+      run: python tests/run-tests.py --via-mpy -d tests/basics tests/float tests/micropython
     - name: Print mpy failures
       if: failure() && steps.test_mpy.conclusion == 'failure'
-      working-directory: tests
-      run: python run-tests.py --print-failures
+      run: python tests/run-tests.py --print-failures
+    - name: Run run-tests.py self-tests
+      env:
+        MICROPY_MICROPYTHON: ${{ steps.get_path.outputs.micropython }}
+      run: python tests/test_run-tests.py
 
   build-mingw:
     strategy:

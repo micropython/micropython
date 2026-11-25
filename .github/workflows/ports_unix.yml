@@ -58,6 +58,8 @@ jobs:
     - name: Print failures
       if: failure()
       run: tests/run-tests.py --print-failures
+    - name: Run run-tests.py self-tests
+      run: python tests/test_run-tests.py
 
   standard_v2:
     runs-on: ubuntu-latest
