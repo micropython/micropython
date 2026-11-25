@@ -30,6 +30,7 @@
 #include "lptimer_ext.h"
 #include "modmachine.h"
 #include "se_services.h"
+#include "system_tick.h"
 #include "tusb.h"
 
 // Use 4 bytes of backup SRAM to store the reset cause state.
@@ -165,6 +166,9 @@ static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
 
     __disable_irq();
 
+    // A pending system tick would make the WFI return immediately.
+    system_tick_irq_suspend();
+
     mp_machine_config_wakeup(sleep_ms, true);
 
     // This enters the deepest possible CPU sleep state, without
@@ -172,6 +176,8 @@ static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
     pm_core_enter_deep_sleep();
 
     mp_machine_config_wakeup(sleep_ms, false);
+
+    system_tick_irq_resume();
 
     __enable_irq();
 
