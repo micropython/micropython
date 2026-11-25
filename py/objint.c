@@ -101,13 +101,14 @@ static mp_fp_as_int_class_t mp_classify_fp_as_int(mp_float_t val) {
     #endif
     #define MP_FLOAT_SIGN_SHIFT_I32 ((MP_FLOAT_FRAC_BITS + MP_FLOAT_EXP_BITS) % 32)
     #define MP_FLOAT_EXP_SHIFT_I32 (MP_FLOAT_FRAC_BITS % 32)
+    #define MP_FLOAT_EXP_MASK (((1U << MP_FLOAT_EXP_BITS) - 1U) << MP_FLOAT_EXP_SHIFT_I32)
 
     if (e & (1U << MP_FLOAT_SIGN_SHIFT_I32)) {
         #if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
         e |= u.i[MP_ENDIANNESS_BIG] != 0;
         #endif
-        if ((e & ~(1U << MP_FLOAT_SIGN_SHIFT_I32)) == 0) {
-            // handle case of -0 (when sign is set but rest of bits are zero)
+        if ((e & MP_FLOAT_EXP_MASK) == 0) {
+            // -0 and subnormal
             e = 0;
         } else {
             e += ((1U << MP_FLOAT_EXP_BITS) - 1) << MP_FLOAT_EXP_SHIFT_I32;
