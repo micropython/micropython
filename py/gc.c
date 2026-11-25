@@ -716,11 +716,8 @@ static void gc_sweep_free_blocks(void) {
     #endif
 
     for (mp_state_mem_area_t *area = &MP_STATE_MEM(area); area != NULL; area = NEXT_AREA(area)) {
-        size_t last_used_block = 0;
-        #if MICROPY_GC_SPLIT_HEAP_AUTO
-        // last_used_block is also 0 when only the first block is in use.
-        bool any_used = false;
-        #endif
+        // -1 means that no block of this area is in use.
+        mp_int_t last_used_block = -1;
         assert(area->gc_last_used_block < area->gc_alloc_table_byte_len * BLOCKS_PER_ATB);
 
         for (size_t block = 0; block <= area->gc_last_used_block; block++) {
@@ -750,18 +747,15 @@ static void gc_sweep_free_blocks(void) {
                     ATB_MARK_TO_HEAD(area, block);
                     free_tail = 0;
                     last_used_block = block;
-                    #if MICROPY_GC_SPLIT_HEAP_AUTO
-                    any_used = true;
-                    #endif
                     break;
             }
         }
 
-        area->gc_last_used_block = last_used_block;
+        area->gc_last_used_block = MAX(last_used_block, 0);
 
         #if MICROPY_GC_SPLIT_HEAP_AUTO
         // Free any empty area, aside from the first one
-        if (!any_used && prev_area != NULL) {
+        if (last_used_block < 0 && prev_area != NULL) {
             DEBUG_printf("gc_sweep_free_blocks free empty area %p\n", area);
             NEXT_AREA(prev_area) = NEXT_AREA(area);
             MP_PLAT_FREE_HEAP(area);
