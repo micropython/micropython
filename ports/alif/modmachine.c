@@ -38,8 +38,6 @@
 #define RESET_CAUSE_VALID_MASK (0xfffffff0)
 #define RESET_CAUSE_VALID (0xa170)
 
-extern void dcd_uninit(void);
-
 #define MICROPY_PY_MACHINE_EXTRA_GLOBALS \
     { MP_ROM_QSTR(MP_QSTR_Pin),                 MP_ROM_PTR(&machine_pin_type) }, \
     { MP_ROM_QSTR(MP_QSTR_Timer),               MP_ROM_PTR(&machine_timer_type) }, \
@@ -126,10 +124,8 @@ static void mp_machine_enable_usb(bool enable) {
     } else {
         // Disconnect USB device.
         tud_disconnect();
-        // Deinitialize TinyUSB.
+        // Deinitialize TinyUSB and DCD (disables IRQs).
         tud_deinit(TUD_OPT_RHPORT);
-        // Deinitialize DCD (disables IRQs).
-        dcd_uninit();
     }
 }
 #endif

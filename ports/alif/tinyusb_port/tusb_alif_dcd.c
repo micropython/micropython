@@ -67,10 +67,6 @@ static uint8_t _dcd_start_xfer(uint8_t ep, void* buf, uint32_t size, uint8_t typ
 static void _dcd_handle_depevt(uint8_t ep, uint8_t evt, uint8_t sts, uint16_t par);
 static void _dcd_handle_devt(uint8_t evt, uint16_t info);
 
-/// API Extension --------------------------------------------------------------
-
-void dcd_uninit(void);
-
 /// Device Setup ---------------------------------------------------------------
 
 // Initializes the USB peripheral for device mode and enables it.
@@ -463,7 +459,7 @@ void dcd_edpt_clear_stall(uint8_t rhport, uint8_t ep_addr)
     _dcd_cmd_wait(ep, CMDTYP_DEPCSTALL, 0);
 }
 
-void dcd_uninit(void)
+bool dcd_deinit(uint8_t rhport)
 {
     CLKCTL_PER_MST->USB_CTRL2 |= 1 << 8; // set usb phy power-on-reset signal
     enable_usb_phy_isolation(); // enable usb phy isolation
@@ -471,6 +467,7 @@ void dcd_uninit(void)
     disable_usb_periph_clk(); // disable usb peripheral clock
     dcd_int_disable(TUD_OPT_RHPORT);
     NVIC_ClearPendingIRQ(USB_IRQ_IRQn);
+    return true;
 }
 
 void USB_IRQHandler(void)
