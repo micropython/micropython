@@ -48,6 +48,15 @@ void system_tick_init(void) {
     NVIC_EnableIRQ(SysTick_IRQn);
 }
 
+void system_tick_irq_suspend(void) {
+    SysTick->CTRL &= ~SysTick_CTRL_TICKINT_Msk;
+    SCB->ICSR = SCB_ICSR_PENDSTCLR_Msk;
+}
+
+void system_tick_irq_resume(void) {
+    SysTick->CTRL |= SysTick_CTRL_TICKINT_Msk;
+}
+
 void SysTick_Handler(void) {
     uint32_t uw_tick = system_tick_ms_counter + 1;
     system_tick_ms_counter = uw_tick;
@@ -146,6 +155,16 @@ void system_tick_init(void) {
 
     NVIC_ClearPendingIRQ(LPTIMER3_IRQ_IRQn);
     NVIC_SetPriority(LPTIMER3_IRQ_IRQn, IRQ_PRI_SYSTEM_TICK);
+    NVIC_EnableIRQ(LPTIMER3_IRQ_IRQn);
+}
+
+void system_tick_irq_suspend(void) {
+    NVIC_DisableIRQ(LPTIMER2_IRQ_IRQn);
+    NVIC_DisableIRQ(LPTIMER3_IRQ_IRQn);
+}
+
+void system_tick_irq_resume(void) {
+    NVIC_EnableIRQ(LPTIMER2_IRQ_IRQn);
     NVIC_EnableIRQ(LPTIMER3_IRQ_IRQn);
 }
 
@@ -281,6 +300,16 @@ void system_tick_init(void) {
     // Set up the UTIMER compare B interrupt, to be used by soft-timer.
     system_tick_nvic_config(4);
     UTIMER->UTIMER_CHANNEL_CFG[UTIMER_CHANNEL].UTIMER_COMPARE_CTRL_B |= COMPARE_CTRL_DRV_COMPARE_EN;
+}
+
+void system_tick_irq_suspend(void) {
+    NVIC_DisableIRQ(UTIMER_IRQ0_IRQn + UTIMER_CHANNEL * 8 + 4); // compare-B
+    NVIC_DisableIRQ(UTIMER_IRQ0_IRQn + UTIMER_CHANNEL * 8 + 7); // OVER_FLOW
+}
+
+void system_tick_irq_resume(void) {
+    NVIC_EnableIRQ(UTIMER_IRQ0_IRQn + UTIMER_CHANNEL * 8 + 4); // compare-B
+    NVIC_EnableIRQ(UTIMER_IRQ0_IRQn + UTIMER_CHANNEL * 8 + 7); // OVER_FLOW
 }
 
 // COMPARE_A_BUF1

@@ -35,6 +35,12 @@ extern uint64_t system_core_clock_mhz;
 #endif
 
 void system_tick_init(void);
+
+// Suspend/resume the system tick's IRQs.  Must be called with IRQs disabled.
+// The counter may still run, but events (tick update, wrapping) may be lost.
+void system_tick_irq_suspend(void);
+void system_tick_irq_resume(void);
+
 uint32_t system_tick_get_u32(void);
 uint64_t system_tick_get_u64(void);
 void system_tick_wfe_with_timeout_us(uint32_t timeout_us);
