@@ -246,6 +246,12 @@ void system_tick_schedule_after_us(uint32_t ticks_us) {
 uint64_t system_core_clock_mhz;
 static volatile uint32_t system_tick_hi;
 
+// This is a copy of `utimer_clear_interrupt()` that does a write-1-to-clear instead of a
+// read-modify-write (the latter clears all active flags, which can lose an overflow event).
+static inline void utimer_clear_interrupt_write1(UTIMER_Type *utimer, uint8_t channel, uint8_t interrupt) {
+    utimer->UTIMER_CHANNEL_CFG[channel].UTIMER_CHAN_INTERRUPT = interrupt;
+}
+
 static void system_tick_nvic_config(unsigned int index) {
     NVIC_ClearPendingIRQ(UTIMER_IRQ0_IRQn + UTIMER_CHANNEL * 8 + index);
     NVIC_SetPriority(UTIMER_IRQ0_IRQn + UTIMER_CHANNEL * 8 + index, IRQ_PRI_SYSTEM_TICK);
@@ -281,7 +287,7 @@ void system_tick_init(void) {
 void UTIMER_IRQ90Handler(void) {
     uint32_t chan_interrupt = UTIMER->UTIMER_CHANNEL_CFG[UTIMER_CHANNEL].UTIMER_CHAN_INTERRUPT;
     if (chan_interrupt & CHAN_INTERRUPT_COMPARE_A_BUF1_MASK) {
-        utimer_clear_interrupt(UTIMER, UTIMER_CHANNEL, CHAN_INTERRUPT_COMPARE_A_BUF1_MASK);
+        utimer_clear_interrupt_write1(UTIMER, UTIMER_CHANNEL, CHAN_INTERRUPT_COMPARE_A_BUF1_MASK);
         __SEV();
     }
 }
@@ -290,7 +296,7 @@ void UTIMER_IRQ90Handler(void) {
 void UTIMER_IRQ92Handler(void) {
     uint32_t chan_interrupt = UTIMER->UTIMER_CHANNEL_CFG[UTIMER_CHANNEL].UTIMER_CHAN_INTERRUPT;
     if (chan_interrupt & CHAN_INTERRUPT_COMPARE_B_BUF1_MASK) {
-        utimer_clear_interrupt(UTIMER, UTIMER_CHANNEL, CHAN_INTERRUPT_COMPARE_B_BUF1_MASK);
+        utimer_clear_interrupt_write1(UTIMER, UTIMER_CHANNEL, CHAN_INTERRUPT_COMPARE_B_BUF1_MASK);
         utimer_mask_interrupt(UTIMER, UTIMER_CHANNEL, CHAN_INTERRUPT_COMPARE_B_BUF1_MASK);
         system_tick_schedule_callback();
         __SEV();
@@ -301,7 +307,7 @@ void UTIMER_IRQ92Handler(void) {
 void UTIMER_IRQ95Handler(void) {
     uint32_t chan_interrupt = UTIMER->UTIMER_CHANNEL_CFG[UTIMER_CHANNEL].UTIMER_CHAN_INTERRUPT;
     if (chan_interrupt & CHAN_INTERRUPT_OVER_FLOW_MASK) {
-        utimer_clear_interrupt(UTIMER, UTIMER_CHANNEL, CHAN_INTERRUPT_OVER_FLOW_MASK);
+        utimer_clear_interrupt_write1(UTIMER, UTIMER_CHANNEL, CHAN_INTERRUPT_OVER_FLOW_MASK);
         ++system_tick_hi;
     }
 }
@@ -337,7 +343,7 @@ void system_tick_wfe_with_timeout_us(uint32_t timeout_us) {
     // Set up the UTIMER compare interrupt to fire after the given timeout.
     uint32_t cntr = utimer_get_count(UTIMER, UTIMER_CHANNEL, UTIMER_CNTR);
     utimer_set_count(UTIMER, UTIMER_CHANNEL, UTIMER_COMPARE_A_BUF1, cntr + timeout_ticks);
-    utimer_clear_interrupt(UTIMER, UTIMER_CHANNEL, CHAN_INTERRUPT_COMPARE_A_BUF1_MASK);
+    utimer_clear_interrupt_write1(UTIMER, UTIMER_CHANNEL, CHAN_INTERRUPT_COMPARE_A_BUF1_MASK);
     utimer_unmask_interrupt(UTIMER, UTIMER_CHANNEL, CHAN_INTERRUPT_COMPARE_A_BUF1_MASK);
 
     // Wait for an event (or compare timeout event) if the timeout hasn't expired yet
@@ -362,7 +368,7 @@ void system_tick_schedule_after_us(uint32_t ticks_us) {
     // Set up the UTIMER compare interrupt to fire after the given timeout.
     uint32_t cntr = utimer_get_count(UTIMER, UTIMER_CHANNEL, UTIMER_CNTR);
     utimer_set_count(UTIMER, UTIMER_CHANNEL, UTIMER_COMPARE_B_BUF1, cntr + timeout_ticks);
-    utimer_clear_interrupt(UTIMER, UTIMER_CHANNEL, CHAN_INTERRUPT_COMPARE_B_BUF1_MASK);
+    utimer_clear_interrupt_write1(UTIMER, UTIMER_CHANNEL, CHAN_INTERRUPT_COMPARE_B_BUF1_MASK);
     utimer_unmask_interrupt(UTIMER, UTIMER_CHANNEL, CHAN_INTERRUPT_COMPARE_B_BUF1_MASK);
 
     // Handle the case of short timeouts.
