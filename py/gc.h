@@ -32,9 +32,20 @@
 
 void gc_init(void *start, void *end);
 
+// Attributes of a heap area, used to choose which area an allocation goes in.
+enum {
+    // Slower or external memory, e.g. PSRAM.  Large allocations that contain
+    // no GC pointers go here first, everything else goes here only when the
+    // other areas are full.  Only the BITMAP GC uses this; CLASSIC ignores it.
+    GC_AREA_FLAG_EXTERNAL = 1,
+};
+
 #if MICROPY_GC_SPLIT_HEAP
 // Used to add additional memory areas to the heap.
 void gc_add(void *start, void *end);
+
+// Add a memory area with the given GC_AREA_FLAG_xxx attributes.
+void gc_add_ex(void *start, void *end, unsigned int area_flags);
 
 #if MICROPY_GC_SPLIT_HEAP_AUTO
 // Port must implement this function to return the maximum available block of
@@ -65,9 +76,13 @@ void gc_weakref_sweep(void);
 
 enum {
     GC_ALLOC_FLAG_HAS_FINALISER = 1,
+    // Block contains no GC pointers, so the mark phase can skip scanning it.
+    // Only valid for pure-data buffers.
+    GC_ALLOC_FLAG_CONTAINS_NO_GC_POINTERS = 2,
 };
 
 void *gc_alloc(size_t n_bytes, unsigned int alloc_flags);
+void gc_buf_contains_ptrs(const void *ptr);
 void gc_free(void *ptr); // does not call finaliser
 uint32_t gc_meta_bits(void *ptr);
 size_t gc_nbytes(const void *ptr);
