@@ -108,6 +108,9 @@
 #define FTB_GET(area, block) ((area->gc_finaliser_table_start[(block) / BLOCKS_PER_FTB] >> ((block) & 7)) & 1)
 #define FTB_SET(area, block) do { area->gc_finaliser_table_start[(block) / BLOCKS_PER_FTB] |= (1 << ((block) & 7)); } while (0)
 #define FTB_CLEAR(area, block) do { area->gc_finaliser_table_start[(block) / BLOCKS_PER_FTB] &= (~(1 << ((block) & 7))); } while (0)
+#define FTB_BITS_PER_ATB_BYTE (MP_BITS_PER_BYTE * BLOCKS_PER_ATB / BLOCKS_PER_FTB)
+#else
+#define FTB_BITS_PER_ATB_BYTE (0)
 #endif
 
 #if MICROPY_PY_WEAKREF
@@ -117,6 +120,9 @@
 #define WTB_GET(area, block) ((area->gc_weakref_table_start[(block) / BLOCKS_PER_WTB] >> ((block) & 7)) & 1)
 #define WTB_SET(area, block) do { area->gc_weakref_table_start[(block) / BLOCKS_PER_WTB] |= (1 << ((block) & 7)); } while (0)
 #define WTB_CLEAR(area, block) do { area->gc_weakref_table_start[(block) / BLOCKS_PER_WTB] &= (~(1 << ((block) & 7))); } while (0)
+#define WTB_BITS_PER_ATB_BYTE (MP_BITS_PER_BYTE * BLOCKS_PER_ATB / BLOCKS_PER_WTB)
+#else
+#define WTB_BITS_PER_ATB_BYTE (0)
 #endif
 
 #if MICROPY_GC_ENABLE_CONTAINS_NO_GC_POINTERS
@@ -126,6 +132,9 @@
 #define STB_GET(area, block) ((area->gc_scan_table_start[(block) / BLOCKS_PER_STB] >> ((block) & 7)) & 1)
 #define STB_SET(area, block) do { area->gc_scan_table_start[(block) / BLOCKS_PER_STB] |= (1 << ((block) & 7)); } while (0)
 #define STB_CLEAR(area, block) do { area->gc_scan_table_start[(block) / BLOCKS_PER_STB] &= (~(1 << ((block) & 7))); } while (0)
+#define STB_BITS_PER_ATB_BYTE (MP_BITS_PER_BYTE * BLOCKS_PER_ATB / BLOCKS_PER_STB)
+#else
+#define STB_BITS_PER_ATB_BYTE (0)
 #endif
 
 #if MICROPY_PY_THREAD && !MICROPY_PY_THREAD_GIL
@@ -151,6 +160,21 @@ static void gc_deal_with_stack_overflow(void);
 static void gc_sweep_run_finalisers(void);
 static void gc_sweep_free_blocks(void);
 
+// Fixed bytes of table overhead in an area: the gap after the alloc table, plus
+// one byte for each extra table to absorb rounding up of its length.
+#define GC_AREA_TABLE_OVERHEAD_BYTES (ALLOC_TABLE_GAP_BYTE \
+    + MICROPY_ENABLE_FINALISER \
+    + MICROPY_PY_WEAKREF \
+    + MICROPY_GC_ENABLE_CONTAINS_NO_GC_POINTERS)
+
+// Bits of area needed for each byte of alloc table: the alloc table byte itself,
+// the matching bits of each extra table, and the pool blocks it describes.
+#define GC_AREA_BITS_PER_ATB_BYTE (MP_BITS_PER_BYTE \
+    + FTB_BITS_PER_ATB_BYTE \
+    + WTB_BITS_PER_ATB_BYTE \
+    + STB_BITS_PER_ATB_BYTE \
+    + MP_BITS_PER_BYTE * BLOCKS_PER_ATB * BYTES_PER_BLOCK)
+
 // TODO waste less memory; currently requires that all entries in alloc_table have a corresponding block in pool
 static void gc_setup_area(mp_state_mem_area_t *area, void *start, void *end) {
     // calculate parameters for GC (T=total, A=alloc table, F=finaliser table, W=weakref table, S=scan table, P=pool; all in bytes):
@@ -161,35 +185,7 @@ static void gc_setup_area(mp_state_mem_area_t *area, void *start, void *end) {
     //     P = A * BLOCKS_PER_ATB * BYTES_PER_BLOCK
     // => T = A * (1 + BLOCKS_PER_ATB / BLOCKS_PER_FTB + BLOCKS_PER_ATB / BLOCKS_PER_WTB + BLOCKS_PER_ATB / BLOCKS_PER_STB + BLOCKS_PER_ATB * BYTES_PER_BLOCK)
     size_t total_byte_len = (byte *)end - (byte *)start;
-    #if MICROPY_ENABLE_FINALISER || MICROPY_PY_WEAKREF || MICROPY_GC_ENABLE_CONTAINS_NO_GC_POINTERS
-    area->gc_alloc_table_byte_len = (total_byte_len - ALLOC_TABLE_GAP_BYTE
-        #if MICROPY_ENABLE_FINALISER
-        - 1
-        #endif
-        #if MICROPY_PY_WEAKREF
-        - 1
-        #endif
-        #if MICROPY_GC_ENABLE_CONTAINS_NO_GC_POINTERS
-        - 1
-        #endif
-        )
-        * MP_BITS_PER_BYTE
-        / (
-            MP_BITS_PER_BYTE
-            #if MICROPY_ENABLE_FINALISER
-            + MP_BITS_PER_BYTE * BLOCKS_PER_ATB / BLOCKS_PER_FTB
-            #endif
-            #if MICROPY_PY_WEAKREF
-            + MP_BITS_PER_BYTE * BLOCKS_PER_ATB / BLOCKS_PER_WTB
-            #endif
-            #if MICROPY_GC_ENABLE_CONTAINS_NO_GC_POINTERS
-            + MP_BITS_PER_BYTE * BLOCKS_PER_ATB / BLOCKS_PER_STB
-            #endif
-            + MP_BITS_PER_BYTE * BLOCKS_PER_ATB * BYTES_PER_BLOCK
-            );
-    #else
-    area->gc_alloc_table_byte_len = (total_byte_len - ALLOC_TABLE_GAP_BYTE) / (1 + MP_BITS_PER_BYTE / 2 * BYTES_PER_BLOCK);
-    #endif
+    area->gc_alloc_table_byte_len = (total_byte_len - GC_AREA_TABLE_OVERHEAD_BYTES) * MP_BITS_PER_BYTE / GC_AREA_BITS_PER_ATB_BYTE;
 
     area->gc_alloc_table_start = (byte *)start;
 
@@ -328,17 +324,25 @@ void gc_add(void *start, void *end) {
 }
 
 #if MICROPY_GC_SPLIT_HEAP_AUTO
+// Return the size of a heap area that gc_add() will set up with at least
+// 'blocks' blocks in its pool.
+static size_t gc_area_size_for_blocks(size_t blocks) {
+    size_t alloc_table_byte_len = (blocks + BLOCKS_PER_ATB - 1) / BLOCKS_PER_ATB;
+    size_t size = sizeof(mp_state_mem_area_t)
+        + GC_AREA_TABLE_OVERHEAD_BYTES
+        + (alloc_table_byte_len * GC_AREA_BITS_PER_ATB_BYTE + MP_BITS_PER_BYTE - 1) / MP_BITS_PER_BYTE;
+
+    // Round up to a whole block, plus one more because gc_add() rounds the end
+    // of the area down to a block boundary, which may lose part of a block.
+    return (size + 2 * BYTES_PER_BLOCK - 1) & (~(BYTES_PER_BLOCK - 1));
+}
+
 // Try to automatically add a heap area large enough to fulfill 'failed_alloc'.
 // The caller must hold the GC mutex.
 static bool gc_try_add_heap(size_t failed_alloc) {
     // 'needed' is the size of a heap large enough to hold failed_alloc, with
     // the additional metadata overheads as calculated in gc_setup_area().
-    //
-    // Rather than reproduce all of that logic here, we approximate that adding
-    // (13/512) is enough overhead for sufficiently large heap areas (the
-    // overhead converges to 3/128, but there's some fixed overhead and some
-    // rounding up of partial block sizes).
-    size_t needed = failed_alloc + MAX(2048, failed_alloc * 13 / 512);
+    size_t needed = gc_area_size_for_blocks((failed_alloc + BYTES_PER_BLOCK - 1) / BYTES_PER_BLOCK);
 
     size_t avail = gc_get_max_new_split();
 
