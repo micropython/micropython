@@ -410,7 +410,7 @@ static void lwip_socket_free_incoming(lwip_socket_obj_t *socket, bool free_queue
 #if LWIP_VERSION_MAJOR < 2
 #define IPADDR_STRLEN_MAX 46
 #endif
-mp_obj_t lwip_format_inet_addr(const ip_addr_t *ip, mp_uint_t port) {
+static mp_obj_t lwip_format_inet_addr(const ip_addr_t *ip, mp_uint_t port) {
     char ipstr[IPADDR_STRLEN_MAX];
     ipaddr_ntoa_r(ip, ipstr, sizeof(ipstr));
     mp_obj_t tuple[2] = {
@@ -420,7 +420,7 @@ mp_obj_t lwip_format_inet_addr(const ip_addr_t *ip, mp_uint_t port) {
     return mp_obj_new_tuple(2, tuple);
 }
 
-mp_uint_t lwip_parse_inet_addr(mp_obj_t addr_in, ip_addr_t *out_ip) {
+static mp_uint_t lwip_parse_inet_addr(mp_obj_t addr_in, ip_addr_t *out_ip) {
     mp_obj_t *addr_items;
     mp_obj_get_array_fixed_n(addr_in, 2, &addr_items);
     const char *addr_str = mp_obj_str_get_str(addr_items[0]);
