@@ -30,7 +30,7 @@
 #include "py/mperrno.h"
 #include "extmod/vfs.h"
 
-#if MICROPY_VFS
+#if MICROPY_VFS && (MICROPY_VFS_FAT || MICROPY_VFS_LFS1 || MICROPY_VFS_LFS2)
 
 void mp_vfs_blockdev_init(mp_vfs_blockdev_t *self, mp_obj_t bdev) {
     mp_load_method(bdev, MP_QSTR_readblocks, self->readblocks);
@@ -51,8 +51,10 @@ void mp_vfs_blockdev_init(mp_vfs_blockdev_t *self, mp_obj_t bdev) {
 static int mp_vfs_blockdev_call_rw(mp_obj_t *args, size_t block_num, size_t block_off, size_t len, void *buf, size_t n_args) {
     #if MICROPY_PY_BUILTINS_MEMORYVIEW
     mp_obj_array_t ar = {{&mp_type_memoryview}, 'B' | MP_OBJ_ARRAY_TYPECODE_FLAG_RW, 0, len, buf};
-    #else
+    #elif MICROPY_PY_BUILTINS_BYTEARRAY
     mp_obj_array_t ar = {{&mp_type_bytearray}, BYTEARRAY_TYPECODE, 0, len, buf};
+    #else
+    #error "vfs_blockdev needs mp_type_bytearray or mp_type_memoryview"
     #endif
     args[2] = MP_OBJ_NEW_SMALL_INT(block_num);
     args[3] = MP_OBJ_FROM_PTR(&ar);
@@ -140,4 +142,4 @@ mp_obj_t mp_vfs_blockdev_ioctl(mp_vfs_blockdev_t *self, uintptr_t cmd, uintptr_t
     }
 }
 
-#endif // MICROPY_VFS
+#endif // MICROPY_VFS && (MICROPY_VFS_FAT || MICROPY_VFS_LFS1 || MICROPY_VFS_LFS2)
