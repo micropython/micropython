@@ -39,7 +39,11 @@
 #include "esp_task.h"
 #include "esp_event.h"
 #include "esp_flash.h"
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(6, 0, 0)
+#include "esp_flash_chips/spi_flash_chip_driver.h"
+#else
 #include "spi_flash_chip_driver.h"
+#endif
 #include "esp_log.h"
 #include "esp_memory_utils.h"
 #include "esp_psram.h"
@@ -64,7 +68,9 @@
 #include "usb_serial_jtag.h"
 #include "modesp32.h"
 #include "modmachine.h"
+#if MICROPY_PY_NETWORK
 #include "modnetwork.h"
+#endif
 #if MICROPY_PY_NETWORK_WLAN_CSI
 #include "network_wlan_csi.h"
 #endif
