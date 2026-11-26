@@ -306,13 +306,19 @@ static void esp32_pcnt_init_helper(esp32_pcnt_obj_t *self, size_t n_pos_args, co
         mp_raise_ValueError(MP_ERROR_TEXT("channel"));
     }
 
+    // If the unit is enabled then disable it if reconfiguring
+    if (self->enabled) {
+        pcnt_unit_disable(self->unit);
+        self->enabled = false;
+    }
+
+    mp_hal_pin_obj_t pin = PCNT_PIN_NOT_USED;
     if (args[ARG_pin].u_obj != MP_OBJ_NULL || args[ARG_mode_pin].u_obj != MP_OBJ_NULL) {
         // If you set mode_pin, you must also set pin.
         if (args[ARG_pin].u_obj == MP_OBJ_NULL) {
             mp_raise_ValueError(MP_ERROR_TEXT("pin"));
         }
 
-        mp_hal_pin_obj_t pin = PCNT_PIN_NOT_USED;
         mp_hal_pin_obj_t mode_pin = PCNT_PIN_NOT_USED;
 
         // Set to None to disable pin/mode_pin.
@@ -367,6 +373,9 @@ static void esp32_pcnt_init_helper(esp32_pcnt_obj_t *self, size_t n_pos_args, co
             mp_raise_ValueError(MP_ERROR_TEXT("mode_high"));
         }
         if (self->channels[channel] == NULL) {
+            if (pin == PCNT_PIN_NOT_USED) {
+                return; // Passing pin=None disables the channel, so can ignore if channel not initialised
+            }
             mp_raise_ValueError(MP_ERROR_TEXT("channel not initialised"));
         }
         check_esp_err(pcnt_channel_set_edge_action(self->channels[channel],
