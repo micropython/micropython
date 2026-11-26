@@ -325,6 +325,11 @@ list(APPEND MICROPY_CPP_DEF_EXTRA "ESP_PLATFORM")
 # Include the main MicroPython cmake rules.
 include(${MICROPY_DIR}/py/mkrules.cmake)
 
+# "make sbom" target, with ESP-IDF packages from esp-idf-sbom.
+micropy_sbom(${CMAKE_PROJECT_NAME}.elf ${CMAKE_BINARY_DIR}/${CMAKE_PROJECT_NAME}.map
+    --idf ${CMAKE_BINARY_DIR}/project_description.json
+)
+
 # Generate source files for named pins (requires mkrules.cmake for MICROPY_GENHDR_DIR).
 
 set(GEN_PINS_PREFIX "${MICROPY_PORT_DIR}/boards/pins_prefix.c")
