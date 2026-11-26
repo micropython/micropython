@@ -163,12 +163,8 @@ static mp_obj_t lwip_slip_make_new(mp_obj_t type_in, size_t n_args, size_t n_kw,
     MP_STATE_VM(lwip_slip_stream) = args[0];
 
     ip_addr_t iplocal, ipremote;
-    if (!ipaddr_aton(mp_obj_str_get_str(args[1]), &iplocal)) {
-        mp_raise_ValueError(MP_ERROR_TEXT("not a valid local IP"));
-    }
-    if (!ipaddr_aton(mp_obj_str_get_str(args[2]), &ipremote)) {
-        mp_raise_ValueError(MP_ERROR_TEXT("not a valid remote IP"));
-    }
+    lwip_parse_ip_addr(args[1], &iplocal);
+    lwip_parse_ip_addr(args[2], &ipremote);
 
     struct netif *n = &lwip_slip_obj.lwip_netif;
     if (netif_add(n, &iplocal, IP_ADDR_BROADCAST, &ipremote, NULL, slipif_init, ip_input) == NULL) {
@@ -427,8 +423,7 @@ mp_obj_t lwip_format_inet_addr(const ip_addr_t *ip, mp_uint_t port) {
 mp_uint_t lwip_parse_inet_addr(mp_obj_t addr_in, ip_addr_t *out_ip) {
     mp_obj_t *addr_items;
     mp_obj_get_array_fixed_n(addr_in, 2, &addr_items);
-    size_t addr_len;
-    const char *addr_str = mp_obj_str_get_data(addr_items[0], &addr_len);
+    const char *addr_str = mp_obj_str_get_str(addr_items[0]);
     if (*addr_str == 0) {
         #if LWIP_IPV6
         *out_ip = *IP6_ADDR_ANY;
@@ -436,12 +431,18 @@ mp_uint_t lwip_parse_inet_addr(mp_obj_t addr_in, ip_addr_t *out_ip) {
         *out_ip = *IP_ADDR_ANY;
         #endif
     } else {
-        if (!ipaddr_aton(addr_str, out_ip)) {
-            mp_raise_ValueError(MP_ERROR_TEXT("invalid arguments"));
-        }
+        lwip_parse_ip_addr(addr_items[0], out_ip);
     }
     return mp_obj_get_int(addr_items[1]);
 }
+
+void lwip_parse_ip_addr(mp_obj_t arg, ip_addr_t *out_addr) {
+    const char *temp_str = mp_obj_str_get_str(arg);
+    if (!ipaddr_aton(temp_str, out_addr)) {
+        mp_raise_ValueError(MP_ERROR_TEXT("invalid IP address"));
+    }
+}
+
 
 /*******************************************************************************/
 // Callback functions for the lwIP raw API.
