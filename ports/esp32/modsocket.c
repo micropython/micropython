@@ -507,7 +507,10 @@ static mp_obj_t socket_setsockopt(size_t n_args, const mp_obj_t *args) {
         case SO_BINDTODEVICE: {
             size_t len;
             const char *val = mp_obj_str_get_data(args[3], &len);
-            char ifname[NETIF_NAMESIZE] = {0};
+            char ifname[NETIF_NAMESIZE] = {0};  // NETIF_NAMESIZE includes NUL byte
+            if (len >= NETIF_NAMESIZE) {
+                mp_raise_ValueError(MP_ERROR_TEXT("value too long"));
+            }
             memcpy(&ifname, val, len);
             int ret = lwip_setsockopt(self->fd, SOL_SOCKET, opt, &ifname, NETIF_NAMESIZE);
             if (ret != 0) {
