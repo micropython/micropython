@@ -283,6 +283,7 @@ SRC_C += \
 	pyb_can.c \
 	eth.c \
 	eth_phy.c \
+	ltdc.c \
 	gccollect.c \
 	help.c \
 	machine_bitstream.c \
@@ -385,6 +386,7 @@ endif
 ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),n6))
 HAL_SRC_C += $(addprefix $(STM32LIB_HAL_BASE)/Src/stm32$(MCU_SERIES)xx_,\
 	hal_bsec.c \
+	hal_ltdc.c \
 	hal_rif.c \
 	hal_xspi.c \
 	)
