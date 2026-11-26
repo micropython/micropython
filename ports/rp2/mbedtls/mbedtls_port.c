@@ -29,10 +29,10 @@
 
 #ifdef MICROPY_SSL_MBEDTLS
 
-#include "mbedtls_config_port.h"
-
+#include "mbedtls/version.h"
 #include "shared/timeutils/timeutils.h"
 #include "mbedtls/platform_time.h"
+#include "psa/crypto_driver_random.h"
 #include "pico/aon_timer.h"
 
 time_t rp2_rtctime_seconds(time_t *timer) {
@@ -47,4 +47,5 @@ mbedtls_ms_time_t mbedtls_ms_time(void) {
     current_ms = rp2_rtctime_seconds(tv) * 1000;
     return current_ms;
 }
-#endif
+
+#endif // MICROPY_SSL_MBEDTLS
