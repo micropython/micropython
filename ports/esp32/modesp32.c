@@ -48,6 +48,10 @@
 #include "../heap_private.h"
 #include "driver/rtc_io.h"
 
+#if CONFIG_IDF_TARGET_ESP32 && CONFIG_BT_ENABLED
+#include "esp_bt.h"
+#endif
+
 #if SOC_TOUCH_SENSOR_SUPPORTED
 static mp_obj_t esp32_wake_on_touch(const mp_obj_t wake) {
 
@@ -315,6 +319,14 @@ static mp_obj_t esp32_idf_task_info(void) {
 static MP_DEFINE_CONST_FUN_OBJ_0(esp32_idf_task_info_obj, esp32_idf_task_info);
 #endif
 
+#if CONFIG_IDF_TARGET_ESP32 && CONFIG_BT_ENABLED
+static mp_obj_t bt_controller_mem_release(void) {
+    check_esp_err(esp_bt_controller_mem_release(ESP_BT_MODE_BTDM));
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_0(bt_controller_mem_release_obj, bt_controller_mem_release);
+#endif
+
 static const mp_rom_map_elem_t esp32_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_esp32) },
 
@@ -342,6 +354,9 @@ static const mp_rom_map_elem_t esp32_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_idf_heap_info), MP_ROM_PTR(&esp32_idf_heap_info_obj) },
     #if CONFIG_FREERTOS_USE_TRACE_FACILITY
     { MP_ROM_QSTR(MP_QSTR_idf_task_info), MP_ROM_PTR(&esp32_idf_task_info_obj) },
+    #endif
+    #if CONFIG_IDF_TARGET_ESP32 && CONFIG_BT_ENABLED
+    { MP_ROM_QSTR(MP_QSTR_bt_controller_mem_release), MP_ROM_PTR(&bt_controller_mem_release_obj) },
     #endif
 
     { MP_ROM_QSTR(MP_QSTR_NVS), MP_ROM_PTR(&esp32_nvs_type) },
