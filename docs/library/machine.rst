@@ -14,7 +14,7 @@ damage.
 Memory access
 -------------
 
-The module exposes three objects used for raw memory access.
+The module exposes the following objects used for raw memory access.
 
 .. data:: mem8
 
@@ -28,9 +28,18 @@ The module exposes three objects used for raw memory access.
 
     Read/write 32 bits of memory.
 
+.. data:: mem64
+
+    Read/write 64 bits of memory.
+
+    Availability: targets that can perform a single 64-bit memory access, which
+    in practice means those with 64-bit pointers. Use ``hasattr(machine, "mem64")``
+    to test for it.
+
 Use subscript notation ``[...]`` to index these objects with the address of
 interest. Note that the address is the byte address, regardless of the size of
-memory being accessed.
+memory being accessed. Each read or write is a single memory access of the
+object's width, which matters for memory-mapped registers.
 
 Example use (registers are specific to an stm32 microcontroller):
 
