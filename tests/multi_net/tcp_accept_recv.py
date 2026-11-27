@@ -42,7 +42,7 @@ def instance0():
                 print("recv", s.recv(10))  # should raise Errno 107 ENOTCONN
             except OSError as er:
                 # Verify the error code is either 107 (ENOTCONN) or 128 (ENOTCONN on Windows)
-                print(er.errno in (107, 128))
+                print(er.errno in (107, 128, 10057))
 
             # Cleanup
             c.close()

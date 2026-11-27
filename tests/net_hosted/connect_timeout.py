@@ -20,5 +20,5 @@ if __name__ == "__main__":
     # 1.1.1.1:8000 seem to reliably timeout, so use that.
     addr = socket.getaddrinfo("1.1.1.1", 8000)[0][-1]
 
-    test(addr, 0, (errno.EINPROGRESS,))
+    test(addr, 0, (errno.EINPROGRESS, 10035))
     test(addr, 1, (errno.ETIMEDOUT, "timed out"))  # CPython uses a string instead of errno
