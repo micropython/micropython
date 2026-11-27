@@ -163,11 +163,27 @@ static mp_obj_t mp_machine_pwm_make_new(const mp_obj_type_t *type, size_t n_args
     return MP_OBJ_FROM_PTR(self);
 }
 
+// Disabling a slice holds its outputs at their current level, so zero the duty
+// and let the counter wrap to latch it first.
+static void machine_pwm_stop_at_zero(uint slice) {
+    pwm_set_both_levels(slice, 0, 0);
+    if (pwm_hw->slice[slice].csr & PWM_CH0_CSR_EN_BITS) {
+        // Phase-correct mode wraps at 0, so count up for this wrap.
+        hw_clear_bits(&pwm_hw->slice[slice].csr, PWM_CH0_CSR_PH_CORRECT_BITS);
+        uint16_t top = pwm_hw->slice[slice].top;
+        pwm_set_counter(slice, top);
+        uint32_t start = mp_hal_ticks_us();
+        while (pwm_get_counter(slice) == top && mp_hal_ticks_us() - start < 10) {
+        }
+    }
+    pwm_set_enabled(slice, false);
+}
+
 // Stop all active slices.
 void machine_pwm_deinit_all(void) {
     for (int i = 0; i < NUM_PWM_SLICES; i++) {
         slice_freq_set[i] = false;
-        pwm_set_enabled(i, false);
+        machine_pwm_stop_at_zero(i);
     }
 }
 
