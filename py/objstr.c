@@ -2554,12 +2554,17 @@ static MP_NORETURN void bad_implicit_conversion(mp_obj_t self_in) {
 qstr mp_obj_str_get_qstr(mp_obj_t self_in) {
     if (mp_obj_is_qstr(self_in)) {
         return MP_OBJ_QSTR_VALUE(self_in);
-    } else if (mp_obj_is_exact_type(self_in, &mp_type_str)) {
-        mp_obj_str_t *self = MP_OBJ_TO_PTR(self_in);
-        return qstr_from_strn((char *)self->data, self->len);
-    } else {
+    }
+    // also accept a str subclass instance, via its native str
+    mp_obj_t str = mp_obj_cast_to_native_base(self_in, MP_OBJ_FROM_PTR(&mp_type_str));
+    if (str == MP_OBJ_NULL) {
         bad_implicit_conversion(self_in);
     }
+    if (mp_obj_is_qstr(str)) {
+        return MP_OBJ_QSTR_VALUE(str);
+    }
+    mp_obj_str_t *self = MP_OBJ_TO_PTR(str);
+    return qstr_from_strn((char *)self->data, self->len);
 }
 
 // only use this function if you need the str data to be zero terminated
