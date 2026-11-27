@@ -469,8 +469,7 @@ static mp_obj_t network_ninaw10_nic_ipconfig(size_t n_args, const mp_obj_t *args
                     case MP_QSTR_addr4: {
                         int prefix_bits = 32;
                         if (e->value != mp_const_none && mp_obj_is_str(e->value)) {
-                            size_t addr_len;
-                            const char *input_str = mp_obj_str_get_data(e->value, &addr_len);
+                            const char *input_str = mp_obj_str_get_str(e->value);
                             char *split = strchr(input_str, '/');
                             if (split) {
                                 mp_obj_t prefix_obj = mp_parse_num_integer(split + 1, strlen(split + 1), 10, NULL);

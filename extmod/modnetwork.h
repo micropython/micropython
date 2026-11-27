@@ -76,6 +76,7 @@ mp_obj_t mod_network_hostname(size_t n_args, const mp_obj_t *args);
 #if MICROPY_PY_LWIP
 
 #include "lwip/init.h"
+#include "lwip/ip_addr.h"
 
 #if MICROPY_PY_NETWORK_WIZNET5K
 mp_obj_t wiznet5k_get_active_spi(void);
@@ -98,6 +99,7 @@ mp_obj_t mod_network_ipconfig(size_t n_args, const mp_obj_t *args, mp_map_t *kwa
 mp_obj_t mod_network_nic_ipconfig(struct netif *netif, size_t n_args, const mp_obj_t *args, mp_map_t *kwargs);
 extern int mp_mod_network_prefer_dns_use_ip_version;
 #endif
+void lwip_parse_ip_addr(mp_obj_t obj_str, ip_addr_t *out_addr);
 #elif defined(MICROPY_PORT_NETWORK_INTERFACES)
 
 #if MICROPY_PY_NETWORK_NINAW10

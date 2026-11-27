@@ -148,11 +148,7 @@ mp_obj_t mod_network_ipconfig(size_t n_args, const mp_obj_t *args, mp_map_t *kwa
                 switch (mp_obj_str_get_qstr(e->key)) {
                     case MP_QSTR_dns: {
                         ip_addr_t dns;
-                        size_t addr_len;
-                        const char *addr_str = mp_obj_str_get_data(e->value, &addr_len);
-                        if (!ipaddr_aton(addr_str, &dns)) {
-                            mp_raise_ValueError(MP_ERROR_TEXT("invalid arguments as dns server"));
-                        }
+                        lwip_parse_ip_addr(e->value, &dns);
                         dns_setserver(0, &dns);
                         break;
                     }
@@ -336,15 +332,8 @@ mp_obj_t mod_network_nic_ipconfig(struct netif *netif, size_t n_args, const mp_o
                         } else if (e->value != mp_const_none) {
                             mp_obj_t *items;
                             mp_obj_get_array_fixed_n(e->value, 2, &items);
-                            size_t addr_len;
-                            const char *ip_addr_str = mp_obj_str_get_data(items[0], &addr_len);
-                            const char *netmask_str = mp_obj_str_get_data(items[1], &addr_len);
-                            if (!ipaddr_aton(ip_addr_str, &ip_addr)) {
-                                mp_raise_ValueError(MP_ERROR_TEXT("invalid arguments"));
-                            }
-                            if (!ipaddr_aton(netmask_str, &netmask)) {
-                                mp_raise_ValueError(MP_ERROR_TEXT("invalid arguments"));
-                            }
+                            lwip_parse_ip_addr(items[0], &ip_addr);
+                            lwip_parse_ip_addr(items[1], &netmask);
                             if (!IP_IS_V4(&ip_addr) || !IP_IS_V4(&netmask)) {
                                 mp_raise_ValueError(MP_ERROR_TEXT("invalid address type"));
                             }
@@ -379,11 +368,7 @@ mp_obj_t mod_network_nic_ipconfig(struct netif *netif, size_t n_args, const mp_o
                     }
                     case MP_QSTR_gw4: {
                         ip_addr_t ip_addr;
-                        size_t addr_len;
-                        const char *addr_str = mp_obj_str_get_data(e->value, &addr_len);
-                        if (!ipaddr_aton(addr_str, &ip_addr)) {
-                            mp_raise_ValueError(MP_ERROR_TEXT("invalid arguments"));
-                        }
+                        lwip_parse_ip_addr(e->value, &ip_addr);
                         if (IP_IS_V4(&ip_addr)) {
                             netif->gw = ip_addr;
                         } else {
