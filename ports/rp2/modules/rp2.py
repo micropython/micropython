@@ -13,7 +13,8 @@ _PROG_SHIFTCTRL = const(5)
 _PROG_OUT_PINS = const(6)
 _PROG_SET_PINS = const(7)
 _PROG_SIDESET_PINS = const(8)
-_PROG_MAX_FIELDS = const(9)
+_PROG_ORIGIN = const(9)
+_PROG_MAX_FIELDS = const(10)
 
 
 class PIOASMError(Exception):
@@ -35,6 +36,7 @@ class PIOASMEmit:
         push_thresh=32,
         pull_thresh=32,
         fifo_join=PIO.JOIN_NONE,
+        origin=-1,
     ):
         # array is a built-in module so importing it here won't require
         # scanning the filesystem.
@@ -51,7 +53,18 @@ class PIOASMEmit:
             | autopull << 17
             | autopush << 16
         )
-        self.prog = [array("H"), -1, -1, -1, execctrl, shiftctrl, out_init, set_init, sideset_init]
+        self.prog = [
+            array("H"),
+            -1,
+            -1,
+            -1,
+            execctrl,
+            shiftctrl,
+            out_init,
+            set_init,
+            sideset_init,
+            origin,
+        ]
 
         self.wrap_used = False
 
