@@ -1,0 +1,5 @@
+loopback [0, 1, 0, 1]
+pull_up 1
+open_drain 0 1
+irq 20
+irq_rising 5

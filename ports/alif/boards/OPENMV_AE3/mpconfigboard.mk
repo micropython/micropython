@@ -1,6 +1,4 @@
-# TODO: alif_ensemble-cmsis-dfp only supports AE722F80F55D5XX at the moment.
-MCU_SERIES = E7
-MCU_VARIANT = AE722F80F55D5XX
+MCU_VARIANT = AE302F80F55D5
 JLINK_DEV = AE302F80F55D5_HP
 LD_FILE = boards/OPENMV_AE3/board.ld.S
 PORT = /dev/ttyUSB0

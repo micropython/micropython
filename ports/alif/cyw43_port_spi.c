@@ -31,6 +31,7 @@
 #include "lib/cyw43-driver/src/cyw43_spi.h"
 
 #include "spi.h"
+#include "sys_clocks.h"
 #include "sys_ctrl_spi.h"
 
 // CYW43 is connected to SPI3.

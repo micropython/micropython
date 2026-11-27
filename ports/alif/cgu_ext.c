@@ -25,7 +25,7 @@
  */
 
 #include "cgu_ext.h"
-#include "peripheral_types.h"
+#include "soc.h"
 
 #if CORE_M55_HP
 #define CLK_BIT_OFFSET (0)

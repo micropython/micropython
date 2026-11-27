@@ -29,7 +29,6 @@
 #include "lptimer_ext.h"
 #include "sys_ctrl_lptimer.h"
 
-#define LPTIMER ((LPTIMER_Type *)LPTIMER_BASE)
 #define LPTIMER_CH_A (0)
 
 void LPTIMER0_IRQHandler(void) {
@@ -44,7 +43,7 @@ void lptimer_init(void) {
 void lptimer_set_wakeup(uint64_t timeout_us) {
     lptimer_disable_counter(LPTIMER, LPTIMER_CH_A);
 
-    ANA_REG->MISC_CTRL |= 1U << 0; // SEL_32K, select LXFO
+    ANA->MISC_CTRL |= 1U << 0; // SEL_32K, select LXFO
 
     select_lptimer_clk(LPTIMER_CLK_SOURCE_32K, LPTIMER_CH_A);
 

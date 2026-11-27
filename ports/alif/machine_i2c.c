@@ -31,6 +31,7 @@
 
 #if MICROPY_HW_ENABLE_HW_I2C
 #include "i2c.h"
+#include "sys_clocks.h"
 
 #define I2C_DEFAULT_FREQ    (400000)
 #define I2C_DEFAULT_TIMEOUT (50000)

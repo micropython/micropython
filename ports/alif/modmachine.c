@@ -215,7 +215,7 @@ MP_NORETURN static void mp_machine_deepsleep(size_t n_args, const mp_obj_t *args
     #define IRQ_KEEP_MASK(i, irq) ((i) == (irq) / 32 ? (1U << ((irq) % 32)) : 0)
     for (size_t i = 0; i < MP_ARRAY_SIZE(NVIC->ICER); ++i) {
         uint32_t keep = 0;
-        keep |= IRQ_KEEP_MASK(i, LPRTC_IRQ_IRQn);
+        keep |= IRQ_KEEP_MASK(i, LPRTC0_IRQ_IRQn);
         keep |= IRQ_KEEP_MASK(i, LPGPIO_COMB_IRQ_IRQn);
         keep |= IRQ_KEEP_MASK(i, LPTIMER0_IRQ_IRQn);
         keep |= IRQ_KEEP_MASK(i, LPGPIO_IRQ0_IRQn);

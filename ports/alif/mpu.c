@@ -29,7 +29,7 @@
 #include "mpu.h"
 #include ALIF_CMSIS_H
 
-static const ARM_MPU_Region_t mpu_table[] __STARTUP_RO_DATA_ATTRIBUTE = {
+static const ARM_MPU_Region_t mpu_table[] = {
     [MP_MPU_REGION_SRAM0] = {   /* SRAM0 - 4MB : RO-0, NP-1, XN-0 */
         .RBAR = ARM_MPU_RBAR(0x02000000, ARM_MPU_SH_NON, 0, 1, 0),
         .RLAR = ARM_MPU_RLAR(0x023FFFFF, MP_MPU_ATTR_NORMAL_WT_RA_TRANSIENT)
@@ -86,8 +86,8 @@ void mpu_config_mram(bool read_only) {
     uintptr_t atomic = disable_irq();
     ARM_MPU_Disable();
     MPU->RNR = MP_MPU_REGION_MRAM;
-    MPU->RBAR = ARM_MPU_RBAR(MRAM_BASE, ARM_MPU_SH_NON, read_only, 1, 0);
-    MPU->RLAR = ARM_MPU_RLAR(MRAM_BASE + MRAM_SIZE - 1, MP_MPU_ATTR_NORMAL_WT_RA);
+    MPU->RBAR = ARM_MPU_RBAR(SOC_FEAT_MRAM_BASE, ARM_MPU_SH_NON, read_only, 1, 0);
+    MPU->RLAR = ARM_MPU_RLAR(SOC_FEAT_MRAM_BASE + SOC_FEAT_MRAM_SIZE - 1, MP_MPU_ATTR_NORMAL_WT_RA);
     ARM_MPU_Enable(MPU_CTRL_PRIVDEFENA_Msk | MPU_CTRL_HFNMIENA_Msk);
     enable_irq(atomic);
 }
