@@ -87,6 +87,12 @@ static int instance_count_native_bases(const mp_obj_type_t *type, const mp_obj_t
 // This wrapper function allows a subclass of a native type to call the
 // __init__() method (corresponding to type->make_new) of the native type.
 static mp_obj_t native_base_init_wrapper(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+    if (!mp_obj_is_instance_type(mp_obj_get_type(args[0]))) {
+        // Not an instance of a user class, so there is no native sub-object to
+        // initialise.  This happens when a metaclass __new__ returns a class
+        // created by type() and its __init__ then calls super().__init__().
+        return mp_const_none;
+    }
     mp_obj_instance_t *self = MP_OBJ_TO_PTR(args[0]);
     const mp_obj_type_t *native_base = NULL;
     instance_count_native_bases(self->base.type, &native_base);
@@ -329,7 +335,10 @@ static mp_obj_t mp_obj_instance_make_new(const mp_obj_type_t *self, size_t n_arg
         // https://docs.python.org/3.4/reference/datamodel.html#object.__new__
         // "If __new__() does not return an instance of cls, then the new
         // instance's __init__() method will not be invoked."
-        if (mp_obj_get_type(new_ret) != self) {
+        // But give metaclasses a pass since the type of all classes in
+        // MicroPython are `type` instead of the metaclass.
+        const mp_obj_type_t *ret_type = mp_obj_get_type(new_ret);
+        if (ret_type != self && ret_type != &mp_type_type) {
             return new_ret;
         }
 
