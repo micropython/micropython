@@ -3,3 +3,5 @@
 # UART(5) is on P17_1/P17_0.
 uart_loopback_args = ()
 uart_loopback_kwargs = {"tx": "P17_1", "rx": "P17_0"}
+
+spi_standalone_args_list = [(10,)]

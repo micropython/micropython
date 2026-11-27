@@ -1,0 +1,29 @@
+SPI(id=10, baudrate=1000000, polarity=0, phase=0, bits=8, firstbit=MSB, sck='P16_0', mosi='P16_1', miso='P16_2')
+True
+SPI(id=10, baudrate=2000000, polarity=1, phase=1, bits=8, firstbit=LSB, sck='P16_0', mosi='P16_1', miso='P16_2')
+SPI(id=10, baudrate=1000000, polarity=0, phase=0, bits=8, firstbit=MSB, sck='P16_0', mosi='P16_1', miso='P16_2')
+SPI(id=10, baudrate=1000000, polarity=0, phase=0, bits=8, firstbit=MSB, sck='P16_0', mosi='P16_1', miso='P16_2')
+SPI(id=10, baudrate=1000000, polarity=0, phase=0, bits=8, firstbit=MSB, sck='P16_0', mosi='P16_1', miso='P16_2')
+TypeError SPI id must be an integer
+ValueError SPI id out of range
+ValueError SPI id out of range
+ValueError no id or pins have been provided. At least one of them must be specified.
+ValueError the id does not match the discovered id from the provided pins.
+ValueError no signal 'SPI_CLK' available for id 6.
+ValueError baudrate must be > 0
+ValueError polarity/phase must be 0 or 1
+ValueError polarity/phase must be 0 or 1
+ValueError bits must be 8
+ValueError invalid firstbit
+SPI(id=10, baudrate=1000000, polarity=0, phase=0, bits=8, firstbit=MSB, sck='P16_0', mosi='P16_1', miso='P16_2')
+ValueError bits must be 8
+ValueError the id does not match the discovered id from the provided pins.
+SPI(id=10, baudrate=500000, polarity=0, phase=0, bits=8, firstbit=MSB, sck='P16_0', mosi='P16_1', miso='P16_2')
+ValueError bits must be 8
+ValueError the id does not match the discovered id from the provided pins.
+SPI(id=10, baudrate=500000, polarity=0, phase=0, bits=8, firstbit=MSB, sck='P16_0', mosi='P16_1', miso='P16_2')
+transfers done
+True
+ValueError SCB 10 is already in use by a machine.I2C or machine.SPI instance.
+ValueError SCB 10 is already in use by another I2C, SPI or UART instance.
+SPI(id=10, baudrate=1000000, polarity=0, phase=0, bits=8, firstbit=MSB, sck='P16_0', mosi='P16_1', miso='P16_2')
