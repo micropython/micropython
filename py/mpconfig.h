@@ -792,6 +792,10 @@ typedef uint64_t mp_uint_t;
 #define MICROPY_GC_ENABLE_CONTAINS_NO_GC_POINTERS (MICROPY_ENABLE_GC && MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_BASIC_FEATURES)
 #endif
 
+#ifndef MICROPY_GC_FREE_RUN_INDEX
+#define MICROPY_GC_FREE_RUN_INDEX (MICROPY_ENABLE_GC && MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_BASIC_FEATURES)
+#endif
+
 // Whether the garbage-collected heap can be split over multiple memory areas.
 #ifndef MICROPY_GC_SPLIT_HEAP
 #define MICROPY_GC_SPLIT_HEAP (0)

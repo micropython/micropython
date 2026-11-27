@@ -120,6 +120,9 @@ typedef struct _mp_state_mem_area_t {
     byte *gc_pool_end;
 
     size_t gc_last_free_atb_index;
+    #if MICROPY_GC_FREE_RUN_INDEX
+    size_t gc_last_free_run_atb_index[7];
+    #endif
     size_t gc_last_used_block; // The block ID of the highest block allocated in the area
 } mp_state_mem_area_t;
 

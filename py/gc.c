@@ -151,6 +151,36 @@ static void gc_deal_with_stack_overflow(void);
 static void gc_sweep_run_finalisers(void);
 static void gc_sweep_free_blocks(void);
 
+#if MICROPY_GC_FREE_RUN_INDEX
+#define GC_FREE_RUN_SIZES (MP_ARRAY_SIZE(((mp_state_mem_area_t *)NULL)->gc_last_free_run_atb_index))
+
+static void gc_reset_free_run_index(mp_state_mem_area_t *area, size_t atb_index) {
+    for (size_t c = 0; c < GC_FREE_RUN_SIZES; c++) {
+        if (atb_index < area->gc_last_free_run_atb_index[c]) {
+            area->gc_last_free_run_atb_index[c] = atb_index;
+        }
+    }
+}
+
+static void gc_advance_free_run_index(mp_state_mem_area_t *area, size_t n_blocks, size_t atb_index) {
+    if (n_blocks <= GC_FREE_RUN_SIZES + 1) {
+        area->gc_last_free_run_atb_index[n_blocks - 2] = atb_index;
+    }
+}
+
+static size_t gc_free_run_start(mp_state_mem_area_t *area, size_t n_blocks) {
+    size_t atb_index = area->gc_last_free_atb_index;
+    for (size_t c = 0; c < MIN(n_blocks - 1, GC_FREE_RUN_SIZES); c++) {
+        atb_index = MAX(atb_index, area->gc_last_free_run_atb_index[c]);
+    }
+    return atb_index;
+}
+#else
+#define gc_reset_free_run_index(area, atb_index)
+#define gc_advance_free_run_index(area, n_blocks, atb_index)
+#define gc_free_run_start(area, n_blocks) ((area)->gc_last_free_atb_index)
+#endif
+
 // TODO waste less memory; currently requires that all entries in alloc_table have a corresponding block in pool
 static void gc_setup_area(mp_state_mem_area_t *area, void *start, void *end) {
     // calculate parameters for GC (T=total, A=alloc table, F=finaliser table, W=weakref table, S=scan table, P=pool; all in bytes):
@@ -233,6 +263,7 @@ static void gc_setup_area(mp_state_mem_area_t *area, void *start, void *end) {
         );
 
     area->gc_last_free_atb_index = 0;
+    gc_reset_free_run_index(area, 0);
     area->gc_last_used_block = 0;
 
     #if MICROPY_GC_SPLIT_HEAP
@@ -656,6 +687,7 @@ void gc_collect_end(void) {
     #endif
     for (mp_state_mem_area_t *area = &MP_STATE_MEM(area); area != NULL; area = NEXT_AREA(area)) {
         area->gc_last_free_atb_index = 0;
+        gc_reset_free_run_index(area, 0);
     }
     MP_STATE_THREAD(gc_lock_depth) &= ~GC_COLLECT_FLAG;
     GC_EXIT();
@@ -1016,7 +1048,8 @@ void *gc_alloc(size_t n_bytes, unsigned int alloc_flags) {
         // look for a run of n_blocks available blocks
         for (; area != NULL; area = NEXT_AREA(area), i = 0) {
             n_free = 0;
-            for (i = area->gc_last_free_atb_index; i < area->gc_alloc_table_byte_len; i++) {
+            i = n_blocks > 1 ? gc_free_run_start(area, n_blocks) : area->gc_last_free_atb_index;
+            for (; i < area->gc_alloc_table_byte_len; i++) {
                 MICROPY_GC_HOOK_LOOP(i);
                 byte a = area->gc_alloc_table_start[i];
                 // *FORMAT-OFF*
@@ -1025,6 +1058,10 @@ void *gc_alloc(size_t n_bytes, unsigned int alloc_flags) {
                 if (ATB_2_IS_FREE(a)) { if (++n_free >= n_blocks) { i = i * BLOCKS_PER_ATB + 2; goto found; } } else { n_free = 0; }
                 if (ATB_3_IS_FREE(a)) { if (++n_free >= n_blocks) { i = i * BLOCKS_PER_ATB + 3; goto found; } } else { n_free = 0; }
                 // *FORMAT-ON*
+            }
+
+            if (n_blocks > 1) {
+                gc_advance_free_run_index(area, n_blocks, area->gc_alloc_table_byte_len);
             }
 
             // No free blocks found on this heap. Mark this heap as
@@ -1071,6 +1108,8 @@ found:
         MP_STATE_MEM(gc_last_free_area) = area;
         #endif
         area->gc_last_free_atb_index = (i + 1) / BLOCKS_PER_ATB;
+    } else {
+        gc_advance_free_run_index(area, n_free, (i + 1) / BLOCKS_PER_ATB);
     }
 
     area->gc_last_used_block = MAX(area->gc_last_used_block, end_block);
@@ -1199,6 +1238,7 @@ void gc_free(void *ptr) {
     if (block / BLOCKS_PER_ATB < area->gc_last_free_atb_index) {
         area->gc_last_free_atb_index = block / BLOCKS_PER_ATB;
     }
+    gc_reset_free_run_index(area, (block - MIN(block, GC_FREE_RUN_SIZES)) / BLOCKS_PER_ATB);
 
     // free head and all of its tail blocks
     do {
@@ -1359,6 +1399,7 @@ void *gc_realloc(void *ptr_in, size_t n_bytes, bool allow_move) {
         if ((block + new_blocks) / BLOCKS_PER_ATB < area->gc_last_free_atb_index) {
             area->gc_last_free_atb_index = (block + new_blocks) / BLOCKS_PER_ATB;
         }
+        gc_reset_free_run_index(area, (block + new_blocks) / BLOCKS_PER_ATB);
 
         GC_EXIT();
 
