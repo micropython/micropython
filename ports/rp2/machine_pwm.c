@@ -167,7 +167,7 @@ static mp_obj_t mp_machine_pwm_make_new(const mp_obj_type_t *type, size_t n_args
 void machine_pwm_deinit_all(void) {
     for (int i = 0; i < NUM_PWM_SLICES; i++) {
         slice_freq_set[i] = false;
-        pwm_set_enabled(machine_pwm_obj[i].slice, false);
+        pwm_set_enabled(i, false);
     }
 }
 
