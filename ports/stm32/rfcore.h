@@ -26,7 +26,12 @@
 #ifndef MICROPY_INCLUDED_STM32_RFCORE_H
 #define MICROPY_INCLUDED_STM32_RFCORE_H
 
+#include <stdbool.h>
 #include <stdint.h>
+
+#if defined(STM32WB)
+extern volatile bool rfcore_ipcc_timeout;
+#endif
 
 typedef void (*rfcore_ble_msg_callback_t)(void *, const uint8_t *, size_t);
 
