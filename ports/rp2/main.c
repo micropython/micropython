@@ -203,6 +203,10 @@ int main(int argc, char **argv) {
     // Hook for setting up anything that can wait until after other hardware features are initialised.
     MICROPY_BOARD_EARLY_INIT();
 
+    // Runs once at power-up only, outside the soft-reset loop below, so that
+    // is_soft_reset survives interpreter soft resets until the next chip reset.
+    machine_init();
+
     for (;;) {
 
         // Initialise MicroPython runtime.
@@ -266,6 +270,8 @@ int main(int argc, char **argv) {
 
     soft_reset_exit:
         mp_printf(MP_PYTHON_PRINTER, "MPY: soft reboot\n");
+
+        machine_deinit();
 
         // Hook for resetting anything immediately following a soft reset command.
         MICROPY_BOARD_START_SOFT_RESET();
