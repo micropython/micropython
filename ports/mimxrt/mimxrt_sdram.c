@@ -77,6 +77,20 @@ extern uint8_t __sdram_start;
 #endif
 #endif
 
+// SEMC AXI queue arbitration weights (raw BMCR0 / BMCR1 register values).
+// The SDK defaults let the SEMC reorder commands, so a read can overtake an
+// older write to the same address. For SDRAM that must stay in order, the
+// RT1170 RM (SEMC, "Bus Master Control Registers (BMCRn) Configuration")
+// says only WQOS and WAGE may be non-zero. Boards can override these.
+#if defined(MIMXRT117x_SERIES)
+#ifndef MICROPY_HW_SDRAM_BMCR0
+#define MICROPY_HW_SDRAM_BMCR0              (SEMC_BMCR0_WQOS(1) | SEMC_BMCR0_WAGE(8))
+#endif
+#ifndef MICROPY_HW_SDRAM_BMCR1
+#define MICROPY_HW_SDRAM_BMCR1              (SEMC_BMCR1_WQOS(1) | SEMC_BMCR1_WAGE(8))
+#endif
+#endif
+
 void mimxrt_sdram_init(void) {
     // Set Clocks
     #if defined(MIMXRT117x_SERIES)
@@ -247,6 +261,13 @@ void mimxrt_sdram_init(void) {
     SEMC_GetDefaultConfig(&semc_cfg);
 
     semc_cfg.dqsMode = kSEMC_Loopbackdqspad;  // For more accurate timing.
+
+    #ifdef MICROPY_HW_SDRAM_BMCR0
+    semc_cfg.queueWeight.queueaWeight.queueaValue = MICROPY_HW_SDRAM_BMCR0;
+    #endif
+    #ifdef MICROPY_HW_SDRAM_BMCR1
+    semc_cfg.queueWeight.queuebWeight.queuebValue = MICROPY_HW_SDRAM_BMCR1;
+    #endif
     SEMC_Init(SEMC, &semc_cfg);
 
     #if defined(MIMXRT117x_SERIES)
