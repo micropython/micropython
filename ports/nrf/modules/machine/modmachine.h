@@ -30,6 +30,10 @@
 
 #include "py/obj.h"
 
+#if MICROPY_PY_MACHINE_RTC
+extern const mp_obj_type_t machine_rtc_type;
+#endif
+
 void machine_init(void);
 
 #endif // __MICROPY_INCLUDED_NRF5_MODMACHINE_H__
