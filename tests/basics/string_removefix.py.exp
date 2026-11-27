@@ -1,0 +1,15 @@
+=== removeprefix ===
+world
+hello world
+hello world
+
+hello
+
+
+=== removesuffix ===
+hello
+hello world
+hello world
+
+hello
+
