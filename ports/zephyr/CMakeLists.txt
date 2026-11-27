@@ -29,7 +29,7 @@ project(micropython)
 
 set(MICROPY_PORT_DIR    ${CMAKE_CURRENT_SOURCE_DIR})
 set(MICROPY_DIR         ${MICROPY_PORT_DIR}/../..)
-set(MICROPY_TARGET      micropython)
+set(MICROPY_TARGET      app)
 string(TOUPPER          ZEPHYR_${BOARD} MICROPY_BOARD)
 
 include(${MICROPY_DIR}/py/py.cmake)
@@ -86,11 +86,16 @@ set(MICROPY_SOURCE_PORT
     mpthreadport.c
     zephyr_device_api_kind.c
     zephyr_pinctrl.c
+    network_common.c
+    network_wlan.c
+    modnetwork.c
+    modtls.c
 )
 list(TRANSFORM MICROPY_SOURCE_PORT PREPEND ${MICROPY_PORT_DIR}/)
 
 set(MICROPY_SOURCE_SHARED
     libc/printf.c
+    netutils/netutils.c
     readline/readline.c
     runtime/gchelper_generic.c
     runtime/interrupt_char.c
@@ -157,9 +162,7 @@ zephyr_get_compile_options_for_lang(C options)
 
 set(MICROPY_CPP_FLAGS_EXTRA ${includes} ${system_includes} ${definitions} ${options})
 
-zephyr_library_named(${MICROPY_TARGET})
-
-zephyr_library_include_directories(
+target_include_directories(${MICROPY_TARGET} PRIVATE
     ${MICROPY_INC_CORE}
     ${MICROPY_PORT_DIR}
     ${MICROPY_INC_USERMOD}
@@ -167,11 +170,13 @@ zephyr_library_include_directories(
     ${DTS_ROOT_SYSTEM_INCLUDE_DIRS}
 )
 
-zephyr_library_compile_options(
-    -std=gnu99 -fomit-frame-pointer
+# Per-source so these land after Zephyr's own -std=cXX from zephyr_interface
+# (target options would come first and be overridden).
+set_source_files_properties(${MICROPY_SOURCE_QSTR} PROPERTIES
+    COMPILE_OPTIONS "-std=gnu99;-fomit-frame-pointer"
 )
 
-zephyr_library_compile_definitions(
+target_compile_definitions(${MICROPY_TARGET} PRIVATE
     NDEBUG
     MP_CONFIGFILE=<${CONFIG_MICROPY_CONFIGFILE}>
     MICROPY_HEAP_SIZE=${CONFIG_MICROPY_HEAP_SIZE}
@@ -181,20 +186,33 @@ zephyr_library_compile_definitions(
     MICROPY_VFS_LFS2=$<BOOL:${CONFIG_MICROPY_VFS_LFS2}>
 )
 
-zephyr_library_sources(${MICROPY_SOURCE_QSTR})
-zephyr_library_link_libraries(kernel)
+target_sources(${MICROPY_TARGET} PRIVATE ${MICROPY_SOURCE_QSTR})
 
 include(${MICROPY_DIR}/py/mkrules.cmake)
 
 add_dependencies(BUILD_VERSION_HEADER zephyr_generated_headers)
 add_dependencies(${MICROPY_TARGET} zephyr_generated_headers)
 
-target_sources(app PRIVATE
+target_sources(${MICROPY_TARGET} PRIVATE
     src/zephyr_getchar.c
     src/usbd.c
 )
 
-target_link_libraries(app PRIVATE ${MICROPY_TARGET})
+zephyr_linker_sources_ifdef(CONFIG_MICROPY_MBEDTLS_HEAP_RELOCATE SECTIONS ld/mbedtls_heap_reloc.ld)
+
+# Work around unwanted blob logging bypassing normal logging paths
+# RW61x
+# 'Monkeypatch' the PRINTF define everywhere to use a stub/log path instead of printk
+if (CONFIG_WIFI_NXP)
+target_sources(${MICROPY_TARGET} PRIVATE ${MICROPY_PORT_DIR}/src/mishandle_printf.c)
+zephyr_compile_options(-include${MICROPY_PORT_DIR}/src/mishandle_printf.h)
+zephyr_compile_definitions(PRINTF=mp_mishandle_printf)
+endif()
+# Infineon (RP2 W)
+# Just set the symbol to disable middleware logging
+if (CONFIG_WIFI_AIROC)
+zephyr_compile_definitions(WHD_PRINT_DISABLE)
+endif()
 
 if (CONFIG_MICROPY_DYNAMIC_PINCTRL)
     if (CONFIG_MICROPY_DYNAMIC_PINCTRL_GENERATE_PINMUX AND NOT CONFIG_MICROPY_DYNAMIC_PINCTRL_CUSTOM_GENERATOR)
