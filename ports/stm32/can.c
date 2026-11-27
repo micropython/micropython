@@ -164,18 +164,22 @@ bool can_init(CAN_HandleTypeDef *can, int can_id, can_tx_mode_t tx_mode, uint32_
             return false;
     }
 
+    // can_deinit() needs the instance to disable the clock if anything below fails.
+    can->Instance = CANx;
+
     // init GPIO
     uint32_t pin_mode = MP_HAL_PIN_MODE_ALT;
     uint32_t pin_pull = MP_HAL_PIN_PULL_UP;
     for (int i = 0; i < 2; i++) {
         if (!mp_hal_pin_config_alt(pins[i], pin_mode, pin_pull, AF_FN_CAN, can_id)) {
+            can_deinit(can);
             return false;
         }
     }
 
     // init CANx
-    can->Instance = CANx;
     if (HAL_CAN_Init(can) != HAL_OK) {
+        can_deinit(can);
         return false;
     }
 
@@ -310,6 +314,11 @@ int can_receive(CAN_HandleTypeDef *can, can_rx_fifo_t fifo, CanRxMsgTypeDef *msg
     }
     msg->RTR = box->RIR & 2;
     msg->DLC = box->RDTR & 0xf;
+    // Classic CAN allows DLC values 9 to 15 on the wire and defines them as
+    // eight data bytes. The frame has already passed CRC, so it is valid.
+    if (msg->DLC > 8) {
+        msg->DLC = 8;
+    }
     msg->FMI = box->RDTR >> 8 & 0xff;
     uint32_t rdlr = box->RDLR;
     data[0] = rdlr;

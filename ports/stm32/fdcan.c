@@ -229,12 +229,14 @@ bool can_init(CAN_HandleTypeDef *can, int can_id, can_tx_mode_t tx_mode, uint32_
     uint32_t pin_pull = MP_HAL_PIN_PULL_UP;
     for (int i = 0; i < 2; ++i) {
         if (!mp_hal_pin_config_alt(pins[i], pin_mode, pin_pull, AF_FN_CAN, can_id)) {
+            can_deinit(can);
             return false;
         }
     }
 
     // initialise hardware, catching bad configuration errors.
     if (HAL_FDCAN_Init(can) != HAL_OK) {
+        can_deinit(can);
         return false;
     }
 
@@ -243,6 +245,7 @@ bool can_init(CAN_HandleTypeDef *can, int can_id, can_tx_mode_t tx_mode, uint32_
 
     // The configuration registers are locked after CAN is started.
     if (HAL_FDCAN_Start(can) != HAL_OK) {
+        can_deinit(can);
         return false;
     }
 
@@ -271,6 +274,7 @@ bool can_init(CAN_HandleTypeDef *can, int can_id, can_tx_mode_t tx_mode, uint32_
             break;
         #endif
         default:
+            can_deinit(can);
             return false;
     }
     // FDCAN IT 0

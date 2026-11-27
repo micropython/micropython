@@ -112,6 +112,8 @@ static void machine_can_port_init(machine_can_obj_t *self) {
         false); // auto_restart not currently exposed
 
     if (!res) {
+        // can_init() has released the hardware; leave the object uninitialised.
+        self->port = NULL;
         mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("CAN init failed"));
     }
 }
