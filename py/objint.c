@@ -69,8 +69,13 @@ static mp_obj_t mp_obj_int_make_new(const mp_obj_type_t *type_in, size_t n_args,
         default: {
             // should be a string, parse it
             size_t l;
+            mp_int_t base = mp_obj_get_int(args[1]);
+            // check radix base
+            if ((base != 0 && base < 2) || base > 36) {
+                mp_raise_ValueError(MP_ERROR_TEXT("int() arg 2 must be >= 2 and <= 36"));
+            }
             const char *s = mp_obj_str_get_data(args[0], &l);
-            return mp_parse_num_integer(s, l, mp_obj_get_int(args[1]), NULL);
+            return mp_parse_num_integer(s, l, base, NULL);
         }
     }
 }
