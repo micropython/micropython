@@ -36,6 +36,8 @@ pin_2a, pin_2b = {
     "ESP32_GENERIC_S2": (10, 11),
     # ESP32-S3-DevKitC-1-N8R8, https://docs.espressif.com/projects/esp-dev-kits/en/latest/esp32s3/_images/ESP32-S3_DevKitC-1_pinlayout_v1.1.jpg
     "ESP32_GENERIC_S3": (10, 11),
+    # FireBeetle 2 board; connect 4/5 and 7/8
+    "ESP32_GENERIC_P4": (7, 8),
     # https://www.wemos.cc/en/latest/c3/c3_mini.html, https://www.wemos.cc/en/latest/_images/c3_mini_v2.1.0_4_16x9.png
     "LOLIN_C3_MINI": (0, 1),
 }.get(_build, (6, 7))
@@ -43,9 +45,18 @@ pin_2a, pin_2b = {
 pin_1a = 4
 pin_1b = 5
 
+if "S2" in sys.implementation._machine:
+    # FeatherS2 board, connect 5/6 and 10/11
+    pin_1a = 4
+    pin_1b = 5
+    pin_2a = 10
+    pin_2b = 11
+
 uart_loopback_args = (1,)
 uart_loopback_kwargs = {"tx": pin_1a, "rx": pin_1b}
 
+pin_loopback_pins = [(pin_1a, pin_1b), (pin_2a, pin_2b)]
+adc_loopback_pins = []  # TODO
 pwm_loopback_pins = [(pin_1a, pin_1b)]
 
 counter_loopback_id = 0

@@ -8,6 +8,20 @@
 
 import sys
 
+if "Teensy" in sys.implementation._machine:
+    # Teensy 4.x
+    pin_loopback_pins = [
+        ("D0", "D1"),  # FLEXPWM X and UART 1
+        ("D2", "D3"),  # FLEXPWM A/B
+        ("D11", "D12"),  # QTMR and MOSI/MISO of SPI 0
+    ]
+    pwm_loopback_pins = pin_loopback_pins
+    adc_loopback_pins = []  # TODO find pins with ADC
+else:
+    pin_loopback_pins = [("D0", "D1")]
+    pwm_loopback_pins = pin_loopback_pins
+    adc_loopback_pins = []  # TODO find pins with ADC
+
 uart_loopback_args = (1,)
 uart_loopback_kwargs = {}
 
