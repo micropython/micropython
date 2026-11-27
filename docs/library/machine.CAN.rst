@@ -121,8 +121,8 @@ Methods
    tuple for the filters argument means that no messages will be received.
 
    Some CAN controllers require each filter to be associated with only one
-   receive FIFO. In these cases, the filter items in the argument are allocated
-   round-robin to the available FIFOs. This driver does not distinguish between
+   receive FIFO. On STM32, all filters are associated with FIFO0 to preserve
+   the arrival order of messages. This driver does not distinguish between
    FIFOs in the receive IRQ.
 
    .. note:: If the caller passes an iterable with more items than

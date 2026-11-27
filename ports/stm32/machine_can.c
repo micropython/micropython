@@ -48,6 +48,7 @@
 #endif
 
 #define TX_EMPTY UINT32_MAX
+#define MACHINE_CAN_RX_FIFO CAN_RX_FIFO0
 
 struct machine_can_port {
     CAN_HandleTypeDef h;
@@ -205,29 +206,29 @@ static bool machine_can_port_recv(machine_can_obj_t *self, void *data, size_t *d
     CAN_HandleTypeDef *can = &self->port->h;
     CanRxMsgTypeDef msg;
 
-    for (can_rx_fifo_t fifo = CAN_RX_FIFO0; fifo <= CAN_RX_FIFO1; fifo++) {
-        if (can_receive(can, fifo, &msg, data, 0) == 0) {
-            // CanRxMsgTypeDef is different for Classic vs FD
-            #if MICROPY_HW_ENABLE_FDCAN
-            *flags = ((msg.IdType == FDCAN_EXTENDED_ID) ? CAN_MSG_FLAG_EXT_ID : 0) |
-                ((msg.RxFrameType == FDCAN_REMOTE_FRAME) ? CAN_MSG_FLAG_RTR : 0);
-            *id = msg.Identifier;
-            *dlen = msg.DataLength; // Lower layer has converted to bytes already
-            #else
-            *flags = (msg.IDE ? CAN_MSG_FLAG_EXT_ID : 0) |
-                (msg.RTR ? CAN_MSG_FLAG_RTR : 0);
-            *id = msg.IDE ? msg.ExtId : msg.StdId;
-            *dlen = msg.DLC;
-            #endif
+    const can_rx_fifo_t fifo = MACHINE_CAN_RX_FIFO;
 
-            *errors = self->rx_error_flags;
-            self->rx_error_flags = 0;
+    if (can_receive(can, fifo, &msg, data, 0) == 0) {
+        // CanRxMsgTypeDef is different for Classic vs FD
+        #if MICROPY_HW_ENABLE_FDCAN
+        *flags = ((msg.IdType == FDCAN_EXTENDED_ID) ? CAN_MSG_FLAG_EXT_ID : 0) |
+            ((msg.RxFrameType == FDCAN_REMOTE_FRAME) ? CAN_MSG_FLAG_RTR : 0);
+        *id = msg.Identifier;
+        *dlen = msg.DataLength; // Lower layer has converted to bytes already
+        #else
+        *flags = (msg.IDE ? CAN_MSG_FLAG_EXT_ID : 0) |
+            (msg.RTR ? CAN_MSG_FLAG_RTR : 0);
+        *id = msg.IDE ? msg.ExtId : msg.StdId;
+        *dlen = msg.DLC;
+        #endif
 
-            // Re-enable any interrupts that were disabled in RX IRQ handlers
-            can_enable_rx_interrupts(can, fifo, self->mp_irq_trigger & MP_CAN_IRQ_RX);
+        *errors = self->rx_error_flags;
+        self->rx_error_flags = 0;
 
-            return true;
-        }
+        // Re-enable any interrupts that were disabled in RX IRQ handlers
+        can_enable_rx_interrupts(can, fifo, self->mp_irq_trigger & MP_CAN_IRQ_RX);
+
+        return true;
     }
     return false;
 }
@@ -235,12 +236,10 @@ static bool machine_can_port_recv(machine_can_obj_t *self, void *data, size_t *d
 static void machine_can_update_irqs(machine_can_obj_t *self) {
     uint16_t triggers = self->mp_irq_trigger;
 
-    for (can_rx_fifo_t fifo = CAN_RX_FIFO0; fifo <= CAN_RX_FIFO1; fifo++) {
-        if (triggers & MP_CAN_IRQ_RX) {
-            can_enable_rx_interrupts(&self->port->h, fifo, true);
-        } else {
-            can_disable_rx_interrupts(&self->port->h, fifo);
-        }
+    if (triggers & MP_CAN_IRQ_RX) {
+        can_enable_rx_interrupts(&self->port->h, MACHINE_CAN_RX_FIFO, true);
+    } else {
+        can_disable_rx_interrupts(&self->port->h, MACHINE_CAN_RX_FIFO);
     }
 
     // Note: TX complete interrupt is always enabled to manage the internal queue state
@@ -278,8 +277,8 @@ static void machine_can_port_set_filter(machine_can_obj_t *self, int filter_idx,
         // already accounted for in filter_idx due to CAN_FILTERS_STD_EXT_SEPARATE.
         .FilterIndex = filter_idx,
         .FilterType = FDCAN_FILTER_MASK,
-        // Round-robin between FIFO1 and FIFO0
-        .FilterConfig = (filter_idx & 1) ? FDCAN_FILTER_TO_RXFIFO1 : FDCAN_FILTER_TO_RXFIFO0,
+        // Route all filters to FIFO0 to preserve arrival order.
+        .FilterConfig = FDCAN_FILTER_TO_RXFIFO0,
         .FilterID1 = can_id,
         .FilterID2 = mask,
     };
@@ -306,9 +305,9 @@ static void machine_can_port_set_filter(machine_can_obj_t *self, int filter_idx,
         .FilterScale = CAN_FILTERSCALE_32BIT,
         .FilterMode = CAN_FILTERMODE_IDMASK,
         .FilterNumber = filter_idx,
-        // Apply the filters round-robin to each FIFO, as each filter in bxCAN is
-        // associated with only one FIFO.
-        .FilterFIFOAssignment = filter_idx % 2,
+        // Assign all filters to FIFO0 to preserve arrival order, as each filter in
+        // bxCAN is associated with only one FIFO.
+        .FilterFIFOAssignment = 0,
         .BankNumber = CAN_HW_MAX_FILTER, // Assign same number of filters to CAN2 as CAN1
     };
 
@@ -360,7 +359,7 @@ static void machine_can_port_update_counters(machine_can_obj_t *self) {
     counters->tec = hw_counters.tec;
     counters->rec = hw_counters.rec;
     counters->tx_pending = hw_counters.tx_pending;
-    counters->rx_pending = hw_counters.rx_fifo0_pending + hw_counters.rx_fifo1_pending;
+    counters->rx_pending = hw_counters.rx_fifo0_pending;
 
     // Other fields in 'counters' are updated from ISR directly
 }
@@ -398,10 +397,8 @@ static mp_uint_t machine_can_port_irq_flags(machine_can_obj_t *self) {
 
     // Check for RX
     if (self->mp_irq_trigger & MP_CAN_IRQ_RX) {
-        for (can_rx_fifo_t fifo = CAN_RX_FIFO0; fifo <= CAN_RX_FIFO1; fifo++) {
-            if (can_is_rx_pending(can, fifo)) {
-                flags |= MP_CAN_IRQ_RX;
-            }
+        if (can_is_rx_pending(can, MACHINE_CAN_RX_FIFO)) {
+            flags |= MP_CAN_IRQ_RX;
         }
     }
 
