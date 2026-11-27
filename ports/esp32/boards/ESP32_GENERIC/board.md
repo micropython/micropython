@@ -14,5 +14,6 @@ This board has multiple variants available:
   then choose the "ota" variant. This variant has less room in the flash for
   Python files as a result of supporting OTA. Look for heading **Support for
   OTA**.
+* If you'd like to use ROMFS then choose the "romfs" variant.
 
 Otherwise, download the generic variant (under the first heading below).
