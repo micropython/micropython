@@ -46,6 +46,10 @@
 #define MICROPY_PY_MACHINE_TOUCH_PAD_ENTRY
 #endif
 
+extern mp_obj_fun_builtin_var_t config_adc_udp_stream_obj;
+extern mp_obj_fun_builtin_var_t start_adc_udp_stream_obj;
+extern mp_obj_fun_builtin_fixed_t stop_adc_udp_stream_obj;
+
 #define MICROPY_PY_MACHINE_EXTRA_GLOBALS \
     { MP_ROM_QSTR(MP_QSTR_sleep), MP_ROM_PTR(&machine_lightsleep_obj) }, \
     \
@@ -74,6 +78,12 @@
     { MP_ROM_QSTR(MP_QSTR_TIMER_WAKE), MP_ROM_INT(ESP_SLEEP_WAKEUP_TIMER) }, \
     { MP_ROM_QSTR(MP_QSTR_TOUCHPAD_WAKE), MP_ROM_INT(ESP_SLEEP_WAKEUP_TOUCHPAD) }, \
     { MP_ROM_QSTR(MP_QSTR_ULP_WAKE), MP_ROM_INT(ESP_SLEEP_WAKEUP_ULP) }, \
+    \
+    /* Continuous ADC */ \
+    { MP_ROM_QSTR(MP_QSTR_config_adc_udp_stream), MP_ROM_PTR(&config_adc_udp_stream_obj) }, \
+    { MP_ROM_QSTR(MP_QSTR_start_adc_udp_stream), MP_ROM_PTR(&start_adc_udp_stream_obj) }, \
+    { MP_ROM_QSTR(MP_QSTR_stop_adc_udp_stream), MP_ROM_PTR(&stop_adc_udp_stream_obj) }, \
+
 
 typedef enum {
     MP_PWRON_RESET = 1,
