@@ -1,0 +1,4 @@
+cpu_io2 mem_read matches True
+machine.mem32 matches True
+port io matches True
+cpu io ok
