@@ -122,6 +122,14 @@ Functions
        `utop library <https://github.com/micropython/micropython-lib/tree/master/micropython/utop>`_,
        which implements a live overview similar to the Unix ``top`` command.
 
+.. function:: bt_controller_mem_release()
+
+    .. note:: This function is only present on the original ESP32 chip.
+
+    Permanently disables all :mod:`Bluetooth <bluetooth>` functionality until the
+    next :ref:`hard_reset`. Must be called when Bluetooth is not in use.
+
+    This function frees around 40KB of RAM (not all contiguous).
 
 Flash partitions
 ----------------

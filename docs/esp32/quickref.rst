@@ -1014,3 +1014,28 @@ the corresponding functions, or you can use the command-line client
 
 See the MicroPython forum for other community-supported alternatives
 to transfer files to an ESP32 board.
+
+Memory Management
+-----------------
+
+The ESP32 port has to balance available RAM between the ESP-IDF heap (managed by
+the RTOS running under MicroPython) and the :ref:`MicroPython heap <heap>` (managed
+by MicroPython). MicroPython dynamically allocate blocks from the ESP-IDF heap
+to add to the MicroPython heap as needed. MicroPython attempts to double the
+MicroPython heap size each time it grows, although if this is not possible then
+it will add a smaller block of memory.
+
+This means that under memory pressure (i.e. when free memory is low), the amount
+of memory available for ESP-IDF may be rapidly exhausted leading to errors being
+returned from socket APIs, TLS sessions, etc.
+
+The function :func:`esp32.idf_heap_info()` can be used for detailed tracking of
+ESP-IDF heap memory.
+
+.. note:: On the original ESP32 (only), it's possible to call
+   :func:`esp32.bt_controller_mem_release()` and reclaim around 40KB of
+   memory if Bluetooth will not be used.
+
+ESP32 chips with onboard PSRAM have significantly more RAM available (megabytes
+instead of hundreds of kilobytes) and will usually not run into problems with
+available memory.
