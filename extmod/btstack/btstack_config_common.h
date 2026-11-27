@@ -8,8 +8,14 @@
 // #define ENABLE_CLASSIC
 #define ENABLE_L2CAP_LE_CREDIT_BASED_FLOW_CONTROL_MODE
 #define ENABLE_PRINTF_HEXDUMP
-// #define ENABLE_LOG_INFO
-// #define ENABLE_LOG_DEBUG
+
+// Diagnostic logging configuration (see MICROPY_PY_BLUETOOTH_DIAGNOSTIC_LOGGING in modbluetooth.h).
+#if MICROPY_PY_BLUETOOTH_DIAGNOSTIC_LOGGING
+#define ENABLE_LOG_INFO
+#endif
+#if MICROPY_PY_BLUETOOTH_DIAGNOSTIC_LOGGING > 1
+#define ENABLE_LOG_DEBUG
+#endif
 #define ENABLE_LOG_ERROR
 
 // BTstack configuration. buffers, sizes, ...
