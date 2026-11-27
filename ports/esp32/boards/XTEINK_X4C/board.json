@@ -1,0 +1,25 @@
+{
+    "deploy": [
+        "../deploy_nativeusb.md"
+    ],
+    "deploy_options": {
+        "flash_offset": "0"
+    },
+    "docs": "",
+    "features": [
+        "BLE",
+        "Display",
+        "External Flash",
+        "External RAM",
+        "USB-C",
+        "WiFi"
+    ],
+    "images": [
+        "xteink_x4c.jpg"
+    ],
+    "mcu": "esp32s3",
+    "product": "X4 Classic",
+    "thumbnail": "",
+    "url": "https://www.xteink.com/products/xteink-x4",
+    "vendor": "Xteink"
+}
