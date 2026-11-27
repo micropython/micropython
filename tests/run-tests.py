@@ -364,18 +364,15 @@ def detect_target_wiring_script(pyb, args):
 
 
 tests_with_regex_output = [
-    base_path(file)
-    for file in (
-        "micropython/meminfo.py",
-        "basics/bytes_compare3.py",
-        "basics/builtin_help.py",
-        "basics/weakref_callback_exception.py",
-        "misc/sys_settrace_cov.py",
-        "net_inet/tls_text_errors.py",
-        "ports/unix/extra_coverage.py",
-        "thread/thread_exc2.py",
-        "ports/esp32/partition_ota.py",
-    )
+    "micropython/meminfo.py",
+    "basics/bytes_compare3.py",
+    "basics/builtin_help.py",
+    "basics/weakref_callback_exception.py",
+    "misc/sys_settrace_cov.py",
+    "net_inet/tls_text_errors.py",
+    "ports/unix/extra_coverage.py",
+    "thread/thread_exc2.py",
+    "ports/esp32/partition_ota.py",
 ]
 
 
@@ -383,7 +380,7 @@ def run_micropython(pyb, args, test, is_special=False, is_feature_check=False):
     had_crash = False
     if pyb is None:
         # run on PC
-        if test.filename_abs.startswith((base_path("cmdline/"), base_path("feature_check/"))):
+        if test.test_file().startswith(("cmdline/", "feature_check/")):
             # special handling for tests of the unix cmdline program
             is_special = True
 
@@ -391,7 +388,7 @@ def run_micropython(pyb, args, test, is_special=False, is_feature_check=False):
             # check for any cmdline options needed for this test
             cmdlist = [MICROPYTHON]
             send_sigint = False
-            with open(test.filename, "rb") as f:
+            with open(test.path(), "rb") as f:
                 for line in f:
                     if line.startswith(b"# cmdline:"):
                         # subprocess.check_output on Windows only accepts strings, not bytes
@@ -401,9 +398,12 @@ def run_micropython(pyb, args, test, is_special=False, is_feature_check=False):
                     elif not line.startswith(b"#"):
                         break
 
+            # historically special tests have relied on tests/ being cwd
+            cwd = base_path()
+
             # run the test, possibly with redirected input
             try:
-                if os.path.basename(test.filename).startswith("repl_"):
+                if os.path.basename(test.path()).startswith("repl_"):
                     # Need to use a PTY to test command line editing
                     try:
                         import pty
@@ -453,7 +453,7 @@ def run_micropython(pyb, args, test, is_special=False, is_feature_check=False):
                         os.write(master, b"\x03")
                         return get(True)
 
-                    with open(test.filename, "rb") as f:
+                    with open(test.path(), "rb") as f:
                         # instead of: output_mupy = subprocess.check_output(cmdlist, stdin=f)
                         master, slave = pty.openpty()
                         try:
@@ -485,6 +485,7 @@ def run_micropython(pyb, args, test, is_special=False, is_feature_check=False):
                                 stderr=subprocess.STDOUT,
                                 bufsize=0,
                                 preexec_fn=preexec_fn,
+                                cwd=cwd,
                             )
                             banner = get(True)
                             if send_sigint:
@@ -519,7 +520,7 @@ def run_micropython(pyb, args, test, is_special=False, is_feature_check=False):
                             os.close(slave)
                 else:
                     output_mupy = subprocess.check_output(
-                        cmdlist + [test.filename], stderr=subprocess.STDOUT
+                        cmdlist + [test.canonical_path()], stderr=subprocess.STDOUT, cwd=cwd
                     )
             except subprocess.CalledProcessError:
                 return b"CRASH"
@@ -534,7 +535,7 @@ def run_micropython(pyb, args, test, is_special=False, is_feature_check=False):
             if sys.platform == "darwin":
                 cmdlist.extend(["-X", "realtime"])
 
-            cwd = os.path.dirname(test.filename)
+            cwd = os.path.dirname(test.path())
 
             # if running via .mpy, first compile the .py file
             if args.via_mpy:
@@ -542,12 +543,12 @@ def run_micropython(pyb, args, test, is_special=False, is_feature_check=False):
                 subprocess.check_output(
                     [MPYCROSS]
                     + args.mpy_cross_flags.split()
-                    + ["-o", mpy_filename, "-X", "emit=" + args.emit, test.filename]
+                    + ["-o", mpy_filename, "-X", "emit=" + args.emit, test.canonical_path()]
                 )
                 mpy_modname = os.path.splitext(os.path.basename(mpy_filename))[0]
                 cmdlist.extend(["-m", mpy_modname])
             else:
-                cmdlist.append(test.filename_abs)
+                cmdlist.append(test.canonical_path())
 
             # run the actual test
             try:
@@ -568,7 +569,7 @@ def run_micropython(pyb, args, test, is_special=False, is_feature_check=False):
     else:
         # run via pyboard interface
         had_crash, output_mupy = pyb.run_script_on_remote_target(
-            args, test.filename_abs, is_special, test.requires_target_wiring
+            args, test.canonical_path(), is_special, test.requires_target_wiring
         )
 
     # canonical form for all ports/platforms is to use \n for end-of-line
@@ -586,13 +587,13 @@ def run_micropython(pyb, args, test, is_special=False, is_feature_check=False):
     if is_special and not had_crash and b"\nSKIP\n" in output_mupy:
         return b"SKIP\n"
 
-    if is_special or test.filename_abs in tests_with_regex_output:
+    if is_special or test.test_file() in tests_with_regex_output:
         # convert parts of the output that are not stable across runs
         # Prefer emitter-specific expected output.
-        exp_file = test.filename + "." + args.emit + ".exp"
+        exp_file = test.path() + "." + args.emit + ".exp"
         if not os.path.isfile(exp_file):
             # Fall back to generic expected output.
-            exp_file = test.filename + ".exp"
+            exp_file = test.path() + ".exp"
         with open(exp_file, "rb") as f:
             lines_exp = []
             for line in f.readlines():
@@ -639,9 +640,10 @@ def run_feature_check(pyb, args, test_file):
     if pyb is not None and test_file.startswith("repl_"):
         # REPL feature tests will not run via pyboard because they require prompt interactivity
         return b""
+    # Even if we run completely different tests in a different directory,
+    # we need to access feature_checks from the same directory as the
+    # run-tests.py script itself so use base_path.
     test = Test(base_path("feature_check", test_file))
-    # Force absolute path so the test can be found regardless of where run-tests.py is run from.
-    test.filename = test.filename_abs
     return run_micropython(pyb, args, test, is_special=True, is_feature_check=True)
 
 
@@ -678,10 +680,6 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
     target_capabilities = {}
 
     if True:
-        # Even if we run completely different tests in a different directory,
-        # we need to access feature_checks from the same directory as the
-        # run-tests.py script itself so use base_path.
-
         # Check if micropython.native is supported, and skip such tests if it's not
         output = run_feature_check(pyb, args, "native_check.py")
         target_capabilities["native"] = output == b"native\n"
@@ -783,8 +781,8 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
     # Skip thread mutation tests on targets that have unsafe threading behaviour.
     if args.thread == "unsafe":
         for t in tests:
-            if t.filename.startswith("thread/mutate_"):
-                skip_tests.add(t.filename)
+            if t.test_file().startswith("thread/mutate_"):
+                skip_tests.add(t.test_file())
 
     # Some tests shouldn't be run on pyboard
     if args.platform not in PC_PLATFORMS:
@@ -819,20 +817,16 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
     skip_tests = [os.path.realpath(base_path(skip_test)) for skip_test in skip_tests]
 
     def run_one_test(test):
-        test_file = test.filename
-
         if args.filters:
             # Default verdict is the opposite of the first action
             verdict = "include" if args.filters[0][0] == "exclude" else "exclude"
             for action, pat in args.filters:
-                if pat.search(test_file):
+                if pat.search(test.name()):
                     verdict = action
             if verdict == "exclude":
                 return
 
-        test_basename = test_file.replace("..", "_").replace("./", "").replace("/", "_")
-
-        skip_it = os.path.realpath(test_file) in skip_tests
+        skip_it = test.path() in skip_tests
 
         skip_reasons = []
         for requirement in test.requires_feature:
@@ -840,17 +834,17 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
                 skip_reasons.append(requirement)
 
         if skip_it:
-            print("skip ", test_file)
-            test_results.append((test_file, "skip", ""))
+            print("skip ", test.name())
+            test_results.append((test.name(), "skip", ""))
             return
         elif skip_reasons:
             reasons = " ".join(skip_reasons)
-            print(f"skip  {test_file:40} (requires: {reasons})")
-            test_results.append((test_file, "skip", f"requires: {reasons}"))
+            print(f"skip  {test.name():40} (requires: {reasons})")
+            test_results.append((test.name(), "skip", f"requires: {reasons}"))
             return
         elif args.dry_run:
-            print("found", test_file)
-            test_results.append((test_file, "found", ""))
+            print("found", test.name())
+            test_results.append((test.name(), "found", ""))
             return
 
         # Run the test on the MicroPython target.
@@ -870,12 +864,12 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
                 # reset.  Wait for the soft reset to finish, so we don't interrupt the
                 # start-up code (eg boot.py) when preparing to run the next test.
                 pyb.read_until(1, b"raw REPL; CTRL-B to exit\r\n")
-            print("skip ", test_file)
-            test_results.append((test_file, "skip", ""))
+            print("skip ", test.name())
+            test_results.append((test.name(), "skip", ""))
             return
         elif output_mupy == b"SKIP-TOO-LARGE\n":
-            print("lrge ", test_file)
-            test_results.append((test_file, "skip", "too large"))
+            print("lrge ", test.name())
+            test_results.append((test.name(), "skip", "too large"))
             return
 
         # Look at the output of the test to see if unittest was used.
@@ -886,7 +880,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         ):
             raise TestError(
                 (
-                    "error: test {} requires unittest".format(test_file),
+                    "error: test {} requires unittest".format(test.name()),
                     "(eg run `mpremote mip install unittest` to install it)",
                 )
             )
@@ -913,10 +907,10 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
             output_expected = None
         else:
             # Prefer emitter-specific expected output.
-            test_file_expected = test_file + "." + args.emit + ".exp"
+            test_file_expected = test.path() + "." + args.emit + ".exp"
             if not os.path.isfile(test_file_expected):
                 # Fall back to generic expected output.
-                test_file_expected = test_file + ".exp"
+                test_file_expected = test.path() + ".exp"
             if os.path.isfile(test_file_expected):
                 # Expected output given by a file, so read that in.
                 with open(test_file_expected, "rb") as f:
@@ -925,8 +919,8 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
                 # Run CPython to work out expected output.
                 try:
                     output_expected = subprocess.check_output(
-                        CPYTHON3_CMD + [test.filename_abs],
-                        cwd=os.path.dirname(test_file),
+                        CPYTHON3_CMD + [test.canonical_path()],
+                        cwd=os.path.dirname(test.path()),
                         stderr=subprocess.STDOUT,
                     )
                 except subprocess.CalledProcessError as er:
@@ -956,20 +950,20 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
             testcase_count.add(len(output_expected.splitlines()))
             test_passed = output_expected == output_mupy
 
-        filename_expected = os.path.join(result_dir, test_basename + ".exp")
-        filename_mupy = os.path.join(result_dir, test_basename + ".out")
+        filename_expected = os.path.join(result_dir, test.result_file_name() + ".exp")
+        filename_mupy = os.path.join(result_dir, test.result_file_name() + ".out")
 
         # Print test summary, update counters, and save .exp/.out files if needed.
         if test_passed:
-            print("pass ", test_file, extra_info)
-            test_results.append((test_file, "pass", ""))
+            print("pass ", test.name(), extra_info)
+            test_results.append((test.name(), "pass", ""))
             rm_f(filename_expected)
             rm_f(filename_mupy)
         else:
             if output_mupy.startswith(b"could not enter raw repl"):
                 extra_info = "raw REPL failed"
                 raw_repl_failure_count.increment()
-            print("FAIL ", test_file, extra_info)
+            print("FAIL ", test.name(), extra_info)
             if output_expected is not None:
                 with open(filename_expected, "wb") as f:
                     f.write(output_expected)
@@ -977,15 +971,15 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
                 rm_f(filename_expected)  # in case left over from previous failed run
             with open(filename_mupy, "wb") as f:
                 f.write(output_mupy)
-            test_results.append((test_file, "fail", ""))
+            test_results.append((test.name(), "fail", ""))
 
         # Print a note if this looks like it might have been a misfired unittest
         if not uses_unittest and not test_passed:
-            with open(test_file, "r", encoding="utf-8") as f:
+            with open(test.path(), "r", encoding="utf-8") as f:
                 if any(re.match("^import.+unittest", l) for l in f.readlines()):
                     print(
                         "NOTE: {} may be a unittest that doesn't run unittest.main()".format(
-                            test_file
+                            test.name()
                         )
                     )
 
@@ -1201,18 +1195,18 @@ the last matching regex is used:
             test_extensions += ("*.js", "*.mjs")
 
         all_test_dirs = []
-        main_tests_dir_in_args = None
+        main_tests_dir_in_args = False
+        main_tests_dir = os.path.realpath(base_path())
         if args.test_dirs is not None:
             # Run tests from given directories though if user explicitly passes this directory as argument
             # still do the normal test discovery to be consistent with running from within this directory.
-            main_tests_dir = os.path.realpath(base_path())
             for test_dir in args.test_dirs:
                 if os.path.realpath(test_dir) == main_tests_dir:
-                    main_tests_dir_in_args = test_dir
+                    main_tests_dir_in_args = True
                 else:
                     all_test_dirs.append(test_dir)
 
-        if args.test_dirs is None or main_tests_dir_in_args is not None:
+        if args.test_dirs is None or main_tests_dir_in_args:
             test_dirs = (
                 "basics",
                 "micropython",
@@ -1229,7 +1223,7 @@ the last matching regex is used:
             if args.unicode:
                 test_dirs += ("unicode",)
             port_specific_test_dir = "ports/{}".format(platform_to_port(args.platform))
-            if os.path.isdir(port_specific_test_dir):
+            if os.path.isdir(os.path.join(main_tests_dir, port_specific_test_dir)):
                 test_dirs += (port_specific_test_dir,)
             if args.platform in PC_PLATFORMS:
                 # run PC tests
@@ -1239,12 +1233,7 @@ the last matching regex is used:
                 if args.build != "minimal":
                     test_dirs += ("cmdline", "io")
 
-            all_test_dirs.extend(
-                test_dir
-                if main_tests_dir_in_args is None
-                else os.path.join(main_tests_dir_in_args, test_dir)
-                for test_dir in test_dirs
-            )
+            all_test_dirs.extend(os.path.join(main_tests_dir, test_dir) for test_dir in test_dirs)
 
         tests = sorted(
             test_file

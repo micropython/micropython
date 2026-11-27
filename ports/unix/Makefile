@@ -255,30 +255,30 @@ include $(TOP)/py/mkrules.mk
 .PHONY: test test_full_no_native test_full test//% test/% test-failures print-failures clean-failures
 
 test: $(BUILD)/$(PROG) $(TOP)/tests/run-tests.py
-	cd $(TOP)/tests && MICROPY_MICROPYTHON=$(ABS_PROG) ./run-tests.py
+	MICROPY_MICROPYTHON=$(ABS_PROG) $(TOP)/tests/run-tests.py
 
 test//%: $(BUILD)/$(PROG) $(TOP)/tests/run-tests.py
-	cd $(TOP)/tests && MICROPY_MICROPYTHON=$(ABS_PROG) ./run-tests.py -i "$*"
+	MICROPY_MICROPYTHON=$(ABS_PROG) $(TOP)/tests/run-tests.py -i "$*"
 
 test-failures: $(BUILD)/$(PROG) $(TOP)/tests/run-tests.py
-	cd $(TOP)/tests && MICROPY_MICROPYTHON=$(ABS_PROG) ./run-tests.py --run-failures
+	MICROPY_MICROPYTHON=$(ABS_PROG) $(TOP)/tests/run-tests.py --run-failures
 
 print-failures:
-	cd $(TOP)/tests && ./run-tests.py --print-failures
+	$(TOP)/tests/run-tests.py --print-failures
 
 clean-failures:
-	cd $(TOP)/tests && ./run-tests.py --clean-failures
+	$(TOP)/tests/run-tests.py --clean-failures
 
 test/%: $(BUILD)/$(PROG) $(TOP)/tests/run-tests.py
-	cd $(TOP)/tests && MICROPY_MICROPYTHON=$(ABS_PROG) ./run-tests.py -d "$*"
+	MICROPY_MICROPYTHON=$(ABS_PROG) $(TOP)/tests/run-tests.py -d "$(TOP)/tests/$*"
 
 test_full_no_native: $(BUILD)/$(PROG) $(TOP)/tests/run-tests.py test
-	cd $(TOP)/tests && MICROPY_MICROPYTHON=$(ABS_PROG) ./run-tests.py --via-mpy $(RUN_TESTS_MPY_CROSS_FLAGS)
+	MICROPY_MICROPYTHON=$(ABS_PROG) $(TOP)/tests/run-tests.py --via-mpy $(RUN_TESTS_MPY_CROSS_FLAGS)
 	cat $(TOP)/tests/basics/0prelim.py | $(ABS_PROG) | grep -q 'abc'
 
 test_full: $(BUILD)/$(PROG) $(TOP)/tests/run-tests.py test_full_no_native
-	cd $(TOP)/tests && MICROPY_MICROPYTHON=$(ABS_PROG) ./run-tests.py --emit native
-	cd $(TOP)/tests && MICROPY_MICROPYTHON=$(ABS_PROG) ./run-tests.py --via-mpy $(RUN_TESTS_MPY_CROSS_FLAGS) --emit native
+	MICROPY_MICROPYTHON=$(ABS_PROG) $(TOP)/tests/run-tests.py --emit native
+	MICROPY_MICROPYTHON=$(ABS_PROG) $(TOP)/tests/run-tests.py --via-mpy $(RUN_TESTS_MPY_CROSS_FLAGS) --emit native
 
 test_gcov: test_full
 	gcov -o $(BUILD)/py $(TOP)/py/*.c

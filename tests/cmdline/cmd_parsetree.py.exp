@@ -39,7 +39,7 @@
 [  13]           \(rule\|arglist\)(164) (n=1)
                    id(b)
 ----------------
-File cmdline/cmd_parsetree.py, code block '<module>' (descriptor: \.\+, bytecode @\.\+ 62 bytes)
+File \.\*cmdline/cmd_parsetree.py, code block '<module>' (descriptor: \.\+, bytecode @\.\+ 62 bytes)
 Raw bytecode (code_info_size=13, bytecode_size=49):
  20 16 01 60 27 22 23 24 24 24 24 24 25 2a 00 5f
  4b 04 16 04 42 3a 51 16 05 10 02 16 06 23 00 16
