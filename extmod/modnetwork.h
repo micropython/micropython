@@ -60,8 +60,8 @@ extern char mod_network_country_code[2];
 #define MICROPY_PY_NETWORK_HOSTNAME_MAX_LEN (32)
 #endif
 
-#if MICROPY_PY_NETWORK_NINAW10
-// This Network interface requires the extended socket state.
+#if MICROPY_PY_NETWORK_NINAW10 || (MICROPY_PY_NETWORK_WIZNET5K && !MICROPY_PY_LWIP)
+// These network interfaces require the extended socket state.
 #define MICROPY_PY_SOCKET_EXTENDED_STATE    (1)
 #endif
 
