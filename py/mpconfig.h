@@ -2548,7 +2548,10 @@ typedef time_t mp_timestamp_t;
 #endif
 
 #if __GNUC__ >= 12 && MICOPY_PRINTF_LL_FORMAT
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunknown-pragmas"
 #pragma MPCHECKS mpprint_support_ll
+#pragma GCC diagnostic pop
 #endif
 
 #endif // MICROPY_INCLUDED_PY_MPCONFIG_H
