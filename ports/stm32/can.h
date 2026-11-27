@@ -59,7 +59,7 @@
 #define CAN_MODE_SILENT_LOOPBACK    FDCAN_MODE_INTERNAL_LOOPBACK
 
 // FDCAN peripheral has independent indexes for standard id vs extended id filters
-#if defined(STM32G4)
+#if defined(STM32G4) || defined(STM32H5)
 #define CAN_HW_MAX_STD_FILTER 28
 #define CAN_HW_MAX_EXT_FILTER 8
 #elif defined(STM32H7) || defined(STM32N6)
@@ -126,7 +126,7 @@ typedef struct {
 #if defined(STM32H7) || defined(STM32N6)
 #define CAN_TX_QUEUE_LEN 16
 #else
-// FDCAN STM32G4, bxCAN
+// FDCAN STM32G4/H5, bxCAN
 #define CAN_TX_QUEUE_LEN 3
 #endif
 

@@ -54,13 +54,22 @@
 #if defined(STM32G4)
 // assuming 24MHz clock
 #define CAN_DEFAULT_PRESCALER       (16)
+#elif defined(STM32H5)
+// The CAN peripheral runs from HSE. Dividing that down to 1MHz and using
+// 8 ticks per bit (1 + BS1 + BS2) gives 125Kbps.
+#define CAN_DEFAULT_PRESCALER       (HSE_VALUE / 1000000)
 #else
 // assuming 48MHz clock
 #define CAN_DEFAULT_PRESCALER       (32)
 #endif
 #define CAN_DEFAULT_SJW             (1)
+#if defined(STM32H5)
+#define CAN_DEFAULT_BS1             (5)
+#define CAN_DEFAULT_BS2             (2)
+#else
 #define CAN_DEFAULT_BS1             (8)
 #define CAN_DEFAULT_BS2             (3)
+#endif
 
 #define CAN_MAXIMUM_NBRP            (512)
 #define CAN_MAXIMUM_NBS1            (256)
