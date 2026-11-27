@@ -1,0 +1,7 @@
+(1+0j)
+(10+1j)
+TypeError
+TypeError
+TypeError
+(10+3j)
+ValueError
