@@ -54,7 +54,22 @@ static mp_obj_t iobase_make_new(const mp_obj_type_t *type, size_t n_args, size_t
 static mp_uint_t iobase_read_write(mp_obj_t obj, void *buf, mp_uint_t size, int *errcode, qstr qst) {
     mp_obj_t dest[3];
     mp_load_method(obj, qst, dest);
-    mp_obj_array_t ar = {{&mp_type_bytearray}, BYTEARRAY_TYPECODE, 0, size, buf};
+    mp_obj_array_t ar;
+    #if MICROPY_PY_BUILTINS_MEMORYVIEW
+    if (qst == MP_QSTR_write) {
+        // The buffer is only borrowed by the callee (it may even point to read-only
+        // data), so pass a memoryview rather than a bytearray, which would allow the
+        // callee to resize the buffer (eg `buf += buf`) and corrupt memory.
+        mp_obj_memoryview_init(&ar, BYTEARRAY_TYPECODE, 0, size, buf);
+    } else
+    #endif
+    {
+        ar.base.type = &mp_type_bytearray;
+        ar.typecode = BYTEARRAY_TYPECODE;
+        ar.free = 0;
+        ar.len = size;
+        ar.items = buf;
+    }
     dest[2] = MP_OBJ_FROM_PTR(&ar);
     mp_obj_t ret_obj = mp_call_method_n_kw(1, 0, dest);
     if (ret_obj == mp_const_none) {
