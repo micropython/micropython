@@ -365,14 +365,13 @@ static uint8_t dma_get_bits(i2s_mode_t mode, int8_t bits) {
     }
 }
 
-// determine which DMA channel is associated to this IRQ
-static uint dma_map_irq_to_channel(uint irq_index) {
-    for (uint ch = 0; ch < NUM_DMA_CHANNELS; ch++) {
-        if ((dma_irqn_get_channel_status(irq_index, ch))) {
-            return ch;
+// determine which of this instance's DMA channels raised the shared IRQ
+static int dma_map_irq_to_channel(machine_i2s_obj_t *self, uint irq_index) {
+    for (uint8_t ch = 0; ch < I2S_NUM_DMA_CHANNELS; ch++) {
+        if (dma_irqn_get_channel_status(irq_index, self->dma_channel[ch])) {
+            return self->dma_channel[ch];
         }
     }
-    // This should never happen
     return -1;
 }
 
@@ -458,15 +457,15 @@ static void dma_deinit(machine_i2s_obj_t *self) {
 }
 
 static void dma_irq_handler(uint8_t irq_index) {
-    int dma_channel = dma_map_irq_to_channel(irq_index);
-    if (dma_channel == -1) {
+    machine_i2s_obj_t *self = MP_STATE_PORT(machine_i2s_obj[irq_index]);
+    if (self == NULL) {
         // This should never happen
         return;
     }
 
-    machine_i2s_obj_t *self = MP_STATE_PORT(machine_i2s_obj[irq_index]);
-    if (self == NULL) {
-        // This should never happen
+    int dma_channel = dma_map_irq_to_channel(self, irq_index);
+    if (dma_channel == -1) {
+        // raised by another DMA user
         return;
     }
 
@@ -563,10 +562,11 @@ static void mp_machine_i2s_init_helper(machine_i2s_obj_t *self, mp_arg_val_t *ar
     self->non_blocking_descriptor.copy_in_progress = false;
     self->io_mode = BLOCKING;
 
-    irq_configure(self);
     pio_configure(self);
     gpio_configure(self);
     dma_configure(self);
+    // after dma_configure() so the handler never matches a stale channel
+    irq_configure(self);
 
     pio_sm_set_enabled(self->pio, self->sm, true);
     dma_channel_start(self->dma_channel[0]);
