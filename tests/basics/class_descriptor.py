@@ -65,3 +65,48 @@ try:
     del TestClass().non_descriptor
 except AttributeError:
     print("AttributeError")
+
+# Test that super() applies the descriptor protocol to attributes found in a
+# base class.
+
+
+class SuperDescriptor:
+    def __get__(self, obj, cls):
+        print("super get")
+        print(type(obj) is cls)
+        return "super result"
+
+
+class SuperBase:
+    attr = SuperDescriptor()
+
+
+class SuperSub(SuperBase):
+    def get(self):
+        return super().attr
+
+
+print(SuperSub().get())
+
+# A class attribute that shadows the descriptor in the subclass does not
+# change what super() finds.
+
+
+class SuperShadow(SuperBase):
+    attr = "shadow"
+
+    def get(self):
+        return super().attr
+
+
+print(SuperShadow().get())
+
+# Likewise for a method that shadows the descriptor.
+
+
+class SuperMethod(SuperBase):
+    def attr(self):
+        return super().attr
+
+
+print(SuperMethod().attr())

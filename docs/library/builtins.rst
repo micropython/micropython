@@ -423,12 +423,6 @@ Functions and types
 
     |see_cpython| `python:property`.
 
-    In a subclass that overrides a property, accessing the property through
-    ``super()`` returns the ``property`` object itself rather than invoking
-    the getter and returning its value.
-
-    - :ref:`cpydiff_core_class_superproperty`
-
 .. function:: range(stop, /)
               range(start, stop, step=1, /)
 
