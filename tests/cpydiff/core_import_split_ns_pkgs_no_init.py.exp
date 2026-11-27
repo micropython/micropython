@@ -1,0 +1,3 @@
+Two modules of a split namespace package imported
+__path__ is from the first module
+./modules3/subpkg
