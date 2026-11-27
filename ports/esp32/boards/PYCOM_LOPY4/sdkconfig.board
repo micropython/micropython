@@ -1,0 +1,8 @@
+# Pycom LoPy4 / L04 — 8MB flash, 4MB PSRAM
+
+# 8MB flash
+CONFIG_ESPTOOLPY_FLASHSIZE_8MB=y
+
+# Custom partition table for 8MB flash
+CONFIG_PARTITION_TABLE_CUSTOM=y
+CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="boards/PYCOM_LOPY4/partitions.csv"
