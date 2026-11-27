@@ -120,11 +120,12 @@ def main():
     # create an exception with a long formatted error message while heap is low
     # should use the heap and truncate the message
     lst = []
-    while 1:
+    n = 1 << 24
+    while n >= 16:
         try:
-            lst = [lst]
+            lst = [lst, bytearray(n) if n >= 64 else None]
         except MemoryError:
-            break
+            n >>= 1
     try:
         f(
             abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz=1
@@ -132,7 +133,7 @@ def main():
     except Exception as er:
         e = er
     while lst:
-        lst[0], lst = None, lst[0]  # unlink lists to free up heap
+        lst[0], lst[1], lst = None, None, lst[0]  # unlink lists to free up heap
     print(repr(e)[:10])
 
     # raise a deep exception with the heap locked
