@@ -104,22 +104,29 @@ def open_connection(host, port, ssl=None, server_hostname=None):
     s = socket.socket(ai[0], ai[1], ai[2])
     s.setblocking(False)
     try:
-        s.connect(ai[-1])
-    except OSError as er:
-        if er.errno != EINPROGRESS:
-            raise er
-    # wrap with SSL, if requested
-    if ssl:
-        if ssl is True:
-            import ssl as _ssl
+        try:
+            s.connect(ai[-1])
+        except OSError as er:
+            if er.errno != EINPROGRESS:
+                raise er
+        # wrap with SSL, if requested
+        if ssl:
+            if ssl is True:
+                import ssl as _ssl
 
-            ssl = _ssl.SSLContext(_ssl.PROTOCOL_TLS_CLIENT)
-        if not server_hostname:
-            server_hostname = host
-        s = ssl.wrap_socket(s, server_hostname=server_hostname, do_handshake_on_connect=False)
-        s.setblocking(False)
-    ss = Stream(s)
-    yield core._io_queue.queue_write(s)
+                ssl = _ssl.SSLContext(_ssl.PROTOCOL_TLS_CLIENT)
+            if not server_hostname:
+                server_hostname = host
+            s = ssl.wrap_socket(s, server_hostname=server_hostname, do_handshake_on_connect=False)
+            s.setblocking(False)
+        ss = Stream(s)
+        yield core._io_queue.queue_write(s)
+    except BaseException as e:
+        # Close the socket on any error or cancellation (e.g. a wait_for() timeout while
+        # connecting), instead of leaving it to the GC finaliser.  If wrap_socket() failed,
+        # s is still the plain socket.
+        s.close()
+        raise e
     return ss, ss
 
 
