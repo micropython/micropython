@@ -186,7 +186,7 @@ static machine_wdt_obj_t *mp_machine_wdt_make_new_instance(mp_obj_t id_obj, mp_i
         if (id == 0) {
             return make_iwdt(&machine_iwdt, IWDG, timeout_ms);
         } else {
-            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("WDT(%d) doesn't exist"), id);
+            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("WDT(" INT_FMT ") doesn't exist"), id);
         }
     }
 }

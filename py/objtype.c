@@ -1053,7 +1053,7 @@ static mp_obj_t type_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp
         #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
         mp_raise_TypeError(MP_ERROR_TEXT("can't create instance"));
         #else
-        mp_raise_msg_varg(&mp_type_TypeError, MP_ERROR_TEXT("can't create '%q' instances"), self->name);
+        mp_raise_msg_varg(&mp_type_TypeError, MP_ERROR_TEXT("can't create '%q' instances"), (qstr)self->name);
         #endif
     }
 
@@ -1197,7 +1197,7 @@ static mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals
             mp_raise_TypeError(MP_ERROR_TEXT("type isn't an acceptable base type"));
             #else
             mp_raise_msg_varg(&mp_type_TypeError,
-                MP_ERROR_TEXT("type '%q' isn't an acceptable base type"), t->name);
+                MP_ERROR_TEXT("type '%q' isn't an acceptable base type"), (qstr)t->name);
             #endif
         }
         #if ENABLE_SPECIAL_ACCESSORS

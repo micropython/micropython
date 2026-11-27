@@ -152,7 +152,7 @@ function ci_code_size_build {
             git restore ports/esp32/lockfiles/*  # esp32 port may update local lockfile
             git checkout --detach $COMMIT
             git submodule update --init $SUBMODULES
-            git show -s
+            git --no-pager show -s
             tools/metrics.py clean "$PORTS_TO_CHECK"
             # Allow errors from tools/metrics.py to propagate out of the pipe below.
             set -o pipefail

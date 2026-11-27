@@ -39,7 +39,7 @@
 #include "py/runtime.h"
 
 static void mp_obj_int_raise_to_bytes_overflow_error(size_t nbytes) {
-    mp_raise_msg_varg(&mp_type_OverflowError, MP_ERROR_TEXT("value would overflow a %d byte buffer"), nbytes);
+    mp_raise_msg_varg(&mp_type_OverflowError, MP_ERROR_TEXT("value would overflow a " SIZE_FMT " byte buffer"), nbytes);
 }
 
 static void mp_obj_int_raise_unsigned_negative_overflow_error(void) {

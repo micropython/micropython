@@ -497,7 +497,7 @@ static mp_irq_obj_t *mp_machine_uart_irq(machine_uart_obj_t *self, bool any_args
         mp_uint_t trigger = args[MP_IRQ_ARG_INIT_trigger].u_int;
         mp_uint_t not_supported = trigger & ~MP_UART_ALLOWED_FLAGS;
         if (trigger != 0 && not_supported) {
-            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("trigger 0x%08x unsupported"), not_supported);
+            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("trigger 0x" HEX_FMT " unsupported"), not_supported);
         }
 
         // Reconfigure user IRQs
