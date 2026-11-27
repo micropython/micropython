@@ -32,9 +32,13 @@ INC += -I$(BTSTACK_DIR)/3rd-party/bluedroid/encoder/include
 INC += -I$(BTSTACK_DIR)/3rd-party/md5
 INC += -I$(BTSTACK_DIR)/3rd-party/yxml
 
+# Source file for LE Device DB implementation, ports may override this. 
+SRC_BTSTACK_C_LE_DEVICE_DB ?= lib/btstack/src/ble/le_device_db_memory.c
+
 SRC_BTSTACK_C = \
 	$(addprefix lib/btstack/src/, $(SRC_FILES)) \
-	$(addprefix lib/btstack/src/ble/, $(filter-out %_tlv.c, $(SRC_BLE_FILES))) \
+	$(addprefix lib/btstack/src/ble/, $(filter-out le_device_db_memory.c le_device_db_tlv.c, $(SRC_BLE_FILES))) \
+	$(SRC_BTSTACK_C_LE_DEVICE_DB) \
 	lib/btstack/platform/embedded/hci_dump_embedded_stdout.c \
 
 ifeq ($(MICROPY_BLUETOOTH_BTSTACK_USB),1)

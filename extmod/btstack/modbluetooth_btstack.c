@@ -193,6 +193,21 @@ static bool controller_static_addr_available = false;
 static const uint8_t read_static_address_command_complete_prefix[] = { 0x0e, 0x1b, 0x01, 0x09, 0xfc };
 #endif
 
+#if MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING
+
+static void emmit_mp_bluetooth_gatts_on_encryption_update(uint16_t conn_handle) {
+    hci_connection_t *hci_con = hci_connection_for_handle(conn_handle);
+    sm_connection_t *desc = &hci_con->sm_connection;
+    mp_bluetooth_gatts_on_encryption_update(conn_handle,
+        desc->sm_connection_encrypted,
+        desc->sm_connection_authenticated,
+        desc->sm_le_db_index != -1,
+        desc->sm_actual_encryption_key_size);
+}
+
+#endif // MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING
+
+
 static void btstack_packet_handler_generic(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size) {
     (void)channel;
     (void)size;
@@ -272,34 +287,11 @@ static void btstack_packet_handler_generic(uint8_t packet_type, uint16_t channel
         DEBUG_printf("  --> btstack # conns changed\n");
     } else if (event_type == HCI_EVENT_VENDOR_SPECIFIC) {
         DEBUG_printf("  --> hci vendor specific\n");
-    } else if (event_type == SM_EVENT_AUTHORIZATION_RESULT ||
-               event_type == SM_EVENT_PAIRING_COMPLETE ||
-               // event_type == GAP_EVENT_DEDICATED_BONDING_COMPLETED || // No conn_handle
-               event_type == HCI_EVENT_ENCRYPTION_CHANGE) {
-        DEBUG_printf("  --> enc/auth/pair/bond change\n");
+    } else if (event_type == HCI_EVENT_ENCRYPTION_CHANGE) {
+        DEBUG_printf("  --> HCI_EVENT_ENCRYPTION_CHANGE\n");
         #if MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING
-        uint16_t conn_handle;
-        switch (event_type) {
-            case SM_EVENT_AUTHORIZATION_RESULT:
-                conn_handle = sm_event_authorization_result_get_handle(packet);
-                break;
-            case SM_EVENT_PAIRING_COMPLETE:
-                conn_handle = sm_event_pairing_complete_get_handle(packet);
-                break;
-            case HCI_EVENT_ENCRYPTION_CHANGE:
-                conn_handle = hci_event_encryption_change_get_connection_handle(packet);
-                break;
-            default:
-                return;
-        }
-
-        hci_connection_t *hci_con = hci_connection_for_handle(conn_handle);
-        sm_connection_t *desc = &hci_con->sm_connection;
-        mp_bluetooth_gatts_on_encryption_update(conn_handle,
-            desc->sm_connection_encrypted,
-            desc->sm_connection_authenticated,
-            desc->sm_le_db_index != -1,
-            desc->sm_actual_encryption_key_size);
+        uint16_t conn_handle = hci_event_encryption_change_get_connection_handle(packet);
+        emmit_mp_bluetooth_gatts_on_encryption_update(conn_handle);
         #endif // MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING
     } else if (event_type == HCI_EVENT_DISCONNECTION_COMPLETE) {
         DEBUG_printf("  --> hci disconnect complete\n");
@@ -372,8 +364,123 @@ static void btstack_packet_handler_generic(uint8_t packet_type, uint16_t channel
     }
 }
 
+/* The SM packet handler receives Security Manager Events required for pairing.
+ * It also receives events generated during Identity Resolving.
+ *
+ * sm_packet_handler() in 'lib/btstack/example/sm_pairing_central.c'
+ * used as template.
+ */
+
+static void btstack_sm_packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size) {
+    (void)channel;
+    (void)size;
+
+    if (packet_type != HCI_EVENT_PACKET) {
+        return;
+    }
+
+    bd_addr_t addr;
+    bd_addr_type_t addr_type;
+
+    uint8_t event_type = hci_event_packet_get_type(packet);
+
+    switch (event_type) {
+        case SM_EVENT_JUST_WORKS_REQUEST:
+            DEBUG_printf("Just works requested\n");
+            sm_just_works_confirm(sm_event_just_works_request_get_handle(packet));
+            break;
+        case SM_EVENT_NUMERIC_COMPARISON_REQUEST:
+            DEBUG_printf("Confirming numeric comparison: %ul\n", sm_event_numeric_comparison_request_get_passkey(packet));
+            // TODO
+            // sm_numeric_comparison_confirm(sm_event_passkey_display_number_get_handle(packet));
+            break;
+        case SM_EVENT_PASSKEY_DISPLAY_NUMBER:
+            DEBUG_printf("Display Passkey: %ul\n", sm_event_passkey_display_number_get_passkey(packet));
+            // TODO
+            break;
+        case SM_EVENT_PASSKEY_INPUT_NUMBER:
+            DEBUG_printf("Passkey Input requested\n");
+            // TODO
+            // DEBUG_printf("Sending fixed passkey %ul\n", (uint32_t) FIXED_PASSKEY);
+            // sm_passkey_input(sm_event_passkey_input_number_get_handle(packet), FIXED_PASSKEY);
+            break;
+        case SM_EVENT_PAIRING_STARTED:
+            DEBUG_printf("Pairing started\n");
+            break;
+        case SM_EVENT_PAIRING_COMPLETE:
+            switch (sm_event_pairing_complete_get_status(packet)) {
+                case ERROR_CODE_SUCCESS:
+                    DEBUG_printf("Pairing complete, success\n");
+                    #if MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING
+                    uint16_t conn_handle = sm_event_pairing_complete_get_handle(packet);
+                    emmit_mp_bluetooth_gatts_on_encryption_update(conn_handle);
+                    #endif
+                    break;
+                case ERROR_CODE_CONNECTION_TIMEOUT:
+                    DEBUG_printf("Pairing failed, timeout\n");
+                    break;
+                case ERROR_CODE_REMOTE_USER_TERMINATED_CONNECTION:
+                    DEBUG_printf("Pairing failed, disconnected\n");
+                    break;
+                case ERROR_CODE_AUTHENTICATION_FAILURE:
+                    DEBUG_printf("Pairing failed, authentication failure with reason = %u\n", sm_event_pairing_complete_get_reason(packet));
+                    break;
+                default:
+                    break;
+            }
+            break;
+        case SM_EVENT_AUTHORIZATION_RESULT:
+            #if MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING
+            uint16_t conn_handle = sm_event_authorization_result_get_handle(packet);
+            emmit_mp_bluetooth_gatts_on_encryption_update(conn_handle);
+            #endif
+            break;
+
+        case SM_EVENT_REENCRYPTION_STARTED:
+            sm_event_reencryption_complete_get_address(packet, addr);
+            DEBUG_printf("Bonding information exists for addr type %u, identity addr %s -> start re-encryption\n",
+                sm_event_reencryption_started_get_addr_type(packet), bd_addr_to_str(addr));
+            break;
+        case SM_EVENT_REENCRYPTION_COMPLETE:
+            switch (sm_event_reencryption_complete_get_status(packet)) {
+                case ERROR_CODE_SUCCESS:
+                    DEBUG_printf("Re-encryption complete, success\n");
+                    #if MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING
+                    uint16_t conn_handle = sm_event_reencryption_complete_get_handle(packet);
+                    emmit_mp_bluetooth_gatts_on_encryption_update(conn_handle);
+                    #endif
+                    break;
+                case ERROR_CODE_CONNECTION_TIMEOUT:
+                    DEBUG_printf("Re-encryption failed, timeout\n");
+                    break;
+                case ERROR_CODE_REMOTE_USER_TERMINATED_CONNECTION:
+                    DEBUG_printf("Re-encryption failed, disconnected\n");
+                    break;
+                case ERROR_CODE_PIN_OR_KEY_MISSING:
+                    DEBUG_printf("Re-encryption failed, bonding information missing\n\n");
+                    DEBUG_printf("Assuming remote lost bonding information\n");
+                    DEBUG_printf("Deleting local bonding information and start new pairing...\n");
+                    sm_event_reencryption_complete_get_address(packet, addr);
+                    addr_type = sm_event_reencryption_started_get_addr_type(packet);
+                    gap_delete_bonding(addr_type, addr);
+                    sm_request_pairing(sm_event_reencryption_complete_get_handle(packet));
+                    break;
+                default:
+                    break;
+            }
+            break;
+        default:
+            DEBUG_printf("unknown sm event type: (0x%02x)\n", event_type);
+            break;
+    }
+}
+
 static btstack_packet_callback_registration_t hci_event_callback_registration = {
     .callback = &btstack_packet_handler_generic
+};
+
+static btstack_packet_callback_registration_t sm_event_callback_registration = {
+    .callback = &btstack_sm_packet_handler
 };
 
 #if MICROPY_PY_BLUETOOTH_ENABLE_GATT_CLIENT
@@ -642,6 +749,9 @@ int mp_bluetooth_init(void) {
 
     // Register for HCI events.
     hci_add_event_handler(&hci_event_callback_registration);
+
+    // register for SM events
+    sm_add_event_handler(&sm_event_callback_registration);
 
     // Register for ATT server events.
     att_server_register_packet_handler(&btstack_packet_handler_att_server);

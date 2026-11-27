@@ -40,8 +40,44 @@ QSTR_GLOBAL_DEPENDENCIES += $(VARIANT_DIR)/mpconfigvariant.h
 # OS name, for simple autoconfig
 UNAME_S := $(shell uname -s)
 
+# If the variant enables it, enable modbluetooth.
+ifeq ($(MICROPY_PY_BLUETOOTH),1)
+ifeq ($(MICROPY_BLUETOOTH_BTSTACK),1)
+HAVE_LIBUSB := $(shell (which pkg-config > /dev/null && pkg-config --exists libusb-1.0) 2>/dev/null && echo '1')
+
+# Figure out which BTstack transport to use.
+ifeq ($(HAVE_LIBUSB),1)
+# Default to btstack-over-usb.
+MICROPY_BLUETOOTH_BTSTACK_USB ?= 1
+MICROPY_BLUETOOTH_BTSTACK_H4 ?= 0
+else
+# Fallback to HCI controller via a H4 UART (e.g. Zephyr on nRF) over a /dev/tty serial port.
+MICROPY_BLUETOOTH_BTSTACK_USB ?= 0
+MICROPY_BLUETOOTH_BTSTACK_H4 ?= 1
+endif
+
+# MICROPY_BLUETOOTH_BTSTACK_HCI_DUMP could be set to 1 to activate logging
+# to file "/tmp/hci_dump.pklg" for btstack-over-usb.
+ifndef MICROPY_BLUETOOTH_BTSTACK_HCI_DUMP
+MICROPY_BLUETOOTH_BTSTACK_HCI_DUMP ?= 0
+endif
+
+# Set the file that will be included by "extmod/btstack/btstack_config.h"
+# 
+# The original file "extmod/btstack/btstack_config_common.h"
+# will be included by it. 
+MICROPY_BLUETOOTH_BTSTACK_CONFIG_FILE ?= '"ports/unix/btstack_config.h"'
+
+endif # MICROPY_BLUETOOTH_BTSTACK
+endif # MICROPY_PY_BLUETOOTH
+
 # include py core make definitions
 include $(TOP)/py/py.mk
+
+# Override source file for LE Device DB implementation.
+# It will be used in 'extmod/btstack/btstack.mk' included by
+# 'extmod/extmod.mk'.
+SRC_BTSTACK_C_LE_DEVICE_DB ?= lib/btstack/platform/posix/le_device_db_fs.c
 include $(TOP)/extmod/extmod.mk
 
 GIT_SUBMODULES += lib/berkeley-db-1.xx
@@ -153,21 +189,28 @@ ifeq ($(MICROPY_SSL_AXTLS),1)
 endif
 endif
 
-# If the variant enables it, enable modbluetooth.
 ifeq ($(MICROPY_PY_BLUETOOTH),1)
 ifeq ($(MICROPY_BLUETOOTH_BTSTACK),1)
-HAVE_LIBUSB := $(shell (which pkg-config > /dev/null && pkg-config --exists libusb-1.0) 2>/dev/null && echo '1')
 
-# Figure out which BTstack transport to use.
-ifeq ($(HAVE_LIBUSB),1)
-# Default to btstack-over-usb.
-MICROPY_BLUETOOTH_BTSTACK_USB ?= 1
-else
-# Fallback to HCI controller via a H4 UART (e.g. Zephyr on nRF) over a /dev/tty serial port.
-MICROPY_BLUETOOTH_BTSTACK_H4 ?= 1
+ifdef MICROPY_BLUETOOTH_BTSTACK_LE_DEVICE_DB_PATH
+# Will be used by 'lib/btstack/platform/posix/le_device_db_fs.c'
+CFLAGS += -DLE_DEVICE_DB_PATH=\"$(MICROPY_BLUETOOTH_BTSTACK_LE_DEVICE_DB_PATH)\"
 endif
 
+ifeq ($(MICROPY_BLUETOOTH_BTSTACK_USB),0)
 SRC_BTSTACK_C += lib/btstack/platform/embedded/btstack_run_loop_embedded.c
+endif
+
+ifeq ($(MICROPY_BLUETOOTH_BTSTACK_USB),1)
+SRC_BTSTACK_C += lib/btstack/platform/posix/btstack_run_loop_posix.c
+
+ifeq ($(MICROPY_BLUETOOTH_BTSTACK_HCI_DUMP),1)
+CFLAGS += -DMICROPY_BLUETOOTH_BTSTACK_HCI_DUMP=1
+SRC_BTSTACK_C += lib/btstack/platform/posix/hci_dump_posix_fs.c
+endif
+
+endif
+
 endif
 endif
 
