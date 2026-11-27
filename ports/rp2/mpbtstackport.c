@@ -39,6 +39,7 @@
 #include "extmod/btstack/modbluetooth_btstack.h"
 #include "mpbthciport.h"
 #include "pico/btstack_hci_transport_cyw43.h"
+#include "pico/rand.h"
 
 void mp_bluetooth_hci_poll_in_ms(uint32_t ms);
 
@@ -153,5 +154,22 @@ void mp_bluetooth_btstack_port_deinit(void) {
 void mp_bluetooth_btstack_port_start(void) {
     hci_power_control(HCI_POWER_ON);
 }
+
+#if MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING
+void mp_bluetooth_btstack_port_set_er_ir_keys(void) {
+    // Generate cryptographically secure ER and IR keys using hardware RNG
+    sm_key_t er_key, ir_key;
+
+    // Use hardware RNG to generate secure keys
+    // RP2 has a true hardware RNG via ROSC
+    for (int i = 0; i < 16; i++) {
+        er_key[i] = (uint8_t)(get_rand_32() & 0xFF);
+        ir_key[i] = (uint8_t)(get_rand_32() & 0xFF);
+    }
+
+    sm_set_er(er_key);
+    sm_set_ir(ir_key);
+}
+#endif // MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING
 
 #endif // MICROPY_PY_BLUETOOTH && MICROPY_BLUETOOTH_BTSTACK
