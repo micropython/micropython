@@ -1,0 +1,15 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "USB"
+    ],
+    "images": [],
+    "mcu": "stm32f4",
+    "product": "LCKFB-SkyStar-STM32F407VET6",
+    "thumbnail": "",
+    "url": "https://wiki.lckfb.com/zh-hans/tkx/",
+    "vendor": "LCKFB"
+}
