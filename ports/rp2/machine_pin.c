@@ -77,7 +77,11 @@ typedef struct _machine_pin_irq_obj_t {
 } machine_pin_irq_obj_t;
 
 static const mp_irq_methods_t machine_pin_irq_methods;
-static const int num_intr_regs = sizeof(iobank0_hw->intr) / sizeof(iobank0_hw->intr[0]);
+
+// IO_BANK0 has interrupt registers for every GPIO of the die (48 on RP2350), but only
+// NUM_BANK0_GPIOS of them are bonded out on the package (30 on RP2350A) and have an
+// entry in machine_pin_irq_obj.  Only scan the registers covering those GPIOs.
+static const int num_intr_regs = (NUM_BANK0_GPIOS + 7) / 8;
 
 // Mask with "1" indicating that the corresponding pin is in simulated open-drain mode.
 #if NUM_BANK0_GPIOS > 32
@@ -101,6 +105,10 @@ static void gpio_irq(void) {
             for (int j = 0; j < 8; ++j) {
                 if (intr & 0xf) {
                     uint32_t gpio = 8 * i + j;
+                    if (gpio >= NUM_BANK0_GPIOS) {
+                        // Last register is only partly used (e.g. GPIO 30, 31 on RP2350A).
+                        break;
+                    }
                     gpio_acknowledge_irq(gpio, intr & 0xf);
                     machine_pin_irq_obj_t *irq = MP_STATE_PORT(machine_pin_irq_obj[gpio]);
                     if (irq != NULL && (intr & irq->trigger)) {
