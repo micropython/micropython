@@ -745,6 +745,9 @@ MP_NOINLINE int main_(int argc, char **argv) {
     // process, but doing so helps to find memory leaks.
     #if !MICROPY_GC_SPLIT_HEAP
     free(heap);
+    #elif MICROPY_GC_SPLIT_HEAP_AUTO
+    // The GC has freed the other heaps itself.
+    free(heaps[0]);
     #else
     for (size_t i = 0; i < MICROPY_GC_SPLIT_HEAP_N_HEAPS; i++) {
         free(heaps[i]);
