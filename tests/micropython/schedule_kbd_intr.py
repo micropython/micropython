@@ -70,3 +70,19 @@ try:
     print("fail")
 except KeyboardInterrupt:
     print("KeyboardInterrupt")
+
+########################################################################
+# A KeyboardInterrupt raised in a callback is passed on to the main code.
+
+
+def callback_raise(_):
+    raise KeyboardInterrupt
+
+
+schedule(callback_raise, None)
+try:
+    sleep(0)
+    sleep(0)
+    print("fail")
+except KeyboardInterrupt:
+    print("KeyboardInterrupt")

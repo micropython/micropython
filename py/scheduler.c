@@ -73,6 +73,26 @@ static inline bool mp_sched_empty(void) {
     return mp_sched_num_pending() == 0;
 }
 
+// Like mp_call_function_1_protected(), but a KeyboardInterrupt is passed on to
+// the interrupted code instead of being printed and dropped.
+static void mp_sched_call_protected(mp_obj_t func, mp_obj_t arg) {
+    nlr_buf_t nlr;
+    if (nlr_push(&nlr) == 0) {
+        mp_call_function_1(func, arg);
+        nlr_pop();
+    } else {
+        mp_obj_t exc = MP_OBJ_FROM_PTR(nlr.ret_val);
+        #if MICROPY_KBD_EXCEPTION
+        if (mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(mp_obj_get_type(exc)),
+            MP_OBJ_FROM_PTR(&mp_type_KeyboardInterrupt))) {
+            mp_sched_exception(exc);
+            return;
+        }
+        #endif
+        mp_obj_print_exception(&mp_plat_print, exc);
+    }
+}
+
 static inline void mp_sched_run_pending(void) {
     mp_uint_t atomic_state = MICROPY_BEGIN_ATOMIC_SECTION();
     if (MP_STATE_VM(sched_state) != MP_SCHED_PENDING) {
@@ -112,7 +132,7 @@ static inline void mp_sched_run_pending(void) {
         MP_STATE_VM(sched_idx) = IDX_MASK(MP_STATE_VM(sched_idx) + 1);
         --MP_STATE_VM(sched_len);
         MICROPY_END_ATOMIC_SECTION(atomic_state);
-        mp_call_function_1_protected(item.func, item.arg);
+        mp_sched_call_protected(item.func, item.arg);
     } else {
         MICROPY_END_ATOMIC_SECTION(atomic_state);
     }
