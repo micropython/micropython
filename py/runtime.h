@@ -118,6 +118,16 @@ bool mp_sched_schedule(mp_obj_t function, mp_obj_t arg);
 bool mp_sched_schedule_node(mp_sched_node_t *node, mp_sched_callback_t callback);
 #endif
 
+// Whether scheduled callbacks may run on the calling thread: without a GIL
+// they run on the main thread only, to avoid races.
+static inline bool mp_sched_thread_can_run_callbacks(void) {
+    #if MICROPY_PY_THREAD && !MICROPY_PY_THREAD_GIL
+    return mp_thread_is_main_thread();
+    #else
+    return true;
+    #endif
+}
+
 // Handles any pending MicroPython events without waiting for an interrupt or event.
 void mp_event_handle_nowait(void);
 
