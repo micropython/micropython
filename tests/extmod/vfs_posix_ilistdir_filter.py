@@ -4,6 +4,8 @@ try:
     import os, vfs
 
     vfs.VfsPosix
+    os.listdir
+    os.rmdir
 except (ImportError, AttributeError):
     print("SKIP")
     raise SystemExit
@@ -32,23 +34,16 @@ def test(testdir):
     os.chdir(curdir)
 
 
-# We need an empty directory for testing.
-# Skip the test if it already exists.
 temp_dir = "vfs_posix_ilistdir_filter_test_dir"
 try:
-    os.stat(temp_dir)
-    print("SKIP")
-    raise SystemExit
-except OSError:
-    pass
-
-os.mkdir(temp_dir)
-
-try:
-    test(temp_dir)
-finally:
-    # Remove tempdir.
+    # We need an empty directory for testing. Otherwise skip.
     for td in os.listdir(temp_dir):
         os.rmdir("/".join((temp_dir, td)))
 
     os.rmdir(temp_dir)
+except OSError:
+    print("SKIP")
+    raise SystemExit
+
+os.mkdir(temp_dir)
+test(temp_dir)
