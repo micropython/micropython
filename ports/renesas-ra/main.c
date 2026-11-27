@@ -366,6 +366,9 @@ soft_reset:
 
     #if MICROPY_HW_ENABLE_USBDEV
     mp_usbd_init();
+    #if USB_CFG_LDO_REGULATOR == USB_CFG_ENABLE
+    mp_hal_usb_set_vdcen();
+    #endif
     #endif
 
     if (boot_res == BOARDCTRL_GOTO_SOFT_RESET_EXIT) {
